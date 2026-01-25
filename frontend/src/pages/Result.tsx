@@ -20,7 +20,7 @@ export default function Result() {
     );
   }
 
-  const { productName, brand, manufactureDate, expiryDate, place, scannedAt, originalScan } = state;
+  const { productName, brand, batchNo, manufactureDate, expiryDate, place, scannedAt, originalScan } = state;
 
   const scannedDate = scannedAt
     ? new Date(scannedAt).toLocaleDateString("en-GB", {
@@ -70,10 +70,18 @@ export default function Result() {
                   <span className="font-semibold">Brand:</span> {brand || "-"}
                 </p>
                 <p className="text-[16px] text-[#1a1a1a]">
+                  <span className="font-semibold">Batch No:</span> {batchNo || "-"}
+                </p>
+                <p className="text-[16px] text-[#1a1a1a]">
                   <span className="font-semibold">Mfd Date:</span> {manufactureDate || "-"}
                 </p>
                 <p className="text-[16px] text-[#1a1a1a]">
                   <span className="font-semibold">Exp Date:</span> {expiryDate || "-"}
+                </p>
+                <p className="text-[16px] text-[#1a1a1a] mt-4 pt-4 border-t border-gray-100">
+                  <span className="font-semibold block text-sm text-gray-500 mb-1">Scanned at:</span>
+                  {scannedDate} {scannedTime} <br/>
+                  <span className="text-sm text-gray-500">{place}</span>
                 </p>
               </div>
             </div>

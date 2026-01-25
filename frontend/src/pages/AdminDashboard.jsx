@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
+import API_BASE_URL from "../config/api";
 
 export default function AdminDashboard() {
   const [role, setRole] = useState("");
@@ -37,7 +38,8 @@ export default function AdminDashboard() {
 
   const fetchUsers = async () => {
     const token = localStorage.getItem("adminToken");
-    const res = await fetch("http://localhost:5000/admin/users", {
+    const res = await fetch(`${API_BASE_URL}/admin/users`, {
+
       headers: { Authorization: `Bearer ${token}` },
     });
     if (res.ok) setUsers(await res.json());
@@ -45,7 +47,8 @@ export default function AdminDashboard() {
 
   const fetchQrs = async () => {
     const token = localStorage.getItem("adminToken");
-    const res = await fetch("http://localhost:5000/admin/qrs", {
+    const res = await fetch(`${API_BASE_URL}/admin/qrs`, {
+
       headers: { Authorization: `Bearer ${token}` },
     });
     if (res.ok) setQrs(await res.json());
@@ -54,7 +57,8 @@ export default function AdminDashboard() {
   const handleCreateUser = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("adminToken");
-    const res = await fetch("http://localhost:5000/admin/create-user", {
+    const res = await fetch(`${API_BASE_URL}/admin/create-user`, {
+
       method: "POST",
       headers: { 
         "Content-Type": "application/json",
@@ -75,7 +79,8 @@ export default function AdminDashboard() {
   const handleCreateQr = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("adminToken");
-    const res = await fetch("http://localhost:5000/admin/create-qr", {
+    const res = await fetch(`${API_BASE_URL}/admin/create-qr`, {
+
       method: "POST",
       headers: { 
         "Content-Type": "application/json",
@@ -85,9 +90,9 @@ export default function AdminDashboard() {
     });
     if (res.ok) {
       const result = await res.json();
-      alert("QR created successfully!");
+      alert(`Successfully created ${result.count} QRs!`);
       if (result.pdfBase64) {
-          downloadPdf(result.pdfBase64, "qr_code.pdf");
+          downloadPdf(result.pdfBase64, "products_qr_codes.pdf");
       }
       fetchQrs();
       setNewQr({ productName: "", brand: "", batchNo: "", manufactureDate: "", expiryDate: "", quantity: "" });
@@ -118,7 +123,8 @@ export default function AdminDashboard() {
           console.log("Uploading data:", data);
 
           const token = localStorage.getItem("adminToken");
-          const res = await fetch("http://localhost:5000/admin/bulk-upload-qrs", {
+          const res = await fetch(`${API_BASE_URL}/admin/bulk-upload-qrs`, {
+
             method: "POST",
             headers: { 
                 "Content-Type": "application/json",

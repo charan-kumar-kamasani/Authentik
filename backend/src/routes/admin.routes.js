@@ -95,40 +95,50 @@ router.post(
   protect,
   authorize("admin", "manager"),
   async (req, res) => {
-    const { productName, brand, batchNo, manufactureDate, expiryDate, quantity } = req.body;
-
-    // Findings the max sequence for this brand
-    const lastProduct = await Product.findOne({ brand }).sort({ sequence: -1 });
-
-    const nextSeq = lastProduct && lastProduct.sequence ? lastProduct.sequence + 1 : 1;
-    const seqString = nextSeq.toString().padStart(4, '0'); // 0001, 0002...
+    let { productName, brand, batchNo, manufactureDate, expiryDate, quantity } = req.body;
     
-    // Generate Unique String (random 4 chars) to ensure absolute uniqueness if needed, or just rely on IDs.
-    // User requested: brand-0001-batch_number-unique_number
-    const uniqueSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
-    
-    const qrCode = `${brand}-${seqString}-${batchNo}-${uniqueSuffix}`;
+    // Ensure quantity is a number, default to 1 if invalid
+    const qty = parseInt(quantity) > 0 ? parseInt(quantity) : 1;
 
-    const product = await Product.create({
-      qrCode,
-      productName,
-      brand,
-      batchNo,
-      manufactureDate,
-      expiryDate,
-      quantity,
-      sequence: nextSeq,
-      createdBy: req.user._id,
-    });
+    const createdProducts = [];
+
+    // Loop to create 'qty' number of records
+    for (let i = 0; i < qty; i++) {
+        // Findings the max sequence for this brand
+        const lastProduct = await Product.findOne({ brand }).sort({ sequence: -1 });
+        const nextSeq = lastProduct && lastProduct.sequence ? lastProduct.sequence + 1 : 1;
+        const seqString = nextSeq.toString().padStart(4, '0'); // 0001, 0002...
+        
+        // Generate Unique String (random 4 chars) to ensure absolute uniqueness if needed, or just rely on IDs.
+        const uniqueSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+        
+        const qrCode = `${brand}-${seqString}-${batchNo}-${uniqueSuffix}`;
+
+        const product = await Product.create({
+          qrCode,
+          productName,
+          brand,
+          batchNo,
+          manufactureDate,
+          expiryDate,
+          quantity: 1, // Each individual unit is 1
+          sequence: nextSeq,
+          createdBy: req.user._id,
+        });
+        
+        createdProducts.push(product);
+    }
 
     try {
-        const pdfBase64 = await generateQrPdf([product], req.user.email);
-        res.status(201).json({ product, pdfBase64 });
+        // Generate PDF containing ALL generated QRs
+        const pdfBase64 = await generateQrPdf(createdProducts, req.user.email);
+        res.status(201).json({ products: createdProducts, count: createdProducts.length, pdfBase64 });
     } catch (e) {
         console.error("PDF Gen Error", e);
-        res.status(201).json({ product, pdfBase64: null }); 
+        res.status(201).json({ products: createdProducts, count: createdProducts.length, pdfBase64: null }); 
     }
   }
+
 );
 
 // Bulk Upload QRs

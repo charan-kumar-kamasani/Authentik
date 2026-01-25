@@ -8,6 +8,7 @@ export default function Scan() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [scanning, setScanning] = useState(true);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   let animationId = useRef(null);
 
@@ -59,6 +60,7 @@ export default function Scan() {
 
       stopCamera();
       setScanning(false);
+      setLoading(true);
 
       const place = await getCurrentPlace();
 
@@ -75,7 +77,8 @@ export default function Scan() {
       });
 
       const data = await res.json();
-      navigate(`/result/${data.status}`);
+      setLoading(false);
+      navigate(`/result/${data.status}`, { state: data.data });
       return;
     }
 
@@ -138,6 +141,14 @@ export default function Scan() {
           </button>
         </div>
       </div>
+
+      {/* Loading Overlay */}
+      {loading && (
+        <div className="absolute inset-0 bg-white/80 z-50 flex flex-col items-center justify-center">
+          <div className="w-12 h-12 border-4 border-gray-200 border-t-black rounded-full animate-spin mb-4"></div>
+          <p className="text-gray-900 font-medium">Verifying Product...</p>
+        </div>
+      )}
     </div>
   );
 }
