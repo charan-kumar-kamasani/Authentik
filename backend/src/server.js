@@ -10,6 +10,7 @@ app.use(express.json());
 
 // Routes
 app.use("/auth", require("./routes/auth.routes"));
+app.use("/admin", require("./routes/admin.routes"));
 app.use("/scan", require("./routes/scan.routes"));
 
 // Start server ONLY after DB connection

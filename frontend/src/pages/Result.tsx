@@ -20,7 +20,7 @@ export default function Result() {
     );
   }
 
-  const { productName, place, scannedAt, expiryDate, productId } = state;
+  const { productName, brand, manufactureDate, expiryDate, place, scannedAt, originalScan } = state;
 
   const scannedDate = scannedAt
     ? new Date(scannedAt).toLocaleDateString("en-GB", {
@@ -28,11 +28,11 @@ export default function Result() {
         month: "short",
         year: "numeric",
       })
-    : "10/Oct/2024";
+    : "-";
 
   const scannedTime = scannedAt
     ? new Date(scannedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    : "06:45 PM";
+    : "-";
 
   function goHome() {
     navigate("/home");
@@ -60,41 +60,21 @@ export default function Result() {
 
             {/* Product Title */}
             <h2 className="text-[24px] font-bold text-[#1a1a1a] mb-6 text-center">
-              Amul Pure Ghee
+              {productName || "Product"}
             </h2>
 
             {/* Product Details */}
             <div className="mb-6">
               <div className="space-y-2">
                 <p className="text-[16px] text-[#1a1a1a]">
-                  <span className="font-semibold">Brand:</span> {productName}
+                  <span className="font-semibold">Brand:</span> {brand || "-"}
                 </p>
-                {/* <p className="text-[16px] text-[#1a1a1a]">
-                  <span className="font-semibold">Net Weight:</span> 1 ltr
-                </p> */}
-                {/* <p className="text-[16px] text-[#1a1a1a]">
-                  <span className="font-semibold">Mfd Date:</span> {expiryDate}
-                </p> */}
                 <p className="text-[16px] text-[#1a1a1a]">
-                  <span className="font-semibold">Exp Date:</span> {expiryDate}
+                  <span className="font-semibold">Mfd Date:</span> {manufactureDate || "-"}
                 </p>
-              </div>
-            </div>
-
-            {/* Additional Details */}
-            <div className="mb-6">
-              <h3 className="text-[18px] font-bold text-[#1a1a1a] mb-4">Additional Details:</h3>
-              <div className="space-y-4 pl-4">
-                <div className="text-[14px] text-[#1a1a1a] leading-relaxed">
-                  <p>- Pantene shampoos contain ingredients like water for hydration, sodium lauryl sulfate and cocamidopropyl betaine for cleansing and ther; dimethicone for smoothness and shine, thenol</p>
-                  <p className="pl-4">(Pro-Vitamin B5) for strengthening and citric acid for pH balance, along with preservatives like sodium benzoate and ethylisothiazolinone</p>
-                  <p>to maintain product stability.</p>
-                </div>
-                <div className="text-[14px] text-[#1a1a1a] leading-relaxed">
-                  <p>- Pantene shampoos contain ingredients like water for hydration, sodium lauryl sulfate and cocamidopropyl betaine for cleansing and ther; dimethicone for smoothness and shine, thenol</p>
-                  <p className="pl-4">(Pro-Vitamin B5) for strengthening and citric acid for pH balance, along with preservatives like sodium benzoate and ethylisothiazolinone</p>
-                  <p>to maintain product stability.</p>
-                </div>
+                <p className="text-[16px] text-[#1a1a1a]">
+                  <span className="font-semibold">Exp Date:</span> {expiryDate || "-"}
+                </p>
               </div>
             </div>
 
@@ -103,8 +83,12 @@ export default function Result() {
 
             {/* Green Authentic Box */}
             <div className="p-4 bg-[#34C759] rounded-lg">
-              <p className="text-white text-[16px] font-semibold text-center">✓ AUTHENTIC PRODUCT</p>
+              <p className="text-white text-[16px] font-semibold text-center">✓ GENUINE PRODUCT</p>
             </div>
+            
+            <p className="text-center text-gray-500 text-sm mt-4">
+               You are the first person to scan this product.
+            </p>
           </>
         )}
 
@@ -119,59 +103,18 @@ export default function Result() {
             {/* Horizontal Line */}
             <div className="h-px bg-[#d1d1d6] w-full my-6"></div>
 
-            {/* Product Title */}
-            <h2 className="text-[24px] font-bold text-[#1a1a1a] mb-6 text-center">
-              Amul Pure Ghee
-            </h2>
-
-            {/* Product Details */}
-            <div className="mb-6">
-              <div className="space-y-2">
-                <p className="text-[16px] text-[#1a1a1a]">
-                  <span className="font-semibold">Brand:</span> Amul
-                </p>
-                <p className="text-[16px] text-[#1a1a1a]">
-                  <span className="font-semibold">Net Weight:</span> 1 ltr
-                </p>
-                <p className="text-[16px] text-[#1a1a1a]">
-                  <span className="font-semibold">Mfd Date:</span> 10/24
-                </p>
-                <p className="text-[16px] text-[#1a1a1a]">
-                  <span className="font-semibold">Exp Date:</span> 05/25
-                </p>
-                <p className="text-[15px] text-[#1a1a1a]">Date: {scannedDate}</p>
-                <p className="text-[15px] text-[#1a1a1a]">Time: {scannedTime}</p>
-                <p className="text-[15px] text-[#1a1a1a]">Place: {place || "Mumbai, Maharastra, India"}</p>
-              </div>
-            </div>
-
-            {/* Additional Details */}
-            <div className="mb-6">
-              <h3 className="text-[18px] font-bold text-[#1a1a1a] mb-4">Additional Details:</h3>
-              <div className="space-y-4 pl-4">
-                <div className="text-[14px] text-[#1a1a1a] leading-relaxed">
-                  <p>- Pantene shampoos contain ingredients like water for hydration, sodium lauryl sulfate and cocamidopropyl betaine for cleansing and ther; dimethicone for smoothness and shine, thenol</p>
-                  <p className="pl-4">(Pro-Vitamin B5) for strengthening and citric acid for pH balance, along with preservatives like sodium benzoate and ethylisothiazolinone</p>
-                  <p>to maintain product stability.</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Horizontal Line */}
-            <div className="h-px bg-[#d1d1d6] w-full my-6"></div>
-
             {/* Fake Product Section */}
             <div className="text-center mb-8">
-              <h2 className="text-[24px] font-bold text-[#FF3B30] mb-4">Fake Product</h2>
+              <h2 className="text-[24px] font-bold text-[#FF3B30] mb-4">Counterfeit Detected</h2>
               <p className="text-[16px] font-semibold text-[#1a1a1a] mb-4">
-                The scanned product is a Counterfeit or its not a registered product with Authentick
+                This QR Code is not recognized in our database.
               </p>
             </div>
 
             {/* Warning Message */}
             <div className="mb-6 p-4 bg-[#FF3B30]/10 border-l-4 border-[#FF3B30] rounded-r">
               <p className="text-[15px] text-[#1a1a1a]">
-                Millions like you are unknowingly put at risk by consuming or using counterfeit products.
+                High risk of counterfeit. Do not consume or use.
               </p>
             </div>
 
@@ -182,17 +125,13 @@ export default function Result() {
               </p>
             </div>
 
-            {/* Horizontal Line */}
-            <div className="h-px bg-[#d1d1d6] w-full my-6"></div>
-
-            {/* Fit & Review */}
-            <div className="text-center mb-8">
-              <h3 className="text-[20px] font-semibold text-[#1a1a1a] mb-2">Fit</h3>
+            {/* Report Button */}
+            <div className="text-center mb-4">
               <button
                 onClick={reportProduct}
-                className="bg-[#1a1a1a] text-white px-6 py-3 rounded-lg text-[16px] font-medium hover:bg-[#2c2c2e] active:bg-[#000] transition-colors duration-200 w-full max-w-[300px]"
+                className="bg-[#FF3B30] text-white px-6 py-3 rounded-lg text-[16px] font-medium hover:bg-[#FF453A] active:bg-[#D70015] transition-colors duration-200 w-full max-w-[300px]"
               >
-                Click to Review
+                Click to Report
               </button>
             </div>
           </>
@@ -203,7 +142,7 @@ export default function Result() {
           <>
             {/* Re used heading */}
             <div className="text-center mb-4">
-              <p className="text-[14px] text-[#6b6b6b]">Re-used</p>
+              <p className="text-[14px] text-[#6b6b6b]">Already Scanned</p>
             </div>
 
             {/* Logo */}
@@ -211,46 +150,60 @@ export default function Result() {
               <h1 className="text-[32px] font-bold text-[#1a1a1a] mb-2">Authentick</h1>
             </div>
 
+            {/* Product Title */}
+            <h2 className="text-[24px] font-bold text-[#1a1a1a] mb-6 text-center">
+              {productName || "Product"}
+            </h2>
+
             {/* Horizontal Line */}
             <div className="h-px bg-[#d1d1d6] w-full my-6"></div>
 
             {/* Warning Message */}
             <div className="mb-6">
               <p className="text-[18px] font-semibold text-[#1a1a1a] mb-4">
-                Product has already been scanned once before
+                This product has already been scanned!
               </p>
               <div className="p-4 bg-[#FF9500]/10 border-l-4 border-[#FF9500] rounded-r mb-4">
-                <p className="text-[16px] font-bold text-[#FF9500]">Do not Purchase</p>
+                <p className="text-[16px] font-bold text-[#FF9500]">Potential Re-use or Duplicate</p>
               </div>
             </div>
 
-            {/* Scan Details */}
-            <div className="mb-6">
-              <h3 className="text-[16px] font-bold text-[#1a1a1a] mb-3">Product was scanned by:</h3>
-              <div className="space-y-2 pl-4">
-                <p className="text-[15px] text-[#1a1a1a]">User: XXXXX XX144</p>
-                <p className="text-[15px] text-[#1a1a1a]">Product: Amul Pure Ghee</p>
-                <p className="text-[15px] text-[#1a1a1a]">Date: {scannedDate}</p>
-                <p className="text-[15px] text-[#1a1a1a]">Time: {scannedTime}</p>
-                <p className="text-[15px] text-[#1a1a1a]">Place: {place || "Mumbai, Maharastra, India"}</p>
-              </div>
-            </div>
+            {/* First Scan Details (History) */}
+            {originalScan && (
+                <div className="mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  <h3 className="text-[14px] font-bold text-gray-500 uppercase tracking-wide mb-3">Original Scan History</h3>
+                  <div className="space-y-2">
+                    <p className="text-[15px] text-[#1a1a1a] flex justify-between">
+                        <span className="text-gray-500">Scanned By:</span>
+                        <span className="font-medium">{originalScan.scannedBy}</span>
+                    </p>
+                    <p className="text-[15px] text-[#1a1a1a] flex justify-between">
+                        <span className="text-gray-500">Date:</span>
+                        <span className="font-medium">{new Date(originalScan.scannedAt).toLocaleDateString()}</span>
+                    </p>
+                    <p className="text-[15px] text-[#1a1a1a] flex justify-between">
+                        <span className="text-gray-500">Time:</span>
+                        <span className="font-medium">{new Date(originalScan.scannedAt).toLocaleTimeString()}</span>
+                    </p>
+                     <p className="text-[15px] text-[#1a1a1a] flex justify-between">
+                        <span className="text-gray-500">Place:</span>
+                        <span className="font-medium">{originalScan.place || "Unknown"}</span>
+                    </p>
+                  </div>
+                </div>
+            )}
+            
+            {!originalScan && <p className="text-sm text-gray-400 italic mb-4">History unavailable</p>}
 
             {/* Possibilities */}
             <div className="mb-6">
               <h3 className="text-[16px] font-bold text-[#1a1a1a] mb-3">Possibilities:</h3>
-              <div className="space-y-3 pl-4">
-                <p className="text-[14px] text-[#1a1a1a]">
-                  You have a product which was scanned on other device.
-                </p>
-                <p className="text-[14px] text-[#1a1a1a]">
-                  Counterfeit QR code to sell you a fake product.
-                </p>
+              <div className="space-y-3 pl-4 list-disc">
+                 <li className="text-[14px] text-[#1a1a1a]">You scanned this before.</li>
+                 <li className="text-[14px] text-[#1a1a1a]">Someone else used this product.</li>
+                 <li className="text-[14px] text-[#1a1a1a]">Duplicate QR Code (Counterfeit).</li>
               </div>
             </div>
-
-            {/* Horizontal Line */}
-            <div className="h-px bg-[#d1d1d6] w-full my-6"></div>
 
             {/* Report Button */}
             <div className="text-center mb-4">

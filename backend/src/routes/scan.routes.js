@@ -94,6 +94,9 @@ router.post("/", async (req, res) => {
        ⚠️ ALREADY USED
     ======================= */
     if (alreadyUsed) {
+      // Fetch user details of the original scanner
+      await alreadyUsed.populate("userId", "email"); 
+      
       const scan = await Scan.create({
         userId,
         productId: product._id,
@@ -112,11 +115,19 @@ router.post("/", async (req, res) => {
           qrCode,
           productId: product._id,
           productName: product.productName,
+          brand: product.brand,
+          manufactureDate: product.manufactureDate,
           expiryDate: product.expiryDate,
           place,
           latitude,
           longitude,
           scannedAt: scan.createdAt,
+          // History of Original Scan
+          originalScan: {
+              scannedBy: alreadyUsed.userId ? alreadyUsed.userId.email : "Unknown",
+              scannedAt: alreadyUsed.createdAt,
+              place: alreadyUsed.place
+          }
         },
       });
     }
@@ -142,6 +153,8 @@ router.post("/", async (req, res) => {
         qrCode,
         productId: product._id,
         productName: product.productName,
+        brand: product.brand,
+        manufactureDate: product.manufactureDate,
         expiryDate: product.expiryDate,
         place,
         latitude,
