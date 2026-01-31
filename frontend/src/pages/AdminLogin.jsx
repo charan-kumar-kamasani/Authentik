@@ -20,14 +20,25 @@ export default function AdminLogin() {
       const data = await res.json();
 
       if (res.ok) {
-        localStorage.setItem("adminToken", data.token);
+        localStorage.setItem("adminToken", data.token); // Keep for legacy
+        localStorage.setItem("token", data.token); // For new pages
         localStorage.setItem("adminRole", data.role);
         localStorage.setItem("adminEmail", data.email);
-        navigate("/admin/dashboard");
+        localStorage.setItem("userInfo", JSON.stringify({
+            _id: data._id,
+            email: data.email,
+            role: data.role
+        }));
+        
+        if (['company', 'authorizer', 'creator'].includes(data.role)) {
+            navigate("/orders");
+        } else {
+            navigate("/admin/dashboard");
+        }
       } else {
         setError(data.error);
       }
-    } catch (err) {
+    } catch {
       setError("Login failed");
     }
   };

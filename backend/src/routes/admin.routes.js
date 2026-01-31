@@ -225,4 +225,84 @@ router.get("/qrs", protect, authorize("admin", "manager", "superadmin"), async (
     res.json(products);
 });
 
+// 1. Create Company User (Admin only)
+router.post('/users/company', protect, authorize('admin', 'superadmin'), async (req, res) => {
+    try {
+        const { name, email, password } = req.body;
+        const userExists = await User.findOne({ email });
+        if (userExists) return res.status(400).json({ message: 'User already exists' });
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        const user = await User.create({
+            email,
+            password: hashedPassword,
+            role: 'company',
+            createdBy: req.user._id
+        });
+        res.status(201).json(user);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// 2. Create Authorizer/Creator (Company only)
+router.post('/users/staff', protect, async (req, res) => {
+    try {
+        if (!['company', 'authorizer'].includes(req.user.role)) {
+            return res.status(403).json({ message: 'Not authorized for this action' });
+        }
+
+        const { name, email, password, role } = req.body; 
+        
+        if (!['authorizer', 'creator'].includes(role)) {
+             return res.status(400).json({ message: 'Invalid role' });
+        }
+
+        if (role === 'authorizer' && req.user.role !== 'company') {
+             return res.status(403).json({ message: 'Only companies can create authorizers' });
+        }
+        
+        const companyId = req.user.role === 'company' ? req.user._id : req.user.companyId;
+
+        const userExists = await User.findOne({ email });
+        if (userExists) return res.status(400).json({ message: 'User already exists' });
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        const user = await User.create({
+            email,
+            password: hashedPassword,
+            role,
+            companyId,
+            createdBy: req.user._id
+        });
+        res.status(201).json(user);
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Get Staff for Company
+router.get('/users/staff', protect, async (req, res) => {
+    try {
+        if (req.user.role === 'admin' || req.user.role === 'superadmin') {
+             const companies = await User.find({ role: 'company', createdBy: req.user._id });
+             return res.json(companies);
+        }
+
+        if (req.user.role === 'company') {
+            const staff = await User.find({ companyId: req.user._id });
+            return res.json(staff);
+        }
+        
+        return res.status(403).json({message: 'Not authorized'});
+    } catch (error) {
+        res.status(500).json({message: error.message});
+    }
+});
+
 module.exports = router;

@@ -1,4 +1,119 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import authenticStamp from "../assets/status_valid.png";
+import fakeStamp from "../assets/status_fake.png";
+import duplicateStamp from "../assets/status_duplicate.png";
+import ResultCard from "../components/ResultCard";
+
+function ResultContent({ status, data }: { status: string | undefined; data: any }) {
+    // Helper to render Genuine UI
+    if (status === "ORIGINAL") {
+        return (
+            <ResultCard
+                color="#0B610A"
+                icon={authenticStamp}
+                title={data.productName || "Amul Pure Ghee"}
+                buttonText="Click to Review"
+                iconSize="w-40 h-40"
+                imageContainerClassName=""
+            >
+                <div className="text-sm leading-relaxed space-y-1 font-medium opacity-95">
+                    <p><span className="font-bold">Brand:</span> {data.brand || "Amul"}</p>
+                    <p><span className="font-bold">Net Weight:</span> 1 ltr</p>
+                    <p><span className="font-bold">Batch No:</span> 25ABD</p>
+                    <p><span className="font-bold">Mfd Date:</span> {data.manufactureDate || "10/24"}</p>
+                    <p><span className="font-bold">Exp Date:</span> {data.expiryDate || "05/25"}</p>
+                </div>
+                
+                <div className="mt-4">
+                    <p className="font-bold text-white text-sm mb-1">Additional Details:</p>
+                    <p className="text-[11px] text-white/80 leading-snug">
+                    Pantene shampoos contain ingredients like water for hydration, sodium lauryl sulfate and cocamidopropyl betaine for cleansing and ther, dimethicone for smoothness and shine.
+                    </p>
+                    <div className="w-full flex justify-center mt-2 cursor-pointer opacity-70">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+            </ResultCard>
+        );
+    }
+    
+     // Helper to render Fake UI
+    if (status === "FAKE") {
+        return (
+            <ResultCard
+                color="#E30211"
+                icon={fakeStamp}
+                title="Fake Product"
+                buttonText="Click to Report"
+                iconSize="w-48 h-auto"
+            >
+                <div className="pt-4 text-center">
+                    <p className="text-white font-bold text-[15px] mb-4 leading-snug">
+                        The scanned product is a Counterfeit or its not a registered product with Authentiks
+                    </p>
+                    <p className="text-white font-bold text-[15px] mb-6 leading-snug">
+                        Millions like you are unknowingly put at risk by consuming or using counterfeit products.
+                    </p>
+                    <p className="text-white text-sm font-semibold mb-2">
+                        Help us protect others <br/> Report this product now
+                    </p>
+                </div>
+            </ResultCard>
+        );
+    }
+
+    // Helper to render Already Scanned UI
+     if (status === "DUPLICATE" || status === "ALREADY_SCANNED" || status === "ALREADY_USED") {
+        return (
+            <ResultCard
+                color="#DFB408"
+                icon={duplicateStamp}
+                title="Already Scanned"
+                buttonText="Click to Report"
+                iconSize="w-32 h-32"
+            >
+                <div className="text-left">
+                    <p className="text-white/90 mb-3 text-sm font-medium">Product was scanned by:</p>
+                    
+                    <div className="grid grid-cols-[80px_1fr] gap-y-1 mb-6 text-sm font-medium">
+                        <span className="text-white font-bold">User:</span>
+                        <span className="text-white overflow-hidden text-ellipsis">{data.originalScan?.scannedBy || "XXXXX XX144"}</span>
+                        
+                        <span className="text-white font-bold">Product:</span>
+                        <span className="text-white">{data.productName || "Amul Pure Ghee"}</span>
+
+                        <span className="text-white font-bold">Batch:</span>
+                        <span className="text-white">25ABD</span>
+                        
+                        <span className="text-white font-bold">Date:</span>
+                        <span className="text-white">
+                        {data.originalScan?.scannedAt ? new Date(data.originalScan.scannedAt).toLocaleDateString() : '10/Oct/2024'}
+                        </span>
+                        
+                        <span className="text-white font-bold">Time:</span>
+                        <span className="text-white">
+                        {data.originalScan?.scannedAt ? new Date(data.originalScan.scannedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '06:45 PM'}
+                        </span>
+                        
+                        <span className="text-white font-bold">Place:</span>
+                        <span className="text-white leading-tight">{data.originalScan?.place || "Mumbai, Maharastra, India"}</span>
+                    </div>
+
+                    <p className="font-bold text-white mb-1 text-sm">Possibilities:</p>
+                    <p className="text-white/90 text-[13px] mb-2 leading-tight">
+                        You have a product which was scanned on other device.
+                    </p>
+                    <p className="text-white/90 text-[13px] leading-tight">
+                        Counterfeit QR code to sell you a fake product.
+                    </p>
+                </div>
+            </ResultCard>
+        );
+    }
+    
+    return null;
+}
+
 
 export default function Result() {
   const { status } = useParams();
@@ -6,235 +121,59 @@ export default function Result() {
   const { state } = useLocation();
 
   // Safety: direct URL access / refresh
-  if (!state) {
+  if (!state && !status) { // Only checking !state might be strict if doing dev testing, but fine for prod
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white">
         <p className="mb-4 text-gray-600">Invalid scan session</p>
-        <button
-          onClick={() => navigate("/home")}
-          className="bg-black text-white px-6 py-3 rounded"
-        >
-          Scan Again
-        </button>
+        <button onClick={() => navigate("/home")} className="bg-black text-white px-6 py-3 rounded">Scan Again</button>
       </div>
     );
   }
 
-  const { productName, brand, batchNo, manufactureDate, expiryDate, place, scannedAt, originalScan } = state;
+  // Define data object defensively
+  const data = state || {};
 
-  const scannedDate = scannedAt
-    ? new Date(scannedAt).toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      })
-    : "-";
+  // Determine theme color based on status
+  const getThemeColor = () => {
+      switch (status) {
+          case "ORIGINAL": return "#0B610A";
+          case "FAKE": return "#E30211";
+          case "DUPLICATE":
+          case "ALREADY_SCANNED":
+          case "ALREADY_USED": 
+            return "#DFB408";
+          default: return "#FFFFFF";
+      }
+  };
 
-  const scannedTime = scannedAt
-    ? new Date(scannedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    : "-";
-
-  function goHome() {
-    navigate("/home");
-  }
-
-  function reportProduct() {
-    alert("Product reported!");
-  }
+  const themeColor = getThemeColor();
 
   return (
-    <div className="min-h-screen bg-white font-['-apple-system','BlinkMacSystemFont','Segoe_UI','Roboto','Helvetica','Arial','sans-serif']">
-      {/* Time */}
-      <div className="fixed top-6 left-1/2 -translate-x-1/2 text-black text-[14px] font-medium z-50">
-        10:10 AM
+    <div 
+        className="min-h-screen font-sans flex flex-col items-center relative overflow-hidden"
+        style={{
+            background: `linear-gradient(to bottom, #FFFFFF 10%, ${themeColor} 35%)`
+        }}
+    >
+       {/* Background Overlay for better text readability if needed, or just let the gradient be */}
+
+       {/* Header */}
+       <div className="w-full flex items-center p-4 sticky top-0 z-10 bg-transparent">
+         <button onClick={() => navigate('/home')} className="p-2 text-[#0F4160]">
+             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+         </button>
+         <div className="flex-1 text-center pr-10">
+            <h1 className="text-[22px] font-bold tracking-tight text-[#0F4160]">
+                Authen<span className="text-[#32ADD8]">tiks</span>
+            </h1>
+         </div>
       </div>
 
-      <div className="pt-12 px-6 pb-24">
-        {/* ================= ORIGINAL ================= */}
-        {status === "ORIGINAL" && (
-          <>
-            {/* Logo */}
-            <div className="text-center mb-8">
-              <h1 className="text-[32px] font-bold text-[#1a1a1a] mb-2">Authentick</h1>
-            </div>
-
-            {/* Product Title */}
-            <h2 className="text-[24px] font-bold text-[#1a1a1a] mb-6 text-center">
-              {productName || "Product"}
-            </h2>
-
-            {/* Product Details */}
-            <div className="mb-6">
-              <div className="space-y-2">
-                <p className="text-[16px] text-[#1a1a1a]">
-                  <span className="font-semibold">Brand:</span> {brand || "-"}
-                </p>
-                <p className="text-[16px] text-[#1a1a1a]">
-                  <span className="font-semibold">Batch No:</span> {batchNo || "-"}
-                </p>
-                <p className="text-[16px] text-[#1a1a1a]">
-                  <span className="font-semibold">Mfd Date:</span> {manufactureDate || "-"}
-                </p>
-                <p className="text-[16px] text-[#1a1a1a]">
-                  <span className="font-semibold">Exp Date:</span> {expiryDate || "-"}
-                </p>
-                <p className="text-[16px] text-[#1a1a1a] mt-4 pt-4 border-t border-gray-100">
-                  <span className="font-semibold block text-sm text-gray-500 mb-1">Scanned at:</span>
-                  {scannedDate} {scannedTime} <br/>
-                  <span className="text-sm text-gray-500">{place}</span>
-                </p>
-              </div>
-            </div>
-
-            {/* Horizontal Line */}
-            <div className="h-px bg-[#d1d1d6] w-full my-6"></div>
-
-            {/* Green Authentic Box */}
-            <div className="p-4 bg-[#34C759] rounded-lg">
-              <p className="text-white text-[16px] font-semibold text-center">✓ GENUINE PRODUCT</p>
-            </div>
-            
-            <p className="text-center text-gray-500 text-sm mt-4">
-               You are the first person to scan this product.
-            </p>
-          </>
-        )}
-
-        {/* ================= FAKE ================= */}
-        {status === "FAKE" && (
-          <>
-            {/* Logo */}
-            <div className="text-center mb-8">
-              <h1 className="text-[32px] font-bold text-[#1a1a1a] mb-2">Authentick</h1>
-            </div>
-
-            {/* Horizontal Line */}
-            <div className="h-px bg-[#d1d1d6] w-full my-6"></div>
-
-            {/* Fake Product Section */}
-            <div className="text-center mb-8">
-              <h2 className="text-[24px] font-bold text-[#FF3B30] mb-4">Counterfeit Detected</h2>
-              <p className="text-[16px] font-semibold text-[#1a1a1a] mb-4">
-                This QR Code is not recognized in our database.
-              </p>
-            </div>
-
-            {/* Warning Message */}
-            <div className="mb-6 p-4 bg-[#FF3B30]/10 border-l-4 border-[#FF3B30] rounded-r">
-              <p className="text-[15px] text-[#1a1a1a]">
-                High risk of counterfeit. Do not consume or use.
-              </p>
-            </div>
-
-            {/* Call to Action */}
-            <div className="mb-6">
-              <p className="text-[16px] font-semibold text-[#1a1a1a] text-center">
-                Help us protect others. Report this product now
-              </p>
-            </div>
-
-            {/* Report Button */}
-            <div className="text-center mb-4">
-              <button
-                onClick={reportProduct}
-                className="bg-[#FF3B30] text-white px-6 py-3 rounded-lg text-[16px] font-medium hover:bg-[#FF453A] active:bg-[#D70015] transition-colors duration-200 w-full max-w-[300px]"
-              >
-                Click to Report
-              </button>
-            </div>
-          </>
-        )}
-
-        {/* ================= ALREADY USED ================= */}
-        {status === "ALREADY_USED" && (
-          <>
-            {/* Re used heading */}
-            <div className="text-center mb-4">
-              <p className="text-[14px] text-[#6b6b6b]">Already Scanned</p>
-            </div>
-
-            {/* Logo */}
-            <div className="text-center mb-8">
-              <h1 className="text-[32px] font-bold text-[#1a1a1a] mb-2">Authentick</h1>
-            </div>
-
-            {/* Product Title */}
-            <h2 className="text-[24px] font-bold text-[#1a1a1a] mb-6 text-center">
-              {productName || "Product"}
-            </h2>
-
-            {/* Horizontal Line */}
-            <div className="h-px bg-[#d1d1d6] w-full my-6"></div>
-
-            {/* Warning Message */}
-            <div className="mb-6">
-              <p className="text-[18px] font-semibold text-[#1a1a1a] mb-4">
-                This product has already been scanned!
-              </p>
-              <div className="p-4 bg-[#FF9500]/10 border-l-4 border-[#FF9500] rounded-r mb-4">
-                <p className="text-[16px] font-bold text-[#FF9500]">Potential Re-use or Duplicate</p>
-              </div>
-            </div>
-
-            {/* First Scan Details (History) */}
-            {originalScan && (
-                <div className="mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200">
-                  <h3 className="text-[14px] font-bold text-gray-500 uppercase tracking-wide mb-3">Original Scan History</h3>
-                  <div className="space-y-2">
-                    <p className="text-[15px] text-[#1a1a1a] flex justify-between">
-                        <span className="text-gray-500">Scanned By:</span>
-                        <span className="font-medium">{originalScan.scannedBy}</span>
-                    </p>
-                    <p className="text-[15px] text-[#1a1a1a] flex justify-between">
-                        <span className="text-gray-500">Date:</span>
-                        <span className="font-medium">{new Date(originalScan.scannedAt).toLocaleDateString()}</span>
-                    </p>
-                    <p className="text-[15px] text-[#1a1a1a] flex justify-between">
-                        <span className="text-gray-500">Time:</span>
-                        <span className="font-medium">{new Date(originalScan.scannedAt).toLocaleTimeString()}</span>
-                    </p>
-                     <p className="text-[15px] text-[#1a1a1a] flex justify-between">
-                        <span className="text-gray-500">Place:</span>
-                        <span className="font-medium">{originalScan.place || "Unknown"}</span>
-                    </p>
-                  </div>
-                </div>
-            )}
-            
-            {!originalScan && <p className="text-sm text-gray-400 italic mb-4">History unavailable</p>}
-
-            {/* Possibilities */}
-            <div className="mb-6">
-              <h3 className="text-[16px] font-bold text-[#1a1a1a] mb-3">Possibilities:</h3>
-              <div className="space-y-3 pl-4 list-disc">
-                 <li className="text-[14px] text-[#1a1a1a]">You scanned this before.</li>
-                 <li className="text-[14px] text-[#1a1a1a]">Someone else used this product.</li>
-                 <li className="text-[14px] text-[#1a1a1a]">Duplicate QR Code (Counterfeit).</li>
-              </div>
-            </div>
-
-            {/* Report Button */}
-            <div className="text-center mb-4">
-              <button
-                onClick={reportProduct}
-                className="bg-[#FF3B30] text-white px-6 py-3 rounded-lg text-[16px] font-medium hover:bg-[#FF453A] active:bg-[#D70015] transition-colors duration-200 w-full max-w-[300px]"
-              >
-                Click to Report
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Bottom Button - Scan Another Product */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#d1d1d6] p-6">
-        <button
-          onClick={goHome}
-          className="bg-[#1a1a1a] text-white px-6 py-3 rounded-lg text-[16px] font-medium hover:bg-[#2c2c2e] active:bg-[#000] transition-colors duration-200 w-full max-w-[300px] mx-auto block"
-        >
-          Scan Another Product
-        </button>
-      </div>
+       <div className="w-full max-w-sm px-6 pt-4 pb-24 z-10">
+            <ResultContent status={status} data={data} />
+       </div>
     </div>
   );
 }

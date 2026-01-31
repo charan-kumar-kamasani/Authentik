@@ -4,14 +4,19 @@ import * as XLSX from "xlsx";
 import API_BASE_URL from "../config/api";
 
 export default function AdminDashboard() {
-  const [role, setRole] = useState("");
+  const storedRole = localStorage.getItem("adminRole") || "";
+  const [role] = useState(storedRole);
   const [activeTab, setActiveTab] = useState("qrs");
   const [users, setUsers] = useState([]);
   const [qrs, setQrs] = useState([]);
   const navigate = useNavigate();
 
   // Form states
-  const [newUser, setNewUser] = useState({ email: "", password: "", role: "admin" });
+  const [newUser, setNewUser] = useState({
+    email: "",
+    password: "",
+    role: storedRole === "superadmin" ? "admin" : "manager",
+  });
   const [newQr, setNewQr] = useState({ 
     productName: "", 
     brand: "",
@@ -20,21 +25,6 @@ export default function AdminDashboard() {
     expiryDate: "", 
     quantity: ""
   });
-
-  useEffect(() => {
-    const token = localStorage.getItem("adminToken");
-    const storedRole = localStorage.getItem("adminRole");
-    if (!token) {
-      navigate("/admin");
-    } else {
-      setRole(storedRole);
-      setNewUser(prev => ({ ...prev, role: storedRole === 'superadmin' ? 'admin' : 'manager' }));
-      fetchQrs();
-      if (storedRole === "superadmin" || storedRole === "admin") {
-        fetchUsers();
-      }
-    }
-  }, [navigate]);
 
   const fetchUsers = async () => {
     const token = localStorage.getItem("adminToken");
@@ -53,6 +43,20 @@ export default function AdminDashboard() {
     });
     if (res.ok) setQrs(await res.json());
   };
+
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+    if (!token) {
+      navigate("/admin");
+    } else {
+      fetchQrs();
+      if (storedRole === "superadmin" || storedRole === "admin") {
+        fetchUsers();
+      }
+    }
+  }, [navigate, storedRole]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
@@ -163,6 +167,23 @@ export default function AdminDashboard() {
     navigate("/admin");
   };
 
+  const Navbar = () => {
+    const navigate = useNavigate();
+    const role = localStorage.getItem('role') || localStorage.getItem('adminRole'); 
+    
+    return (
+        <nav className="bg-white shadow">
+            <div className="flex space-x-4">
+                 <button onClick={() => navigate('/home')} className="px-3 py-2">Home</button>
+                 <button onClick={() => navigate('/orders')} className="px-3 py-2">Orders</button>
+                 { (role === 'admin' || role === 'company') && 
+                    <button onClick={() => navigate('/users')} className="px-3 py-2">Users</button> 
+                 }
+            </div>
+        </nav>
+    )
+}
+
   return (
     <div className="min-h-screen bg-[#f5f5f7] flex font-sans">
       {/* Sidebar */}
@@ -174,16 +195,24 @@ export default function AdminDashboard() {
 
         <nav className="flex-1 p-4 space-y-2">
            <SidebarItem 
-             label="QR Management" 
-             active={activeTab === "qrs"} 
-             onClick={() => setActiveTab("qrs")}
-             icon="📦"
+             label="Order Management" 
+             active={activeTab === "orders"} 
+             onClick={() => navigate('/orders')}
+             icon="�"
            />
-           {(role === "superadmin" || role === "admin") && (
+           {['superadmin', 'admin', 'manager'].includes(role) && (
+               <SidebarItem 
+                 label="QR Inventory" 
+                 active={activeTab === "qrs"} 
+                 onClick={() => setActiveTab("qrs")}
+                 icon="�"
+               />
+           )}
+           {['superadmin', 'admin', 'company'].includes(role) && (
              <SidebarItem 
                label="User Management" 
                active={activeTab === "users"} 
-               onClick={() => setActiveTab("users")}
+               onClick={() => navigate('/users')}
                icon="👥"
              />
            )}
@@ -209,12 +238,14 @@ export default function AdminDashboard() {
         <header className="mb-10 flex justify-between items-center">
             <div>
                  <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
-                    {activeTab === "qrs" ? "Product & QR Management" : "User Access Control"}
+                    {activeTab === "qrs" ? "Product & QR Management" : activeTab === "users" ? "User Access Control" : "Order Management"}
                  </h2>
                  <p className="text-gray-500 mt-2">
                     {activeTab === "qrs" 
                         ? "Create, track and manage product QR codes." 
-                        : "Manage permissions and create new admin users."}
+                        : activeTab === "users" 
+                        ? "Manage permissions and create new admin users."
+                        : "View, manage and track orders."}
                  </p>
             </div>
         </header>
@@ -432,6 +463,87 @@ export default function AdminDashboard() {
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "orders" && (
+          <div className="space-y-8">
+            {/* Order Management Content */}
+            <div className="bg-white rounded-2xl p-8 shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-gray-100">
+              <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                <span className="w-1 h-6 bg-purple-500 rounded-full"></span>
+                Order Management
+              </h3>
+              <p className="text-gray-500 mb-4">
+                View and manage all orders. Update order status and details as needed.
+              </p>
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Search Orders</label>
+                  <input
+                    type="text"
+                    placeholder="Search by product name, order ID..."
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all font-medium"
+                  />
+                </div>
+                <div className="flex-none">
+                  <button className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                    <span>🔍</span> Search
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Orders List */}
+            <div className="bg-white rounded-2xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden">
+               <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center">
+                    <h3 className="font-semibold text-gray-900">Recent Orders</h3>
+                    <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">0 Records</span>
+               </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                    <thead>
+                        <tr className="bg-gray-50/50 text-gray-500 text-xs uppercase tracking-wider font-semibold">
+                            <th className="px-8 py-4">Order ID</th>
+                            <th className="px-6 py-4">Product Details</th>
+                            <th className="px-6 py-4">Customer</th>
+                            <th className="px-6 py-4">Status</th>
+                            <th className="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                        {/* Map through orders data */}
+                        <tr className="hover:bg-gray-50/50 transition-colors">
+                            <td className="px-8 py-4">
+                                <div className="font-medium text-gray-900">ORD-123456</div>
+                            </td>
+                            <td className="px-6 py-4">
+                                <div className="text-sm text-gray-700">Premium Widget</div>
+                                <div className="text-xs text-gray-400 font-mono">QR Code: ABC123XYZ</div>
+                            </td>
+                            <td className="px-6 py-4">
+                                <div className="text-sm text-gray-700">John Doe</div>
+                                <div className="text-xs text-gray-400">johndoe@example.com</div>
+                            </td>
+                            <td className="px-6 py-4">
+                                <span className="inline-block px-2 py-1 bg-green-50 text-green-700 rounded-md text-xs font-medium">
+                                    Active
+                                </span>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                                <button className="text-blue-600 hover:text-blue-800 font-medium text-sm">
+                                    View
+                                </button>
+                            </td>
+                        </tr>
+                        {/* No orders placeholder */}
+                        <tr>
+                            <td colSpan={5} className="px-8 py-12 text-center text-gray-400 text-sm">No orders found. Create a new order to get started.</td>
+                        </tr>
+                    </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}

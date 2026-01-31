@@ -2,6 +2,7 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const Product = require("../models/Product");
 const Scan = require("../models/Scan");
+const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
@@ -41,6 +42,19 @@ async function getPlaceFromCoords(lat, lon) {
     return "Unknown location";
   }
 }
+
+router.get("/history", protect, async (req, res) => {
+  try {
+    const scans = await Scan.find({ userId: req.user._id })
+      .sort({ createdAt: -1 })
+      .populate("productId");
+
+    res.json(scans);
+  } catch (err) {
+    console.error("Error fetching history:", err);
+    res.status(500).json({ error: "Failed to fetch scan history" });
+  }
+});
 
 router.post("/", async (req, res) => {
   try {

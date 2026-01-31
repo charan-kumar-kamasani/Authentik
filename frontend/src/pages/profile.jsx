@@ -1,125 +1,106 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Logo from "../assets/Authentiks.png";
+import NotificationIcon from "../assets/icon_notification.png";
+import UserAvatar from "../assets/profile/user_avatar.png";
+
+// Profile Icons
+import IconScanHistory from "../assets/profile/icon_scan_history.png";
+import IconReports from "../assets/profile/icon_reports.png";
+import IconAboutUs from "../assets/profile/icon_about_us.png";
+import IconHelp from "../assets/profile/icon_help.png";
+import IconShare from "../assets/profile/icon_share.png";
+import IconTerms from "../assets/profile/icon_terms.png";
+import IconPolicies from "../assets/profile/icon_policies.png";
+import IconLogout from "../assets/profile/icon_logout.png";
 
 export default function Profile() {
   const navigate = useNavigate();
-  const [notifications, setNotifications] = useState(true);
-  const [menuOpen, setMenuOpen] = useState(true); // This would be controlled by parent component
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/login");
+    navigate("/");
   };
 
+  const MenuGroup = ({ children }) => (
+    <div className="bg-white rounded-3xl w-full max-w-sm mb-4 overflow-hidden shadow-sm">
+      {children}
+    </div>
+  );
+
+  const MenuItem = ({ icon, text, onClick, isLast }) => (
+    <div
+      onClick={onClick}
+      className={`flex items-center py-4 px-6 cursor-pointer active:bg-gray-50 transition-colors ${!isLast ? "border-b border-gray-100" : ""}`}
+    >
+      <div className="w-8 flex justify-center mr-4">
+        <img src={icon} alt={text} className="w-6 h-6 object-contain" />
+      </div>
+      <span className="text-[#0F4160] text-lg font-bold">{text}</span>
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-white font-['-apple-system','BlinkMacSystemFont','Segoe_UI','Roboto','Helvetica','Arial','sans-serif']">
-      {/* Time - Fixed at top */}
-      <div className="fixed top-6 left-1/2 transform -translate-x-1/2 text-black font-medium text-[14px] z-50">
-        10:10 AM
-      </div>
-
-      {/* Scrollable Content */}
-      <div className="pt-12 px-6">
-        {/* Logo Section */}
-        <div className="text-center mb-8">
-          <h1 className="text-[32px] font-bold text-[#1a1a1a] mb-2">Authentick</h1>
-        </div>
-
-        {/* Edit Profile Button */}
-        <div className="mb-8">
-          <button className="bg-[#1a1a1a] text-white px-6 py-3 rounded-lg text-[16px] font-medium hover:bg-[#2c2c2e] active:bg-[#000] transition-colors duration-200 w-full">
-            Edit Profile
-          </button>
-        </div>
-
-        {/* Menu Items */}
-        <div className="space-y-6">
-          {/* History */}
-          <div className="flex items-center justify-between">
-            <span className="text-[16px] text-[#1a1a1a]">History</span>
-            <div className="w-6 h-6 border-2 border-[#d1d1d6] rounded flex items-center justify-center">
-              <div className="w-3 h-3 bg-[#1a1a1a] rounded-sm"></div>
-            </div>
-          </div>
-
-          {/* Notifications - Toggle */}
-          <div className="flex items-center justify-between">
-            <span className="text-[16px] text-[#1a1a1a]">Notifications</span>
-            <button
-              onClick={() => setNotifications(!notifications)}
-              className={`w-12 h-6 rounded-full transition-colors duration-200 ${notifications ? 'bg-[#34C759]' : 'bg-[#d1d1d6]'}`}
-            >
-              <div className={`w-5 h-5 bg-white rounded-full transform transition-transform duration-200 ${notifications ? 'translate-x-7' : 'translate-x-1'}`}></div>
-            </button>
-          </div>
-
-          {/* Divider */}
-          <div className="h-px bg-[#d1d1d6] w-full my-4"></div>
-
-          {/* About Us */}
-          <div className="flex items-center justify-between">
-            <span className="text-[16px] text-[#1a1a1a]">About Us</span>
-            <div className="w-6 h-6 border-2 border-[#d1d1d6] rounded flex items-center justify-center">
-              <div className="w-3 h-3 bg-[#1a1a1a] rounded-sm"></div>
-            </div>
-          </div>
-
-          {/* Help & Support */}
-          <div className="flex items-center justify-between">
-            <span className="text-[16px] text-[#1a1a1a]">Help & Support</span>
-            <div className="w-6 h-6 border-2 border-[#d1d1d6] rounded flex items-center justify-center">
-              <div className="w-3 h-3 bg-[#1a1a1a] rounded-sm"></div>
-            </div>
-          </div>
-
-          {/* Share */}
-          <div className="flex items-center justify-between">
-            <span className="text-[16px] text-[#1a1a1a]">Share</span>
-            <div className="w-6 h-6 border-2 border-[#d1d1d6] rounded flex items-center justify-center">
-              <div className="w-3 h-3 bg-[#1a1a1a] rounded-sm"></div>
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div className="h-px bg-[#d1d1d6] w-full my-4"></div>
-
-          {/* Terms & Conditions */}
-          <div className="flex items-center justify-between">
-            <span className="text-[16px] text-[#1a1a1a]">Terms & Conditions</span>
-            <div className="w-6 h-6 border-2 border-[#d1d1d6] rounded flex items-center justify-center">
-              <div className="w-3 h-3 bg-[#1a1a1a] rounded-sm"></div>
-            </div>
-          </div>
-
-          {/* Policies */}
-          <div className="flex items-center justify-between">
-            <span className="text-[16px] text-[#1a1a1a]">Policies</span>
-            <div className="w-6 h-6 border-2 border-[#d1d1d6] rounded flex items-center justify-center">
-              <div className="w-3 h-3 bg-[#1a1a1a] rounded-sm"></div>
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div className="h-px bg-[#d1d1d6] w-full my-4"></div>
-
-          {/* Logout */}
-          <div className="flex items-center justify-between">
-            <span className="text-[16px] text-[#1a1a1a]">Logout</span>
-            <div className="w-6 h-6 border-2 border-[#d1d1d6] rounded flex items-center justify-center">
-              <div className="w-3 h-3 bg-[#1a1a1a] rounded-sm"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Back Button */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#d1d1d6] p-6">
-        <button
-          onClick={() => navigate(-1)} // Go back to previous page
-          className="bg-[#1a1a1a] text-white px-6 py-3 rounded-lg text-[16px] font-medium hover:bg-[#2c2c2e] active:bg-[#000] transition-colors duration-200 w-full max-w-[300px] mx-auto block"
+    <div className="min-h-screen bg-gradient-to-b from-[#F0F4F8] to-[#0F4160] font-sans flex flex-col items-center pb-10">
+    
+      {/* Header */}
+      <div className="w-full flex items-center justify-between p-4 pt-6">
+         <button onClick={() => navigate("/home")} className="p-2">
+             <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" className="text-[#0F4160]">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+            </svg>
+         </button>
+        <h1
+          className="text-[24px] font-bold tracking-tight text-[#1B2B49]"
+          style={{ textShadow: "0 2px 4px rgba(0,0,0,0.2)" }}
         >
-          Back
+          Authen<span className="text-[#2CA4D6]">tiks</span>
+        </h1>
+         <button className="p-2">
+            <img src={NotificationIcon} alt="Notifications" className="w-6 h-6" />
+         </button>
+      </div>
+
+      {/* User Profile Section */}
+      <div className="flex flex-col items-center mt-4 mb-8">
+        <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden bg-white shadow-lg mb-4">
+             <img src={UserAvatar} alt="Profile" className="w-full h-full object-cover" />
+        </div>
+        <button 
+            onClick={() => navigate("/edit-profile")}
+            className="bg-gradient-to-b from-[#32ADD8] to-[#146890] text-white px-6 py-2 rounded-full font-medium shadow-md hover:opacity-90 transition-opacity"
+        >
+            Edit Profile
         </button>
+      </div>
+
+      {/* Menu Groups */}
+      <div className="w-full px-6 flex flex-col items-center">
+        
+        {/* Group 1 */}
+        <MenuGroup>
+            <MenuItem icon={IconScanHistory} text="Scan History" onClick={() => navigate("/scan-history")} />
+            <MenuItem icon={IconReports} text="Reports" onClick={() => {}} isLast={true} />
+        </MenuGroup>
+
+        {/* Group 2 */}
+        <MenuGroup>
+            <MenuItem icon={IconAboutUs} text="About Us" onClick={() => navigate("/about-us")} />
+            <MenuItem icon={IconHelp} text="Help & Support" onClick={() => {}} />
+            <MenuItem icon={IconShare} text="Share" onClick={() => {}} isLast={true} />
+        </MenuGroup>
+
+        {/* Group 3 */}
+        <MenuGroup>
+            <MenuItem icon={IconTerms} text="Terms & Conditions" onClick={() => navigate("/terms-conditions")} />
+            <MenuItem icon={IconLogout} text="Policies" onClick={() => navigate("/policies")} isLast={true} />
+        </MenuGroup>
+
+        {/* Logout */}
+         <div className="bg-white rounded-full w-full max-w-sm mb-4 overflow-hidden shadow-sm">
+            <MenuItem icon={IconPolicies} text="Logout" onClick={handleLogout} isLast={true} />
+         </div>
+
       </div>
     </div>
   );

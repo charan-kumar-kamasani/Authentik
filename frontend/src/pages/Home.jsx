@@ -1,236 +1,233 @@
-import jsQR from "jsqr";
-import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getCurrentPlace } from "../utils/helper";
+import { useEffect, useState } from "react";
 import API_BASE_URL from "../config/api";
+import homeBanner from "../assets/home_banner.png";
+import navBrands from "../assets/nav_brands.png";
+import navAuthentik from "../assets/nav_authentik.png";
+import navHistory from "../assets/nav_history.png";
+import statusFake from "../assets/recent_status_fake.png";
+import statusValid from "../assets/recent_status_valid.png";
+import statusDuplicate from "../assets/recent_status_duplicate.png";
+import iconNotification from "../assets/icon_notification.png";
 
 export default function Home() {
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const [scanning, setScanning] = useState(false);
   const navigate = useNavigate();
-  let animationId = useRef(null);
-
-  async function startCamera() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      });
-
-      videoRef.current.srcObject = stream;
-      videoRef.current.setAttribute("playsinline", true);
-      await videoRef.current.play();
-
-      scanFrame();
-    } catch (error) {
-      console.error("Camera error:", error);
-      alert("Cannot access camera. Please check permissions.");
-      setScanning(false);
-    }
-  }
-
-  function stopCamera() {
-    cancelAnimationFrame(animationId.current);
-
-    const stream = videoRef.current?.srcObject;
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-    }
-  }
-
-  async function scanFrame() {
-    if (!videoRef.current || !canvasRef.current) return;
-
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-    const code = jsQR(imageData.data, canvas.width, canvas.height);
-    console.log("______code", code);
-    if (code) {
-      console.log("QR detected:", code.data);
-
-      stopCamera();
-      setScanning(false);
-
-      const place = await getCurrentPlace();
-
-      const res = await fetch(`${API_BASE_URL}/scan`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: localStorage.getItem("token"),
-        },
-        body: JSON.stringify({
-          qrCode: code.data,
-          place,
-        }),
-      });
-
-      const data = await res.json();
-      console.log("_____Data", data);
-      navigate(`/result/${data.status}`, {
-        state: data.data, // 👈 send ALL backend data
-      });
-
-      return;
-    }
-
-    animationId.current = requestAnimationFrame(scanFrame);
-  }
+  const [recentScans, setRecentScans] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (scanning) {
-      startCamera();
-    }
+    const fetchRecentScans = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
-    return () => stopCamera();
-  }, [scanning]);
+      try {
+        const res = await fetch(`${API_BASE_URL}/scan/history`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          // Take top 10 recent scans
+          const slicedData = data.slice(0, 10);
+          
+          const mappedData = slicedData.map((item) => {
+            const dateObj = new Date(item.createdAt);
+            const dateStr = dateObj.toLocaleDateString("en-GB"); // DD/MM/YYYY
+            const timeStr = dateObj.toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+
+            let title = "Authentic Product";
+            let icon = statusValid;
+            // Uniform background color as per previous mock, or could be dynamic
+            let bgColor = "bg-[#2D9CDB]"; 
+
+            if (item.status === "FAKE") {
+              title = "Fake or Counterfeit";
+              icon = statusFake;
+            } else if (item.status === "ALREADY_USED") {
+              title = "Duplicate Scan";
+              icon = statusDuplicate;
+            } else {
+              // ORIGINAL
+              title = item.productName || "Authentic Product";
+            }
+
+            return {
+              id: item._id,
+              title,
+              date: dateStr,
+              time: timeStr,
+              icon,
+              bgColor, 
+            };
+          });
+          setRecentScans(mappedData);
+        }
+      } catch (err) {
+        console.error("Failed to fetch recent scans:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecentScans();
+  }, []);
 
   return (
-    <div className="min-h-screen bg-white font-['-apple-system','BlinkMacSystemFont','Segoe_UI','Roboto','Helvetica','Arial','sans-serif']">
-      <div className="absolute top-6 left-6 z-50">
-        <button
-          onClick={() => navigate("/profile")}
-          className="w-8 h-8 flex flex-col justify-center space-y-1"
+    <div className="min-h-screen bg-white font-sans flex flex-col relative w-full h-full overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-3 bg-white fixed top-0 left-0 right-0 z-50 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+        <button 
+           className="text-[#1B2B49] p-1"
+           onClick={() => navigate('/profile')}
         >
-          <div className="w-6 h-0.5 bg-[#1a1a1a]"></div>
-          <div className="w-6 h-0.5 bg-[#1a1a1a]"></div>
-          <div className="w-6 h-0.5 bg-[#1a1a1a]"></div>
+          <svg
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <h1
+          className="text-[24px] font-bold tracking-tight text-[#1B2B49]"
+          style={{ textShadow: "0 2px 4px rgba(0,0,0,0.2)" }}
+        >
+          Authen<span className="text-[#2CA4D6]">tiks</span>
+        </h1>
+        <button className="text-[#1B2B49] p-1">
+          <img
+            src={iconNotification}
+            alt="Notifications"
+            className="w-5 h-5 object-contain"
+          />
         </button>
       </div>
 
-      {/* Scrollable Content */}
-      <div className="pt-12 px-6">
-        {/* Logo Section */}
-        <div className="text-center mb-8">
-          <h1 className="text-[32px] font-bold text-[#1a1a1a] mb-2">
-            Authentick
-          </h1>
-          <p className="text-[#6b6b6b] text-[14px]">
-            Be Smart, Choose Authentick Products
-          </p>
-        </div>
-
-        {/* Horizontal Line */}
-        <div className="h-px bg-[#d1d1d6] w-full my-6"></div>
-
-        {/* Report Section */}
-        <div className="mb-8">
-          <h2 className="text-[20px] font-semibold text-[#1a1a1a] mb-4">
-            Report on Counterfeiting Products in India
+      <div className="flex-1 overflow-y-auto pb-24 pt-16">
+        {/* Welcome Text */}
+        <div className="text-center py-2">
+          <h2
+            className="text-[#1B2B49] font-semibold text-[16px]"
+            style={{ textShadow: "0 2px 4px rgba(0,0,0,0.2)" }}
+          >
+            Welcome to Authentiks
           </h2>
+        </div>
 
-          <div className="mb-6">
-            <h3 className="text-[16px] font-bold text-[#1a1a1a] mb-3">
-              ASPA-CRISIL Report :
-            </h3>
-            <p className="text-[15px] text-[#1a1a1a] mb-4 leading-relaxed">
-              The counterfeit goods trade in India was valued at ₹2.6 trillion,
-              with consumer unawareness playing a major role.
-            </p>
+        {/* Banner */}
+        <div className="w-full bg-[#5297C2] py-4 px-5 mb-4 flex items-center shadow-md">
+          <div className="flex-shrink-0 relative w-[80px] h-[90px] mr-3">
+            <img
+              src={homeBanner}
+              className="absolute inset-0 w-full h-full object-contain"
+              alt=""
+            />
+            <span
+              className="absolute top-[-10px] left-1 text-[50px] font-bold text-white leading-none z-10"
+              style={{ textShadow: "0 2px 4px rgba(0,0,0,0.1)" }}
+            >
+              1
+            </span>
+            <span className="absolute bottom-[2px] right-1 text-[40px] font-bold text-[#1B2B49] leading-none z-0">
+              5
+            </span>
           </div>
-
-          {/* Statistics */}
-          <div className="space-y-3 mb-6">
-            <p className="text-[15px] text-[#1a1a1a]">
-              <span className="font-semibold">25-30%</span> of the market in
-              India is counterfeit
+          <div className="flex-1 pl-1">
+            <p className="text-white text-[15px] font-medium leading-[1.2]">
+              Over 1 in 5 products
+              <br />
+              sold globally is
+              <br />
+              counterfeit.
             </p>
-
-            <p className="text-[15px] text-[#1a1a1a]">
-              Nearly <span className="font-semibold">27%</span> of consumers
-              were unaware that the product was counterfeit at the time of
-              purchase
+            <p className="text-[#1B2B49] text-[15px] font-bold leading-tight mt-1">
+              Verify what you buy
             </p>
-          </div>
-
-          {/* Top Segments */}
-          <div className="mt-8">
-            <h3 className="text-[16px] font-bold text-[#1a1a1a] mb-3">
-              Top Segmets:
-            </h3>
-            <div className="space-y-2 pl-4">
-              <p className="text-[15px] text-[#1a1a1a]">
-                Apparel <span className="font-semibold">(31%)</span>
-              </p>
-              <p className="text-[15px] text-[#1a1a1a]">
-                FMCG <span className="font-semibold">(28%)</span>
-              </p>
-              <p className="text-[15px] text-[#1a1a1a]">
-                Automotives <span className="font-semibold">(25%)</span>
-              </p>
-              <p className="text-[15px] text-[#1a1a1a]">
-                Pharmaceuticals <span className="font-semibold">(20%)</span>
-              </p>
-            </div>
           </div>
         </div>
 
-        {/* Horizontal Line */}
-        <div className="h-px bg-[#d1d1d6] w-full my-6"></div>
-      </div>
+        {/* Navigation Grid - Brands, Authentik, History */}
+        <div className="flex justify-between px-6 gap-3 mb-4">
+          <NavButton icon={navBrands} label="Brands" />
+          <NavButton icon={navAuthentik} label="Authentik" />
+          <NavButton icon={navHistory} label="History" onClick={() => navigate('/scan-history')} />
+        </div>
 
-      {/* QR Scanner Section - Fixed at bottom */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#d1d1d6]">
-        {!scanning ? (
-          <div className="p-6 text-center">
-            <button
-              onClick={() => setScanning(true)}
-              className="bg-[#1a1a1a] text-white px-6 py-3 rounded-lg text-[16px] font-medium hover:bg-[#2c2c2e] active:bg-[#000] transition-colors duration-200 w-full max-w-[300px] mx-auto block"
-            >
-              Scan QR Code
-            </button>
-          </div>
-        ) : (
-          <div className="p-4">
-            {/* Camera View - Takes over bottom section */}
-            <div className="relative rounded-[20px] overflow-hidden shadow-[0_8px_30px_rgba(0,0,0,0.12)] mb-4">
-              <video
-                ref={videoRef}
-                className="w-full h-[300px] object-cover"
-                autoPlay
-                playsInline
-              />
-              {/* Scanner overlay */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-[220px] h-[220px] border-2 border-white/50 rounded-[16px] relative">
-                  {/* Corner borders */}
-                  <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-white rounded-tl"></div>
-                  <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-white rounded-tr"></div>
-                  <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-white rounded-bl"></div>
-                  <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-white rounded-br"></div>
+        {/* Recent Scans Section */}
+        <div className="px-5">
+          <h3 className="text-[#1B2B49] text-[16px] font-bold mb-3">
+            Recent Scans
+          </h3>
+          <div className="flex flex-col gap-2">
+            {loading ? (
+                <p className="text-gray-500 text-sm">Loading recent scans...</p>
+            ) : recentScans.length === 0 ? (
+                <p className="text-gray-500 text-sm">No recent scans found.</p>
+            ) : (
+                recentScans.map((scan) => (
+              <div
+                key={scan.id}
+                className={`${scan.bgColor} text-white rounded-[16px] px-3 py-2 flex items-center shadow-[0_4px_6px_rgba(0,0,0,0.15)] min-h-[70px]`}
+              >
+                {/* Icon Container */}
+                <div
+                  className={`w-[46px] h-[46px] rounded-full flex-shrink-0 flex items-center justify-center mr-3`}
+                >
+                  <img
+                    src={scan.icon}
+                    alt={scan.title}
+                    className="w-[80px] h-[80px] object-contain"
+                  />
+                </div>
+                {/* Text Content */}
+                <div className="flex-1 pr-2">
+                  <h4 className="font-bold text-[15px] leading-tight mb-0.5">
+                    {scan.title}
+                  </h4>
+                  <div className="text-[11px] font-semibold opacity-95">
+                    <p className="leading-tight">Scanned On: {scan.date}</p>
+                    <p className="leading-tight">Time: {scan.time}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <canvas ref={canvasRef} style={{ display: "none" }} />
-
-            <div className="text-center">
-              <p className="text-[#1a1a1a] text-[16px] font-medium mb-2">
-                Scanning...
-              </p>
-
-              <button
-                onClick={() => {
-                  stopCamera();
-                  setScanning(false);
-                }}
-                className="bg-white text-[#ff3b30] border border-[#ff3b30] px-6 py-3 rounded-[10px] text-[15px] font-medium shadow-[0_2px_8px_rgba(255,59,48,0.15)] hover:bg-[#fff5f5] active:bg-[#ffe5e5] transition-all duration-200"
-              >
-                Stop Scan
-              </button>
-            </div>
+            ))
+            )}
           </div>
-        )}
+        </div>
+      </div>
+
+      {/* Floating Scan Button */}
+      <div className="fixed bottom-6 left-0 right-0 flex justify-center z-30 px-6">
+        <button
+          onClick={() => navigate("/scan")}
+          className="w-full bg-[#1B2B49] text-[#F2C94C] text-[20px] font-bold py-3 rounded-[30px] shadow-[0_6px_12px_rgba(0,0,0,0.25)] flex items-center justify-center hover:bg-[#142036] transition-colors"
+        >
+          Scan QR Code
+        </button>
       </div>
     </div>
+  );
+}
+
+function NavButton({ icon, label, onClick }) {
+  return (
+    <button className="flex-1 group" onClick={onClick}>
+      <div className="w-full bg-[#1B2B49] rounded-[16px] py-3 flex flex-col items-center justify-center shadow-[0_4px_8px_rgba(0,0,0,0.25)] group-active:scale-95 transition-transform">
+        <img src={icon} alt={label} className="w-9 h-9 object-contain" />
+        <span className="text-white font-semibold text-[13px] mt-1.5">
+          {label}
+        </span>
+      </div>
+    </button>
   );
 }

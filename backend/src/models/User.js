@@ -7,8 +7,12 @@ const userSchema = new mongoose.Schema(
     password: { type: String }, // For Admins (hashed)
     role: {
       type: String,
-      enum: ["superadmin", "admin", "manager", "user"],
+      enum: ["superadmin", "admin", "manager", "user", "company", "authorizer", "creator"],
       default: "user",
+    },
+    companyId: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: 'User' 
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

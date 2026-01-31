@@ -1,179 +1,127 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import API_BASE_URL from "../config/api";
+import logo from "../assets/logo.png";
 
 export default function OTP() {
   const { state } = useLocation();
   const nav = useNavigate();
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [timer, setTimer] = useState(30);
-  const [canResend, setCanResend] = useState(false);
-  const inputRefs = useRef([]);
+  const [otp, setOtp] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (timer > 0) {
-      const countdown = setTimeout(() => setTimer(timer - 1), 1000);
-      return () => clearTimeout(countdown);
-    } else {
-      setCanResend(true);
-    }
-  }, [timer]);
-
-  const handleOtpChange = (index, value) => {
-    if (value.length <= 1 && /^\d*$/.test(value)) {
-      const newOtp = [...otp];
-      newOtp[index] = value;
-      setOtp(newOtp);
-
-      // Auto-focus next input
-      if (value && index < 5) {
-        inputRefs.current[index + 1]?.focus();
-      }
+  const handleOtpChange = (e) => {
+    // Only allow numbers
+    const val = e.target.value.replace(/[^0-9]/g, "");
+    if (val.length <= 6) {
+      setOtp(val);
     }
   };
 
-  const handleKeyDown = (index, e) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handlePaste = (e) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData("text/plain").slice(0, 6);
-    if (/^\d+$/.test(pastedData)) {
-      const newOtp = pastedData.split("").slice(0, 6);
-      while (newOtp.length < 6) newOtp.push("");
-      setOtp(newOtp);
-      // Focus last input after paste
-      const lastFilledIndex = Math.min(pastedData.length - 1, 5);
-      inputRefs.current[lastFilledIndex]?.focus();
-    }
-  };
-
-  const handleResendOTP = () => {
-    if (canResend) {
-      setTimer(30);
-      setCanResend(false);
-      setOtp(["", "", "", "", "", ""]);
-      inputRefs.current[0]?.focus();
-      // Add your resend OTP API call here
-      console.log("Resending OTP to:", state.mobile);
-    }
-  };
+  // Format OTP as 123-456 not strictly required by UI but good UX,
+  // though screen shows just "6 Digit Code" placeholder in single input.
 
   async function login() {
-    const enteredOtp = otp.join("");
-    if (enteredOtp.length !== 6) {
+    if (otp.length !== 6) {
       alert("Please enter the 6-digit OTP");
       return;
     }
 
-    const res = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ mobile: state.mobile, otp: enteredOtp }),
-    });
-    
-    if (res.ok) {
-      const data = await res.json();
-      localStorage.setItem("token", data.token);
-      nav("/home");
-    } else {
-      alert("Invalid OTP. Please try again.");
-      setOtp(["", "", "", "", "", ""]);
-      inputRefs.current[0]?.focus();
+    setLoading(true);
+    try {
+        const res = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mobile: state?.mobile, otp }),
+        });
+        
+        if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem("token", data.token);
+        nav("/home");
+        } else {
+        alert("Invalid OTP. Please try again.");
+        setOtp("");
+        }
+    } catch (error) {
+        console.error("Login failed:", error);
+        alert("Login failed due to network error.");
+    } finally {
+        setLoading(false);
     }
   }
 
-  const formatMobile = (mobile) => {
-    if (mobile.length === 10) {
-      return `${mobile.slice(0, 3)}-${mobile.slice(3, 6)}-${mobile.slice(6)}`;
-    }
-    return mobile;
-  };
-
   return (
-    <div className="min-h-screen bg-[#f5f5f7] font-['-apple-system','BlinkMacSystemFont','Segoe_UI','Roboto','Helvetica','Arial','sans-serif'] p-6 flex flex-col items-center justify-center relative">
-     
-      {/* Main Content */}
-      <div className="w-full max-w-[375px]">
+    <div className="min-h-screen bg-white font-sans flex flex-col items-center justify-between py-10 px-6 relative">
+      
+      {/* Top Section */}
+      <div className="w-full max-w-sm flex flex-col items-center pt-8">
+        
         {/* Logo Section */}
         <div className="text-center mb-12">
-          <h1 className="text-[24px] font-bold text-[#1a1a1a] mb-2 tracking-[-0.5px]">Authentick</h1>
-          <p className="text-[#6b6b6b] text-[12px] tracking-[0.3px]">Empowering Brands, Securing Products</p>
+           {/* Logo Icon */}
+           <div className="flex justify-center mb-1">
+             <div className="w-[100px] h-[100px] flex items-center justify-center">
+                 <img src={logo} alt="Authentiks Logo" className="w-[85px] h-auto object-contain" />
+             </div>
+           </div>
+          <h1 className="text-[40px] font-bold tracking-tight text-[#1B2B49] leading-none mb-2">
+            Authen<span className="text-[#2CA4D6]">tiks</span>
+          </h1>
+          <p className="text-[#2CA4D6] text-[15px] font-bold tracking-wide italic">
+             You Buy it, We Verify it
+          </p>
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-[20px] shadow-[0_4px_20px_rgba(0,0,0,0.08)] p-8">
+        <div className="w-full bg-[#1B2B49] rounded-[30px] p-6 pb-12 shadow-2xl text-center relative z-10">
           {/* Title */}
-          <h2 className="text-[20px] font-semibold text-[#1a1a1a] mb-3">Enter Confirmation Code</h2>
-          <p className="text-[#6b6b6b] text-[14px] mb-8 leading-relaxed">
-            We've sent a SMS with the code to{" "}
-            <span className="text-[#1a1a1a] font-medium">9840098400</span>
+          <h2 className="text-[20px] font-bold text-white mb-1.5 leading-snug">Enter Confirmation Code</h2>
+          <p className="text-white text-[12px] mb-8 font-medium tracking-wide">
+             We've sent a SMS with the code to {state?.mobile || '9840098400'}
           </p>
 
-          {/* OTP Input Boxes */}
-          <div className="mb-10">
-            <div className="flex justify-between mb-2">
-              {otp.map((digit, index) => (
-                <input
-                  key={index}
-                  ref={(el) => (inputRefs.current[index] = el)}
-                  type="text"
-                  inputMode="numeric"
-                  pattern="\d*"
-                  maxLength="1"
-                  value={digit}
-                  onChange={(e) => handleOtpChange(index, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(index, e)}
-                  onPaste={handlePaste}
-                  className="w-[48px] h-[56px] border border-[#d1d1d6] rounded-[12px] text-center text-[24px] font-semibold text-[#1a1a1a] bg-white focus:outline-none focus:border-[#1a1a1a] focus:ring-2 focus:ring-[#1a1a1a]/20 transition-all"
-                  autoFocus={index === 0}
-                />
-              ))}
+          {/* OTP Input */}
+          <div className="relative mb-10 px-2">
+            <div className="bg-white rounded-[16px] flex items-center justify-center px-4 h-[60px] shadow-inner">
+              <input
+                type="text" // using text to control pattern
+                inputMode="numeric"
+                value={otp}
+                onChange={handleOtpChange}
+                placeholder="6 Digit Code"
+               className="w-full outline-none text-[#1F2937] text-[18px] text-center placeholder:text-[#ccc] placeholder:italic bg-transparent font-medium tracking-widest"
+              />
             </div>
-            {/* Dashed line below OTP boxes */}
-            <div className="flex justify-center mt-4">
-              <div className="w-full border-t border-dashed border-[#d1d1d6]"></div>
-            </div>
+             {/* Resend Timer Text */}
+             {/* Not explicitly shown in the screenshot for this state, but assumed functionality if needed. 
+                 If to match EXACT screenshot, we hide timer unless it's in a different state.
+                 Screenshot just shows input field. I will omit timer visual to be "exact".
+             */}
           </div>
 
           {/* Login Button */}
           <button
             onClick={login}
-            disabled={otp.join("").length !== 6}
+            disabled={loading}
             className={`
-              w-full py-4 rounded-[12px] font-medium text-[16px] mb-6
-              ${otp.join("").length === 6
-                ? 'bg-[#1a1a1a] text-white shadow-[0_4px_12px_rgba(0,0,0,0.15)] hover:bg-[#2c2c2e] active:bg-[#000] active:shadow-[0_2px_8px_rgba(0,0,0,0.2)]'
-                : 'bg-[#e5e5ea] text-[#aeaeb2] cursor-not-allowed'
-              }
-              transition-all duration-200
+              w-[220px] mx-auto h-[55px] rounded-[30px] font-bold text-[18px] tracking-wide shadow-lg
+              bg-[#2CA4D6] text-[#1B2B49] hover:bg-[#2591BD] disabled:opacity-70 disabled:cursor-not-allowed
+              transition-all duration-300 ease-out flex items-center justify-center
             `}
           >
-            Login
+            {loading ? (
+               <div className="w-6 h-6 border-4 border-[#1B2B49] border-t-transparent rounded-full animate-spin"></div>
+            ) : "Login"}
           </button>
-
-          {/* Resend OTP Section */}
-          <div className="text-center">
-            <p className="text-[#6b6b6b] text-[14px] mb-4">Didn't receive the OTP yet?</p>
-            <button
-              onClick={handleResendOTP}
-              disabled={!canResend}
-              className={`
-                text-[16px] font-medium tracking-[0.3px]
-                ${canResend
-                  ? 'text-[#1a1a1a] hover:text-[#2c2c2e] active:text-[#000]'
-                  : 'text-[#aeaeb2] cursor-not-allowed'
-                }
-                transition-colors duration-200
-              `}
-            >
-              RESEND OTP {!canResend && `(${timer}s)`}
-            </button>
-          </div>
         </div>
+      </div>
+
+       {/* Terms and Conditions */}
+       <div className="text-center px-8 mb-6">
+        <p className="text-[#1B2B49] text-[12px] font-medium leading-tight">
+          By continuing you agree to Authentiks<br/>
+          <span className="font-bold">Policies, Terms & Conditions</span>
+        </p>
       </div>
     </div>
   );
