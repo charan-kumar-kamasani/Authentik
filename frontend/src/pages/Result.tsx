@@ -45,7 +45,7 @@ function ResultContent({ status, data }: { status: string | undefined; data: any
                 icon={fakeStamp}
                 title="Fake Product"
                 buttonText="Click to Report"
-                iconSize="w-48 h-auto"
+                iconSize="w-48 h-32"
             >
                 <div className="pt-4 text-center">
                     <p className="text-white font-bold text-[15px] mb-4 leading-snug">
@@ -63,7 +63,7 @@ function ResultContent({ status, data }: { status: string | undefined; data: any
     }
 
     // Helper to render Already Scanned UI
-     if (status === "DUPLICATE" || status === "ALREADY_SCANNED" || status === "ALREADY_USED") {
+     if (status === "FAKE" || status === "ALREADY_SCANNED" || status === "ALREADY_USED") {
         return (
             <ResultCard
                 color="#DFB408"
@@ -152,7 +152,7 @@ export default function Result() {
     <div 
         className="min-h-screen font-sans flex flex-col items-center relative overflow-hidden"
         style={{
-            background: `linear-gradient(to bottom, #FFFFFF 10%, ${themeColor} 35%)`
+            background: `linear-gradient(to bottom, #FFFFFF 17%, ${themeColor} 35%)`
         }}
     >
        {/* Background Overlay for better text readability if needed, or just let the gradient be */}
