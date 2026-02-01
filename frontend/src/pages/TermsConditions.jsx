@@ -15,7 +15,7 @@ export default function TermsConditions() {
             </svg>
         </button>
         <h1
-          className="text-[24px] font-bold tracking-tight text-[#1B2B49]"
+          className="text-[24px] font-bold tracking-tight text-[#214B80]"
           style={{ textShadow: "0 2px 4px rgba(0,0,0,0.2)" }}
         >
           Authen<span className="text-[#2CA4D6]">tiks</span>
@@ -28,7 +28,7 @@ export default function TermsConditions() {
       <div className="w-full max-w-md px-5 flex-1 pb-10 overflow-y-auto">
         <h1 className="text-[#0F4160] text-[22px] font-bold mb-6">Terms & Conditions</h1>
         
-        <div className="text-[#1B2B49] text-[14px] leading-relaxed space-y-6">
+        <div className="text-[#214B80] text-[14px] leading-relaxed space-y-6">
             <div>
                 <h2 className="font-bold text-[16px]">Authentiks – Terms & Conditions</h2>
                 <p className="opacity-75">Last updated: [01/01/2026]</p>

@@ -93,7 +93,7 @@ export default function Home() {
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3 bg-white fixed top-0 left-0 right-0 z-50 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
         <button
-          className="text-[#1B2B49] p-1"
+          className="text-[#214B80] p-1"
           onClick={() => navigate("/profile")}
         >
           <svg
@@ -112,12 +112,12 @@ export default function Home() {
           </svg>
         </button>
         <h1
-          className="text-[24px] font-bold tracking-tight text-[#1B2B49]"
+          className="text-[24px] font-bold tracking-tight text-[#214B80]"
           style={{ textShadow: "0 2px 4px rgba(0,0,0,0.2)" }}
         >
           Authen<span className="text-[#2CA4D6]">tiks</span>
         </h1>
-        <button className="text-[#1B2B49] p-1">
+        <button className="text-[#214B80] p-1">
           <img
             src={iconNotification}
             alt="Notifications"
@@ -130,7 +130,7 @@ export default function Home() {
         {/* Welcome Text */}
         {/* <div className="text-center py-2">
           <h2
-            className="text-[#1B2B49] font-semibold text-[16px]"
+            className="text-[#214B80] font-semibold text-[16px]"
             style={{ textShadow: "0 2px 4px rgba(0,0,0,0.2)" }}
           >
             Welcome to Authentiks
@@ -187,7 +187,7 @@ export default function Home() {
 
         {/* Recent Scans Section */}
         <div className="px-5">
-          <h3 className="text-[#1B2B49] text-[16px] font-bold mb-3">
+          <h3 className="text-[#214B80] text-[16px] font-bold mb-3">
             Recent Scans
           </h3>
           <div className="flex flex-col gap-2">
@@ -233,7 +233,7 @@ export default function Home() {
         <div className="fixed bottom-6 left-0 right-0 flex justify-center z-30 px-6">
           <button
             onClick={() => navigate("/scan")}
-            className="w-full bg-[#1B2B49] text-[#F2C94C] text-[20px] font-bold py-3 rounded-[30px] shadow-[0_6px_12px_rgba(0,0,0,0.25)] flex items-center justify-center hover:bg-[#142036] transition-colors"
+            className="w-full bg-[#214B80] text-[#F2C94C] text-[20px] font-bold py-3 rounded-[30px] shadow-[0_6px_12px_rgba(0,0,0,0.25)] flex items-center justify-center hover:bg-[#142036] transition-colors"
           >
             Scan QR Code
           </button>
@@ -246,7 +246,7 @@ export default function Home() {
 function NavButton({ icon, label, onClick }) {
   return (
     <button className="flex-1 group" onClick={onClick}>
-      <div className="w-full bg-[#1B2B49] rounded-[16px] py-3 flex flex-col items-center justify-center shadow-[0_4px_8px_rgba(0,0,0,0.25)] group-active:scale-95 transition-transform">
+      <div className="w-full bg-[#214B80] rounded-[16px] py-3 flex flex-col items-center justify-center shadow-[0_4px_8px_rgba(0,0,0,0.25)] group-active:scale-95 transition-transform">
         <img src={icon} alt={label} className="w-13 h-13 object-contain" />
         <span className="text-white font-semibold text-[20px] mt-1.5">
           {label}

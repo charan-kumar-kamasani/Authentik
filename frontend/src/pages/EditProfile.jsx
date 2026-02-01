@@ -78,7 +78,7 @@ export default function EditProfile() {
             </svg>
         </button>
         <h1
-          className="text-[24px] font-bold tracking-tight text-[#1B2B49]"
+          className="text-[24px] font-bold tracking-tight text-[#214B80]"
           style={{ textShadow: "0 2px 4px rgba(0,0,0,0.2)" }}
         >
           Authen<span className="text-[#2CA4D6]">tiks</span>

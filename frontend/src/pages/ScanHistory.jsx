@@ -113,7 +113,7 @@ export default function ScanHistory() {
         
         {/* Bottom Section - White */}
         <div className="bg-[#2B9AC5] py-2 px-4 flex justify-center items-center">
-            <p className="text-[#1B2B49] text-[13px] font-semibold">
+            <p className="text-[#214B80] text-[13px] font-semibold">
                 Scanned on: {item.scannedDate} <span className="ml-4">Time: {item.scannedTime}</span>
             </p>
         </div>
@@ -131,7 +131,7 @@ export default function ScanHistory() {
             </svg>
         </button>
         <h1
-          className="text-[24px] font-bold tracking-tight text-[#1B2B49]"
+          className="text-[24px] font-bold tracking-tight text-[#214B80]"
           style={{ textShadow: "0 2px 4px rgba(0,0,0,0.2)" }}
         >
           Authen<span className="text-[#2CA4D6]">tiks</span>

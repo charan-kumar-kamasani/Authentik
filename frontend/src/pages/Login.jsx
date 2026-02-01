@@ -20,7 +20,7 @@ export default function Login() {
                  <img src={logo} alt="Authentiks Logo" className="w-[85px] h-auto object-contain" />
              </div>
            </div>
-          <h1 className="text-[40px] font-bold tracking-tight text-[#1B2B49] leading-none mb-2">
+          <h1 className="text-[40px] font-bold tracking-tight text-[#214B80] leading-none mb-2">
             Authen<span className="text-[#2CA4D6]">tiks</span>
           </h1>
           <p className="text-[#2CA4D6] text-[15px] font-bold tracking-wide italic">
@@ -65,8 +65,8 @@ export default function Login() {
             className={`
               w-[220px] mx-auto h-[55px] rounded-[30px] font-bold text-[18px] tracking-wide shadow-lg
               ${mobile.length === 10 
-                ? 'bg-[#2CA4D6] text-[#1B2B49] hover:bg-[#2591BD]' 
-                : 'bg-[#2CA4D6] text-[#1B2B49] opacity-90'
+                ? 'bg-[#2CA4D6] text-[#214B80] hover:bg-[#2591BD]' 
+                : 'bg-[#2CA4D6] text-[#214B80] opacity-90'
               }
               transition-all duration-300 ease-out flex items-center justify-center
             `}
@@ -78,7 +78,7 @@ export default function Login() {
 
        {/* Terms and Conditions */}
        <div className="text-center px-8 mb-6">
-        <p className="text-[#1B2B49] text-[12px] font-medium leading-tight">
+        <p className="text-[#214B80] text-[12px] font-medium leading-tight">
           By continuing you agree to Authentiks<br/>
           <span className="font-bold">Policies, Terms & Conditions</span>
         </p>

@@ -15,7 +15,7 @@ export default function AboutUs() {
             </svg>
         </button>
         <h1
-          className="text-[24px] font-bold tracking-tight text-[#1B2B49]"
+          className="text-[24px] font-bold tracking-tight text-[#214B80]"
           style={{ textShadow: "0 2px 4px rgba(0,0,0,0.2)" }}
         >
           Authen<span className="text-[#2CA4D6]">tiks</span>
@@ -28,7 +28,7 @@ export default function AboutUs() {
       <div className="w-full max-w-md px-5 flex-1 pb-10">
         <h1 className="text-[#0F4160] text-[22px] font-bold mb-6">About Us</h1>
         
-        <div className="text-[#1B2B49] text-[15px] leading-relaxed space-y-6">
+        <div className="text-[#214B80] text-[15px] leading-relaxed space-y-6">
             <p>
                 Authentiks is a product authenticity and traceability platform that helps brands protect their products, businesses verify every unit at the source and buyers confidently confirm what they purchase through secure, unique QR-based verification.
             </p>

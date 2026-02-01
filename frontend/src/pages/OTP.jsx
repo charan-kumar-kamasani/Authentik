@@ -64,7 +64,7 @@ export default function OTP() {
                  <img src={logo} alt="Authentiks Logo" className="w-[85px] h-auto object-contain" />
              </div>
            </div>
-          <h1 className="text-[40px] font-bold tracking-tight text-[#1B2B49] leading-none mb-2">
+          <h1 className="text-[40px] font-bold tracking-tight text-[#214B80] leading-none mb-2">
             Authen<span className="text-[#2CA4D6]">tiks</span>
           </h1>
           <p className="text-[#2CA4D6] text-[15px] font-bold tracking-wide italic">
@@ -73,7 +73,7 @@ export default function OTP() {
         </div>
 
         {/* Form Card */}
-        <div className="w-full bg-[#1B2B49] rounded-[30px] p-6 pb-12 shadow-2xl text-center relative z-10">
+        <div className="w-full bg-[#214B80] rounded-[30px] p-6 pb-12 shadow-2xl text-center relative z-10">
           {/* Title */}
           <h2 className="text-[20px] font-bold text-white mb-1.5 leading-snug">Enter Confirmation Code</h2>
           <p className="text-white text-[12px] mb-8 font-medium tracking-wide">
@@ -105,12 +105,12 @@ export default function OTP() {
             disabled={loading}
             className={`
               w-[220px] mx-auto h-[55px] rounded-[30px] font-bold text-[18px] tracking-wide shadow-lg
-              bg-[#2CA4D6] text-[#1B2B49] hover:bg-[#2591BD] disabled:opacity-70 disabled:cursor-not-allowed
+              bg-[#2CA4D6] text-[#214B80] hover:bg-[#2591BD] disabled:opacity-70 disabled:cursor-not-allowed
               transition-all duration-300 ease-out flex items-center justify-center
             `}
           >
             {loading ? (
-               <div className="w-6 h-6 border-4 border-[#1B2B49] border-t-transparent rounded-full animate-spin"></div>
+               <div className="w-6 h-6 border-4 border-[#214B80] border-t-transparent rounded-full animate-spin"></div>
             ) : "Login"}
           </button>
         </div>
@@ -118,7 +118,7 @@ export default function OTP() {
 
        {/* Terms and Conditions */}
        <div className="text-center px-8 mb-6">
-        <p className="text-[#1B2B49] text-[12px] font-medium leading-tight">
+        <p className="text-[#214B80] text-[12px] font-medium leading-tight">
           By continuing you agree to Authentiks<br/>
           <span className="font-bold">Policies, Terms & Conditions</span>
         </p>

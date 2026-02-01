@@ -154,7 +154,7 @@ export default function Scan() {
           </svg>
         </button>
         <div className="flex-1 text-center pr-10">
-          <h1 className="text-[26px] font-bold tracking-tight text-[#1B2B49]">
+          <h1 className="text-[26px] font-bold tracking-tight text-[#214B80]">
             Authen<span className="text-[#2CA4D6]">tiks</span>
           </h1>
         </div>
