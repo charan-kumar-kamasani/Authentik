@@ -52,15 +52,12 @@ export const updateOrderStatus = async (orderId, action, data, token) => {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}` 
             },
-            body: JSON.stringify(data || {})
+            body: JSON.stringify(data)
         });
-        if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.message || 'Failed to update order status');
-        }
+        if (!response.ok) throw new Error(`Failed to ${action} order`);
         return await response.json();
     } catch (error) {
-        console.error("Update Order Status Error:", error);
+        console.error(`Update Order (${action}) Error:`, error);
         throw error;
     }
 };
@@ -133,5 +130,46 @@ export const downloadOrderPdf = async (orderId, token) => {
     } catch(error) {
         console.error("PDF Download Error:", error);
         throw error;
+    }
+};
+
+export const getProfile = async (token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (response.status === 401) {
+            localStorage.clear();
+            window.location.href = '/login'; // Redirect to user login usually
+            throw new Error('Session expired.');
+        }
+        if (!response.ok) throw new Error('Failed to fetch profile');
+        return await response.json();
+    } catch (error) {
+        console.error("Get Profile Error:", error);
+        throw error;
+    }
+};
+
+export const updateProfile = async (profileData, token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}` 
+            },
+            body: JSON.stringify(profileData)
+        });
+        if (response.status === 401) {
+            localStorage.clear();
+            window.location.href = '/login';
+            throw new Error('Session expired.');
+        }
+        if (!response.ok) throw new Error('Failed to update profile');
+        return await response.json();
+    } catch (error) {
+         console.error("Update Profile Error:", error);
+         throw error;
     }
 };

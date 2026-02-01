@@ -19,6 +19,12 @@ const userSchema = new mongoose.Schema(
       ref: "User",
       default: null,
     }, // Hierarchy tracking
+    name: { type: String },
+    dob: { type: String },
+    gender: { type: String },
+    country: { type: String },
+    state: { type: String },
+    city: { type: String },
   },
   { timestamps: true }
 );

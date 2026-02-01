@@ -89,12 +89,12 @@ export default function ScanHistory() {
     return (
       <div className="w-full mb-4 shadow-md rounded-[20px] overflow-hidden font-sans">
         {/* Top Section - Blue */}
-        <div className="bg-[#2B9AC5] p-4 flex items-center min-h-[120px]">
+        <div className="bg-white p-4 flex items-center min-h-[120px]">
           <div className="w-[80px] h-[80px] flex-shrink-0 mr-4 flex items-center justify-center">
              {/* Using the assets from Home, assuming they work well on this background or need a container */}
              <img src={item.icon} alt={item.type} className="w-full h-full object-contain" />
           </div>
-          <div className="text-white flex-1">
+          <div className="flex-1">
             {item.type === "valid" ? (
               <div className="text-[15px] font-medium leading-snug">
                 <p><span className="font-bold">Brand:</span> {item.content.brand}</p>
@@ -112,7 +112,7 @@ export default function ScanHistory() {
         </div>
         
         {/* Bottom Section - White */}
-        <div className="bg-white py-2 px-4 flex justify-center items-center">
+        <div className="bg-[#2B9AC5] py-2 px-4 flex justify-center items-center">
             <p className="text-[#1B2B49] text-[13px] font-semibold">
                 Scanned on: {item.scannedDate} <span className="ml-4">Time: {item.scannedTime}</span>
             </p>

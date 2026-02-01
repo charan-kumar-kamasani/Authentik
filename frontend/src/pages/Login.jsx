@@ -29,7 +29,7 @@ export default function Login() {
         </div>
 
         {/* Form Card */}
-        <div className="w-full bg-[#1B2B49] rounded-[30px] p-6 pb-12 shadow-2xl text-center relative z-10">
+        <div className="w-full bg-[#214B80] rounded-[30px] p-6 pb-12 shadow-2xl text-center relative z-10">
           {/* Title */}
           <h2 className="text-[20px] font-bold text-white mb-1.5 leading-snug">Enter your mobile number</h2>
           <p className="text-white text-[12px] mb-8 font-medium tracking-wide">

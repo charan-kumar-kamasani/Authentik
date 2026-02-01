@@ -1,8 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Logo from "../assets/Authentiks.png"; // Checker exact name
 import NotificationIcon from "../assets/icon_notification.png";
 import UserAvatar from "../assets/profile/user_avatar.png";
+import { getProfile, updateProfile } from "../config/api";
+
+const indianStates = [
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", 
+  "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", 
+  "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", 
+  "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", 
+  "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands", "Chandigarh", 
+  "Dadra and Nagar Haveli and Daman and Diu", "Lakshadweep", "Delhi", "Puducherry", "Ladakh", "Jammu and Kashmir"
+];
 
 export default function EditProfile() {
   const navigate = useNavigate();
@@ -14,9 +24,48 @@ export default function EditProfile() {
     state: "",
     city: "",
   });
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return navigate("/login");
+
+      try {
+        const data = await getProfile(token);
+        setFormData({
+          name: data.name || "",
+          dob: data.dob || "",
+          gender: data.gender || "",
+          country: data.country || "",
+          state: data.state || "",
+          city: data.city || "",
+        });
+      } catch (error) {
+        console.error("Failed to load profile", error);
+      }
+    };
+    fetchProfile();
+  }, [navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSave = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return navigate("/login");
+    
+    setLoading(true);
+    try {
+        await updateProfile(formData, token);
+        alert("Profile updated successfully!");
+        navigate(-1);
+    } catch (error) {
+        alert("Failed to update profile.");
+    } finally {
+        setLoading(false);
+    }
   };
 
   return (
@@ -104,8 +153,7 @@ export default function EditProfile() {
                     onChange={handleChange}
                 >
                     <option value="" disabled selected>Country</option>
-                    <option value="usa">USA</option>
-                    <option value="india">India</option>
+                    <option value="India">India</option>
                 </select>
                  <svg className="w-5 h-5 text-[#32ADD8] pointer-events-none absolute right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
@@ -122,8 +170,9 @@ export default function EditProfile() {
                     onChange={handleChange}
                 >
                     <option value="" disabled selected>State</option>
-                    <option value="ca">California</option>
-                    <option value="ny">New York</option>
+                    {indianStates.map((state) => (
+                      <option key={state} value={state}>{state}</option>
+                    ))}
                 </select>
                  <svg className="w-5 h-5 text-[#32ADD8] pointer-events-none absolute right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
@@ -131,29 +180,26 @@ export default function EditProfile() {
             </div>
         </div>
 
-         <div className="relative">
-            <div className="bg-white rounded-full px-4 py-3 shadow-md flex items-center justify-between">
-                <select 
-                    name="city" 
-                    className="w-full outline-none text-[#0F4160] placeholder-[#32ADD8] font-medium italic appearance-none bg-transparent"
-                    value={formData.city}
-                    onChange={handleChange}
-                >
-                    <option value="" disabled selected>City</option>
-                    <option value="la">Los Angeles</option>
-                    <option value="nyc">New York City</option>
-                </select>
-                 <svg className="w-5 h-5 text-[#32ADD8] pointer-events-none absolute right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                 </svg>
-            </div>
+          <div className="bg-white rounded-full px-4 py-3 shadow-md">
+            <input 
+                type="text" 
+                name="city"
+                placeholder="City" 
+                className="w-full outline-none text-[#0F4160] placeholder-[#32ADD8] font-medium italic"
+                value={formData.city}
+                onChange={handleChange}
+            />
         </div>
 
       </div>
 
       <div className="mt-8 w-full px-6">
-        <button className="w-full bg-[#2B99C4] text-white font-bold py-4 rounded-full shadow-lg text-xl hover:bg-[#2587ad] transition-colors">
-            Save
+        <button 
+            onClick={handleSave}
+            disabled={loading}
+            className="w-full bg-[#2B99C4] text-white font-bold py-4 rounded-full shadow-lg text-xl hover:bg-[#2587ad] transition-colors disabled:opacity-70"
+        >
+            {loading ? "Saving..." : "Save"}
         </button>
       </div>
 
