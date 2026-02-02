@@ -1,7 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import Login from "./pages/Login";
 import OTP from "./pages/OTP";
 import Home from "./pages/Home";
+import LandingPage from "./pages/LandingPage";
+import WebAboutUs from "./pages/WebAboutUs";
+import WebSolutions from "./pages/WebSolutions";
+import WebContactUs from "./pages/WebContactUs";
 import Scan from "./pages/scan"; // Import Scan component
 import Result from "./pages/Result";
 import Profile from "./pages/profile";
@@ -27,6 +32,30 @@ function PublicRoute({ children }) {
 }
 
 export default function App() {
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== "undefined" ? window.innerWidth < 768 : false
+  );
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  if (!isMobile) {
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/about-us" element={<WebAboutUs />} />
+          <Route path="/solutions" element={<WebSolutions />} />
+          <Route path="/contact-us" element={<WebContactUs />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    );
+  }
+
   return (
     <BrowserRouter>
       <Routes>
