@@ -229,8 +229,8 @@ export default function Home() {
       </div>
 
       {/* Floating Scan Button */}
-      <div className="bg-white h-24">
-        <div className="fixed bottom-6 left-0 right-0 flex justify-center z-30 px-6">
+      <div className="fixed bottom-0 left-0 right-0 flex justify-center items-center z-30  bg-white h-24">
+        <div className="w-full px-6">
           <button
             onClick={() => navigate("/scan")}
             className="w-full bg-[#214B80] text-[#F2C94C] text-[20px] font-bold py-3 rounded-[30px] shadow-[0_6px_12px_rgba(0,0,0,0.25)] flex items-center justify-center hover:bg-[#142036] transition-colors"
