@@ -18,7 +18,7 @@ import Policies from "./pages/Policies";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import OrderManagement from "./pages/OrderManagement";
-import UserManagement from './pages/UserManagement';
+import UserManagement from "./pages/UserManagement";
 
 function PrivateRoute({ children }) {
   const token = localStorage.getItem("token");
@@ -33,7 +33,7 @@ function PublicRoute({ children }) {
 
 export default function App() {
   const [isMobile, setIsMobile] = useState(
-    typeof window !== "undefined" ? window.innerWidth < 768 : false
+    typeof window !== "undefined" ? window.innerWidth < 768 : false,
   );
 
   useEffect(() => {
@@ -50,6 +50,9 @@ export default function App() {
           <Route path="/about-us" element={<WebAboutUs />} />
           <Route path="/solutions" element={<WebSolutions />} />
           <Route path="/contact-us" element={<WebContactUs />} />
+          {/* Admin Routes */}
+          <Route path="/admin" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
@@ -60,8 +63,22 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={<PublicRoute><Login /></PublicRoute>} />
-        <Route path="/otp" element={<PublicRoute><OTP /></PublicRoute>} />
+        <Route
+          path="/"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/otp"
+          element={
+            <PublicRoute>
+              <OTP />
+            </PublicRoute>
+          }
+        />
 
         {/* Protected routes */}
         <Route
@@ -72,7 +89,7 @@ export default function App() {
             </PrivateRoute>
           }
         />
-        
+
         <Route
           path="/scan"
           element={
@@ -100,7 +117,7 @@ export default function App() {
             </PrivateRoute>
           }
         />
-        
+
         <Route
           path="/scan-history"
           element={
@@ -109,7 +126,7 @@ export default function App() {
             </PrivateRoute>
           }
         />
-        
+
         <Route
           path="/about-us"
           element={
@@ -122,16 +139,16 @@ export default function App() {
         <Route
           path="/terms-conditions"
           element={
-             <PrivateRoute>
+            <PrivateRoute>
               <TermsConditions />
             </PrivateRoute>
           }
         />
-        
+
         <Route
           path="/policies"
           element={
-             <PrivateRoute>
+            <PrivateRoute>
               <Policies />
             </PrivateRoute>
           }
