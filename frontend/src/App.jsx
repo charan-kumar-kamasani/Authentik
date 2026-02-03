@@ -77,6 +77,22 @@ export default function App() {
               </AdminRoute>
             }
           />
+          <Route
+            path="/orders"
+            element={
+              <AdminRoute>
+                <OrderManagement />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/users"
+            element={
+              <AdminRoute>
+                <UserManagement />
+              </AdminRoute>
+            }
+          />
 
           {/* Smart fallback */}
           <Route
