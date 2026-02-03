@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+
 import Login from "./pages/Login";
 import OTP from "./pages/OTP";
 import Home from "./pages/Home";
@@ -7,7 +8,7 @@ import LandingPage from "./pages/LandingPage";
 import WebAboutUs from "./pages/WebAboutUs";
 import WebSolutions from "./pages/WebSolutions";
 import WebContactUs from "./pages/WebContactUs";
-import Scan from "./pages/scan"; // Import Scan component
+import Scan from "./pages/scan";
 import Result from "./pages/Result";
 import Profile from "./pages/profile";
 import EditProfile from "./pages/EditProfile";
@@ -15,25 +16,37 @@ import ScanHistory from "./pages/ScanHistory";
 import AboutUs from "./pages/AboutUs";
 import TermsConditions from "./pages/TermsConditions";
 import Policies from "./pages/Policies";
+
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import OrderManagement from "./pages/OrderManagement";
 import UserManagement from "./pages/UserManagement";
 
+/* ================= AUTH GUARDS ================= */
+
+// User private route
 function PrivateRoute({ children }) {
   const token = localStorage.getItem("token");
   return token ? children : <Navigate to="/" replace />;
 }
 
+// User public route
 function PublicRoute({ children }) {
   const token = localStorage.getItem("token");
-  // If user is already logged in, redirect them to home instead of showing login/otp
   return token ? <Navigate to="/home" replace /> : children;
 }
 
+// Admin private route
+function AdminRoute({ children }) {
+  const adminToken = localStorage.getItem("adminToken");
+  return adminToken ? children : <Navigate to="/admin" replace />;
+}
+
+/* ================= APP ================= */
+
 export default function App() {
   const [isMobile, setIsMobile] = useState(
-    typeof window !== "undefined" ? window.innerWidth < 768 : false,
+    typeof window !== "undefined" ? window.innerWidth < 768 : false
   );
 
   useEffect(() => {
@@ -42,27 +55,49 @@ export default function App() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  /* ================= DESKTOP (WEBSITE + ADMIN) ================= */
+
   if (!isMobile) {
     return (
       <BrowserRouter>
         <Routes>
+          {/* Public Website */}
           <Route path="/" element={<LandingPage />} />
           <Route path="/about-us" element={<WebAboutUs />} />
           <Route path="/solutions" element={<WebSolutions />} />
           <Route path="/contact-us" element={<WebContactUs />} />
-          {/* Admin Routes */}
+
+          {/* Admin */}
           <Route path="/admin" element={<AdminLogin />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+
+          {/* Smart fallback */}
+          <Route
+            path="*"
+            element={
+              window.location.pathname.startsWith("/admin")
+                ? <Navigate to="/admin" replace />
+                : <Navigate to="/" replace />
+            }
+          />
         </Routes>
       </BrowserRouter>
     );
   }
 
+  /* ================= MOBILE APP ================= */
+
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public routes */}
+        {/* Public */}
         <Route
           path="/"
           element={
@@ -80,7 +115,7 @@ export default function App() {
           }
         />
 
-        {/* Protected routes */}
+        {/* User Protected */}
         <Route
           path="/home"
           element={
@@ -99,7 +134,6 @@ export default function App() {
           }
         />
 
-        {/* Protected routes */}
         <Route
           path="/profile"
           element={
@@ -163,23 +197,44 @@ export default function App() {
           }
         />
 
+        {/* Admin (mobile access optional) */}
+        <Route path="/admin" element={<AdminLogin />} />
         <Route
-          path="/orders"
+          path="/admin/dashboard"
           element={
-            <PrivateRoute>
-              <OrderManagement />
-            </PrivateRoute>
+            <AdminRoute>
+              <AdminDashboard />
+            </AdminRoute>
           }
         />
 
-        <Route path="/users" element={<UserManagement />} />
+        <Route
+          path="/orders"
+          element={
+            <AdminRoute>
+              <OrderManagement />
+            </AdminRoute>
+          }
+        />
 
-        {/* Admin Routes */}
-        <Route path="/admin" element={<AdminLogin />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        <Route
+          path="/users"
+          element={
+            <AdminRoute>
+              <UserManagement />
+            </AdminRoute>
+          }
+        />
 
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* Smart fallback */}
+        <Route
+          path="*"
+          element={
+            window.location.pathname.startsWith("/admin")
+              ? <Navigate to="/admin" replace />
+              : <Navigate to="/" replace />
+          }
+        />
       </Routes>
     </BrowserRouter>
   );
