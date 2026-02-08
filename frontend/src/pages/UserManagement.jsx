@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { createCompanyUser, createStaffUser, getStaffUsers } from '../config/api';
+import { createCompanyUser, createStaffUser, getStaffUsers, getBrands } from '../config/api';
+import { useLoading } from '../context/LoadingContext';
 import { useNavigate } from 'react-router-dom';
 
 const UserManagement = () => {
@@ -8,7 +9,10 @@ const UserManagement = () => {
     const [staff, setStaff] = useState([]);
     const [activeTab, setActiveTab] = useState('list'); // 'list', 'create'
     // Form State
-    const [formData, setFormData] = useState({ name: '', email: '', password: '', userRole: 'creator' });
+    const [formData, setFormData] = useState({ name: '', email: '', password: '', userRole: 'creator', brandIds: [] });
+    const [brands, setBrands] = useState([]);
+    const [selectAllBrands, setSelectAllBrands] = useState(false);
+    const { setLoading: setGlobalLoading } = useLoading();
 
     useEffect(() => {
         const userStr = localStorage.getItem('userInfo');
@@ -18,16 +22,31 @@ const UserManagement = () => {
             if(u.role === 'company' || u.role === 'authorizer') {
                 loadStaff();
             }
+            // load brands list for multi-select if available
+            (async () => {
+                try {
+                    const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+                    if (token) {
+                        const bs = await getBrands(token);
+                        setBrands(bs || []);
+                    }
+                } catch (err) {
+                    console.warn('Failed to load brands', err);
+                }
+            })();
         }
     }, []);
 
     const loadStaff = async () => {
         try {
+            setGlobalLoading(true);
             const token = localStorage.getItem('token');
             const data = await getStaffUsers(token);
             setStaff(data);
         } catch(e) {
             console.error(e);
+        } finally {
+            setGlobalLoading(false);
         }
     };
 
@@ -35,18 +54,25 @@ const UserManagement = () => {
         e.preventDefault();
         const token = localStorage.getItem('token');
         try {
+            setGlobalLoading(true);
             if (role === 'admin') {
                 // Admin creates companies
                 await createCompanyUser(formData, token);
                 alert('Company Created Successfully');
             } else if (role === 'company') {
                 // Company creates Authorizers or Creator
-                await createStaffUser({
+                const payload = {
                     name: formData.name,
                     email: formData.email,
                     password: formData.password,
                     role: formData.userRole // 'authorizer' or 'creator'
-                }, token);
+                };
+                if (selectAllBrands) {
+                    payload.brandIds = brands.map(b => b._id);
+                } else if (formData.brandIds && formData.brandIds.length > 0) {
+                    payload.brandIds = formData.brandIds;
+                }
+                await createStaffUser(payload, token);
                 alert('User Created Successfully');
                 loadStaff();
             } else if (role === 'authorizer') {
@@ -60,9 +86,11 @@ const UserManagement = () => {
                 alert('Creator Created Successfully');
                 loadStaff();
             }
-            setFormData({ name: '', email: '', password: '', userRole: 'creator' });
+            setFormData({ name: '', email: '', password: '', userRole: 'creator', brandIds: [] });
         } catch (error) {
             alert('Error: ' + error.message);
+        } finally {
+            setGlobalLoading(false);
         }
     };
 

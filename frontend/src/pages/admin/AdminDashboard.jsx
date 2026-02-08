@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API_BASE_URL from "../../config/api";
+import { useLoading } from '../../context/LoadingContext';
 
 // Helper function for status colors
 const getStatusColor = (status) => {
@@ -55,6 +56,7 @@ export default function AdminDashboard() {
   const [dispatchData, setDispatchData] = useState({ trackingNumber: '', courierName: '', notes: '' });
 
   const getAuthToken = () => localStorage.getItem("adminToken") || localStorage.getItem("token");
+  const { setLoading: setGlobalLoading } = useLoading();
 
   const fetchUsers = async () => {
     try {
@@ -198,6 +200,7 @@ export default function AdminDashboard() {
   };
 
   const downloadPdf = async (orderId) => {
+    setGlobalLoading(true);
     try {
       const token = getAuthToken();
       const res = await fetch(`${API_BASE_URL}/orders/${orderId}/download`, {
@@ -219,6 +222,8 @@ export default function AdminDashboard() {
     } catch (e) {
       console.error(e);
       alert('Failed to download PDF');
+    } finally {
+      setGlobalLoading(false);
     }
   };
 

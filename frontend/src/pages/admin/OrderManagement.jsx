@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getOrders, createOrder, updateOrderStatus, downloadOrderPdf } from '../../config/api';
 import { useNavigate } from 'react-router-dom';
+import { useLoading } from '../../context/LoadingContext';
 
 // Simplified Navbar if not available
 const SimpleNav = () => (
@@ -26,6 +27,7 @@ const OrderManagement = () => {
     });
     const [newQr, setNewQr] = useState({ productName: '', brand: '', batchNo: '', manufactureDate: '', expiryDate: '', quantity: 1 });
     const [role, setRole] = useState(''); // 'admin', 'company', 'authorizer', 'creator'
+    const { setLoading: setGlobalLoading } = useLoading();
 
     // Dispatch form
     const [dispatchData, setDispatchData] = useState({ 
@@ -116,6 +118,7 @@ const OrderManagement = () => {
     };
 
     const handleDownload = async (orderId) => {
+        setGlobalLoading(true);
         try {
             const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
             const data = await downloadOrderPdf(orderId, token);
@@ -126,6 +129,8 @@ const OrderManagement = () => {
             }
         } catch (error) {
             alert(error.message);
+        } finally {
+            setGlobalLoading(false);
         }
     };
 

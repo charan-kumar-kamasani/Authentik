@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import API_BASE_URL from "../../config/api";
 import logo from "../../assets/logo.svg";
@@ -8,6 +8,29 @@ export default function OTP() {
   const nav = useNavigate();
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendLoading, setResendLoading] = useState(false);
+  const inputRef = useRef(null);
+  // When virtual keyboard opens, many mobile browsers change the visualViewport height.
+  // Listen for those changes and ensure the focused input is scrolled into view each time.
+  useEffect(() => {
+    const vv = window.visualViewport;
+    const handler = () => {
+      if (document.activeElement === inputRef.current) {
+        // small delay lets layout settle
+        setTimeout(() => inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+      }
+    };
+
+    if (vv && vv.addEventListener) {
+      vv.addEventListener('resize', handler);
+      return () => vv.removeEventListener('resize', handler);
+    }
+
+    // Fallback for browsers without visualViewport
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
 
   const handleOtpChange = (e) => {
     // Only allow numbers
@@ -26,7 +49,7 @@ export default function OTP() {
       return;
     }
 
-    setLoading(true);
+  setLoading(true);
     try {
         const res = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
@@ -45,10 +68,43 @@ export default function OTP() {
     } catch (error) {
         console.error("Login failed:", error);
         alert("Login failed due to network error.");
-    } finally {
-        setLoading(false);
-    }
+  } finally {
+    setLoading(false);
   }
+  }
+
+  const resendOtp = async () => {
+    if (!state?.mobile) return alert('Missing mobile number');
+    if (resendCooldown > 0) return;
+  setResendLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ countryCode: "91", mobile: state.mobile })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setResendCooldown(30); // 30s cooldown
+        alert(data.message || 'OTP resent');
+      } else {
+        alert(data.message || 'Failed to resend OTP');
+      }
+    } catch (err) {
+      console.error('resend otp error', err);
+      alert('Network error while resending OTP');
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    let timer;
+    if (resendCooldown > 0) {
+      timer = setInterval(() => setResendCooldown((c) => c - 1), 1000);
+    }
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
   return (
     <div className="min-h-screen bg-white font-sans flex flex-col items-center justify-between py-10 px-6 relative">
@@ -88,6 +144,13 @@ export default function OTP() {
                 inputMode="numeric"
                 value={otp}
                 onChange={handleOtpChange}
+                ref={inputRef}
+                onFocus={() => {
+                  // Try immediate + delayed scrolls to ensure the input moves into view each time
+                  inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  setTimeout(() => inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+                  setTimeout(() => inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 700);
+                }}
                 placeholder="6 Digit Code"
                className="w-full outline-none text-[#1F2937] text-[18px] text-center placeholder:text-[#ccc] placeholder:italic bg-transparent font-medium tracking-widest"
               />
@@ -97,6 +160,23 @@ export default function OTP() {
                  If to match EXACT screenshot, we hide timer unless it's in a different state.
                  Screenshot just shows input field. I will omit timer visual to be "exact".
              */}
+          </div>
+          {/* Resend & Login Buttons */}
+          <div className="mb-4">
+            <div className="text-white text-[13px] mb-3">
+              Didn't receive the code?{' '}
+              {resendCooldown > 0 ? (
+                <span className="font-bold">Resend in {resendCooldown}s</span>
+              ) : (
+                <button
+                  onClick={resendOtp}
+                  disabled={resendLoading}
+                  className="underline font-bold text-white ml-1"
+                >
+                  {resendLoading ? 'Resending...' : 'Resend'}
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Login Button */}

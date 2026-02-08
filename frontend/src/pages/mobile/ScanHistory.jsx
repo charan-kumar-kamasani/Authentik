@@ -46,10 +46,15 @@ export default function ScanHistory() {
             } else if (item.status === "ALREADY_USED") {
               type = "duplicate";
               icon = StatusDuplicate;
+              // Show product details and, if available, original scan info
+              const prod = item.productId || {};
               content = {
-                title: "Duplicate Scan",
-                subtitle:
-                  "This QR code has been scanned before. Please check product details carefully.",
+                brand: prod.brand || '-',
+                product: item.productName || prod.productName || 'Product',
+                batchNo: item.batchNo || prod.batchNo || '-',
+                mfdOn: prod.manufactureDate || item.manufactureDate || '-',
+                expOn: prod.expiryDate || item.expiryDate || '-',
+                originalScan: item.originalScan || null,
               };
             } else {
               // ORIGINAL
@@ -99,13 +104,26 @@ export default function ScanHistory() {
               <div className="text-[15px] font-medium leading-snug">
                 <p><span className="font-bold">Brand:</span> {item.content.brand}</p>
                 <p><span className="font-bold">Product:</span> {item.content.product}</p>
-                <p><span className="font-bold">Net Qty:</span> {item.content.netQty}</p>
+                {/* <p><span className="font-bold">Net Qty:</span> {item.content.netQty}</p> */}
                 <p><span className="font-bold">Mfd On:</span> {item.content.mfdOn}</p>
               </div>
             ) : (
               <div>
-                <h3 className="text-[18px] font-bold mb-1">{item.content.title}</h3>
-                <p className="text-[13px] leading-tight opacity-95">{item.content.subtitle}</p>
+                {/* For duplicate scans show product details and original scan info if present */}
+                <div className="text-[15px] font-medium leading-snug">
+                  <p><span className="font-bold">Brand:</span> {item.content.brand}</p>
+                  <p><span className="font-bold">Product:</span> {item.content.product}</p>
+                  <p><span className="font-bold">Batch:</span> {item.content.batchNo}</p>
+                  <p><span className="font-bold">Mfd On:</span> {item.content.mfdOn}</p>
+                  <p><span className="font-bold">Exp On:</span> {item.content.expOn}</p>
+                </div>
+                {item.content.originalScan && (
+                  <div className="mt-2 text-[13px] leading-tight opacity-90">
+                    <p><span className="font-bold">Original Scan By:</span> {item.content.originalScan.scannedBy}</p>
+                    <p><span className="font-bold">Original Scanned At:</span> {new Date(item.content.originalScan.scannedAt).toLocaleString()}</p>
+                    <p><span className="font-bold">Place:</span> {item.content.originalScan.place || '-'}</p>
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -48,7 +48,10 @@ const UserManagement = () => {
     email: "",
     password: "",
     userRole: "creator",
+    // legacy single-brand field kept for compatibility; prefer brandIds for multi-select
     brandId: "",
+    brandIds: [],
+    allBrands: false,
   });
   // Brand State
   const [brands, setBrands] = useState([]);
@@ -262,8 +265,13 @@ const UserManagement = () => {
           email: formData.email,
           password: formData.password,
           role: formData.userRole,
-          brandId: formData.brandId,
         };
+        // Prefer sending an array of brandIds when available (multi-select)
+        if (Array.isArray(formData.brandIds) && formData.brandIds.length > 0) {
+          payload.brandIds = formData.brandIds;
+        } else if (formData.brandId) {
+          payload.brandId = formData.brandId;
+        }
         if (selectedCompany) payload.companyId = selectedCompany;
         await createStaffUser(payload, token);
         alert("User Created Successfully");
@@ -571,10 +579,17 @@ const UserManagement = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Brand</label>
-            <select className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl" value={formData.brandId} onChange={(e)=>setFormData({...formData, brandId: e.target.value})} required>
-              <option value="">Select Brand</option>
-              {brands.map((brand)=>(<option key={brand._id} value={brand._id}>{brand.brandName}</option>))}
-            </select>
+            <MultiBrandSelect
+              brands={brands}
+              value={formData.brandIds}
+              onChange={(arr) => setFormData({ ...formData, brandIds: arr, allBrands: false })}
+              allBrands={formData.allBrands}
+              setAllBrands={(checked) => {
+                if (checked) setFormData({ ...formData, allBrands: true, brandIds: brands.map((b) => String(b._id)) });
+                else setFormData({ ...formData, allBrands: false, brandIds: [] });
+              }}
+              placeholder="Select brand(s)"
+            />
           </div>
 
           <div>
@@ -1011,21 +1026,17 @@ const UserManagement = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Brand
                       </label>
-                      <select
-                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl"
-                        value={formData.brandId}
-                        onChange={(e) =>
-                          setFormData({ ...formData, brandId: e.target.value })
-                        }
-                        required
-                      >
-                        <option value="">Select Brand</option>
-                        {brands.map((brand) => (
-                          <option key={brand._id} value={brand._id}>
-                            {brand.brandName}
-                          </option>
-                        ))}
-                      </select>
+                      <MultiBrandSelect
+                        brands={brands}
+                        value={formData.brandIds}
+                        onChange={(arr) => setFormData({ ...formData, brandIds: arr, allBrands: false })}
+                        allBrands={formData.allBrands}
+                        setAllBrands={(checked) => {
+                          if (checked) setFormData({ ...formData, allBrands: true, brandIds: brands.map((b) => String(b._id)) });
+                          else setFormData({ ...formData, allBrands: false, brandIds: [] });
+                        }}
+                        placeholder="Select brand(s)"
+                      />
                     </div>
 
                     <div>
@@ -1157,6 +1168,114 @@ function InputGroup({ label, placeholder, value, onChange, type = "text", requir
         className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all font-medium"
         required={required}
       />
+    </div>
+  );
+}
+
+function MultiBrandSelect({ brands = [], value = [], onChange, allBrands = false, setAllBrands = () => {}, placeholder = 'Select' }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const [query, setQuery] = useState('');
+
+  useEffect(() => {
+    const onDoc = (e) => {
+      if (!ref.current) return;
+      if (!ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('click', onDoc);
+    return () => document.removeEventListener('click', onDoc);
+  }, []);
+
+  const list = (brands || []).filter((b) => (b.brandName || '').toLowerCase().includes(query.toLowerCase()));
+
+  const toggle = (id) => {
+    const arr = Array.isArray(value) ? [...value] : [];
+    const idx = arr.findIndex((x) => String(x) === String(id));
+    if (idx > -1) arr.splice(idx, 1);
+    else arr.push(String(id));
+    onChange(arr);
+  };
+
+  const clearOne = (id) => {
+    const arr = (value || []).filter((x) => String(x) !== String(id));
+    onChange(arr);
+  };
+
+  const handleSelectAll = (checked) => {
+    if (checked) {
+      const all = (brands || []).map((b) => String(b._id));
+      onChange(all);
+      setAllBrands(true);
+    } else {
+      onChange([]);
+      setAllBrands(false);
+    }
+  };
+
+  const selectedNames = (value || []).map((id) => {
+    const b = (brands || []).find((x) => String(x._id) === String(id));
+    return b ? b.brandName : id;
+  });
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        type="button"
+        onClick={() => setOpen((s) => !s)}
+        className={`w-full text-left px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl flex items-center gap-2 ${brands.length === 0 ? 'opacity-60 cursor-not-allowed' : ''}`}
+        disabled={brands.length === 0}
+        aria-haspopup="listbox"
+      >
+        <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
+          {selectedNames.length === 0 ? (
+            <span className="text-sm text-gray-400">{placeholder}</span>
+          ) : (
+            selectedNames.map((n, i) => (
+              <span key={i} className="inline-flex items-center bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium">
+                {n}
+                <button type="button" onClick={(e) => { e.stopPropagation(); clearOne(value[i]); }} className="ml-2 text-gray-500 hover:text-gray-700">✕</button>
+              </span>
+            ))
+          )}
+        </div>
+        <div className="text-gray-400">▾</div>
+      </button>
+
+      {open && (
+        <div className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg p-3">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <label className="inline-flex items-center text-sm">
+              <input
+                type="checkbox"
+                className="mr-2"
+                checked={allBrands || ((brands || []).length > 0 && (value || []).length === (brands || []).length)}
+                onChange={(e) => handleSelectAll(e.target.checked)}
+              />
+              Select all
+            </label>
+            <input
+              placeholder="Search brands..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="px-3 py-2 bg-gray-50 border border-gray-200 rounded text-sm"
+            />
+          </div>
+
+          <div className="max-h-56 overflow-auto">
+            {(list.length === 0) && <div className="text-sm text-gray-500 py-2">No brands</div>}
+            {list.map((b) => {
+              const id = String(b._id);
+              const checked = (value || []).some((x) => String(x) === id);
+              return (
+                <label key={id} className="w-full flex items-center gap-3 p-2 rounded hover:bg-gray-50">
+                  <input type="checkbox" checked={checked} onChange={() => toggle(id)} className="mr-2" />
+                  <div className="flex-1 text-sm text-gray-800">{b.brandName}</div>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import jsQR from "jsqr";
 import { getCurrentPlace } from "../../utils/helper";
 import API_BASE_URL from "../../config/api";
+import { useLoading } from '../../context/LoadingContext';
 
 export default function Scan() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [scanning, setScanning] = useState(true);
   const navigate = useNavigate();
+  const { setLoading: setGlobalLoading } = useLoading();
   let animationId = useRef(null);
 
   // Removed standalone startCamera function as it's now integrated into useEffect
@@ -49,6 +51,7 @@ export default function Scan() {
 
       // 1) Lightweight check to ensure QR exists and isActive
       try {
+        setGlobalLoading(true);
         const checkResRaw = await fetch(`${API_BASE_URL}/scan/check`, {
           method: "POST",
           headers: {
@@ -65,8 +68,9 @@ export default function Scan() {
           return;
         }
 
+        // If product exists but is inactive, show counterfeit screen (FAKE) per requirement
         if (checkData.status === "FOUND" && !checkData.isActive) {
-          navigate(`/result/INACTIVE`, {
+          navigate(`/result/FAKE`, {
             state: {
               qrCode: code.data,
               product: checkData.product,
@@ -76,7 +80,7 @@ export default function Scan() {
           return;
         }
 
-        // Otherwise QR exists and isActive -> continue with location + scan POST
+  // Otherwise QR exists and isActive -> continue with location + scan POST
         // Get coordinates (latitude, longitude) and human-readable place
         const coords = await new Promise((resolve) => {
           if (!navigator.geolocation) return resolve({ latitude: null, longitude: null });
@@ -89,11 +93,16 @@ export default function Scan() {
 
         const place = await getCurrentPlace();
 
+        const storedToken = localStorage.getItem("token");
+        const authHeader = storedToken
+          ? (storedToken.startsWith("Bearer ") ? storedToken : `Bearer ${storedToken}`)
+          : null;
+
         const res = await fetch(`${API_BASE_URL}/scan`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: localStorage.getItem("token"),
+            ...(authHeader ? { Authorization: authHeader } : {}),
           },
           body: JSON.stringify({
             qrCode: code.data,
@@ -104,11 +113,23 @@ export default function Scan() {
         });
 
         const data = await res.json();
-        navigate(`/result/${data.status}`, { state: data.data });
+
+        if (!res.ok) {
+          // If backend returned an error (e.g., unauthorized), show a friendly screen
+          console.error('Scan API error:', data);
+          setGlobalLoading(false);
+          navigate(`/result/ERROR`, { state: { message: data.error || 'Scan failed' } });
+          return;
+        }
+        // If backend marks product INACTIVE, map to FAKE (counterfeit) screen
+        const finalStatus = data.status === 'INACTIVE' ? 'FAKE' : data.status;
+        setGlobalLoading(false);
+        navigate(`/result/${finalStatus}`, { state: data.data });
         return;
       } catch (err) {
         console.error("Scan/check error:", err);
-        // Fallback: show generic error result
+        // Ensure loader hidden and show generic error result
+        try { setGlobalLoading(false); } catch(e){}
         navigate(`/result/ERROR`, { state: { message: "Scan failed. Please try again." } });
         return;
       }

@@ -1,10 +1,55 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import API_BASE_URL from "../../config/api";
 import logo from "../../assets/logo.svg";
 
 export default function Login() {
   const [mobile, setMobile] = useState("");
+  const [loading, setLoading] = useState(false);
   const nav = useNavigate();
+  
+  const mobileInputRef = useRef(null);
+  // Ensure input scrolls into view whenever the virtual keyboard opens.
+  useEffect(() => {
+    const vv = window.visualViewport;
+    const handler = () => {
+      if (document.activeElement === mobileInputRef.current) {
+        setTimeout(() => mobileInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
+      }
+    };
+
+    if (vv && vv.addEventListener) {
+      vv.addEventListener('resize', handler);
+      return () => vv.removeEventListener('resize', handler);
+    }
+
+    window.addEventListener('resize', handler);
+    return () => window.removeEventListener('resize', handler);
+  }, []);
+
+  const sendOtp = async () => {
+    if (mobile.length !== 10) return;
+  setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ countryCode: "91", mobile })
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        nav("/otp", { state: { mobile } });
+      } else {
+        alert(data.message || "Failed to send OTP. Please try again.");
+      }
+    } catch (err) {
+      console.error("send-otp error", err);
+      alert("Network error while sending OTP. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white font-sans flex flex-col items-center justify-between py-10 px-6">
@@ -52,6 +97,13 @@ export default function Login() {
                   const val = e.target.value.replace(/[^0-9]/g, '');
                   if(val.length <= 10) setMobile(val);
                 }}
+                ref={mobileInputRef}
+                onFocus={() => {
+                  // Try immediate + delayed scrolls so refocus moves the input again
+                  mobileInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  setTimeout(() => mobileInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
+                  setTimeout(() => mobileInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 700);
+                }}
                 placeholder="10 digit mobile number"
                className="flex-1 outline-none text-[#1F2937] text-[17px] placeholder:text-[#ccc] placeholder:italic bg-transparent font-medium"
               />
@@ -60,8 +112,8 @@ export default function Login() {
 
           {/* Generate OTP Button */}
           <button
-            onClick={() => mobile.length === 10 && nav("/otp", { state: { mobile } })}
-            disabled={mobile.length !== 10}
+            onClick={() => mobile.length === 10 && sendOtp()}
+            disabled={mobile.length !== 10 || loading}
             className={`
               w-[220px] mx-auto h-[55px] rounded-[30px] font-bold text-[18px] tracking-wide shadow-lg
               ${mobile.length === 10 
@@ -71,7 +123,7 @@ export default function Login() {
               transition-all duration-300 ease-out flex items-center justify-center
             `}
           >
-            Generate OTP
+            {loading ? "Sending..." : "Generate OTP"}
           </button>
         </div>
       </div>

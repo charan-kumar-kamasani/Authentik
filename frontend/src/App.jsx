@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { LoadingProvider } from './context/LoadingContext';
+import GlobalLoader from './components/GlobalLoader';
 
 import Login from "./pages/mobile/Login";
 import OTP from "./pages/mobile/OTP";
@@ -59,7 +61,9 @@ export default function App() {
 
   if (!isMobile) {
     return (
+      <LoadingProvider>
       <BrowserRouter>
+        <GlobalLoader />
         <Routes>
           {/* Public Website */}
           <Route path="/" element={<LandingPage />} />
@@ -131,13 +135,16 @@ export default function App() {
           />
         </Routes>
       </BrowserRouter>
+      </LoadingProvider>
     );
   }
 
   /* ================= MOBILE APP ================= */
 
-  return (
+    return (
+    <LoadingProvider>
     <BrowserRouter>
+      <GlobalLoader />
       <Routes>
         {/* Public */}
         <Route
@@ -307,6 +314,7 @@ export default function App() {
         />
       </Routes>
     </BrowserRouter>
+    </LoadingProvider>
   );
 }
         
