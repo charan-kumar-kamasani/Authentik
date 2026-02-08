@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { getOrders, createOrder, updateOrderStatus, downloadOrderPdf } from '../config/api';
+import { getOrders, createOrder, updateOrderStatus, downloadOrderPdf } from '../../config/api';
+import * as XLSX from 'xlsx';
+import API_BASE_URL from '../../config/api';
 import { useNavigate } from 'react-router-dom';
 
 // Simplified Navbar if not available
@@ -16,6 +18,7 @@ const OrderManagement = () => {
     const [loading, setLoading] = useState(true);
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [newOrder, setNewOrder] = useState({ productName: '', quantity: '', description: '' });
+    const [newQr, setNewQr] = useState({ productName: '', brand: '', batchNo: '', manufactureDate: '', expiryDate: '', quantity: 1 });
     const [role, setRole] = useState(''); // 'admin', 'company', 'authorizer', 'creator'
 
     // Dispatch form
@@ -42,6 +45,46 @@ const OrderManagement = () => {
             alert('Failed to load orders: ' + error.message);
             setLoading(false);
         }
+    };
+
+    const handleBulkUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (evt) => {
+            const bstr = evt.target.result;
+            const wb = XLSX.read(bstr, { type: 'binary' });
+            const wsname = wb.SheetNames[0];
+            const ws = wb.Sheets[wsname];
+            const data = XLSX.utils.sheet_to_json(ws);
+
+            if (data.length === 0) {
+                alert("Empty sheet");
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${API_BASE_URL}/admin/bulk-upload-qrs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify(data)
+                });
+
+                if (res.ok) {
+                    const result = await res.json();
+                    alert(result.message || `Successfully uploaded ${result.count || data.length} QRs`);
+                    fetchOrders();
+                } else {
+                    const d = await res.json().catch(()=>null);
+                    alert(d?.message || 'Bulk upload failed');
+                }
+            } catch (err) {
+                alert('Bulk upload failed: ' + err.message);
+            }
+        };
+        reader.readAsBinaryString(file);
     };
 
     const handleCreateOrder = async (e) => {
@@ -129,7 +172,7 @@ const OrderManagement = () => {
             <div className="max-w-7xl mx-auto p-6">
                 <div className="flex justify-between items-center mb-6">
                     <h1 className="text-3xl font-bold">Order Management</h1>
-                    {(role === 'creator'|| role === 'company' || role === 'authorizer') && (
+                    {(role === 'company' || role === 'authorizer') && (
                         <button 
                             onClick={() => setShowCreateModal(true)}
                             className="bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded"
@@ -137,7 +180,97 @@ const OrderManagement = () => {
                             + New Order
                         </button>
                     )}
+
+                    {/* creators will see an inline Generate QRs form below instead of a button */}
                 </div>
+
+                {/* Creator: inline Generate QRs form (replaces Order Management for creators) */}
+                {role === 'creator' && (
+                    <div className="bg-white rounded-2xl p-8 shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-gray-100 mb-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                <span className="w-1 h-6 bg-blue-500 rounded-full"></span>
+                                Create New Product Record
+                            </h3>
+
+                            <div className="relative overflow-hidden">
+                                <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                                    <span>📄</span> Bulk Upload (Excel)
+                                </button>
+                                <input
+                                    type="file"
+                                    accept=".xlsx, .xls"
+                                    onChange={handleBulkUpload}
+                                    className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                                />
+                            </div>
+                        </div>
+
+                        <form onSubmit={async (e) => {
+                            e.preventDefault();
+                            try {
+                                const token = localStorage.getItem('token');
+                                const body = {
+                                    productName: newQr.productName,
+                                    brand: newQr.brand,
+                                    batchNo: newQr.batchNo,
+                                    manufactureDate: newQr.manufactureDate,
+                                    expiryDate: newQr.expiryDate,
+                                    quantity: Number(newQr.quantity) || 1
+                                };
+
+                                const res = await fetch(`${API_BASE_URL}/admin/create-qr`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                    body: JSON.stringify(body)
+                                });
+
+                                if (res.ok) {
+                                    const result = await res.json();
+                                    alert(`Successfully created ${result.count} QRs!`);
+                                    setNewQr({ productName: '', brand: '', batchNo: '', manufactureDate: '', expiryDate: '', quantity: 1 });
+                                    fetchOrders();
+                                } else {
+                                    const d = await res.json().catch(()=>null);
+                                    alert(d?.message || 'Failed to create products');
+                                }
+                            } catch (err) {
+                                alert('Error: ' + err.message);
+                            }
+                        }} className="grid grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Product Name</label>
+                                <input required className="mt-1 block w-full px-3 py-2 border rounded" value={newQr.productName} onChange={e=>setNewQr({...newQr, productName: e.target.value})} />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Brand</label>
+                                <input required className="mt-1 block w-full px-3 py-2 border rounded" value={newQr.brand} onChange={e=>setNewQr({...newQr, brand: e.target.value})} />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Batch Number</label>
+                                <input required className="mt-1 block w-full px-3 py-2 border rounded" value={newQr.batchNo} onChange={e=>setNewQr({...newQr, batchNo: e.target.value})} />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Quantity</label>
+                                <input type="number" min="0" className="mt-1 block w-full px-3 py-2 border rounded" value={newQr.quantity} onChange={e=>setNewQr({...newQr, quantity: e.target.value})} />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Manufacture Date</label>
+                                <input type="date" className="mt-1 block w-full px-3 py-2 border rounded" value={newQr.manufactureDate} onChange={e=>setNewQr({...newQr, manufactureDate: e.target.value})} />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Expiry Date</label>
+                                <input type="date" className="mt-1 block w-full px-3 py-2 border rounded" value={newQr.expiryDate} onChange={e=>setNewQr({...newQr, expiryDate: e.target.value})} />
+                            </div>
+
+                            <div className="col-span-2 pt-4">
+                                <button type="submit" className="w-full bg-[#214B80] text-white font-medium py-3 rounded-xl hover:bg-[#193a62] transition-all shadow-lg">Generate Product & QR</button>
+                            </div>
+                        </form>
+                    </div>
+                )}
 
                 {/* Orders List */}
                 <div className="bg-white shadow-md rounded-lg overflow-hidden">
@@ -278,6 +411,8 @@ const OrderManagement = () => {
                     </div>
                 </div>
             )}
+
+            
 
             {/* Dispatch Modal */}
             {showDispatchModal && (

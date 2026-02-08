@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import jsQR from "jsqr";
-import { getCurrentPlace } from "../utils/helper";
-import API_BASE_URL from "../config/api";
+import { getCurrentPlace } from "../../utils/helper";
+import API_BASE_URL from "../../config/api";
 
 export default function Scan() {
   const videoRef = useRef(null);
@@ -43,26 +43,75 @@ export default function Scan() {
     if (code) {
       console.log("QR detected:", code.data);
 
+      // pause camera and UI
       stopCamera();
       setScanning(false);
 
-      const place = await getCurrentPlace();
+      // 1) Lightweight check to ensure QR exists and isActive
+      try {
+        const checkResRaw = await fetch(`${API_BASE_URL}/scan/check`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ qrCode: code.data }),
+        });
 
-      const res = await fetch(`${API_BASE_URL}/scan`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: localStorage.getItem("token"),
-        },
-        body: JSON.stringify({
-          qrCode: code.data,
-          place,
-        }),
-      });
+        const checkData = await checkResRaw.json();
 
-      const data = await res.json();
-      navigate(`/result/${data.status}`, { state: data.data });
-      return;
+        // If QR is fake or inactive, immediately show result message and do not send full scan
+        if (checkData.status === "FAKE") {
+          navigate(`/result/FAKE`, { state: { qrCode: code.data } });
+          return;
+        }
+
+        if (checkData.status === "FOUND" && !checkData.isActive) {
+          navigate(`/result/INACTIVE`, {
+            state: {
+              qrCode: code.data,
+              product: checkData.product,
+              message: "This QR code is inactive.",
+            },
+          });
+          return;
+        }
+
+        // Otherwise QR exists and isActive -> continue with location + scan POST
+        // Get coordinates (latitude, longitude) and human-readable place
+        const coords = await new Promise((resolve) => {
+          if (!navigator.geolocation) return resolve({ latitude: null, longitude: null });
+          navigator.geolocation.getCurrentPosition(
+            (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+            () => resolve({ latitude: null, longitude: null }),
+            { enableHighAccuracy: true, timeout: 8000 }
+          );
+        });
+
+        const place = await getCurrentPlace();
+
+        const res = await fetch(`${API_BASE_URL}/scan`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: localStorage.getItem("token"),
+          },
+          body: JSON.stringify({
+            qrCode: code.data,
+            place,
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+          }),
+        });
+
+        const data = await res.json();
+        navigate(`/result/${data.status}`, { state: data.data });
+        return;
+      } catch (err) {
+        console.error("Scan/check error:", err);
+        // Fallback: show generic error result
+        navigate(`/result/ERROR`, { state: { message: "Scan failed. Please try again." } });
+        return;
+      }
     }
 
     animationId.current = requestAnimationFrame(scanFrameFn);

@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import API_BASE_URL from "../config/api";
-import Logo from "../assets/Authentiks.png";
-import NotificationIcon from "../assets/icon_notification.png";
-import StatusValid from "../assets/recent_status_valid.png";
-import StatusFake from "../assets/recent_status_fake.png";
-import StatusDuplicate from "../assets/recent_status_duplicate.png";
+import API_BASE_URL from "../../config/api";
+import Logo from "../../assets/Authentiks.png";
+import NotificationIcon from "../../assets/icon_notification.png";
+import StatusValid from "../../assets/recent_status_valid.png";
+import StatusFake from "../../assets/recent_status_fake.png";
+import StatusDuplicate from "../../assets/recent_status_duplicate.png";
 
 export default function ScanHistory() {
   const navigate = useNavigate();

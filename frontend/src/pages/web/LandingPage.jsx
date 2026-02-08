@@ -1,19 +1,19 @@
 import React from 'react';
-import heroImage from '../assets/web/image 1.png';
-import step1Icon from '../assets/web/1 5521.png'; 
-import step2Icon from '../assets/web/2 1.png'; 
-import step3Icon from '../assets/web/3 1.png'; 
-import fmcgImg from '../assets/web/fmcg 1.png';
-import pharmImg from '../assets/web/pharm 1.png';
-import fashionImg from '../assets/web/Fashion 1.png';
-import electronicsImg from '../assets/web/Electronics 1.png';
-import autoImg from '../assets/web/auto 1.png';
-import cosmeticImg from '../assets/web/cosmetics 1.png';
-import banner1 from '../assets/corosels/banner_1.jpg';
-import banner2 from '../assets/corosels/banner_2.jpg';
-import banner3 from '../assets/corosels/banner_3.jpg';
-import WebHeader from '../components/WebHeader';
-import WebFooter from '../components/WebFooter';
+import heroImage from '../../assets/web/image 1.png';
+import step1Icon from '../../assets/web/1 5521.png'; 
+import step2Icon from '../../assets/web/2 1.png'; 
+import step3Icon from '../../assets/web/3 1.png'; 
+import fmcgImg from '../../assets/web/fmcg 1.png';
+import pharmImg from '../../assets/web/pharm 1.png';
+import fashionImg from '../../assets/web/Fashion 1.png';
+import electronicsImg from '../../assets/web/Electronics 1.png';
+import autoImg from '../../assets/web/auto 1.png';
+import cosmeticImg from '../../assets/web/cosmetics 1.png';
+import banner1 from '../../assets/corosels/banner_1.jpg';
+import banner2 from '../../assets/corosels/banner_2.jpg';
+import banner3 from '../../assets/corosels/banner_3.jpg';
+import WebHeader from '../../components/WebHeader';
+import WebFooter from '../../components/WebFooter';
 
 // Helper to make the separator consistently
 const SectionSeparator = () => (

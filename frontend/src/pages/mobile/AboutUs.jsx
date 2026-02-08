@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import Logo from "../assets/Authentiks.png";
-import NotificationIcon from "../assets/icon_notification.png";
+import Logo from "../../assets/Authentiks.png";
+import NotificationIcon from "../../assets/icon_notification.png";
 
 export default function AboutUs() {
   const navigate = useNavigate();

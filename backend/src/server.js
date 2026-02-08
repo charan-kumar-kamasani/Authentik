@@ -1,3 +1,6 @@
+// Load environment variables from .env (dotenv)
+require('dotenv').config();
+
 const express = require("express");
 const cors = require("cors");
 const connectDb = require("./config/db");
@@ -14,8 +17,7 @@ app.use("/admin", require("./routes/admin.routes"));
 app.use("/scan", require("./routes/scan.routes"));
 app.use('/orders', require('./routes/order.routes'));
 
-// Start server ONLY after DB connection
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 (async function startServer() {
   try {

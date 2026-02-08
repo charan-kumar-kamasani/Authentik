@@ -1,10 +1,11 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import authenticStamp from "../assets/status_valid.png";
-import fakeStamp from "../assets/status_fake.png";
-import duplicateStamp from "../assets/status_duplicate.png";
-import ResultCard from "../components/ResultCard";
+import authenticStamp from "../../assets/status_valid.png";
+import fakeStamp from "../../assets/status_fake.png";
+import duplicateStamp from "../../assets/status_duplicate.png";
+import ResultCard from "../../components/ResultCard";
 
 function ResultContent({ status, data }: { status: string | undefined; data: any }) {
+    const innerNavigate = useNavigate();
     // Helper to render Genuine UI
     if (status === "ORIGINAL") {
         return (
@@ -57,6 +58,72 @@ function ResultContent({ status, data }: { status: string | undefined; data: any
                     <p className="text-white text-sm font-semibold mb-2">
                         Help us protect others <br/> Report this product now
                     </p>
+                </div>
+            </ResultCard>
+        );
+    }
+
+    // Helper to render Inactive UI (richer, matches other result screens)
+    if (status === "INACTIVE") {
+        const productName = data?.productName || data?.product?.productName || "Unknown Product";
+        const brand = data?.product?.brand || data?.brand || "-";
+        const batchNo = data?.product?.batchNo || data?.batchNo || "-";
+
+        const handleContact = () => {
+            const subject = encodeURIComponent(`Inactive QR Code: ${productName}`);
+            const body = encodeURIComponent(`I scanned the QR code (${data?.qrCode || ""}) and it returned as INACTIVE.\n\nProduct: ${productName}\nBrand: ${brand}\nBatch: ${batchNo}\n\nPlease assist.`);
+            window.location.href = `mailto:support@authentick.com?subject=${subject}&body=${body}`;
+        };
+
+        return (
+            <ResultCard
+                color="#6B7280"
+                icon={duplicateStamp}
+                title={productName}
+                buttonText="Contact Support"
+                iconSize="w-40 h-40"
+                onButtonClick={handleContact}
+            >
+                <div className="pt-4 text-center">
+                    <p className="text-white font-bold text-[15px] mb-2 leading-snug">
+                        This QR code has been deactivated and cannot be used to verify the product.
+                    </p>
+
+                    <p className="text-white text-sm mb-4">
+                        If you purchased this recently or believe this is an error, contact the vendor or Authentiks support for help.
+                    </p>
+
+                    <div className="text-left bg-white/10 rounded-md p-3 mt-3">
+                        <p className="text-white font-semibold text-sm">Product</p>
+                        <p className="text-white text-sm mb-2">{productName}</p>
+
+                        <div className="grid grid-cols-2 gap-2 text-white text-sm">
+                            <div>
+                                <div className="font-bold text-xs">Brand</div>
+                                <div className="text-xs">{brand}</div>
+                            </div>
+                            <div>
+                                <div className="font-bold text-xs">Batch</div>
+                                <div className="text-xs">{batchNo}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-6 flex flex-col items-center gap-3">
+                        <button
+                            onClick={() => innerNavigate('/scan')}
+                            className="text-white underline text-sm"
+                        >
+                            Scan Again
+                        </button>
+
+                        <button
+                            onClick={() => innerNavigate('/home')}
+                            className="text-white/80 text-sm"
+                        >
+                            Back to Home
+                        </button>
+                    </div>
                 </div>
             </ResultCard>
         );

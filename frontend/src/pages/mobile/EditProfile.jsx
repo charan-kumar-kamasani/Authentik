@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Logo from "../assets/Authentiks.png"; // Checker exact name
-import NotificationIcon from "../assets/icon_notification.png";
-import UserAvatar from "../assets/profile/user_avatar.png";
-import { getProfile, updateProfile } from "../config/api";
+import Logo from "../../assets/Authentiks.png"; // Checker exact name
+import NotificationIcon from "../../assets/icon_notification.png";
+import UserAvatar from "../../assets/profile/user_avatar.png";
+import { getProfile, updateProfile } from "../../config/api";
 
 const indianStates = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", 

@@ -1,7 +1,7 @@
 import React from "react";
-import WebHeader from "../components/WebHeader";
-import WebFooter from "../components/WebFooter";
-import techBg from "../assets/web/hero_image.png";
+import WebHeader from "../../components/WebHeader";
+import WebFooter from "../../components/WebFooter";
+import techBg from "../../assets/web/hero_image.png";
 // Helper for section separator
 const Separator = () => (
   <div className="h-[4px] bg-gray-200 w-full mt-2 mb-6"></div>

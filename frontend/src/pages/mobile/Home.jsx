@@ -1,17 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import API_BASE_URL from "../config/api";
-import homeBanner from "../assets/home_banner.png";
-import banner1 from "../assets/corosels/banner_1.jpg";
-import banner2 from "../assets/corosels/banner_2.jpg";
-import banner3 from "../assets/corosels/banner_3.jpg";
-import navBrands from "../assets/nav_brands.png";
-import navAuthentik from "../assets/nav_authentik.png";
-import navHistory from "../assets/nav_history.png";
-import statusFake from "../assets/recent_status_fake.png";
-import statusValid from "../assets/recent_status_valid.png";
-import statusDuplicate from "../assets/recent_status_duplicate.png";
-import iconNotification from "../assets/icon_notification.png";
+import API_BASE_URL from "../../config/api";
+import homeBanner from "../../assets/home_banner.png";
+import banner1 from "../../assets/corosels/banner_1.jpg";
+import banner2 from "../../assets/corosels/banner_2.jpg";
+import banner3 from "../../assets/corosels/banner_3.jpg";
+import navBrands from "../../assets/nav_brands.png";
+import navAuthentik from "../../assets/nav_authentik.png";
+import navHistory from "../../assets/nav_history.png";
+import statusFake from "../../assets/recent_status_fake.png";
+import statusValid from "../../assets/recent_status_valid.png";
+import statusDuplicate from "../../assets/recent_status_duplicate.png";
+import iconNotification from "../../assets/icon_notification.png";
 
 export default function Home() {
   const navigate = useNavigate();

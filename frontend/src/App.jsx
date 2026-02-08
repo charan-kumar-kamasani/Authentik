@@ -1,29 +1,29 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
-import Login from "./pages/Login";
-import OTP from "./pages/OTP";
-import Home from "./pages/Home";
-import LandingPage from "./pages/LandingPage";
-import WebAboutUs from "./pages/WebAboutUs";
-import WebSolutions from "./pages/WebSolutions";
-import WebContactUs from "./pages/WebContactUs";
-import Scan from "./pages/scan";
-import Result from "./pages/Result";
-import Profile from "./pages/profile";
-import EditProfile from "./pages/EditProfile";
-import ScanHistory from "./pages/ScanHistory";
-import AboutUs from "./pages/AboutUs";
-import TermsConditions from "./pages/TermsConditions";
-import Policies from "./pages/Policies";
+import Login from "./pages/mobile/Login";
+import OTP from "./pages/mobile/OTP";
+import Home from "./pages/mobile/Home";
+import LandingPage from "./pages/web/LandingPage";
+import WebAboutUs from "./pages/web/WebAboutUs";
+import WebSolutions from "./pages/web/WebSolutions";
+import WebContactUs from "./pages/web/WebContactUs";
+import Scan from "./pages/mobile/scan";
+import Result from "./pages/mobile/Result";
+import Profile from "./pages/mobile/profile";
+import EditProfile from "./pages/mobile/EditProfile";
+import ScanHistory from "./pages/mobile/ScanHistory";
+import AboutUs from "./pages/mobile/AboutUs";
+import TermsConditions from "./pages/mobile/TermsConditions";
+import Policies from "./pages/mobile/Policies";
 
-import AdminLogin from "./pages/AdminLogin";
-import AdminDashboard from "./pages/AdminDashboard";
-import OrderManagement from "./pages/OrderManagement";
-import UserManagement from "./pages/UserManagement";
-
-/* ================= AUTH GUARDS ================= */
-
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import OrderManagement from "./pages/admin/OrderManagement";
+import UserManagement from "./pages/admin/UserManagement";
+import AdminLayout from "./pages/admin/AdminLayout";
+import GenerateQrs from "./pages/admin/GenerateQrs";
+import QrManagement from "./pages/admin/QrManagement";
 // User private route
 function PrivateRoute({ children }) {
   const token = localStorage.getItem("token");
@@ -48,7 +48,7 @@ export default function App() {
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth < 768 : false
   );
-
+  
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", handleResize);
@@ -73,7 +73,9 @@ export default function App() {
             path="/admin/dashboard"
             element={
               <AdminRoute>
-                <AdminDashboard />
+                <AdminLayout>
+                  <AdminDashboard />
+                </AdminLayout>
               </AdminRoute>
             }
           />
@@ -81,7 +83,29 @@ export default function App() {
             path="/orders"
             element={
               <AdminRoute>
-                <OrderManagement />
+                <AdminLayout>
+                  <OrderManagement />
+                </AdminLayout>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/generate-qrs"
+            element={
+              <AdminRoute>
+                <AdminLayout>
+                  <GenerateQrs />
+                </AdminLayout>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/qr-management"
+            element={
+              <AdminRoute>
+                <AdminLayout>
+                  <QrManagement />
+                </AdminLayout>
               </AdminRoute>
             }
           />
@@ -89,7 +113,9 @@ export default function App() {
             path="/users"
             element={
               <AdminRoute>
-                <UserManagement />
+                <AdminLayout>
+                  <UserManagement />
+                </AdminLayout>
               </AdminRoute>
             }
           />
@@ -219,7 +245,9 @@ export default function App() {
           path="/admin/dashboard"
           element={
             <AdminRoute>
-              <AdminDashboard />
+              <AdminLayout>
+                <AdminDashboard />
+              </AdminLayout>
             </AdminRoute>
           }
         />
@@ -228,7 +256,31 @@ export default function App() {
           path="/orders"
           element={
             <AdminRoute>
-              <OrderManagement />
+              <AdminLayout>
+                <OrderManagement />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/generate-qrs"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <GenerateQrs />
+              </AdminLayout>
+            </AdminRoute>
+          }
+        />
+
+        <Route
+          path="/qr-management"
+          element={
+            <AdminRoute>
+              <AdminLayout>
+                <QrManagement />
+              </AdminLayout>
             </AdminRoute>
           }
         />
@@ -237,7 +289,9 @@ export default function App() {
           path="/users"
           element={
             <AdminRoute>
-              <UserManagement />
+              <AdminLayout>
+                <UserManagement />
+              </AdminLayout>
             </AdminRoute>
           }
         />
@@ -255,3 +309,4 @@ export default function App() {
     </BrowserRouter>
   );
 }
+        

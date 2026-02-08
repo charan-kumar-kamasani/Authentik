@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "../assets/logo.png";
+import logo from "../../assets/logo.svg";
 
 export default function Login() {
   const [mobile, setMobile] = useState("");

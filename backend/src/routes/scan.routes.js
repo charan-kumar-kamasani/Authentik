@@ -56,6 +56,42 @@ router.get("/history", protect, async (req, res) => {
   }
 });
 
+// Lightweight check endpoint so clients can verify QR existence and active state
+router.post("/check", async (req, res) => {
+  try {
+    const { qrCode } = req.body;
+
+    if (!qrCode) {
+      return res.status(400).json({ error: "qrCode required" });
+    }
+
+    const product = await Product.findOne({ qrCode });
+
+    if (!product) {
+      return res.json({ status: "FAKE", isActive: false, product: null });
+    }
+
+    // If product exists but is inactive, do NOT return product details.
+    if (!product.isActive) {
+      return res.json({ status: "INACTIVE", isActive: false, message: "This QR code is inactive." });
+    }
+
+    return res.json({
+      status: "FOUND",
+      isActive: !!product.isActive,
+      product: {
+        productId: product._id,
+        productName: product.productName,
+        brand: product.brand,
+        batchNo: product.batchNo,
+      },
+    });
+  } catch (err) {
+    console.error("/scan/check error:", err);
+    res.status(500).json({ error: "Check failed" });
+  }
+});
+
 router.post("/", async (req, res) => {
   try {
     const token = req.headers.authorization;
@@ -66,13 +102,13 @@ router.post("/", async (req, res) => {
     const place = await getPlaceFromCoords(latitude, longitude);
     const scannedAt = new Date();
 
-    // 1️⃣ Check product
-    const product = await Product.findOne({ qrCode });
+  // 1️⃣ Check product
+  const product = await Product.findOne({ qrCode });
 
-    /* =======================
-       ❌ FAKE PRODUCT
-    ======================= */
-    if (!product) {
+   /* =======================
+     ❌ FAKE PRODUCT
+   ======================= */
+   if (!product) {
       const scan = await Scan.create({
         userId,
         productId: null,
@@ -95,6 +131,15 @@ router.post("/", async (req, res) => {
           longitude,
           scannedAt: scan.createdAt,
         },
+      });
+    }
+
+    // If QR exists but is not active, return INACTIVE without creating a scan
+    if (product && !product.isActive) {
+      // Return a minimal response with no QR/product/place details
+      return res.json({
+        status: "INACTIVE",
+        message: "This QR code is inactive.",
       });
     }
 

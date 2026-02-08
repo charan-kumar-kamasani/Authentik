@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Logo from "../assets/Authentiks.png";
-import NotificationIcon from "../assets/icon_notification.png";
-import UserAvatar from "../assets/profile/user_avatar.png";
+import Logo from "../../assets/Authentiks.png";
+import NotificationIcon from "../../assets/icon_notification.png";
+import UserAvatar from "../../assets/profile/user_avatar.png";
 
 // Profile Icons
-import IconScanHistory from "../assets/profile/icon_scan_history.png";
-import IconReports from "../assets/profile/icon_reports.png";
-import IconAboutUs from "../assets/profile/icon_about_us.png";
-import IconHelp from "../assets/profile/icon_help.png";
-import IconShare from "../assets/profile/icon_share.png";
-import IconTerms from "../assets/profile/icon_terms.png";
-import IconPolicies from "../assets/profile/icon_policies.png";
-import IconLogout from "../assets/profile/icon_logout.png";
+import IconScanHistory from "../../assets/profile/icon_scan_history.png";
+import IconReports from "../../assets/profile/icon_reports.png";
+import IconAboutUs from "../../assets/profile/icon_about_us.png";
+import IconHelp from "../../assets/profile/icon_help.png";
+import IconShare from "../../assets/profile/icon_share.png";
+import IconTerms from "../../assets/profile/icon_terms.png";
+import IconPolicies from "../../assets/profile/icon_policies.png";
+import IconLogout from "../../assets/profile/icon_logout.png";
 
 export default function Profile() {
   const navigate = useNavigate();

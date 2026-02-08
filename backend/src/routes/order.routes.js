@@ -3,84 +3,188 @@ const router = express.Router();
 const { protect, authorize } = require('../middleware/authMiddleware');
 const Order = require('../models/Order');
 const User = require('../models/User');
-const { generateQrPdf } = require('../utils/pdfGenerator');
 const Product = require('../models/Product');
+const Brand = require('../models/Brand');
+const { generateQrPdf } = require('../utils/pdfGenerator');
+const { sendOrderStatusEmail } = require('../utils/emailService');
+
+// Helper function to get all relevant users for email notifications
+const getNotificationRecipients = async (order) => {
+  const recipients = new Set();
+  
+  try {
+    // Add creator
+    const creator = await User.findById(order.createdBy);
+    if (creator && creator.email) recipients.add(creator.email);
+    
+    // Add company/brand authorizers
+    const brand = await Brand.findById(order.brandId);
+    if (brand && brand.email) recipients.add(brand.email);
+
+    // Find all authorizers for this brand
+    const authorizers = await User.find({ 
+      brandId: order.brandId, 
+      role: 'authorizer',
+      email: { $exists: true, $ne: null }
+    });
+    authorizers.forEach(auth => {
+      if (auth.email) recipients.add(auth.email);
+    });
+    
+    // Add all super admins
+    const admins = await User.find({ 
+      role: { $in: ['admin', 'superadmin'] },
+      email: { $exists: true, $ne: null }
+    });
+    admins.forEach(admin => {
+      if (admin.email) recipients.add(admin.email);
+    });
+    
+  } catch (error) {
+    console.error('Error getting recipients:', error);
+  }
+  
+  return Array.from(recipients);
+};
 
 // 1. CREATE ORDER (Creator only)
-// POST /api/orders
-router.post('/', protect, authorize('creator', 'company', 'authorizer'), async (req, res) => {
+router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
   try {
-    const { productName, quantity, description } = req.body;
+    const { productName, brand, batchNo, manufactureDate, expiryDate, quantity, description } = req.body;
     
-    // Determine the company ID
-    let companyId = req.user.companyId; 
-    // If the user IS the company, use their own ID
+    // Determine the brandId (preferred) or fallback to company owner
+    let brandId = req.body.brandId || req.user.brandId || null;
     if (req.user.role === 'company') {
-        companyId = req.user._id;
+      brandId = req.user.brandId || req.user._id;
     }
 
-    if (!companyId && req.user.role !== 'company') {
-        return res.status(400).json({ message: 'User is not linked to a company' });
+    if (!brandId) {
+      return res.status(400).json({ message: 'User is not linked to a brand' });
     }
 
-    // Generate a simple Order ID
+    // Generate unique Order ID
     const count = await Order.countDocuments();
     const orderId = `ORD-${Date.now()}-${count + 1}`;
 
     const order = new Order({
       orderId,
       productName,
+      brand: brand || 'Unknown',
+      batchNo: batchNo || `BATCH-${orderId}`,
+      manufactureDate,
+      expiryDate,
       quantity,
       description,
       createdBy: req.user._id,
-      company: companyId,
+      brandId,
       status: 'Pending Authorization',
       history: [{
         status: 'Pending Authorization',
         changedBy: req.user._id,
         role: req.user.role,
-        comment: 'Order created'
+        comment: 'Order created and awaiting authorization'
       }]
     });
 
     const createdOrder = await order.save();
+    
+    // Send email notifications
+    const recipients = await getNotificationRecipients(createdOrder);
+    await sendOrderStatusEmail(recipients, {
+      orderId: createdOrder.orderId,
+      productName: createdOrder.productName,
+      brand: createdOrder.brand,
+      quantity: createdOrder.quantity,
+      status: createdOrder.status,
+      changedBy: req.user.name || req.user.email
+    }, `New QR order created by ${req.user.name || req.user.email}`);
+    
     res.status(201).json(createdOrder);
   } catch (error) {
+    console.error('Create order error:', error);
     res.status(500).json({ message: 'Server Error', error: error.message });
   }
 });
 
 // 2. GET ORDERS
-// GET /api/orders
 router.get('/', protect, async (req, res) => {
   try {
     let query = {};
+    const { status } = req.query;
 
-    // Super Admin sees all
+    // Filter by status if provided
+    if (status) {
+      query.status = status;
+    }
+
+    // Role-based filtering
     if (['admin', 'superadmin'].includes(req.user.role)) {
-      // no filter
-    } 
-    // Company, Authorizer, Creator see orders for their company
-    else if (['company', 'authorizer', 'creator'].includes(req.user.role)) {
-       const companyId = req.user.role === 'company' ? req.user._id : req.user.companyId;
-       query.company = companyId;
+      // Super Admin sees all
+    } else if (req.user.role === 'creator') {
+        // Creator sees their own orders OR orders for their company
+        // If companyId exists, use it, otherwise fall back to createdBy
+        if (req.user.brandId) {
+             query.brandId = req.user.brandId;
+        } else {
+             query.createdBy = req.user._id;
+        }
+    } else if (['company', 'authorizer'].includes(req.user.role)) {
+      const brandId = req.user.role === 'company' ? (req.user.brandId || req.user._id) : req.user.brandId;
+      if (brandId) {
+          query.brandId = brandId;
+      } else {
+          // Fallback: If authorizer has no companyId, they might not see anything.
+          // In a real app, we'd fix the user creation. For now, strict.
+          return res.status(403).json({ message: 'User not linked to a brand' });
+      }
     } else {
-        return res.status(403).json({ message: 'Not authorized' });
+      return res.status(403).json({ message: 'Not authorized' });
     }
 
     const orders = await Order.find(query)
-      .populate('createdBy', 'name email')
-      .populate('company', 'name')
+      .populate('createdBy', 'name email role')
+      .populate('brandId', 'brandName')
       .sort({ createdAt: -1 });
       
     res.json(orders);
   } catch (error) {
+    console.error('Get orders error:', error);
     res.status(500).json({ message: 'Server Error', error: error.message });
   }
 });
 
-// 3. AUTHORIZE ORDER (Company or Authorizer)
-// PUT /api/orders/:id/authorize
+// 3. GET SINGLE ORDER
+router.get('/:id', protect, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id)
+      .populate('createdBy', 'name email role')
+      .populate('brandId', 'brandName')
+      .populate({
+        path: 'history.changedBy',
+        select: 'name email role'
+      });
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // Check authorization
+  const isAdmin = ['admin', 'superadmin'].includes(req.user.role);
+  const userBrandId = req.user.brandId || (req.user.role === 'company' ? req.user._id : null);
+  const hasAccess = isAdmin || (userBrandId && order.brandId && order.brandId._id.toString() === userBrandId.toString());
+
+    if (!hasAccess) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    res.json(order);
+  } catch (error) {
+    console.error('Get order error:', error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
+
+// 4. AUTHORIZE ORDER (Authorizer or Company)
 router.put('/:id/authorize', protect, authorize('company', 'authorizer'), async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
@@ -89,10 +193,10 @@ router.put('/:id/authorize', protect, authorize('company', 'authorizer'), async 
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    // Verify company ownership
-    const userCompanyId = req.user.role === 'company' ? req.user._id : req.user.companyId;
-    if (order.company.toString() !== userCompanyId.toString()) {
-        return res.status(403).json({ message: 'Not authorized for this order' });
+    // Verify ownership by brand only
+    const userBrandId = req.user.brandId || (req.user.role === 'company' ? req.user._id : null);
+    if (!order.brandId || !userBrandId || order.brandId.toString() !== userBrandId.toString()) {
+      return res.status(403).json({ message: 'Not authorized for this order' });
     }
 
     if (order.status !== 'Pending Authorization') {
@@ -104,208 +208,394 @@ router.put('/:id/authorize', protect, authorize('company', 'authorizer'), async 
       status: 'Authorized',
       changedBy: req.user._id,
       role: req.user.role,
-      comment: 'Order Authorized'
+      comment: 'Order authorized and sent to Super Admin for processing'
     });
 
     await order.save();
+    
+    // Send email notifications
+    const recipients = await getNotificationRecipients(order);
+    await sendOrderStatusEmail(recipients, {
+      orderId: order.orderId,
+      productName: order.productName,
+      brand: order.brand,
+      quantity: order.quantity,
+      status: order.status,
+      changedBy: req.user.name || req.user.email
+    }, `Order authorized by ${req.user.name || req.user.email}. Awaiting Super Admin processing.`);
+    
     res.json(order);
   } catch (error) {
+    console.error('Authorize order error:', error);
     res.status(500).json({ message: 'Server Error', error: error.message });
   }
 });
 
-// 4. AUTHENTICK ACCEPT & PRINT (Super Admin)
-// PUT /api/orders/:id/accept
-router.put('/:id/accept', protect, authorize('admin', 'superadmin'), async (req, res) => {
-    try {
-      const order = await Order.findById(req.params.id).populate('company');
-  
-      if (!order) {
-        return res.status(404).json({ message: 'Order not found' });
-      }
-  
-      if (order.status !== 'Authorized') {
-        return res.status(400).json({ message: 'Order needs to be authorized first' });
-      }
-  
-      order.status = 'Accepted & Ready to Print';
-      order.history.push({
-        status: 'Accepted & Ready to Print',
-        changedBy: req.user._id, // Admin
-        role: 'admin',
-        comment: 'Accepted for printing'
+// 5. PROCESS ORDER & GENERATE QRs (Super Admin)
+router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id).populate('brandId').populate('company');
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    if (order.status !== 'Authorized') {
+      return res.status(400).json({ message: 'Order must be authorized first' });
+    }
+
+    // Update status to processing
+    order.status = 'Order Processing';
+    order.history.push({
+      status: 'Order Processing',
+      changedBy: req.user._id,
+      role: req.user.role,
+      comment: 'Generating QR codes...'
+    });
+
+    await order.save();
+
+    // GENERATE QR CODES
+    const productsToCreate = [];
+    const qty = order.quantity;
+    const brandName = order.brand;
+    
+    // Find last sequence number for this brand
+    const lastProduct = await Product.findOne({ brand: brandName }).sort({ sequence: -1 });
+    let startSeq = lastProduct && lastProduct.sequence ? lastProduct.sequence + 1 : 1;
+
+    // Try to resolve Brand record for this order if available
+    const brandDoc = await Brand.findOne({ brandName: brandName });
+
+    for (let i = 0; i < qty; i++) {
+      const currentSeq = startSeq + i;
+      const seqString = currentSeq.toString().padStart(6, '0');
+      const uniqueSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+      const qrCode = `${brandName}-${seqString}-${order.orderId}-${uniqueSuffix}`;
+      
+      productsToCreate.push({
+        qrCode,
+        productName: order.productName,
+        brand: brandName,
+        brandId: brandDoc ? brandDoc._id : null,
+        batchNo: order.batchNo,
+        manufactureDate: order.manufactureDate,
+        expiryDate: order.expiryDate,
+        quantity: 1,
+        sequence: currentSeq,
+        orderId: order._id,
+        isActive: false, // QRs are inactive until authorizer receives
+        createdBy: req.user._id
       });
-      
-      // GENERATE QR CODES HERE
-      // We generate 'quantity' number of products linked to this order
-      const productsToCreate = [];
-      const qty = order.quantity;
-      const brandName = order.company ? order.company.name || 'Brand' : 'Brand';
-      
-      // Determine sequence (this logic mimics admin.routes.js)
-      // Note: This might be slow for large quantities. Optimization needed for real prod.
-      const lastProduct = await Product.findOne({ brand: brandName }).sort({ sequence: -1 });
-      let startSeq = lastProduct && lastProduct.sequence ? lastProduct.sequence + 1 : 1;
-
-      for(let i=0; i<qty; i++) {
-        const currentSeq = startSeq + i;
-        const seqString = currentSeq.toString().padStart(4, '0');
-        const uniqueSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
-        const qrCode = `${brandName}-${seqString}-ORD${order.orderId}-${uniqueSuffix}`;
-        
-         productsToCreate.push({
-            qrCode,
-            productName: order.productName,
-            brand: brandName,
-            batchNo: `ORD-${order.orderId}`,
-            // manufactureDate: order.createdAt, // Optional
-            // expiryDate: ..., // Optional
-            quantity: 1,
-            sequence: currentSeq,
-            createdBy: req.user._id // Admin created the QRs
-         });
-      }
-      
-      const createdProducts = await Product.insertMany(productsToCreate);
-      
-      // Save product references to order if needed, but array of IDs might be huge
-      // order.qrCodes = createdProducts.map(p => p.qrCode); 
-
-      await order.save();
-      
-      // Generate PDF logic could be here or separate download endpoint.
-      // For now, we update status.
-      
-      res.json(order);
-    } catch (error) {
-      res.status(500).json({ message: 'Server Error', error: error.message });
     }
-  });
+    
+    await Product.insertMany(productsToCreate);
+    
+    // Update order
+    order.qrCodesGenerated = true;
+    order.qrGeneratedCount = qty;
+    await order.save();
 
-// DOWNLOAD PDF
-router.get('/:id/download', protect, async (req, res) => {
-    try {
-         const order = await Order.findById(req.params.id).populate('company');
-         if (!order) return res.status(404).json({message: 'Not found'});
-         
-         // Helper to check access
-         const isAudit = ['admin'].includes(req.user.role);
-         const isCompany = req.user.role === 'company' && order.company.toString() === req.user._id.toString();
-         const isStaff = ['authorizer', 'creator'].includes(req.user.role) && req.user.companyId && order.company.toString() === req.user.companyId.toString();
-         
-         if (!isAudit && !isCompany && !isStaff) {
-             return res.status(403).json({message: 'Not authorized'});
-         }
-         
-         if (!['Dispatched - Pending Activation', 'Activated'].includes(order.status) && req.user.role !== 'admin') {
-             return res.status(400).json({message: 'PDF not available yet'});
-         }
-
-         // Find products for this order
-         const batchNo = `ORD-${order.orderId}`;
-         const products = await Product.find({ batchNo: batchNo });
-         
-         if (products.length === 0) {
-             return res.status(404).json({message: 'No QR codes generated for this order'});
-         }
-         
-         const pdfBase64 = await generateQrPdf(products, req.user.email);
-         res.json({ pdfBase64 });
-
-    } catch (error) {
-        res.status(500).json({ message: 'Server Error', error: error.message });
-    }
+    // Send email notifications
+    const recipients = await getNotificationRecipients(order);
+    await sendOrderStatusEmail(recipients, {
+      orderId: order.orderId,
+      productName: order.productName,
+      brand: order.brand,
+      quantity: order.quantity,
+      status: order.status,
+      changedBy: req.user.name || req.user.email
+    }, `${qty} QR codes generated successfully.`);
+    
+    res.json({ 
+      message: 'QR codes generated successfully', 
+      order,
+      qrCount: qty 
+    });
+  } catch (error) {
+    console.error('Process order error:', error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
 });
 
-// 5. DISPATCH (Super Admin)
-// PUT /api/orders/:id/dispatch
+// 6. MARK AS DISPATCHING (Super Admin)
+router.put('/:id/dispatching', protect, authorize('admin', 'superadmin'), async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    if (order.status !== 'Order Processing') {
+      return res.status(400).json({ message: 'Order must be in processing state' });
+    }
+
+    order.status = 'Dispatching';
+    order.history.push({
+      status: 'Dispatching',
+      changedBy: req.user._id,
+      role: req.user.role,
+      comment: 'Preparing order for dispatch'
+    });
+
+    await order.save();
+    
+    // Send email notifications
+    const recipients = await getNotificationRecipients(order);
+    await sendOrderStatusEmail(recipients, {
+      orderId: order.orderId,
+      productName: order.productName,
+      brand: order.brand,
+      quantity: order.quantity,
+      status: order.status,
+      changedBy: req.user.name || req.user.email
+    }, `Order is being prepared for dispatch.`);
+    
+    res.json(order);
+  } catch (error) {
+    console.error('Dispatching order error:', error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
+
+// 7. DISPATCH ORDER (Super Admin)
 router.put('/:id/dispatch', protect, authorize('admin', 'superadmin'), async (req, res) => {
-    try {
-      const { trackingNumber, notes } = req.body;
-      const order = await Order.findById(req.params.id);
-  
-      if (!order) {
-        return res.status(404).json({ message: 'Order not found' });
-      }
-  
-      order.status = 'Dispatched - Pending Activation';
-      order.dispatchDetails = {
-          trackingNumber,
-          notes,
-          dispatchedDate: new Date()
-      };
-      
-      order.history.push({
-        status: 'Dispatched - Pending Activation',
-        changedBy: req.user._id, 
-        role: 'admin',
-        comment: 'Order dispatched'
-      });
-  
-      await order.save();
-      res.json(order);
-    } catch (error) {
-      res.status(500).json({ message: 'Server Error', error: error.message });
+  try {
+    const { trackingNumber, courierName, notes } = req.body;
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
     }
+
+    if (order.status !== 'Dispatching') {
+      return res.status(400).json({ message: 'Order must be in dispatching state' });
+    }
+
+    order.status = 'Dispatched';
+    order.dispatchDetails = {
+      trackingNumber: trackingNumber || 'N/A',
+      courierName: courierName || 'N/A',
+      notes,
+      dispatchedDate: new Date()
+    };
+    
+    order.history.push({
+      status: 'Dispatched',
+      changedBy: req.user._id,
+      role: req.user.role,
+      comment: `Dispatched via ${courierName || 'courier'}${trackingNumber ? ` - Tracking: ${trackingNumber}` : ''}`
+    });
+
+    await order.save();
+    
+    // Send email notifications
+    const recipients = await getNotificationRecipients(order);
+    await sendOrderStatusEmail(recipients, {
+      orderId: order.orderId,
+      productName: order.productName,
+      brand: order.brand,
+      quantity: order.quantity,
+      status: order.status,
+      changedBy: req.user.name || req.user.email
+    }, `Order dispatched. ${trackingNumber ? `Tracking: ${trackingNumber}` : ''}`);
+    
+    res.json(order);
+  } catch (error) {
+    console.error('Dispatch order error:', error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
 });
 
-// 6. ACTIVATE (Authorizer or Company)
-// PUT /api/orders/:id/activate
-router.put('/:id/activate', protect, authorize('company', 'authorizer'), async (req, res) => {
-    try {
-      const order = await Order.findById(req.params.id);
-  
-      if (!order) {
-        return res.status(404).json({ message: 'Order not found' });
-      }
-  
-      const userCompanyId = req.user.role === 'company' ? req.user._id : req.user.companyId;
-      if (order.company.toString() !== userCompanyId.toString()) {
-          return res.status(403).json({ message: 'Not authorized for this order' });
-      }
+// 8. MARK AS RECEIVED - FINAL STEP (Authorizer or Company) - ACTIVATES QRs
+router.put('/:id/received', protect, authorize('company', 'authorizer'), async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
 
-      if (order.status !== 'Dispatched - Pending Activation') {
-          return res.status(400).json({ message: 'Order is not pending activation' });
-      }
-  
-      order.status = 'Activated';
-      order.history.push({
-        status: 'Activated',
-        changedBy: req.user._id,
-        role: req.user.role,
-        comment: 'Order Activated'
-      });
-  
-      await order.save();
-      res.json(order);
-    } catch (error) {
-      res.status(500).json({ message: 'Server Error', error: error.message });
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
     }
+
+    // Verify ownership by brand only
+    const userBrandId = req.user.brandId || (req.user.role === 'company' ? req.user._id : null);
+    if (!order.brandId || !userBrandId || order.brandId.toString() !== userBrandId.toString()) {
+      return res.status(403).json({ message: 'Not authorized for this order' });
+    }
+
+    if (order.status !== 'Dispatched') {
+      return res.status(400).json({ message: 'Order must be dispatched first' });
+    }
+
+    // ACTIVATE ALL QR CODES FOR THIS ORDER
+    const updateResult = await Product.updateMany(
+      { orderId: order._id },
+      { $set: { isActive: true } }
+    );
+
+    order.status = 'Received';
+    order.history.push({
+      status: 'Received',
+      changedBy: req.user._id,
+      role: req.user.role,
+      comment: `Order received and ${updateResult.modifiedCount} QR codes activated`
+    });
+
+    await order.save();
+    
+    // Send email notifications
+    const recipients = await getNotificationRecipients(order);
+    await sendOrderStatusEmail(recipients, {
+      orderId: order.orderId,
+      productName: order.productName,
+      brand: order.brand,
+      quantity: order.quantity,
+      status: order.status,
+      changedBy: req.user.name || req.user.email
+    }, `✓ Order completed! ${updateResult.modifiedCount} QR codes are now ACTIVE.`);
+    
+    res.json({ 
+      message: 'Order marked as received and QR codes activated',
+      order,
+      activatedQRs: updateResult.modifiedCount 
+    });
+  } catch (error) {
+    console.error('Receive order error:', error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
 });
 
-// Reject Order
+// 9. REJECT ORDER (Can be done by authorized users at various stages)
 router.put('/:id/reject', protect, async (req, res) => {
-    // Logic for rejection valid for multiple roles at different stages
-    // Keep it simple for now
-    try {
-        const order = await Order.findById(req.params.id);
-        if(!order) return res.status(404).json({message: 'Not found'});
-        
-        // Add permission checks here based on role and state (omitted for brevity)
-
-        order.status = 'Rejected / Cancelled';
-        order.history.push({
-            status: 'Rejected / Cancelled',
-            changedBy: req.user._id,
-            role: req.user.role,
-            comment: req.body.reason || 'Rejected'
-        });
-        await order.save();
-        res.json(order);
-    } catch(e) {
-        res.status(500).json({message: e.message});
+  try {
+    const { reason } = req.body;
+    const order = await Order.findById(req.params.id);
+    
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
     }
+
+    // Permission check
+  const isAdmin = ['admin', 'superadmin'].includes(req.user.role);
+  const userBrandId = req.user.brandId || (req.user.role === 'company' ? req.user._id : null);
+  const isCompanyStaff = ['company', 'authorizer'].includes(req.user.role) && (
+               (userBrandId && order.brandId && order.brandId.toString() === userBrandId.toString())
+               );
+
+    if (!isAdmin && !isCompanyStaff) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+
+    // Don't allow rejection of already received orders
+    if (order.status === 'Received') {
+      return res.status(400).json({ message: 'Cannot reject a completed order' });
+    }
+
+    order.status = 'Rejected';
+    order.history.push({
+      status: 'Rejected',
+      changedBy: req.user._id,
+      role: req.user.role,
+      comment: reason || 'Order rejected'
+    });
+
+    await order.save();
+    
+    // Send email notifications
+    const recipients = await getNotificationRecipients(order);
+    await sendOrderStatusEmail(recipients, {
+      orderId: order.orderId,
+      productName: order.productName,
+      brand: order.brand,
+      quantity: order.quantity,
+      status: order.status,
+      changedBy: req.user.name || req.user.email
+    }, `Order rejected. Reason: ${reason || 'Not specified'}`);
+    
+    res.json(order);
+  } catch (error) {
+    console.error('Reject order error:', error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
 });
 
+// 10. DOWNLOAD PDF
+router.get('/:id/download', protect, authorize('admin', 'superadmin'), async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id).populate('brandId').populate('company');
+    
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    
+    // Only Super Admin/Admin can download. Already handled by middleware authorize
+    
+    if (!order.qrCodesGenerated) {
+      return res.status(400).json({ message: 'QR codes not generated yet' });
+    }
+    
+    // Find products for this order
+    const products = await Product.find({ orderId: order._id }).sort({ sequence: 1 });
+    
+    if (products.length === 0) {
+      return res.status(404).json({ message: 'No QR codes found for this order' });
+    }
+    
+    // Prepare options with order, brand, and company information
+    const pdfOptions = {
+      orderId: order.orderNumber || order._id.toString(),
+      brand: order.brandName || 'N/A',
+      brandId: order.brandId || '',
+      company: order.companyName || 'N/A',
+      companyName: order.companyName || 'N/A'
+    };
+    
+    const pdfBase64 = await generateQrPdf(products, req.user.email || 'user', pdfOptions);
+    res.json({ pdfBase64 });
+
+  } catch (error) {
+    console.error('Download PDF error:', error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
+
+// 11. GET ORDER STATISTICS
+router.get('/stats/summary', protect, async (req, res) => {
+  try {
+    let matchQuery = {};
+
+    // Role-based filtering
+    if (!['admin', 'superadmin'].includes(req.user.role)) {
+      const brandId = req.user.role === 'company' ? (req.user.brandId || req.user._id) : req.user.brandId;
+      matchQuery.brandId = brandId;
+    }
+
+    const stats = await Order.aggregate([
+      { $match: matchQuery },
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 },
+          totalQuantity: { $sum: '$quantity' }
+        }
+      }
+    ]);
+
+    const totalOrders = await Order.countDocuments(matchQuery);
+    const totalQRs = await Order.aggregate([
+      { $match: matchQuery },
+      { $group: { _id: null, total: { $sum: '$quantity' } } }
+    ]);
+
+    res.json({
+      totalOrders,
+      totalQRs: totalQRs[0]?.total || 0,
+      byStatus: stats
+    });
+  } catch (error) {
+    console.error('Stats error:', error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
 
 module.exports = router;

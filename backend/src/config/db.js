@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const MONGO_URI = "mongodb+srv://charankumarreddy03_db_user:oTj41t4ATqEVdP25@cluster0.cirqcii.mongodb.net/authentick";
+const MONGO_URI = process.env.MONGODB_URI || "mongodb://localhost:27017/authentik";
 
 async function connectDb() {
   try {
