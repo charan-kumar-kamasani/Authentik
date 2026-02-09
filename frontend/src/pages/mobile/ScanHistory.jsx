@@ -117,13 +117,13 @@ export default function ScanHistory() {
                   <p><span className="font-bold">Mfd On:</span> {item.content.mfdOn}</p>
                   <p><span className="font-bold">Exp On:</span> {item.content.expOn}</p>
                 </div>
-                {item.content.originalScan && (
+                {/* {item.content.originalScan && (
                   <div className="mt-2 text-[13px] leading-tight opacity-90">
                     <p><span className="font-bold">Original Scan By:</span> {item.content.originalScan.scannedBy}</p>
                     <p><span className="font-bold">Original Scanned At:</span> {new Date(item.content.originalScan.scannedAt).toLocaleString()}</p>
                     <p><span className="font-bold">Place:</span> {item.content.originalScan.place || '-'}</p>
                   </div>
-                )}
+                )} */}
               </div>
             )}
           </div>
