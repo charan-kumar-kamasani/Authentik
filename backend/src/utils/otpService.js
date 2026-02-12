@@ -10,48 +10,41 @@ const PLIVO_API = process.env.PLIVO_API;
 const TEST_PHONENUMBER = process.env.TEST_PHONENUMBER;
 const TEST_OTP = process.env.TEST_OTP;
 
+const msg91_api = process.env.MSG91_API;
+const auth_key = process.env.AUTH_KEY;
+const otp_expiry = process.env.OTP_EXPIRY;
+const template_id = process.env.TEMPLATE_ID;
+
 // Note: This file uses global fetch which is available in Node 18+.
 // If you run an older Node version add a fetch polyfill (node-fetch) or upgrade Node.
 
 const sendOTP = async (countryCode, phoneNumber) => {
   try {
-
     if (phoneNumber !== TEST_PHONENUMBER) {
-      const response = await fetch(
-        `${PLIVO_API}/Account/${PLIVO_AUTH_ID}/Verify/Session`,
-        {
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            Authorization:
-              "Basic " +
-              Buffer.from(`${PLIVO_AUTH_ID}:${PLIVO_AUTH_TOKEN}`).toString(
-                "base64",
-              ),
-          },
-          method: "POST",
-          body: JSON.stringify({ recipient: `${countryCode}${phoneNumber}` }),
+      const mobile = `${countryCode}${phoneNumber}`;
+
+      const url = `${msg91_api}?mobile=+91${mobile}&authkey=${auth_key}&otp_expiry=10&template_id=${template_id}&realTimeResponse=1`;
+      console.log("____url", url);
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
         },
-      );
+      });
 
       const json = await response.json().catch(() => ({}));
 
-      // Plivo returns 202 Accepted on success (verify session created)
-      if (
-        response.ok &&
-        (response.status === 202 || response.statusText === "Accepted")
-      ) {
+      if (response.ok) {
         return { success: true, message: "OTP sent successfully" };
       }
 
       return {
         success: false,
-        message:
-          json?.error || "Error occurred while sending OTP. Please try later!",
+        message: json?.message || "Error sending OTP",
       };
     }
 
-    // test number: always succeed
     return { success: true, message: "OTP sent successfully" };
   } catch (error) {
     console.error("sendOTP error", error);
@@ -64,65 +57,31 @@ const sendOTP = async (countryCode, phoneNumber) => {
 
 const verifyOTP = async (countryCode, phoneNumber, code) => {
   try {
-
+    console.log("__________", phoneNumber);
     if (phoneNumber !== TEST_PHONENUMBER) {
-      // fetch the latest in-progress session for recipient
       const sessionResponse = await fetch(
-        `${PLIVO_API}/Account/${PLIVO_AUTH_ID}/Verify/Session?recipient=${countryCode}${phoneNumber}&status=in-progress&limit=1`,
+        `${msg91_api}/verify?otp=${code}&mobile=+91${phoneNumber}`,
         {
           headers: {
             Accept: "application/json",
             "Content-Type": "application/json",
-            Authorization:
-              "Basic " +
-              Buffer.from(`${PLIVO_AUTH_ID}:${PLIVO_AUTH_TOKEN}`).toString(
-                "base64",
-              ),
+            authkey: `${auth_key}`,
           },
           method: "GET",
         },
       );
 
-      const sessionJson = await sessionResponse.json().catch(() => ({}));
-
-      if (sessionResponse.ok) {
-        const sessions = sessionJson?.sessions || [];
-        if (sessions.length > 0) {
-          const sessionId = sessions[0].session_uuid;
-
-          const verifyResponse = await fetch(
-            `${PLIVO_API}/Account/${PLIVO_AUTH_ID}/Verify/Session/${sessionId}`,
-            {
-              headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-                Authorization:
-                  "Basic " +
-                  Buffer.from(`${PLIVO_AUTH_ID}:${PLIVO_AUTH_TOKEN}`).toString(
-                    "base64",
-                  ),
-              },
-              method: "POST",
-              body: JSON.stringify({ otp: code }),
-            },
-          );
-
-          const verifyJson = await verifyResponse.json().catch(() => ({}));
-          
-          // Plivo returns 200 OK on successful verification
-          if (verifyResponse.ok) {
-            return { success: true, message: "OTP verified successfully" };
-          }
-        }
-      }
-
+      console.log(
+        "____Session",
+        sessionResponse.status,
+        sessionResponse.statusText,
+      );
+      if ((sessionResponse.status == 200, sessionResponse.statusText == "OK"))
+        return { success: true, message: "OTP verified successfully" };
       return { success: false, message: "Invalid OTP" };
     }
 
     // test number bypass
-    if (code === TEST_OTP)
-      return { success: true, message: "OTP verified successfully" };
-    return { success: false, message: "Invalid OTP" };
   } catch (error) {
     console.error("verifyOTP error", error);
     return { success: false, message: "Error occurred while verifying OTP" };

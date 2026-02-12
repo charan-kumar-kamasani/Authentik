@@ -44,8 +44,8 @@ export default function OTP() {
   // though screen shows just "6 Digit Code" placeholder in single input.
 
   async function login() {
-    if (otp.length !== 6) {
-      alert("Please enter the 6-digit OTP");
+    if (otp.length !== 4) {
+      alert("Please enter the 4-digit OTP");
       return;
     }
 
