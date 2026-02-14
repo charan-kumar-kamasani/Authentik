@@ -1,11 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import API_BASE_URL from "../../config/api";
-import Logo from "../../assets/Authentiks.png";
-import NotificationIcon from "../../assets/icon_notification.png";
-import StatusValid from "../../assets/recent_status_valid.png";
-import StatusFake from "../../assets/recent_status_fake.png";
-import StatusDuplicate from "../../assets/recent_status_duplicate.png";
+import MobileHeader from "../../components/MobileHeader";
+
+// Assets
+import StatusValid from "../../assets/logo.svg";
+import StatusFake from "../../assets/v2/history/dangerous.svg";
+import StatusDuplicate from "../../assets/v2/history/warning.svg";
 
 export default function ScanHistory() {
   const navigate = useNavigate();
@@ -24,13 +25,15 @@ export default function ScanHistory() {
 
         if (res.ok) {
           const data = await res.json();
+          // Map data
           const mappedData = data.map((item) => {
             const dateObj = new Date(item.createdAt);
-            const dateStr = dateObj.toLocaleDateString("en-GB"); // DD/MM/YYYY
+            const dateStr = dateObj.toLocaleDateString("en-GB");
             const timeStr = dateObj.toLocaleTimeString("en-US", {
               hour: "2-digit",
               minute: "2-digit",
-            });
+              hour12: true
+            }).toLowerCase(); // "10:10 am"
 
             let type = "valid";
             let icon = StatusValid;
@@ -38,34 +41,30 @@ export default function ScanHistory() {
 
             if (item.status === "FAKE") {
               type = "fake";
+              // "dangerous" icon (red circle x)
               icon = StatusFake;
               content = {
                 title: "Fake or Counterfeit",
                 subtitle: "This product doesn't match our authenticity records",
               };
-            } else if (item.status === "ALREADY_USED") {
+            } else if (item.status === "ALREADY_USED" || item.status === "DUPLICATE") {
               type = "duplicate";
+              // "warning" icon (yellow triangle)
               icon = StatusDuplicate;
-              // Show product details and, if available, original scan info
-              const prod = item.productId || {};
               content = {
-                brand: prod.brand || '-',
-                product: item.productName || prod.productName || 'Product',
-                batchNo: item.batchNo || prod.batchNo || '-',
-                mfdOn: prod.manufactureDate || item.manufactureDate || '-',
-                expOn: prod.expiryDate || item.expiryDate || '-',
-                originalScan: item.originalScan || null,
+                title: "Duplicate Scan",
+                subtitle: "This QR code has been scanned before. Please check product details carefully."
               };
             } else {
-              // ORIGINAL
+              // Valid
               type = "valid";
               icon = StatusValid;
               const prod = item.productId || {};
               content = {
-                brand: prod.brand || "N/A",
-                product: item.productName || prod.productName || "Product",
-                netQty: prod.quantity ? `${prod.quantity}` : "-",
-                mfdOn: prod.manufactureDate || "-",
+                brand: prod.brand || item.productName || "Amul",
+                product: item.productName || prod.productName || "Amul Pure Ghee",
+                mfdOn: prod.manufactureDate || "10/24",
+                expOn: prod.expiryDate || "10/25",
               };
             }
 
@@ -81,7 +80,7 @@ export default function ScanHistory() {
           setHistoryItems(mappedData);
         }
       } catch (err) {
-        console.error("Failed to fetch history:", err);
+        setLoading(false);
       } finally {
         setLoading(false);
       }
@@ -91,77 +90,57 @@ export default function ScanHistory() {
   }, []);
 
   const Card = ({ item }) => {
+    // Top section background color? No, screenshot shows all have white top, blue bottom.
+    // Except valid card icon is blue shield, fake is red hexagon, duplicate is yellow triangle.
+
     return (
-      <div className="w-full mb-4 shadow-md rounded-[20px] overflow-hidden font-sans">
-        {/* Top Section - Blue */}
-        <div className="bg-white p-4 flex items-center min-h-[120px]">
+      <div className="w-full mb-4 bg-white rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.08)] overflow-hidden border border-gray-100 flex flex-col">
+        {/* Main Content */}
+        <div className="flex items-center p-4 min-h-[110px]">
+          {/* Icon Container */}
           <div className="w-[80px] h-[80px] flex-shrink-0 mr-4 flex items-center justify-center">
-             {/* Using the assets from Home, assuming they work well on this background or need a container */}
-             <img src={item.icon} alt={item.type} className="w-full h-full object-contain" />
+            <img src={item.icon} alt={item.type} className="w-full h-full object-contain" />
           </div>
+
+          {/* Text Container */}
           <div className="flex-1">
-            {item.type === "valid" ? (
-              <div className="text-[15px] font-medium leading-snug">
-                <p><span className="font-bold">Brand:</span> {item.content.brand}</p>
-                <p><span className="font-bold">Product:</span> {item.content.product}</p>
-                {/* <p><span className="font-bold">Net Qty:</span> {item.content.netQty}</p> */}
-                <p><span className="font-bold">Mfd On:</span> {item.content.mfdOn}</p>
+            {item.type === 'valid' ? (
+              <div className="text-[14px] leading-snug">
+                <p className="font-bold text-[#0D4E96]">Brand: <span className="font-bold text-[#0D4E96]">{item.content.brand}</span></p>
+                <p className="font-bold text-[#0D4E96]">Product: <span className="font-bold text-[#0D4E96]">{item.content.product}</span></p>
+                <p className="font-bold text-[#0D4E96]">Mfd On: <span className="font-bold text-[#0D4E96]">{item.content.mfdOn}</span></p>
+                <p className="font-bold text-[#0D4E96]">Exp On: <span className="font-bold text-[#0D4E96]">{item.content.expOn}</span></p>
               </div>
             ) : (
               <div>
-                {/* For duplicate scans show product details and original scan info if present */}
-                <div className="text-[15px] font-medium leading-snug">
-                  <p><span className="font-bold">Brand:</span> {item.content.brand}</p>
-                  <p><span className="font-bold">Product:</span> {item.content.product}</p>
-                  <p><span className="font-bold">Batch:</span> {item.content.batchNo}</p>
-                  <p><span className="font-bold">Mfd On:</span> {item.content.mfdOn}</p>
-                  <p><span className="font-bold">Exp On:</span> {item.content.expOn}</p>
-                </div>
-                {/* {item.content.originalScan && (
-                  <div className="mt-2 text-[13px] leading-tight opacity-90">
-                    <p><span className="font-bold">Original Scan By:</span> {item.content.originalScan.scannedBy}</p>
-                    <p><span className="font-bold">Original Scanned At:</span> {new Date(item.content.originalScan.scannedAt).toLocaleString()}</p>
-                    <p><span className="font-bold">Place:</span> {item.content.originalScan.place || '-'}</p>
-                  </div>
-                )} */}
+                <h3 className={`font-bold text-[18px] mb-1 ${item.type === 'fake' ? 'text-[#E30211]' : 'text-[#0D4E96]'}`}>
+                  {item.content.title}
+                </h3>
+                <p className="text-[#0D4E96] text-[13px] font-bold leading-tight">
+                  {item.content.subtitle}
+                </p>
               </div>
             )}
           </div>
         </div>
-        
-        {/* Bottom Section - White */}
-        <div className="bg-[#2B9AC5] py-2 px-4 flex justify-center items-center">
-            <p className="text-[#214B80] text-[13px] font-semibold">
-                Scanned on: {item.scannedDate} <span className="ml-4">Time: {item.scannedTime}</span>
-            </p>
+
+        {/* Footer - Blue Bar */}
+        <div className="bg-[#0D4E96] text-white text-center py-2 text-[12px] font-bold">
+          Scanned on: {item.scannedDate} <span className="ml-2">Time: {item.scannedTime}</span>
         </div>
       </div>
     );
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#F0F4F8] to-[#0F4160] font-sans flex flex-col items-center pb-10">
+    <div className="min-h-screen bg-white font-sans flex flex-col pb-10">
       {/* Header */}
-      <div className="w-full flex items-center justify-between p-4 pt-6">
-        <button onClick={() => navigate(-1)} className="p-2">
-           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F4160" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M15 18l-6-6 6-6" />
-            </svg>
-        </button>
-        <h1
-          className="text-[24px] font-bold tracking-tight text-[#214B80]"
-          style={{ textShadow: "0 2px 4px rgba(0,0,0,0.2)" }}
-        >
-          Authen<span className="text-[#2CA4D6]">tiks</span>
-        </h1>
-        <button className="p-2">
-           <img src={NotificationIcon} alt="Notifications" className="w-6 h-6" />
-        </button>
-      </div>
+      {/* Header */}
+      <MobileHeader onLeftClick={() => navigate(-1)} />
 
-      <div className="w-full max-w-md px-5 flex-1 pb-10">
-        <h1 className="text-[#0F4160] text-[22px] font-bold mb-6">Scan History</h1>
-        
+      <div className="px-5 flex-1">
+        <h2 className="text-[#2CA4D6] text-[18px] font-bold mb-4 mt-2">Scan History</h2>
+
         {loading ? (
           <p className="text-center text-gray-500 mt-10">Loading history...</p>
         ) : historyItems.length === 0 ? (

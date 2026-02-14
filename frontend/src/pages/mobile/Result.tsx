@@ -1,368 +1,303 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import authenticStamp from "../../assets/status_valid.png";
-import fakeStamp from "../../assets/status_fake.png";
-import duplicateStamp from "../../assets/status_duplicate.png";
-import ResultCard from "../../components/ResultCard";
+import { useEffect, useState } from "react";
 
-function ResultContent({
-  status,
-  data,
-}: {
-  status: string | undefined;
-  data: any;
-}) {
-  const innerNavigate = useNavigate();
+// Assets
+import logo from "../../assets/logo.svg"; // Fallback or use standard logo
+import authenticIcon from "../../assets/logo.svg";
+import warningIcon from "../../assets/v2/home/header/warning.svg"; // Triangle
+import fakeIcon from "../../assets/v2/home/header/dangerous.svg"; // Red X
 
-  const maskPhone = (value?: string | number): string => {
-    if (!value) return "Unknown";
-
-    const str = value.toString();
-
-    if (str.length < 6) return str;
-
-    return `${str.slice(0, 3)}xxxx${str.slice(-3)}`;
-  };
-
-  // Helper to render Genuine UI
-  if (status === "ORIGINAL") {
-    return (
-      <ResultCard
-        color="#0B610A"
-        icon={authenticStamp}
-        title={
-          data.productName ||
-          (data.productId && data.productId.productName) ||
-          "Unknown Product"
-        }
-        buttonText="Click to Review"
-        iconSize="w-40 h-40"
-        imageContainerClassName=""
-      >
-        <div className="text-sm leading-relaxed space-y-1 font-medium opacity-95">
-          <p>
-            <span className="font-bold">Brand:</span>{" "}
-            {data.brand || (data.productId && data.productId.brand) || "-"}
-          </p>
-          {/* <p><span className="font-bold">Net Weight:</span> {data.quantity || (data.productId && data.productId.quantity) || '-'}</p> */}
-          <p>
-            <span className="font-bold">Batch No:</span>{" "}
-            {data.batchNo || (data.productId && data.productId.batchNo) || "-"}
-          </p>
-          <p>
-            <span className="font-bold">Mfd Date:</span>{" "}
-            {data.manufactureDate ||
-              (data.productId && data.productId.manufactureDate) ||
-              "-"}
-          </p>
-          <p>
-            <span className="font-bold">Exp Date:</span>{" "}
-            {data.expiryDate ||
-              (data.productId && data.productId.expiryDate) ||
-              "-"}
-          </p>
-        </div>
-
-        <div className="mt-4">
-          <p className="font-bold text-white text-sm mb-1">
-            Additional Details:
-          </p>
-          <p className="text-[11px] text-white/80 leading-snug">
-            Pantene shampoos contain ingredients like water for hydration,
-            sodium lauryl sulfate and cocamidopropyl betaine for cleansing and
-            ther, dimethicone for smoothness and shine.
-          </p>
-          <div className="w-full flex justify-center mt-2 cursor-pointer opacity-70">
-            <svg
-              className="w-5 h-5 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M19 9l-7 7-7-7"
-              ></path>
-            </svg>
-          </div>
-        </div>
-      </ResultCard>
-    );
-  }
-
-  // Helper to render Fake UI
-  if (status === "FAKE") {
-    return (
-      <ResultCard
-        color="#E30211"
-        icon={fakeStamp}
-        title="Fake Product"
-        buttonText="Click to Report"
-        iconSize="w-48 h-32"
-      >
-        <div className="pt-4 text-center">
-          <p className="text-white font-bold text-[15px] mb-4 leading-snug">
-            The scanned product is a Counterfeit or its not a registered product
-            with Authentiks
-          </p>
-          <p className="text-white font-bold text-[15px] mb-6 leading-snug">
-            Millions like you are unknowingly put at risk by consuming or using
-            counterfeit products.
-          </p>
-          <p className="text-white text-sm font-semibold mb-2">
-            Help us protect others <br /> Report this product now
-          </p>
-        </div>
-      </ResultCard>
-    );
-  }
-
-  // Helper to render Inactive UI (richer, matches other result screens)
-  if (status === "INACTIVE") {
-    const productName =
-      data?.productName || data?.product?.productName || "Unknown Product";
-    const brand = data?.product?.brand || data?.brand || "-";
-    const batchNo = data?.product?.batchNo || data?.batchNo || "-";
-
-    const handleContact = () => {
-      const subject = encodeURIComponent(`Inactive QR Code: ${productName}`);
-      const body = encodeURIComponent(
-        `I scanned the QR code (${data?.qrCode || ""}) and it returned as INACTIVE.\n\nProduct: ${productName}\nBrand: ${brand}\nBatch: ${batchNo}\n\nPlease assist.`,
-      );
-      window.location.href = `mailto:support@authentick.com?subject=${subject}&body=${body}`;
-    };
-
-    return (
-      <ResultCard
-        color="#6B7280"
-        icon={duplicateStamp}
-        title={productName}
-        buttonText="Contact Support"
-        iconSize="w-40 h-40"
-        onButtonClick={handleContact}
-      >
-        <div className="pt-4 text-center">
-          <p className="text-white font-bold text-[15px] mb-2 leading-snug">
-            This QR code has been deactivated and cannot be used to verify the
-            product.
-          </p>
-
-          <p className="text-white text-sm mb-4">
-            If you purchased this recently or believe this is an error, contact
-            the vendor or Authentiks support for help.
-          </p>
-
-          <div className="text-left bg-white/10 rounded-md p-3 mt-3">
-            <p className="text-white font-semibold text-sm">Product</p>
-            <p className="text-white text-sm mb-2">{productName}</p>
-
-            <div className="grid grid-cols-2 gap-2 text-white text-sm">
-              <div>
-                <div className="font-bold text-xs">Brand</div>
-                <div className="text-xs">{brand}</div>
-              </div>
-              <div>
-                <div className="font-bold text-xs">Batch</div>
-                <div className="text-xs">{batchNo}</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 flex flex-col items-center gap-3">
-            <button
-              onClick={() => innerNavigate("/scan")}
-              className="text-white underline text-sm"
-            >
-              Scan Again
-            </button>
-
-            <button
-              onClick={() => innerNavigate("/home")}
-              className="text-white/80 text-sm"
-            >
-              Back to Home
-            </button>
-          </div>
-        </div>
-      </ResultCard>
-    );
-  }
-
-  // Helper to render Already Scanned UI
-  if (
-    status === "FAKE" ||
-    status === "ALREADY_SCANNED" ||
-    status === "ALREADY_USED"
-  ) {
-    return (
-      <ResultCard
-        color="#DFB408"
-        icon={duplicateStamp}
-        title="Already Scanned"
-        buttonText="Click to Report"
-        iconSize="w-32 h-32"
-      >
-        <div className="text-left">
-          <p className="text-white/90 mb-3 text-sm font-medium">
-            Product was scanned by:
-          </p>
-
-          <div className="grid grid-cols-[80px_1fr] gap-y-1 mb-6 text-sm font-medium">
-            <span className="text-white font-bold">User:</span>
-            <span className="text-white overflow-hidden text-ellipsis">
-              {maskPhone(data.originalScan?.scannedBy)}
-            </span>
-
-            <span className="text-white font-bold">Product:</span>
-            <span className="text-white">
-              {data.productName ||
-                (data.productId && data.productId.productName) ||
-                "Unknown Product"}
-            </span>
-
-            <span className="text-white font-bold">Brand:</span>
-            <span className="text-white">
-              {data.brand || (data.productId && data.productId.brand) || "-"}
-            </span>
-
-            <span className="text-white font-bold">Batch:</span>
-            <span className="text-white">
-              {data.batchNo ||
-                (data.productId && data.productId.batchNo) ||
-                "-"}
-            </span>
-
-            <span className="text-white font-bold">Mfd Date:</span>
-            <span className="text-white">
-              {data.manufactureDate ||
-                (data.productId && data.productId.manufactureDate) ||
-                "-"}
-            </span>
-
-            <span className="text-white font-bold">Exp Date:</span>
-            <span className="text-white">
-              {data.expiryDate ||
-                (data.productId && data.productId.expiryDate) ||
-                "-"}
-            </span>
-
-            <span className="text-white font-bold">Scanned On:</span>
-            <span className="text-white">
-              {data.originalScan?.scannedAt
-                ? new Date(data.originalScan.scannedAt).toLocaleString()
-                : data.scannedAt
-                  ? new Date(data.scannedAt).toLocaleString()
-                  : "-"}
-            </span>
-
-            <span className="text-white font-bold">Place:</span>
-            <span className="text-white leading-tight">
-              {data.originalScan?.place || data.place || "-"}
-            </span>
-          </div>
-
-          <p className="font-bold text-white mb-1 text-sm">Possibilities:</p>
-          <p className="text-white/90 text-[13px] mb-2 leading-tight">
-            You have a product which was scanned on other device.
-          </p>
-          <p className="text-white/90 text-[13px] leading-tight">
-            Counterfeit QR code to sell you a fake product.
-          </p>
-        </div>
-      </ResultCard>
-    );
-  }
-
-  return null;
-}
+import productImg from "../../assets/product_placeholder.png"; // Need a placeholder or real image
 
 export default function Result() {
-  const { status } = useParams();
-  const navigate = useNavigate();
-  const { state } = useLocation();
+    const { status } = useParams();
+    const navigate = useNavigate();
+    const { state } = useLocation();
 
-  // Safety: direct URL access / refresh
-  if (!state && !status) {
-    // Only checking !state might be strict if doing dev testing, but fine for prod
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-        <p className="mb-4 text-gray-600">Invalid scan session</p>
-        <button
-          onClick={() => navigate("/home")}
-          className="bg-black text-white px-6 py-3 rounded"
-        >
-          Scan Again
-        </button>
-      </div>
-    );
-  }
-
-  // Define data object defensively
-  const data = state || {};
-
-  // Determine theme color based on status
-  const getThemeColor = () => {
-    switch (status) {
-      case "ORIGINAL":
-        return "#0B610A";
-      case "FAKE":
-        return "#E30211";
-      case "DUPLICATE":
-      case "ALREADY_SCANNED":
-      case "ALREADY_USED":
-        return "#DFB408";
-      default:
-        return "#FFFFFF";
+    // Safety: direct URL access handling
+    if (!state && !status) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-white p-4 text-center">
+                <p className="mb-4 text-gray-600">Invalid scan session</p>
+                <button
+                    onClick={() => navigate("/home")}
+                    className="bg-[#0D4E96] text-white px-6 py-3 rounded-full font-bold"
+                >
+                    Scan Again
+                </button>
+            </div>
+        );
     }
-  };
 
-  const themeColor = getThemeColor();
+    const data = state || {};
 
-  return (
-    <div
-      className="min-h-screen font-sans flex flex-col items-center relative overflow-hidden"
-      style={{
-        background: `linear-gradient(to bottom, #FFFFFF 17%, ${themeColor} 35%)`,
-      }}
-    >
-      {/* Background Overlay for better text readability if needed, or just let the gradient be */}
-
-      {/* Header */}
-      <div className="w-full flex items-center p-4 sticky top-0 z-10 bg-transparent">
-        <button
-          onClick={() => navigate("/home")}
-          className="p-2 text-[#0F4160]"
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path
-              d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-        <div className="flex-1 text-center pr-10">
-          <h1 className="text-[22px] font-bold tracking-tight text-[#0F4160]">
-            Authen<span className="text-[#32ADD8]">tiks</span>
-          </h1>
-        </div>
-      </div>
-
-      <div className="w-full max-w-sm px-6 pt-4 pb-24 z-10">
-        <ResultContent status={status} data={data} />
-      </div>
-    </div>
-  );
+    // Render based on status
+    if (status === "ORIGINAL") {
+        return <ResultAuthentic data={data} />;
+    } else if (status === "ALREADY_USED" || status === "ALREADY_SCANNED" || status === "DUPLICATE") {
+        return <ResultRepeat data={data} />;
+    } else if (status === "FAKE") {
+        return <ResultFake data={data} />;
+    } else {
+        // Fallback/Default
+        return <ResultFake data={data} />;
+    }
 }
+
+// --- Sub-Components ---
+
+function Header({ title = "Authentiks", showBell = true }) {
+    const navigate = useNavigate();
+    return (
+        <div className="w-full flex items-center justify-between p-4 bg-white sticky top-0 z-50 shadow-sm/50">
+            <button onClick={() => navigate("/home")} className="text-[#0D4E96] p-1">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 18l-6-6 6-6" />
+                </svg>
+            </button>
+            <h1 className="text-[20px] font-bold text-[#0D4E96] tracking-tight">{title}</h1>
+            {showBell ? (
+                <button className="text-[#0D4E96] p-1">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#0D4E96" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.36 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.63 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z" />
+                    </svg>
+                </button>
+            ) : <div className="w-8"></div>}
+        </div>
+    );
+}
+
+function ResultAuthentic({ data }) {
+    // Determine colors
+    const themeColor = "#2CA4D6"; // Blue
+    const productName = data.productName || "Herbtox+";
+
+    return (
+        <div className="min-h-screen bg-[#F5F5F5] font-sans flex flex-col items-center">
+            <Header />
+
+            <div className="w-full max-w-md px-4 py-4 flex flex-col  pb-24">
+
+                {/* Status Card */}
+                <div className="bg-[#2CA4D6] rounded-t-[16px] p-4 text-center text-white relative shadow-md z-10">
+                    <div className="flex flex-row items-center gap-2">
+                        <div className="bg-white rounded-full">
+                            <img src={authenticIcon} alt="Authentic" className="w-10 h-10 object-contain" />
+
+                        </div>
+                        <div className="text-left">
+                            <h2 className="text-[18px] font-bold leading-tight">Authentic Product</h2>
+                            <p className="text-[12px] opacity-90 font-medium">This product has been verified as genuine</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-white shadow-sm rounded-b-[16px]">
+
+                    {/* Product Image & Name Section - Overlaps/Connects visually */}
+                    <div className="bg-white pb-6  flex flex-col items-center relative gap-3">
+                        <div className="w-full bg-[#1F2642] py-2 text-center">
+                            <h3 className="text-white font-bold text-[20px]">{productName}</h3>
+                        </div>
+                        <div className="relative w-32 h-32 mt-4">
+                            {/* Placeholder for Product Image */}
+                            <img src={data.productStats || "https://placehold.co/200x200?text=Product"} alt={productName} className="w-full h-full object-contain mix-blend-multiply" />
+                            <img src={authenticIcon} className="absolute bottom-0 right-0 w-8 h-8" alt="Verified" />
+                        </div>
+                    </div>
+
+                    <div className="p-2">
+
+                        {/* Grid Details */}
+                        <div className="grid grid-cols-2 gap-3">
+                            <DetailBox label="Brand" value={data.brand || "Indian Essence"} />
+                            <DetailBox label="Category" value={data.category || "Pharma"} />
+                            <DetailBox label="Batch #" value={data.batchNo || "25SD3F"} />
+                            <DetailBox label="Verified On" value={data.scannedAt ? new Date(data.scannedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : "20/Oct/2025"} />
+                            <DetailBox label="Mfd on" value={data.manufactureDate || "May 2025"} />
+                            <DetailBox label="Exp on" value={data.expiryDate || "May 2027"} />
+                        </div>
+
+                        {/* Additional Info */}
+                        <div className="">
+                            <h4 className="font-bold text-[#333] text-[18px] mb-2 mt-4">Additional Info:</h4>
+                            <div className="bg-[#F8F8F8] p-2 rounded-[16px] shadow-[2px_2px_1px_1px_rgba(1,1,1,0.1)]">
+
+                                <p className="text-[#666] text-[16px] mb-4">
+                                    {data.description || `${productName} is a carefully formulated herbal blood purifier syrup designed to support the body's natural detox process. Enriched with time-tested herbs.`}
+                                </p>
+
+                                <h4 className="font-bold text-[#333] text-[14px] mb-2">Key Benefits</h4>
+                                <ul className="list-disc pl-5 text-[#6E6D6B] text-[16px]">
+                                    <li>Supports natural blood purification</li>
+                                    <li>Helps reduce toxins from the body</li>
+                                    <li>Promotes healthy, clear skin</li>
+                                    <li>Supports liver function and metabolism</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Review Button */}
+                <button className="w-full bg-gradient-to-r from-[#0E5CAB] to-[#1F2642] text-white font-bold text-[18px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(14,92,171,0.3)] mt-2">
+                    Review Product
+                </button>
+            </div>
+        </div>
+    );
+}
+
+function ResultRepeat({ data }) {
+    return (
+        <div className="min-h-screen bg-[#F5F5F5] font-sans flex flex-col items-center">
+            <Header />
+
+            <div className="w-full max-w-md px-4 py-4 flex flex-col pb-24">
+                {/* Alert Card */}
+                <div className="bg-[#FFA808] rounded-[16px] shadow-[0_10px_20px_rgba(255,168,8,0.3)] text-center text-white flex flex-col items-center gap-3">
+                    <div className="flex flex-col justify-center items-center gap-2 mt-4">
+
+                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+                            <img src={warningIcon} alt="Warning" className="w-10 h-10" />
+                        </div>
+
+                        <h2 className="text-[20px] font-bold uppercase tracking-wide">REPEAT SCAN ALERT</h2>
+                    </div>
+                    <div className="bg-[#444444] p-2 w-full">
+                        <p className="text-[13px] font-medium leading-tight mt-1 opacity-95">
+                            This product has already been scanned and verified earlier on another account
+                        </p>
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-b-[16px] shadow-sm p-2 pt-4">
+                    {/* Details Section */}
+                    <div className="bg-[#F8F8F8] rounded-[16px] p-5 shadow-lg text-center space-y-2 border border-gray-200">
+                        <div>
+                            <p className="text-[#555] text-[12px] font-bold">Already Verified On:</p>
+                            <p className="text-[#333] text-[14px] font-bold">
+                                {data.originalScan?.scannedAt
+                                    ? new Date(data.originalScan.scannedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })
+                                    : "20/Oct/2025  08:30 PM (IST)"}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-[#555] text-[12px] font-bold">Scanned Account No:</p>
+                            <p className="text-[#333] text-[14px] font-bold">{data.originalScan?.scannedBy ? maskPhone(data.originalScan.scannedBy) : "988XXXX144"}</p>
+                        </div>
+                        <div>
+                            <p className="text-[#555] text-[12px] font-bold">Product Verification ID:</p>
+                            <p className="text-[#333] text-[14px] font-bold">{data._id ? data._id.slice(-12).toUpperCase() : "SSG45SHHSB58SBH"}</p>
+                        </div>
+                    </div>
+
+                    {/* Info Text */}
+                    <div className="p-5  space-y-4">
+                        <div>
+                            <h4 className="font-bold text-[#333] text-[13px] mb-1">Why you're seeing this?</h4>
+                            <ul className="list-disc pl-4 text-[#666] text-[11px] space-y-0.5">
+                                <li>This product's digital ID has been used before</li>
+                                <li>Genuine products are typically verified once per unit</li>
+                                <li>Repeated scans can be a sign of tampering or misuse</li>
+                            </ul>
+                        </div>
+
+                        <div>
+                            <h4 className="font-bold text-[#333] text-[13px] mb-1">What should you do?</h4>
+                            <ul className="list-disc pl-4 text-[#666] text-[11px] space-y-0.5">
+                                <li>Avoid purchasing or using this product</li>
+                                <li>Report to local consumer protection agency</li>
+                                <li>Contact the brand directly with batch details</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+
+                {/* Report CTA */}
+                <div className="text-center mt-2">
+                    <p className="text-[#FFA808] font-bold text-[14px]">Help us protect others</p>
+                    <p className="text-[#FFA808] font-bold text-[14px] mb-3">Report this product now</p>
+
+                    <button className="w-full bg-[#FFA808] text-white font-bold text-[18px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(255,168,8,0.4)] hover:bg-[#e59410] transition-colors">
+                        Click to Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+function ResultFake({ data }) {
+    return (
+        <div className="min-h-screen bg-[#F5F5F5] font-sans flex flex-col items-center">
+            <Header />
+
+            <div className="w-full max-w-md px-4 py-4 flex flex-col pb-24">
+                {/* Counterfeit Card - Matches Repeat Alert Card style */}
+                <div className="bg-[#E30211] rounded-[16px] shadow-[0_10px_20px_rgba(227,2,17,0.3)] text-center text-white flex flex-col items-center gap-3">
+                    <div className="flex flex-col justify-center items-center gap-2 mt-4">
+                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+                            <img src={fakeIcon} alt="Counterfeit" className="w-10 h-10" />
+                        </div>
+                        <h2 className="text-[22px] font-bold uppercase tracking-wide">COUNTERFEIT DETECTED</h2>
+                    </div>
+                    <div className="bg-[#444444] p-2 w-full">
+                        <p className="text-[14px] font-medium leading-tight mt-1 opacity-95">
+                            The scanned product is a Counterfeit or its not a registered product with Authentiks
+                        </p>
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-b-[16px] shadow-sm p-2 pt-4">
+                    {/* Health Alert - Styled like Repeat's Details Section */}
+                    <div className="bg-[#F8F8F8] rounded-[16px] p-5 shadow-lg text-center space-y-2 border border-gray-200">
+                        <h3 className="text-[#E30211] font-bold text-[18px] mb-2">Health & Safety Alert</h3>
+                        <p className="text-[#555] text-[15px] leading-relaxed font-bold">
+                            Millions like you are unknowingly put at risk by consuming or using counterfeit products
+                        </p>
+                    </div>
+
+                    {/* Action Steps - Styled like Repeat's Info Text */}
+                    <div className="p-5 space-y-4">
+                        <div>
+                            <h4 className="font-bold text-[#333] text-[16px] mb-2">What should you do?</h4>
+                            <ul className="list-disc pl-5 text-[#666] text-[14px] space-y-1.5 font-medium">
+                                <li>Do not use or consume this product</li>
+                                <li>Report to local consumer protection agency</li>
+                                <li>Contact the brand directly with batch details</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Report CTA */}
+                <div className="text-center mt-4">
+                    <p className="text-[#E30211] font-bold text-[15px]">Help us protect others</p>
+                    <p className="text-[#E30211] font-bold text-[15px] mb-3">Report this product now</p>
+
+                    <button className="w-full bg-[#E30211] text-white font-bold text-[20px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(227,2,17,0.4)] hover:bg-[#c9020f] transition-colors">
+                        Click to Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    )
+}
+
+function DetailBox({ label, value }) {
+    return (
+        <div className="bg-[#259DCF] rounded-[16px] p-3 shadow-lg text-left">
+            <p className="text-white/80 text-[11px] font-bold uppercase tracking-wider mb-0.5">{label}</p>
+            <p className="text-white text-[14px] font-bold leading-tight">{value}</p>
+        </div>
+    )
+}
+
+const maskPhone = (value) => {
+    if (!value) return "Unknown";
+    const str = value.toString();
+    if (str.length < 6) return str;
+    return `${str.slice(0, 3)}xxxx${str.slice(-3)}`;
+};

@@ -32,6 +32,7 @@ const userSchema = new mongoose.Schema(
       default: null,
     }, // Hierarchy tracking
     name: { type: String },
+    ageGroup: { type: String },
     dob: { type: String },
     gender: { type: String },
     country: { type: String },

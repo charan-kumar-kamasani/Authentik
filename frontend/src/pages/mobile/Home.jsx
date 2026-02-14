@@ -1,17 +1,25 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import API_BASE_URL from "../../config/api";
-import homeBanner from "../../assets/home_banner.png";
-import banner1 from "../../assets/corosels/banner_1.jpg";
-import banner2 from "../../assets/corosels/banner_2.jpg";
-import banner3 from "../../assets/corosels/banner_3.jpg";
-import navBrands from "../../assets/nav_brands.png";
-import navAuthentik from "../../assets/nav_authentik.png";
-import navHistory from "../../assets/nav_history.png";
-import statusFake from "../../assets/recent_status_fake.png";
-import statusValid from "../../assets/recent_status_valid.png";
-import statusDuplicate from "../../assets/recent_status_duplicate.png";
-import iconNotification from "../../assets/icon_notification.png";
+import MobileHeader from "../../components/MobileHeader";
+
+// Assets v2
+import banner1 from "../../assets/v2/home/corosel/corosel_1.svg";
+import banner2 from "../../assets/v2/home/corosel/corosel_2.svg";
+import banner3 from "../../assets/v2/home/corosel/corosel_3.png";
+
+import iconTotalScans from "../../assets/v2/home/header/qr.svg";
+import iconAlert from "../../assets/v2/home/header/warning.svg";
+import iconCounterfeit from "../../assets/v2/home/header/dangerous.svg";
+import logo from "../../assets/logo.svg"; // Fallback for Authentiks stats icon
+
+import iconTopBrands from "../../assets/v2/home/category/Group.svg";
+import iconScanHistory from "../../assets/v2/home/category/Vector.svg";
+
+import statusFake from "../../assets/v2/history/dangerous.svg";
+import statusWarning from "../../assets/v2/history/warning.svg";
+// Fallback for valid status as v2 might not have it or it's named differently
+import statusValid from "../../assets/logo.svg";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -45,26 +53,32 @@ export default function Home() {
 
           const mappedData = slicedData.map((item) => {
             const dateObj = new Date(item.createdAt);
-            const dateStr = dateObj.toLocaleDateString("en-GB"); // DD/MM/YYYY
+            // Format: 13/01/26 - 05:30 PM
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const year = String(dateObj.getFullYear()).slice(-2);
             const timeStr = dateObj.toLocaleTimeString("en-US", {
               hour: "2-digit",
               minute: "2-digit",
+              hour12: true
             });
+            const dateStr = `${day}/${month}/${year}`;
 
             let title = "Authentic Product";
             let icon = statusValid;
-            // Uniform background color as per previous mock, or could be dynamic
-            let bgColor = "bg-[#2D9CDB]";
+            let statusColor = "text-[#214B80]";
 
             if (item.status === "FAKE") {
               title = "Fake or Counterfeit";
               icon = statusFake;
-            } else if (item.status === "ALREADY_USED") {
+              statusColor = "text-red-600";
+            } else if (item.status === "ALREADY_USED" || item.status === "DUPLICATE") {
               title = "Duplicate Scan";
-              icon = statusDuplicate;
+              icon = statusWarning;
+              statusColor = "text-amber-500";
             } else {
               // ORIGINAL
-              title = item.productName || "Authentic Product";
+              title = item.productName || "Herbtox+";
             }
 
             return {
@@ -73,7 +87,7 @@ export default function Home() {
               date: dateStr,
               time: timeStr,
               icon,
-              bgColor,
+              statusColor
             };
           });
           setRecentScans(mappedData);
@@ -89,137 +103,115 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white font-sans flex flex-col relative w-full h-full overflow-hidden">
+    <div className="min-h-screen bg-[#F8F9FA] font-sans flex flex-col relative w-full h-full overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3 bg-white fixed top-0 left-0 right-0 z-50 shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
-        <button
-          className="text-[#214B80] p-1"
-          onClick={() => navigate("/profile")}
-        >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
+      <MobileHeader
+        onLeftClick={() => navigate("/profile")}
+        leftIcon={
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="3" y1="12" x2="21" y2="12"></line>
             <line x1="3" y1="6" x2="21" y2="6"></line>
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
-        </button>
-        <h1
-          className="text-[24px] font-bold tracking-tight text-[#214B80]"
-          style={{ textShadow: "0 2px 4px rgba(0,0,0,0.2)" }}
-        >
-          Authen<span className="text-[#2CA4D6]">tiks</span>
-        </h1>
-        <button className="text-[#214B80] p-1">
-          <img
-            src={iconNotification}
-            alt="Notifications"
-            className="w-5 h-5 object-contain"
-          />
-        </button>
-      </div>
+        }
+      />
 
-      <div className="flex-1 overflow-y-auto pb-24 pt-16">
+      <div className="flex-1 overflow-y-auto pb-32">
         {/* Welcome Text */}
-        {/* <div className="text-center py-2">
-          <h2
-            className="text-[#214B80] font-semibold text-[16px]"
-            style={{ textShadow: "0 2px 4px rgba(0,0,0,0.2)" }}
-          >
-            Welcome to Authentiks
+        <div className="px-6 pt-4 pb-2">
+          <p className="text-[#666] text-[13px] font-bold mb-0 leading-none">Welcome</p>
+          <h2 className="text-[#2CA4D6] font-bold text-[22px] leading-tight">
+            Stay Protected
           </h2>
-        </div> */}
+        </div>
 
-        {/* Banner */}
-        <div className="mt-4 mb-4 mx-6">
-          {/* Banner */}
-          <div className="relative shadow-md rounded-2xl overflow-hidden bg-gray-100">
+        {/* Banner Carousel */}
+        <div className="mt-2 mb-6 mx-4">
+          <div className="relative rounded-[20px] overflow-hidden bg-black shadow-sm aspect-[340/150]">
             {banners.map((banner, index) => (
               <div
                 key={index}
-                className={`transition-opacity duration-1000 ease-in-out ${
-                  index === currentSlide
-                    ? "block opacity-100"
-                    : "hidden opacity-0"
-                }`}
+                className={`transition-opacity duration-700 ease-in-out absolute inset-0 ${index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
+                  }`}
               >
                 <img
                   src={banner}
                   alt={`Banner ${index + 1}`}
-                  className="block max-w-full h-auto mx-auto object-contain"
+                  className="w-full h-full object-contain opacity-90"
                 />
               </div>
             ))}
           </div>
 
-          {/* Dots BELOW image */}
-          <div className="mt-3 flex justify-center gap-2">
+          {/* Dots */}
+          <div className="mt-3 flex justify-center gap-1.5">
             {banners.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentSlide(index)}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  index === currentSlide ? "bg-gray-800 w-4" : "bg-gray-400 w-2"
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
+                className={`h-2 rounded-full transition-all duration-300 ${index === currentSlide ? "bg-[#214B80] w-2 h-2" : "bg-gray-300 w-2 h-2"
+                  }`}
               />
             ))}
           </div>
         </div>
 
-        {/* Navigation Grid - Brands, Authentik, History */}
-        <div className="flex justify-between px-6 gap-3 mb-4">
-          <NavButton icon={navBrands} label="Brands" />
-          {/* <NavButton icon={navAuthentik} label="Authentik" /> */}
-          <NavButton
-            icon={navHistory}
-            label="History"
+        {/* Stats Grid */}
+        <div className="grid grid-cols-4 gap-3 px-4 mb-6">
+          <StatsCard icon={iconTotalScans} count="25" label="Total Scans" />
+          <StatsCard icon={logo} count="14" label="Authentiks" isLogo={true} />
+          <StatsCard icon={iconAlert} count="01" label="Alert" color="text-amber-500" />
+          <StatsCard icon={iconCounterfeit} count="12" label="Counterfeit" color="text-red-500" />
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex gap-4 px-4 mb-6">
+          <ActionButton
+            icon={iconTopBrands}
+            label="Top Brands"
+            bgColor="bg-[#2CA4D6]"
+            onClick={() => { }}
+          />
+          <ActionButton
+            icon={iconScanHistory}
+            label="Scan History"
+            bgColor="bg-[#2CA4D6]"
             onClick={() => navigate("/scan-history")}
           />
         </div>
 
         {/* Recent Scans Section */}
-        <div className="px-5">
-          <h3 className="text-[#214B80] text-[16px] font-bold mb-3">
+        <div className="px-4">
+          <h3 className="text-[#666] text-[15px] font-bold mb-3">
             Recent Scans
           </h3>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3">
             {loading ? (
-              <p className="text-gray-500 text-sm">Loading recent scans...</p>
+              <p className="text-gray-500 text-sm text-center py-4">Loading recent scans...</p>
             ) : recentScans.length === 0 ? (
-              <p className="text-gray-500 text-sm">No recent scans found.</p>
+              <p className="text-gray-500 text-sm text-center py-4">No recent scans found.</p>
             ) : (
               recentScans.map((scan) => (
                 <div
                   key={scan.id}
-                  className={`rounded-[16px] px-3 py-2 flex items-center shadow-[0_4px_6px_rgba(0,0,0,0.15)] min-h-[70px]`}
+                  className="bg-white rounded-[16px] p-4 flex items-center shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
                 >
-                  {/* Icon Container */}
-                  <div
-                    className={`w-[46px] h-[46px] rounded-full flex-shrink-0 flex items-center justify-center mr-3`}
-                  >
+                  {/* Icon */}
+                  <div className="w-[42px] h-[42px] flex-shrink-0 mr-4">
                     <img
                       src={scan.icon}
                       alt={scan.title}
-                      className="w-[100px] h-[100px] object-contain"
+                      className="w-full h-full object-contain"
                     />
                   </div>
                   {/* Text Content */}
-                  <div className="flex-1 pr-2">
-                    <h4 className="font-bold text-[15px] leading-tight mb-0.5">
+                  <div className="flex-1">
+                    <h4 className={`font-bold text-[15px] leading-tight mb-1 ${scan.statusColor}`}>
                       {scan.title}
                     </h4>
-                    <div className="text-[16px] font-semibold opacity-95">
-                      <p className="leading-tight">Scanned On: {scan.date}</p>
-                      <p className="leading-tight">Time: {scan.time}</p>
-                    </div>
+                    <p className="text-[#777] text-[12px] font-medium">
+                      Scanned On: {scan.date} - {scan.time}
+                    </p>
                   </div>
                 </div>
               ))
@@ -229,29 +221,69 @@ export default function Home() {
       </div>
 
       {/* Floating Scan Button */}
-      <div className="fixed bottom-0 left-0 right-0 flex justify-center items-center z-30  bg-white h-24">
-        <div className="w-full px-6">
-          <button
-            onClick={() => navigate("/scan")}
-            className="w-full bg-[#214B80] text-[#F2C94C] text-[20px] font-bold py-3 rounded-[30px] shadow-[0_6px_12px_rgba(0,0,0,0.25)] flex items-center justify-center hover:bg-[#142036] transition-colors"
-          >
-            Scan QR Code
-          </button>
-        </div>
+      <div className="fixed bottom-6 left-0 right-0 px-6 z-30">
+        <style>
+          {`
+            @keyframes goldSlash {
+              0% { left: -100%; opacity: 0; }
+              20% { opacity: 1; }
+              50% { left: 200%; opacity: 0; }
+              100% { left: 200%; opacity: 0; }
+            }
+          `}
+        </style>
+        <button
+          onClick={() => navigate("/scan")}
+          className="w-full bg-gradient-to-r from-[#0E5CAB] to-[#1F2642] text-white text-[20px] font-bold h-[65px] rounded-[35px] shadow-[0_8px_20px_rgba(14,92,171,0.4)] relative overflow-hidden transition-transform active:scale-[0.98]"
+        >
+          {/* Gold Flash Animation */}
+          <div
+            className="absolute top-[50%] left-[-100%] w-[8px] h-[400%] bg-gradient-to-r from-transparent to-[#FFD700] opacity-90 transform -translate-y-1/2 rotate-[-25deg]"
+            style={{ animation: 'goldSlash 3s infinite ease-in-out' }}
+          ></div>
+
+          <div className="relative z-10 flex items-center justify-center gap-3 w-full h-full">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <path d="M3 14h1v7h6v-1M10 14v3"></path>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            Scan QR
+          </div>
+        </button>
       </div>
     </div>
   );
 }
 
-function NavButton({ icon, label, onClick }) {
+function StatsCard({ icon, count, label, color = "text-[#214B80]", isLogo = false }) {
   return (
-    <button className="flex-1 group" onClick={onClick}>
-      <div className="w-full bg-[#214B80] rounded-[16px] py-3 flex flex-col items-center justify-center shadow-[0_4px_8px_rgba(0,0,0,0.25)] group-active:scale-95 transition-transform">
-        <img src={icon} alt={label} className="w-13 h-13 object-contain" />
-        <span className="text-white font-semibold text-[20px] mt-1.5">
-          {label}
+    <div className="bg-white rounded-[16px] py-3 px-1 flex flex-col items-center justify-center shadow-[0_2px_6px_rgba(0,0,0,0.08)] h-[90px]">
+      <div className="mb-1.5 h-[24px] flex items-center">
+        <img src={icon} alt={label} className={`${isLogo ? 'w-5' : 'w-6'} h-auto object-contain`} />
+      </div>
+      <span className={`font-bold text-[18px] leading-none mb-1 ${color}`}>{count}</span>
+      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tight">{label}</span>
+    </div>
+  )
+}
+
+function ActionButton({ icon, label, bgColor, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex-1 ${bgColor} rounded-[20px] p-4 flex items-center justify-center shadow-md relative overflow-hidden h-[70px]`}
+    >
+      <div className="flex items-center gap-3 z-10">
+        <div className="w-8 h-8 flex items-center justify-center">
+          <img src={icon} alt={label} className="w-full h-full object-contain " />
+        </div>
+        <span className="text-white font-bold text-[16px] leading-tight text-left">
+          {label.split(' ').map((word, i) => <div key={i}>{word}</div>)}
         </span>
       </div>
     </button>
-  );
+  )
 }

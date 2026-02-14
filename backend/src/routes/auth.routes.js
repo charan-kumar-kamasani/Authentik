@@ -51,10 +51,11 @@ router.get("/profile", protect, async (req, res) => {
 
 router.put("/profile", protect, async (req, res) => {
   try {
-    const { name, dob, gender, country, state, city } = req.body;
+    const { name, ageGroup, dob, gender, country, state, city } = req.body;
     const user = await User.findById(req.user._id);
 
     if (name) user.name = name;
+    if (ageGroup) user.ageGroup = ageGroup;
     if (dob) user.dob = dob;
     if (gender) user.gender = gender;
     if (country) user.country = country;

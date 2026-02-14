@@ -11,13 +11,12 @@ export default function OTP() {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resendLoading, setResendLoading] = useState(false);
   const inputRef = useRef(null);
+
   // When virtual keyboard opens, many mobile browsers change the visualViewport height.
-  // Listen for those changes and ensure the focused input is scrolled into view each time.
   useEffect(() => {
     const vv = window.visualViewport;
     const handler = () => {
       if (document.activeElement === inputRef.current) {
-        // small delay lets layout settle
         setTimeout(() => inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50);
       }
     };
@@ -27,7 +26,6 @@ export default function OTP() {
       return () => vv.removeEventListener('resize', handler);
     }
 
-    // Fallback for browsers without visualViewport
     window.addEventListener('resize', handler);
     return () => window.removeEventListener('resize', handler);
   }, []);
@@ -40,43 +38,40 @@ export default function OTP() {
     }
   };
 
-  // Format OTP as 123-456 not strictly required by UI but good UX,
-  // though screen shows just "6 Digit Code" placeholder in single input.
-
   async function login() {
     if (otp.length !== 4) {
       alert("Please enter the 4-digit OTP");
       return;
     }
 
-  setLoading(true);
+    setLoading(true);
     try {
-        const res = await fetch(`${API_BASE_URL}/auth/login`, {
+      const res = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mobile: state?.mobile, otp }),
-        });
-        
-        if (res.ok) {
+      });
+
+      if (res.ok) {
         const data = await res.json();
         localStorage.setItem("token", data.token);
         nav("/home");
-        } else {
+      } else {
         alert("Invalid OTP. Please try again.");
         setOtp("");
-        }
+      }
     } catch (error) {
-        console.error("Login failed:", error);
-        alert("Login failed due to network error.");
-  } finally {
-    setLoading(false);
-  }
+      console.error("Login failed:", error);
+      alert("Login failed due to network error.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   const resendOtp = async () => {
     if (!state?.mobile) return alert('Missing mobile number');
     if (resendCooldown > 0) return;
-  setResendLoading(true);
+    setResendLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/auth/send-otp`, {
         method: "POST",
@@ -107,75 +102,49 @@ export default function OTP() {
   }, [resendCooldown]);
 
   return (
-    <div className="min-h-screen bg-white font-sans flex flex-col items-center justify-between py-10 px-6 relative">
-      
+    <div className="min-h-screen font-sans flex flex-col items-center justify-between py-6 px-4 bg-[linear-gradient(180deg,_#FFFFFF_0%,_#E6F4FA_25%,_#0D4E96_100%)]">
+
       {/* Top Section */}
-      <div className="w-full max-w-sm flex flex-col items-center pt-8">
-        
+      <div className="w-full flex flex-col items-center flex-grow justify-center pb-10">
+
         {/* Logo Section */}
-        <div className="text-center mb-12">
-           {/* Logo Icon */}
-           <div className="flex justify-center mb-1">
-             <div className="w-[100px] h-[100px] flex items-center justify-center">
-                 <img src={logo} alt="Authentiks Logo" className="w-[85px] h-auto object-contain" />
-             </div>
-           </div>
-          <h1 className="text-[40px] font-bold tracking-tight text-[#214B80] leading-none mb-2">
-            Authen<span className="text-[#2CA4D6]">tiks</span>
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-2">
+            <div className="w-[80px] h-[80px] flex items-center justify-center">
+              <img src={logo} alt="Authentiks Logo" className="w-full h-full object-contain" />
+            </div>
+          </div>
+          <h1 className="text-[32px] font-bold tracking-tight text-[#0D4E96] leading-none mb-1">
+            Authentiks
           </h1>
-          <p className="text-[#2CA4D6] text-[15px] font-bold tracking-wide italic">
-             You Buy it, We Verify it
+          <p className="text-[#555] text-[14px] font-semibold italic">
+            You Buy it, We Verify it
           </p>
         </div>
 
-        {/* Form Card */}
-        <div className="w-full bg-[#214B80] rounded-[30px] p-6 pb-12 shadow-2xl text-center relative z-10">
+        {/* Card */}
+        <div className="w-full max-w-sm bg-white rounded-[40px] p-6 pt-10 pb-10 shadow-xl text-center relative mx-4">
           {/* Title */}
-          <h2 className="text-[20px] font-bold text-white mb-1.5 leading-snug">Enter Confirmation Code</h2>
-          <p className="text-white text-[12px] mb-8 font-medium tracking-wide">
-             We've sent a SMS with the code to {state?.mobile || '9840098400'}
+          <h2 className="text-[22px] font-bold text-[#0D4E96] mb-1 leading-snug">Enter Confirmation Code</h2>
+          <p className="text-[#888] text-[12px] mb-8 font-medium tracking-wide">
+            We’ve sent a SMS to +91{state?.mobile || '----------'}
           </p>
 
           {/* OTP Input */}
-          <div className="relative mb-10 px-2">
-            <div className="bg-white rounded-[16px] flex items-center justify-center px-4 h-[60px] shadow-inner">
+          <div className="relative mb-6">
+            <div className="bg-white border border-gray-200 rounded-[12px] flex items-center justify-center h-[55px] shadow-sm px-4">
               <input
-                type="text" // using text to control pattern
+                type="text"
                 inputMode="numeric"
                 value={otp}
                 onChange={handleOtpChange}
                 ref={inputRef}
                 onFocus={() => {
-                  // Try immediate + delayed scrolls to ensure the input moves into view each time
                   inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  setTimeout(() => inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 300);
-                  setTimeout(() => inputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 700);
                 }}
-                placeholder="6 Digit Code"
-               className="w-full outline-none text-[#1F2937] text-[18px] text-center placeholder:text-[#ccc] placeholder:italic bg-transparent font-medium tracking-widest"
+                placeholder="Enter OTP received through SMS"
+                className="w-full outline-none text-[#333] text-[15px] text-center placeholder:text-gray-400 placeholder:italic bg-transparent font-medium tracking-wide"
               />
-            </div>
-             {/* Resend Timer Text */}
-             {/* Not explicitly shown in the screenshot for this state, but assumed functionality if needed. 
-                 If to match EXACT screenshot, we hide timer unless it's in a different state.
-                 Screenshot just shows input field. I will omit timer visual to be "exact".
-             */}
-          </div>
-          {/* Resend & Login Buttons */}
-          <div className="mb-4">
-            <div className="text-white text-[13px] mb-3">
-              Didn't receive the code?{' '}
-              {resendCooldown > 0 ? (
-                <span className="font-bold">Resend in {resendCooldown}s</span>
-              ) : (
-                <button
-                  onClick={resendOtp}
-                  disabled={resendLoading}
-                  className="underline font-bold text-white ml-1"
-                >
-                  {resendLoading ? 'Resending...' : 'Resend'}
-                </button>
-              )}
             </div>
           </div>
 
@@ -184,22 +153,46 @@ export default function OTP() {
             onClick={login}
             disabled={loading}
             className={`
-              w-[220px] mx-auto h-[55px] rounded-[30px] font-bold text-[18px] tracking-wide shadow-lg
-              bg-[#2CA4D6] text-[#214B80] hover:bg-[#2591BD] disabled:opacity-70 disabled:cursor-not-allowed
-              transition-all duration-300 ease-out flex items-center justify-center
+              w-[200px] mx-auto h-[50px] rounded-[30px] font-bold text-[18px] text-white shadow-md
+               flex items-center justify-center gap-2 mb-6
+              bg-[#0E5AA7] hover:bg-[#0b4d91] disabled:opacity-70 disabled:cursor-not-allowed
+              transition-all duration-300 ease-out
             `}
           >
             {loading ? (
-               <div className="w-6 h-6 border-4 border-[#214B80] border-t-transparent rounded-full animate-spin"></div>
-            ) : "Login"}
+              <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <>
+                Login
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </>
+            )}
           </button>
+
+          {/* Resend Link */}
+          <div className="text-[#0D4E96] text-[13px] font-medium">
+            Didn’t receive the code?{' '}
+            {resendCooldown > 0 ? (
+              <span className="font-bold">Resend in {resendCooldown}s</span>
+            ) : (
+              <button
+                onClick={resendOtp}
+                disabled={resendLoading}
+                className="font-bold ml-1 hover:underline"
+              >
+                {resendLoading ? 'Resending...' : 'Resend'}
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-       {/* Terms and Conditions */}
-       <div className="text-center px-8 mb-6">
-        <p className="text-[#214B80] text-[12px] font-medium leading-tight">
-          By continuing you agree to Authentiks<br/>
+      {/* Footer */}
+      <div className="text-center px-6 pb-4">
+        <p className="text-white text-[11px] font-medium leading-tight opacity-90">
+          By continuing you agree to Authentiks<br />
           <span className="font-bold">Policies, Terms & Conditions</span>
         </p>
       </div>

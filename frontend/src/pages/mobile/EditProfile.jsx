@@ -1,28 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Logo from "../../assets/Authentiks.png"; // Checker exact name
-import NotificationIcon from "../../assets/icon_notification.png";
-import UserAvatar from "../../assets/profile/user_avatar.png";
+import UserAvatar from "../../assets/v2/profile/Group (2).svg";
 import { getProfile, updateProfile } from "../../config/api";
-
-const indianStates = [
-  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", 
-  "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", 
-  "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", 
-  "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", 
-  "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands", "Chandigarh", 
-  "Dadra and Nagar Haveli and Daman and Diu", "Lakshadweep", "Delhi", "Puducherry", "Ladakh", "Jammu and Kashmir"
-];
+import MobileHeader from "../../components/MobileHeader";
 
 export default function EditProfile() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
-    dob: "",
+    ageGroup: "",
     gender: "",
-    country: "",
-    state: "",
-    city: "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -35,11 +22,8 @@ export default function EditProfile() {
         const data = await getProfile(token);
         setFormData({
           name: data.name || "",
-          dob: data.dob || "",
-          gender: data.gender || "",
-          country: data.country || "",
-          state: data.state || "",
-          city: data.city || "",
+          ageGroup: data.ageGroup || "", // e.g., "20-24"
+          gender: data.gender || "", // e.g., "male"
         });
       } catch (error) {
         console.error("Failed to load profile", error);
@@ -49,157 +33,118 @@ export default function EditProfile() {
   }, [navigate]);
 
   const handleChange = (e) => {
+    // If e has target, normal input. If direct value (from custom radio), handle differently maybe?
+    // Actually standard radio inputs work fine.
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSave = async () => {
     const token = localStorage.getItem("token");
     if (!token) return navigate("/login");
-    
+
     setLoading(true);
     try {
-        await updateProfile(formData, token);
-        alert("Profile updated successfully!");
-        navigate(-1);
+      await updateProfile(formData, token);
+      alert("Profile updated successfully!");
+      navigate(-1);
     } catch (error) {
-        alert("Failed to update profile.");
+      alert("Failed to update profile.");
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-[#F0F4F8] to-[#0F4160] font-sans flex flex-col items-center pb-10">
-      {/* Header */}
-      <div className="w-full flex items-center justify-between p-4 pt-6">
-        <button onClick={() => navigate(-1)} className="p-2">
-           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F4160" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M15 18l-6-6 6-6" />
-            </svg>
-        </button>
-        <h1
-          className="text-[24px] font-bold tracking-tight text-[#214B80]"
-          style={{ textShadow: "0 2px 4px rgba(0,0,0,0.2)" }}
-        >
-          Authen<span className="text-[#2CA4D6]">tiks</span>
-        </h1>
-        <button className="p-2">
-           <img src={NotificationIcon} alt="Notifications" className="w-6 h-6" />
-        </button>
+  // Custom Radio Button
+  const RadioOption = ({ label, name, value, checked, onChange }) => (
+    <label className="flex items-center gap-3 cursor-pointer group">
+      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${checked ? 'border-[#0F4160]' : 'border-[#BBB]'}`}>
+        {checked ? (
+          <div className="w-3 h-3 rounded-full bg-[#0F4160]"></div>
+        ) : (
+          <div className="w-3 h-3 rounded-full bg-[#E0E0E0]"></div>
+        )}
       </div>
+      <input
+        type="radio"
+        name={name}
+        value={value}
+        checked={checked}
+        onChange={onChange}
+        className="hidden"
+      />
+      <span className="text-[#666] text-[15px] font-bold whitespace-nowrap">{label}</span>
+    </label>
+  );
 
-      {/* Profile Picture */}
-      <div className="mt-4 mb-8 relative">
-        <div className="w-32 h-32 rounded-full border-4 border-white overflow-hidden bg-white shadow-lg flex items-center justify-center">
-            {/* Using a placeholder if user_avatar is not what we think it is, but user said rename assets/profile so I assume it's there */}
-            <img src={UserAvatar} alt="Profile" className="w-full h-full object-cover" />
+  return (
+    <div className="min-h-screen bg-[#FAFAFA] font-sans flex flex-col items-center pb-10">
+      {/* Header */}
+      <MobileHeader onLeftClick={() => navigate(-1)} />
+
+      {/* User Avatar Section */}
+      <div className="mt-8 mb-8 flex flex-col items-center">
+        <div className="w-28 h-28 rounded-full bg-[#0E5CAB] flex items-center justify-center mb-3 shadow-md relative">
+          <div className="w-24 h-24 rounded-full bg-[#0E5CAB] flex items-center justify-center">
+            <img src={UserAvatar} alt="Profile" className="w-14 h-14 object-contain" />
+          </div>
         </div>
-        <button className="absolute top-2 right-2 bg-[#32ADD8] text-white rounded-full w-8 h-8 flex items-center justify-center border-2 border-white">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
+        <button className="bg-[#0D4E96] text-white px-8 py-2 rounded-[20px] font-bold text-[14px] shadow-[0_4px_15px_rgba(13,78,150,0.3)]">
+          Edit Image
         </button>
       </div>
 
       {/* Form */}
-      <div className="w-full max-w-sm px-6 space-y-4">
-        <div className="bg-white rounded-full px-4 py-3 shadow-md">
-            <input 
-                type="text" 
-                name="name"
-                placeholder="Name" 
-                className="w-full outline-none text-[#0F4160] placeholder-[#32ADD8] font-medium italic"
-                value={formData.name}
-                onChange={handleChange}
+      <div className="w-full max-w-sm px-6 space-y-6">
+
+        {/* Full Name */}
+        <div>
+          <label className="block text-[#0D4E96] font-bold text-[16px] mb-2">Full Name</label>
+          <div className="bg-white rounded-[30px] px-6 py-4 shadow-[0_2px_8px_rgba(0,0,0,0.05)] border border-gray-100">
+            <input
+              type="text"
+              name="name"
+              placeholder="Enter your name"
+              className="w-full outline-none text-[#333] font-medium placeholder-transparent" /* Placeholder simplified */
+              value={formData.name}
+              onChange={handleChange}
             />
-        </div>
-         <div className="bg-white rounded-full px-4 py-3 shadow-md">
-            <input 
-                type="text" 
-                name="dob"
-                placeholder="DOB - DD/MM/YYYY" 
-                className="w-full outline-none text-[#0F4160] placeholder-[#32ADD8] font-medium italic"
-                value={formData.dob}
-                onChange={handleChange}
-            />
+          </div>
         </div>
 
-        <div className="relative">
-             <div className="bg-white rounded-full px-4 py-3 shadow-md flex items-center justify-between">
-                <select 
-                    name="gender" 
-                    className="w-full outline-none text-[#0F4160] placeholder-[#32ADD8] font-medium italic appearance-none bg-transparent"
-                    value={formData.gender}
-                    onChange={handleChange}
-                >
-                    <option value="" disabled selected>Gender</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
-                </select>
-                <svg className="w-5 h-5 text-[#32ADD8] pointer-events-none absolute right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                 </svg>
-            </div>
+
+
+        {/* Age Group */}
+        <div>
+          <label className="block text-[#0D4E96] font-bold text-[16px] mb-3">Age Group</label>
+          <div className="grid grid-cols-2 gap-y-4 gap-x-2">
+            <RadioOption label="1 - 12 Years" name="ageGroup" value="1-12" checked={formData.ageGroup === '1-12'} onChange={handleChange} />
+            <RadioOption label="13 - 19 Years" name="ageGroup" value="13-19" checked={formData.ageGroup === '13-19'} onChange={handleChange} />
+            <RadioOption label="20 - 24 Years" name="ageGroup" value="20-24" checked={formData.ageGroup === '20-24'} onChange={handleChange} />
+            <RadioOption label="25 - 34 Years" name="ageGroup" value="25-34" checked={formData.ageGroup === '25-34'} onChange={handleChange} />
+            <RadioOption label="35 - 44 Years" name="ageGroup" value="35-44" checked={formData.ageGroup === '35-44'} onChange={handleChange} />
+            <RadioOption label="45+ Years" name="ageGroup" value="45+" checked={formData.ageGroup === '45+'} onChange={handleChange} />
+          </div>
         </div>
 
-        <div className="relative">
-            <div className="bg-white rounded-full px-4 py-3 shadow-md flex items-center justify-between">
-                <select 
-                    name="country" 
-                    className="w-full outline-none text-[#0F4160] placeholder-[#32ADD8] font-medium italic appearance-none bg-transparent"
-                    value={formData.country}
-                    onChange={handleChange}
-                >
-                    <option value="" disabled selected>Country</option>
-                    <option value="India">India</option>
-                </select>
-                 <svg className="w-5 h-5 text-[#32ADD8] pointer-events-none absolute right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                 </svg>
-            </div>
+        {/* Gender */}
+        <div>
+          <label className="block text-[#0D4E96] font-bold text-[16px] mb-3">Gender</label>
+          <div className="flex flex-wrap gap-4">
+            <RadioOption label="Male" name="gender" value="male" checked={formData.gender === 'male'} onChange={handleChange} />
+            <RadioOption label="Female" name="gender" value="female" checked={formData.gender === 'female'} onChange={handleChange} />
+            <RadioOption label="Cant Share" name="gender" value="other" checked={formData.gender === 'other'} onChange={handleChange} />
+          </div>
         </div>
-        
-         <div className="relative">
-            <div className="bg-white rounded-full px-4 py-3 shadow-md flex items-center justify-between">
-                <select 
-                    name="state" 
-                    className="w-full outline-none text-[#0F4160] placeholder-[#32ADD8] font-medium italic appearance-none bg-transparent"
-                    value={formData.state}
-                    onChange={handleChange}
-                >
-                    <option value="" disabled selected>State</option>
-                    {indianStates.map((state) => (
-                      <option key={state} value={state}>{state}</option>
-                    ))}
-                </select>
-                 <svg className="w-5 h-5 text-[#32ADD8] pointer-events-none absolute right-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                 </svg>
-            </div>
-        </div>
-
-          <div className="bg-white rounded-full px-4 py-3 shadow-md">
-            <input 
-                type="text" 
-                name="city"
-                placeholder="City" 
-                className="w-full outline-none text-[#0F4160] placeholder-[#32ADD8] font-medium italic"
-                value={formData.city}
-                onChange={handleChange}
-            />
-        </div>
-
       </div>
 
-      <div className="mt-8 w-full px-6">
-        <button 
-            onClick={handleSave}
-            disabled={loading}
-            className="w-full bg-[#2B99C4] text-white font-bold py-4 rounded-full shadow-lg text-xl hover:bg-[#2587ad] transition-colors disabled:opacity-70"
+      {/* Save Button */}
+      <div className="mt-12 w-full px-6 mb-8">
+        <button
+          onClick={handleSave}
+          disabled={loading}
+          className="w-full bg-[#1B3A6B] text-white font-bold py-4 rounded-[30px] shadow-[0_10px_25px_rgba(27,58,107,0.4)] text-[20px] hover:bg-[#152e55] transition-colors"
         >
-            {loading ? "Saving..." : "Save"}
+          {loading ? "Saving..." : "Save Profile"}
         </button>
       </div>
 
