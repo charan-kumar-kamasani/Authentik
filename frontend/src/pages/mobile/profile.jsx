@@ -14,6 +14,7 @@ import IconShare from "../../assets/v2/profile/Vector (1).svg"; // Share
 import IconTerms from "../../assets/v2/profile/Vector (4).svg"; // Document
 import IconPolicies from "../../assets/v2/profile/Vector.svg"; // Shield
 import IconLogout from "../../assets/v2/profile/Vector (6).svg"; // Power button
+import MobileHeader from "../../components/MobileHeader";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -27,23 +28,16 @@ export default function Profile() {
     <div className="min-h-screen bg-white font-sans flex flex-col pb-10">
 
       {/* Header */}
-      <div className="w-full flex items-center justify-between p-4 bg-white sticky top-0 z-50">
-        <button onClick={() => navigate("/home")} className="p-2 text-[#0D4E96]">
+      <MobileHeader
+        onLeftClick={() => navigate("/profile")}
+        leftIcon={
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M15 18l-6-6 6-6" />
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
-        </button>
-
-        <div className="text-center">
-          <h1 className="text-[24px] font-bold tracking-tight text-[#0D4E96]">
-            Authen<span className="text-[#2CA4D6]">tiks</span>
-          </h1>
-        </div>
-
-        <button className="p-2">
-          <img src={NotificationIcon} alt="Notifications" className="w-6 h-6 object-contain" />
-        </button>
-      </div>
+        }
+      />
 
       {/* User Card */}
       <div className="mx-5 mt-2 mb-6 bg-[#2CA4D6] rounded-[24px] p-8 shadow-md flex flex-col items-center justify-center relative min-h-[180px]">
@@ -92,17 +86,17 @@ export default function Profile() {
                 <div
                   key={index}
                   onClick={item.action}
-                  className={`flex items-center justify-between py-4 px-6 bg-white cursor-pointer active:bg-gray-50 transition-colors h-[70px]
+                  className={`flex items-center justify-between py-2 px-6 bg-white cursor-pointer active:bg-gray-50 transition-colors h-[50px]
                     ${isFirst ? "rounded-t-[20px]" : ""} 
                     ${isLast ? "rounded-b-[20px]" : ""}
                     ${!isLast ? "border-b-[1.5px] border-gray-200" : ""}
                   `}
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-8 h-8 flex justify-center items-center">
+                    <div className="w-6 h-6 flex justify-center items-center">
                       <img src={item.icon} alt={item.text} className="w-full h-full object-contain" />
                     </div>
-                    <span className="text-[#555] text-[16px] font-bold">{item.text}</span>
+                    <span className="text-[#555] text-[14px] font-bold">{item.text}</span>
                   </div>
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2CA4D6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M9 18l6-6-6-6" />
@@ -116,13 +110,13 @@ export default function Profile() {
         {/* Logout */}
         <div
           onClick={handleLogout}
-          className={`flex items-center justify-between py-4 px-6 bg-white cursor-pointer active:bg-gray-50 transition-colors mb-2 rounded-[20px] shadow-[0_2px_8px_rgba(0,0,0,0.05)] mx-5 h-[70px] border border-gray-100 mt-2`}
+          className={`flex items-center justify-between py-4 px-6 bg-white cursor-pointer active:bg-gray-50 transition-colors mb-2 rounded-[20px] shadow-[0_2px_8px_rgba(0,0,0,0.05)] mx-5 h-[50px] border border-gray-100 mt-2`}
         >
           <div className="flex items-center gap-4">
-            <div className="w-8 h-8 flex justify-center items-center">
+            <div className="w-[20px] h-[24px] flex justify-center items-center">
               <img src={IconLogout} alt="Logout" className="w-full h-full object-contain" />
             </div>
-            <span className="text-[#FF8088] text-[18px] font-bold">Logout</span>
+            <span className="text-[#FF8088] text-[16px] font-bold">Logout</span>
           </div>
         </div>
 

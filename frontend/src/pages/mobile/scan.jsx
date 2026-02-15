@@ -4,16 +4,41 @@ import jsQR from "jsqr";
 import { getCurrentPlace } from "../../utils/helper";
 import API_BASE_URL from "../../config/api";
 import { useLoading } from '../../context/LoadingContext';
+import MobileHeader from "../../components/MobileHeader";
 
 export default function Scan() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const [scanning, setScanning] = useState(true);
+  const [locationPermission, setLocationPermission] = useState('pending'); // 'granted', 'denied', 'pending'
+  const [locationCoords, setLocationCoords] = useState(null);
   const navigate = useNavigate();
   const { setLoading: setGlobalLoading } = useLoading();
   let animationId = useRef(null);
 
-  // Removed standalone startCamera function as it's now integrated into useEffect
+  // Request location permission first when component mounts
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      console.warn("Geolocation not supported");
+      setLocationPermission('denied');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocationCoords({
+          latitude: pos.coords.latitude,
+          longitude: pos.coords.longitude,
+        });
+        setLocationPermission('granted');
+      },
+      (error) => {
+        console.warn("Location access needed for scanning:", error);
+        setLocationPermission('denied');
+      },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+    );
+  }, []);
 
 
   const stopCamera = useCallback(() => {
@@ -64,12 +89,14 @@ export default function Scan() {
 
         // If QR is fake or inactive, immediately show result message and do not send full scan
         if (checkData.status === "FAKE") {
+          setGlobalLoading(false);
           navigate(`/result/FAKE`, { state: { qrCode: code.data } });
           return;
         }
 
         // If product exists but is inactive, show counterfeit screen (FAKE) per requirement
         if (checkData.status === "FOUND" && !checkData.isActive) {
+          setGlobalLoading(false);
           navigate(`/result/FAKE`, {
             state: {
               qrCode: code.data,
@@ -81,16 +108,7 @@ export default function Scan() {
         }
 
   // Otherwise QR exists and isActive -> continue with location + scan POST
-        // Get coordinates (latitude, longitude) and human-readable place
-        const coords = await new Promise((resolve) => {
-          if (!navigator.geolocation) return resolve({ latitude: null, longitude: null });
-          navigator.geolocation.getCurrentPosition(
-            (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
-            () => resolve({ latitude: null, longitude: null }),
-            { enableHighAccuracy: true, timeout: 8000 }
-          );
-        });
-
+        // Use stored location coordinates
         const place = await getCurrentPlace();
 
         const storedToken = localStorage.getItem("token");
@@ -107,8 +125,8 @@ export default function Scan() {
           body: JSON.stringify({
             qrCode: code.data,
             place,
-            latitude: coords.latitude,
-            longitude: coords.longitude,
+            latitude: locationCoords?.latitude || null,
+            longitude: locationCoords?.longitude || null,
           }),
         });
 
@@ -203,32 +221,16 @@ export default function Scan() {
   return (
     <div className="min-h-screen bg-white relative flex flex-col">
       {/* Top Header - Transparent/White Gradient */}
-      <div className="flex items-center p-4 absolute top-0 left-0 right-0 z-20 bg-white shadow-sm">
-        <button
-          onClick={() => navigate("/home")}
-          className="p-2 text-[#0F4160]"
-        >
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-           <line x1="3" y1="12" x2="21" y2="12"></line>
-           <line x1="3" y1="6" x2="21" y2="6"></line>
-           <line x1="3" y1="18" x2="21" y2="18"></line>
+      <MobileHeader
+        onLeftClick={() => navigate("/profile")}
+        leftIcon={
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
-        </button>
-        <div className="flex-1 text-center pr-10">
-          <h1 className="text-[26px] font-bold tracking-tight text-[#214B80]">
-            Authen<span className="text-[#2CA4D6]">tiks</span>
-          </h1>
-        </div>
-      </div>
+        }
+      />
 
       {/* Main Camera View - Full Screen */}
       <div className="flex-1 relative bg-black flex items-center justify-center overflow-hidden">
@@ -270,6 +272,14 @@ export default function Scan() {
           <div className="text-white text-lg font-bold z-20">Processing Scan...</div>
         )}
       </div>
+
+      {/* Location Permission Alert */}
+      {locationPermission === 'denied' && (
+        <div className="fixed top-0 left-0 right-0 bg-amber-500 text-black p-4 z-50 text-center shadow-lg">
+          <p className="font-bold text-sm">📍 Location Permission Denied</p>
+          <p className="text-xs mt-1">Enable location to record scan location. Your scans will have no location data.</p>
+        </div>
+      )}
     </div>
   );
 }

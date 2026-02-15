@@ -75,6 +75,9 @@ export default function ScanHistory() {
               scannedDate: dateStr,
               scannedTime: timeStr,
               icon,
+              latitude: item.latitude,
+              longitude: item.longitude,
+              place: item.place,
             };
           });
           setHistoryItems(mappedData);
@@ -124,9 +127,15 @@ export default function ScanHistory() {
           </div>
         </div>
 
-        {/* Footer - Blue Bar */}
-        <div className="bg-[#0D4E96] text-white text-center py-2 text-[12px] font-bold">
-          Scanned on: {item.scannedDate} <span className="ml-2">Time: {item.scannedTime}</span>
+        {/* Footer - Blue Bar with Location */}
+        <div className="bg-[#0D4E96] text-white py-3 px-4 text-[12px] font-bold">
+          <div className="text-center mb-2">Scanned on: {item.scannedDate} <span className="ml-2">Time: {item.scannedTime}</span></div>
+          {/* {item.latitude && item.longitude && (
+            <div className="text-center text-[11px] font-normal border-t border-blue-400 pt-2">
+              📍 Location: {parseFloat(item.latitude).toFixed(4)}, {parseFloat(item.longitude).toFixed(4)}
+              {item.place && <div className="text-[10px] mt-1">{item.place}</div>}
+            </div>
+          )} */}
         </div>
       </div>
     );

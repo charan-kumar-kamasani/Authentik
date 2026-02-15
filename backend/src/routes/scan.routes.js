@@ -42,6 +42,31 @@ async function getPlaceFromCoords(lat, lon) {
   }
 }
 
+// Get scan statistics for the current user
+router.get("/stats", protect, async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const totalScans = await Scan.countDocuments({ userId });
+    const originalScans = await Scan.countDocuments({ userId, status: "ORIGINAL" });
+    const fakeScans = await Scan.countDocuments({ userId, status: "FAKE" });
+    const duplicateScans = await Scan.countDocuments({
+      userId,
+      $or: [{ status: "ALREADY_USED" }, { status: "DUPLICATE" }],
+    });
+
+    res.json({
+      totalScans,
+      authentiks: originalScans,
+      counterfeit: fakeScans,
+      alert: duplicateScans,
+    });
+  } catch (err) {
+    console.error("Error fetching scan stats:", err);
+    res.status(500).json({ error: "Failed to fetch scan stats" });
+  }
+});
+
 router.get("/history", protect, async (req, res) => {
   try {
     let scans = await Scan.find({ userId: req.user._id })

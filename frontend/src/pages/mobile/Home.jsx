@@ -25,6 +25,12 @@ export default function Home() {
   const navigate = useNavigate();
   const [recentScans, setRecentScans] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalScans: 0,
+    authentiks: 0,
+    counterfeit: 0,
+    alert: 0,
+  });
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const banners = [banner1, banner2, banner3];
@@ -34,6 +40,33 @@ export default function Home() {
       setCurrentSlide((prev) => (prev + 1) % banners.length);
     }, 3000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/scan/stats`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setStats({
+            totalScans: data.totalScans || 0,
+            authentiks: data.authentiks || 0,
+            counterfeit: data.counterfeit || 0,
+            alert: data.alert || 0,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch scan stats:", err);
+      }
+    };
+
+    fetchStats();
   }, []);
 
   useEffect(() => {
@@ -102,6 +135,7 @@ export default function Home() {
     fetchRecentScans();
   }, []);
 
+  console.log("Home stats:", stats);
   return (
     <div className="min-h-screen bg-[#F8F9FA] font-sans flex flex-col relative w-full h-full overflow-hidden">
       {/* Header */}
@@ -127,7 +161,7 @@ export default function Home() {
 
         {/* Banner Carousel */}
         <div className="mt-2 mb-6 mx-4">
-          <div className="relative rounded-[20px] overflow-hidden bg-black shadow-sm aspect-[340/150]">
+          <div className="relative rounded-[20px] overflow-hidden bg-black shadow-sm aspect-[340/114]">
             {banners.map((banner, index) => (
               <div
                 key={index}
@@ -158,10 +192,10 @@ export default function Home() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-3 px-4 mb-6">
-          <StatsCard icon={iconTotalScans} count="25" label="Total Scans" />
-          <StatsCard icon={logo} count="14" label="Authentiks" isLogo={true} />
-          <StatsCard icon={iconAlert} count="01" label="Alert" color="text-amber-500" />
-          <StatsCard icon={iconCounterfeit} count="12" label="Counterfeit" color="text-red-500" />
+          <StatsCard icon={iconTotalScans} count={String(stats.totalScans)} label="Total Scans" />
+          <StatsCard icon={logo} count={String(stats.authentiks)} label="Authentiks" isLogo={true} />
+          <StatsCard icon={iconAlert} count={String(stats.alert)} label="Alert" color="text-amber-500" />
+          <StatsCard icon={iconCounterfeit} count={String(stats.counterfeit)} label="Counterfeit" color="text-red-500" />
         </div>
 
         {/* Action Buttons */}
@@ -236,11 +270,24 @@ export default function Home() {
           onClick={() => navigate("/scan")}
           className="w-full bg-gradient-to-r from-[#0E5CAB] to-[#1F2642] text-white text-[20px] font-bold h-[65px] rounded-[35px] shadow-[0_8px_20px_rgba(14,92,171,0.4)] relative overflow-hidden transition-transform active:scale-[0.98]"
         >
-          {/* Gold Flash Animation */}
+          {/* Gold Flash Animation with 3 parallel lines */}
+          {/* Left Flash Line */}
+          <div
+            className="absolute top-[50%] left-[-100%] w-[6px] h-[400%] bg-gradient-to-r from-transparent to-[#FFD700] opacity-80 transform -translate-y-1/2 rotate-[-25deg]"
+            style={{ animation: 'goldSlash 3s infinite ease-in-out', marginLeft: '-8px' }}
+          ></div>
+          
+          {/* Center Flash Line */}
           <div
             className="absolute top-[50%] left-[-100%] w-[8px] h-[400%] bg-gradient-to-r from-transparent to-[#FFD700] opacity-90 transform -translate-y-1/2 rotate-[-25deg]"
             style={{ animation: 'goldSlash 3s infinite ease-in-out' }}
           ></div>
+          
+          {/* Right Flash Line */}
+          {/* <div
+            className="absolute top-[50%] left-[-100%] w-[6px] h-[400%] bg-gradient-to-r from-transparent to-[#FFD700] opacity-80 transform -translate-y-1/2 rotate-[-25deg]"
+            style={{ animation: 'goldSlash 3s infinite ease-in-out', marginLeft: '8px' }}
+          ></div> */}
 
           <div className="relative z-10 flex items-center justify-center gap-3 w-full h-full">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -277,7 +324,7 @@ function ActionButton({ icon, label, bgColor, onClick }) {
       className={`flex-1 ${bgColor} rounded-[20px] p-4 flex items-center justify-center shadow-md relative overflow-hidden h-[70px]`}
     >
       <div className="flex items-center gap-3 z-10">
-        <div className="w-8 h-8 flex items-center justify-center">
+        <div className="w-12 h-12 flex items-center justify-center">
           <img src={icon} alt={label} className="w-full h-full object-contain " />
         </div>
         <span className="text-white font-bold text-[16px] leading-tight text-left">

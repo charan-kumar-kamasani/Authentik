@@ -123,9 +123,9 @@ export default function OTP() {
         </div>
 
         {/* Card */}
-        <div className="w-full max-w-sm bg-white rounded-[40px] p-6 pt-10 pb-10 shadow-xl text-center relative mx-4">
+        <div className="w-full max-w-sm bg-white rounded-[40px] p-6 pt-4 pb-6 shadow-xl text-center relative mx-4">
           {/* Title */}
-          <h2 className="text-[22px] font-bold text-[#0D4E96] mb-1 leading-snug">Enter Confirmation Code</h2>
+          <h2 className="text-[22px] font-bold text-[#0D4E96] mb-1 leading-snug">Enter Verification Code</h2>
           <p className="text-[#888] text-[12px] mb-8 font-medium tracking-wide">
             We’ve sent a SMS to +91{state?.mobile || '----------'}
           </p>

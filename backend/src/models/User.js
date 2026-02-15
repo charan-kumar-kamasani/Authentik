@@ -38,6 +38,7 @@ const userSchema = new mongoose.Schema(
     country: { type: String },
     state: { type: String },
     city: { type: String },
+    profileImage: { type: String, default: null }, // URL stored from Cloudinary
   },
   { timestamps: true }
 );

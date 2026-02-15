@@ -75,7 +75,7 @@ export default function Login() {
         </div>
 
         {/* Card */}
-        <div className="w-full max-w-sm bg-white rounded-[40px] p-6 pt-10 pb-8 shadow-xl text-center relative mx-4">
+        <div className="w-full max-w-sm bg-white rounded-[40px] p-6 pt-6 pb-8 shadow-xl text-center relative mx-4">
 
           <h2 className="text-[22px] font-bold text-[#0D4E96] mb-1">Welcome to Authentiks</h2>
           <p className="text-[#888] text-[13px] mb-8 font-medium">
@@ -135,9 +135,9 @@ export default function Login() {
             )}
           </button>
 
-          <p className="text-[10px] text-gray-500 mt-6 font-medium">
+          {/* <p className="text-[10px] text-gray-500 mt-6 font-medium">
             secure login * we never share your data * end-to-end encrypted
-          </p>
+          </p> */}
         </div>
       </div>
 

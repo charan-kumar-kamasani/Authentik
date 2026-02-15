@@ -51,7 +51,7 @@ router.get("/profile", protect, async (req, res) => {
 
 router.put("/profile", protect, async (req, res) => {
   try {
-    const { name, ageGroup, dob, gender, country, state, city } = req.body;
+    const { name, ageGroup, dob, gender, country, state, city, profileImage } = req.body;
     const user = await User.findById(req.user._id);
 
     if (name) user.name = name;
@@ -61,6 +61,7 @@ router.put("/profile", protect, async (req, res) => {
     if (country) user.country = country;
     if (state) user.state = state;
     if (city) user.city = city;
+    if (profileImage) user.profileImage = profileImage;
 
     await user.save();
     res.json(user);

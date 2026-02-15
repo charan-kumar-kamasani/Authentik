@@ -1,16 +1,22 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import UserAvatar from "../../assets/v2/profile/Group (2).svg";
 import { getProfile, updateProfile } from "../../config/api";
 import MobileHeader from "../../components/MobileHeader";
 
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "your-cloud-name";
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "your-preset";
+console.log("Cloudinary Config:", CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET);
 export default function EditProfile() {
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     name: "",
     ageGroup: "",
     gender: "",
+    profileImage: null,
   });
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -24,6 +30,7 @@ export default function EditProfile() {
           name: data.name || "",
           ageGroup: data.ageGroup || "", // e.g., "20-24"
           gender: data.gender || "", // e.g., "male"
+          profileImage: data.profileImage || null,
         });
       } catch (error) {
         console.error("Failed to load profile", error);
@@ -31,6 +38,40 @@ export default function EditProfile() {
     };
     fetchProfile();
   }, [navigate]);
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append("file", file);
+      formDataUpload.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+        {
+          method: "POST",
+          body: formDataUpload,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Image upload failed");
+      }
+
+      const data = await response.json();
+      // Store the Cloudinary URL in formData
+      setFormData({ ...formData, profileImage: data.secure_url });
+      alert("Image uploaded successfully!");
+    } catch (error) {
+      console.error("Image upload error:", error);
+      alert("Failed to upload image. Please try again.");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const handleChange = (e) => {
     // If e has target, normal input. If direct value (from custom radio), handle differently maybe?
@@ -44,7 +85,19 @@ export default function EditProfile() {
 
     setLoading(true);
     try {
-      await updateProfile(formData, token);
+      // Only send necessary fields to backend
+      const dataToSave = {
+        name: formData.name,
+        ageGroup: formData.ageGroup,
+        gender: formData.gender,
+      };
+      
+      // Include profileImage only if it was updated
+      if (formData.profileImage) {
+        dataToSave.profileImage = formData.profileImage;
+      }
+
+      await updateProfile(dataToSave, token);
       alert("Profile updated successfully!");
       navigate(-1);
     } catch (error) {
@@ -83,13 +136,28 @@ export default function EditProfile() {
 
       {/* User Avatar Section */}
       <div className="mt-8 mb-8 flex flex-col items-center">
-        <div className="w-28 h-28 rounded-full bg-[#0E5CAB] flex items-center justify-center mb-3 shadow-md relative">
-          <div className="w-24 h-24 rounded-full bg-[#0E5CAB] flex items-center justify-center">
-            <img src={UserAvatar} alt="Profile" className="w-14 h-14 object-contain" />
+        <div className="w-28 h-28 rounded-full bg-[#0E5CAB] flex items-center justify-center mb-3 shadow-md relative overflow-hidden">
+          <div className="w-24 h-24 rounded-full bg-[#0E5CAB] flex items-center justify-center overflow-hidden">
+            {formData.profileImage ? (
+              <img src={formData.profileImage} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              <img src={UserAvatar} alt="Profile" className="w-14 h-14 object-contain" />
+            )}
           </div>
         </div>
-        <button className="bg-[#0D4E96] text-white px-8 py-2 rounded-[20px] font-bold text-[14px] shadow-[0_4px_15px_rgba(13,78,150,0.3)]">
-          Edit Image
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+          className="hidden"
+        />
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploadingImage}
+          className="bg-[#0D4E96] text-white px-8 py-2 rounded-[20px] font-bold text-[14px] shadow-[0_4px_15px_rgba(13,78,150,0.3)] disabled:opacity-50"
+        >
+          {uploadingImage ? "Uploading..." : "Edit Image"}
         </button>
       </div>
 
@@ -141,8 +209,8 @@ export default function EditProfile() {
       <div className="mt-12 w-full px-6 mb-8">
         <button
           onClick={handleSave}
-          disabled={loading}
-          className="w-full bg-[#1B3A6B] text-white font-bold py-4 rounded-[30px] shadow-[0_10px_25px_rgba(27,58,107,0.4)] text-[20px] hover:bg-[#152e55] transition-colors"
+          disabled={loading || uploadingImage}
+          className="w-full bg-[#1B3A6B] text-white font-bold py-4 rounded-[30px] shadow-[0_10px_25px_rgba(27,58,107,0.4)] text-[20px] hover:bg-[#152e55] transition-colors disabled:opacity-50"
         >
           {loading ? "Saving..." : "Save Profile"}
         </button>
