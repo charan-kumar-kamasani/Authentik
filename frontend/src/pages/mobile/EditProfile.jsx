@@ -6,7 +6,7 @@ import MobileHeader from "../../components/MobileHeader";
 
 const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "your-cloud-name";
 const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "your-preset";
-console.log("Cloudinary Config:", CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET);
+
 export default function EditProfile() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
