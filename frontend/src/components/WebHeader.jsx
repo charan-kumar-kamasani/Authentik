@@ -42,6 +42,12 @@ export default function WebHeader() {
             About Us
           </Link>
           <Link
+            to="/pricing"
+            className={`font-bold text-sm md:text-base hover:text-blue-700 ${location.pathname === "/pricing" ? "text-[#214B80]" : "text-[#3DA8E4]"}`}
+          >
+            Pricing
+          </Link>
+          <Link
             to="/solutions"
             className={`font-bold text-sm md:text-base hover:text-blue-700 ${location.pathname === "/solutions" ? "text-[#214B80]" : "text-[#3DA8E4]"}`}
           >

@@ -9,6 +9,7 @@ import Home from "./pages/mobile/Home";
 import LandingPage from "./pages/web/LandingPage";
 import WebAboutUs from "./pages/web/WebAboutUs";
 import WebSolutions from "./pages/web/WebSolutions";
+import WebPricing from "./pages/web/WebPricing";
 import WebContactUs from "./pages/web/WebContactUs";
 import Scan from "./pages/mobile/scan";
 import Result from "./pages/mobile/Result";
@@ -18,6 +19,8 @@ import ScanHistory from "./pages/mobile/ScanHistory";
 import AboutUs from "./pages/mobile/AboutUs";
 import TermsConditions from "./pages/mobile/TermsConditions";
 import Policies from "./pages/mobile/Policies";
+import Rewards from "./pages/mobile/Rewards";
+import MobileLayout from "./components/MobileLayout";
 
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -50,7 +53,7 @@ export default function App() {
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth < 768 : false
   );
-  
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", handleResize);
@@ -62,16 +65,124 @@ export default function App() {
   if (!isMobile) {
     return (
       <LoadingProvider>
+        <BrowserRouter>
+          <GlobalLoader />
+          <Routes>
+            {/* Public Website */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/about-us" element={<WebAboutUs />} />
+            <Route path="/pricing" element={<WebPricing />} />
+            <Route path="/solutions" element={<WebSolutions />} />
+            <Route path="/contact-us" element={<WebContactUs />} />
+
+            {/* Admin */}
+            <Route path="/admin" element={<AdminLogin />} />
+            <Route
+              path="/admin/dashboard"
+              element={
+                <AdminRoute>
+                  <AdminLayout>
+                    <AdminDashboard />
+                  </AdminLayout>
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/orders"
+              element={
+                <AdminRoute>
+                  <AdminLayout>
+                    <OrderManagement />
+                  </AdminLayout>
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/generate-qrs"
+              element={
+                <AdminRoute>
+                  <AdminLayout>
+                    <GenerateQrs />
+                  </AdminLayout>
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/qr-management"
+              element={
+                <AdminRoute>
+                  <AdminLayout>
+                    <QrManagement />
+                  </AdminLayout>
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <AdminRoute>
+                  <AdminLayout>
+                    <UserManagement />
+                  </AdminLayout>
+                </AdminRoute>
+              }
+            />
+
+            {/* Smart fallback */}
+            <Route
+              path="*"
+              element={
+                window.location.pathname.startsWith("/admin")
+                  ? <Navigate to="/admin" replace />
+                  : <Navigate to="/" replace />
+              }
+            />
+          </Routes>
+        </BrowserRouter>
+      </LoadingProvider>
+    );
+  }
+
+  /* ================= MOBILE APP ================= */
+
+  return (
+    <LoadingProvider>
       <BrowserRouter>
         <GlobalLoader />
         <Routes>
-          {/* Public Website */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/about-us" element={<WebAboutUs />} />
-          <Route path="/solutions" element={<WebSolutions />} />
-          <Route path="/contact-us" element={<WebContactUs />} />
+          {/* Public */}
+          <Route
+            path="/"
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/otp"
+            element={
+              <PublicRoute>
+                <OTP />
+              </PublicRoute>
+            }
+          />
 
-          {/* Admin */}
+          {/* User Protected with Global Navbar */}
+          <Route element={<PrivateRoute><MobileLayout /></PrivateRoute>}>
+            <Route path="/home" element={<Home />} />
+            <Route path="/scan" element={<Scan />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/edit-profile" element={<EditProfile />} />
+            <Route path="/scan-history" element={<ScanHistory />} />
+            <Route path="/rewards" element={<Rewards />} />
+            <Route path="/about-us" element={<AboutUs />} />
+            <Route path="/terms-conditions" element={<TermsConditions />} />
+            <Route path="/policies" element={<Policies />} />
+            <Route path="/result/:status" element={<Result />} />
+          </Route>
+
+          {/* Admin (mobile access optional) */}
           <Route path="/admin" element={<AdminLogin />} />
           <Route
             path="/admin/dashboard"
@@ -83,6 +194,7 @@ export default function App() {
               </AdminRoute>
             }
           />
+
           <Route
             path="/orders"
             element={
@@ -93,6 +205,7 @@ export default function App() {
               </AdminRoute>
             }
           />
+
           <Route
             path="/generate-qrs"
             element={
@@ -103,6 +216,7 @@ export default function App() {
               </AdminRoute>
             }
           />
+
           <Route
             path="/qr-management"
             element={
@@ -113,6 +227,7 @@ export default function App() {
               </AdminRoute>
             }
           />
+
           <Route
             path="/users"
             element={
@@ -135,186 +250,7 @@ export default function App() {
           />
         </Routes>
       </BrowserRouter>
-      </LoadingProvider>
-    );
-  }
-
-  /* ================= MOBILE APP ================= */
-
-    return (
-    <LoadingProvider>
-    <BrowserRouter>
-      <GlobalLoader />
-      <Routes>
-        {/* Public */}
-        <Route
-          path="/"
-          element={
-            <PublicRoute>
-              <Login />
-            </PublicRoute>
-          }
-        />
-        <Route
-          path="/otp"
-          element={
-            <PublicRoute>
-              <OTP />
-            </PublicRoute>
-          }
-        />
-
-        {/* User Protected */}
-        <Route
-          path="/home"
-          element={
-            <PrivateRoute>
-              <Home />
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/scan"
-          element={
-            <PrivateRoute>
-              <Scan />
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/profile"
-          element={
-            <PrivateRoute>
-              <Profile />
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/edit-profile"
-          element={
-            <PrivateRoute>
-              <EditProfile />
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/scan-history"
-          element={
-            <PrivateRoute>
-              <ScanHistory />
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/about-us"
-          element={
-            <PrivateRoute>
-              <AboutUs />
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/terms-conditions"
-          element={
-            <PrivateRoute>
-              <TermsConditions />
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/policies"
-          element={
-            <PrivateRoute>
-              <Policies />
-            </PrivateRoute>
-          }
-        />
-
-        <Route
-          path="/result/:status"
-          element={
-            <PrivateRoute>
-              <Result />
-            </PrivateRoute>
-          }
-        />
-
-        {/* Admin (mobile access optional) */}
-        <Route path="/admin" element={<AdminLogin />} />
-        <Route
-          path="/admin/dashboard"
-          element={
-            <AdminRoute>
-              <AdminLayout>
-                <AdminDashboard />
-              </AdminLayout>
-            </AdminRoute>
-          }
-        />
-
-        <Route
-          path="/orders"
-          element={
-            <AdminRoute>
-              <AdminLayout>
-                <OrderManagement />
-              </AdminLayout>
-            </AdminRoute>
-          }
-        />
-
-        <Route
-          path="/generate-qrs"
-          element={
-            <AdminRoute>
-              <AdminLayout>
-                <GenerateQrs />
-              </AdminLayout>
-            </AdminRoute>
-          }
-        />
-
-        <Route
-          path="/qr-management"
-          element={
-            <AdminRoute>
-              <AdminLayout>
-                <QrManagement />
-              </AdminLayout>
-            </AdminRoute>
-          }
-        />
-
-        <Route
-          path="/users"
-          element={
-            <AdminRoute>
-              <AdminLayout>
-                <UserManagement />
-              </AdminLayout>
-            </AdminRoute>
-          }
-        />
-
-        {/* Smart fallback */}
-        <Route
-          path="*"
-          element={
-            window.location.pathname.startsWith("/admin")
-              ? <Navigate to="/admin" replace />
-              : <Navigate to="/" replace />
-          }
-        />
-      </Routes>
-    </BrowserRouter>
     </LoadingProvider>
   );
 }
-        
+

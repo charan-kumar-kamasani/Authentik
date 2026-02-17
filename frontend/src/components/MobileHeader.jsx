@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { User, Menu, ChevronLeft } from "lucide-react";
-
+import bell from "../assets/v2/home/header/bell.svg";
 export default function MobileHeader({
   onLeftClick,
   title,
@@ -39,7 +39,7 @@ export default function MobileHeader({
         {title ? (
           title
         ) : (
-          <h1 className="text-[24px] font-bold tracking-tight text-[#0D4E96]">
+          <h1 className="text-[28px] font-black tracking-tight text-[#0D4E96]">
             Authen<span className="text-[#2CA4D6]">tiks</span>
           </h1>
         )}
@@ -49,12 +49,15 @@ export default function MobileHeader({
       {isHome ? (
         <button
           className="p-2"
-          onClick={() => navigate("/edit-profile")}
+          // onClick={() => navigate("/edit-profile")}
         >
           {rightIcon ? (
             rightIcon
           ) : (
-            <User className="w-6 h-6 text-[#259DCF]" />
+            <>
+            <img src={bell} alt="" />
+           {/* <User className="w-6 h-6 text-[#259DCF]" /> */}
+            </>
           )}
         </button>
       ) : (

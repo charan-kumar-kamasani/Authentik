@@ -128,7 +128,7 @@ export default function ScanHistory() {
         </div>
 
         {/* Footer - Blue Bar with Location */}
-        <div className="bg-[#0D4E96] text-white py-3 px-4 text-[12px] font-bold">
+        <div className="bg-[#0E5CAB] text-white py-2 px-4 text-[12px] font-bold">
           <div className="text-center mb-2">Scanned on: {item.scannedDate} <span className="ml-2">Time: {item.scannedTime}</span></div>
           {/* {item.latitude && item.longitude && (
             <div className="text-center text-[11px] font-normal border-t border-blue-400 pt-2">
