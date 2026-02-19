@@ -4,33 +4,32 @@ const QRCode = require("qrcode");
 const generateQrPdf = async (products, creatorEmail, options = {}) => {
   return new Promise(async (resolve, reject) => {
     try {
-      /** PAGE SIZE **/
-      const widthPts = 13 * 72;
-      const heightPts = 19 * 72;
+      /** PAGE SIZE — A3 Plus (13 × 19 inches) **/
+      const widthPts = 13 * 72;   // 936 pts
+      const heightPts = 19 * 72;  // 1368 pts
 
-      /** MARGINS **/
-      const marginLeft = 0.5 * 72;
-      const marginRight = 0.5 * 72;
-      const marginTop = 0.25 * 72;
-      const marginBottom = 0.25 * 72;
+      /** CELL SIZE — 20 mm wide × 25 mm tall (portrait) **/
+      const MM = 2.83465;         // 1 mm ≈ 2.835 pts
+      const cellWidth = 20 * MM;  // ~56.69 pts
+      const cellHeight = 25 * MM; // ~70.87 pts
 
-      /** CELL SIZE (FIXED) **/
-      const cellWidth = 1.2 * 72;
-      const cellHeight = 1.5 * 72;
+      /** GRID — 15 cols × 18 rows = 270 per page **/
+      const cols = 15;
+      const rows = 18;
+      const perPage = cols * rows; // 270
 
-      /** BANNER (INSIDE CELL) **/
-      const bannerHeight = 0.35 * 72; // ~0.35 inch
-      const qrHeight = cellHeight - bannerHeight;
+      /** MARGINS — 10 mm left/right, vertically centred **/
+      const sideMargin = 10 * MM; // ~28.35 pts
+      const gridWidth = cols * cellWidth;
+      const gridHeight = rows * cellHeight;
+      const marginLeft = sideMargin;
+      const marginTop = (heightPts - gridHeight) / 2;
 
-      /** FOOTER **/
-      const footerHeight = marginBottom;
-
-      const usableWidth = widthPts - marginLeft - marginRight;
-      const usableHeight = heightPts - marginTop - marginBottom - footerHeight;
-
-      const cols = Math.floor(usableWidth / cellWidth);
-      const rows = Math.floor(usableHeight / cellHeight);
-      const perPage = cols * rows;
+      /** STICKER INTERNAL ZONES **/
+      const brandColor = options.bannerColor || "#283890";
+      const headerHeight = cellHeight * 0.20;  // ~20 % for "Scratch & Scan"
+      const footerBannerH = cellHeight * 0.20; // ~20 % for "Authentiks.in"
+      const qrAreaHeight = cellHeight - headerHeight - footerBannerH; // ~60 % QR
 
       const totalPages = Math.ceil(products.length / perPage);
 
@@ -51,7 +50,7 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
 
         doc.addPage({ size: [widthPts, heightPts], margin: 0 });
 
-        /** OPTIONAL SCORING **/
+        /** OPTIONAL SCORING / CUT LINES **/
         if (options.scoring !== false) {
           doc.save().strokeColor("#E0E0E0").lineWidth(0.3);
 
@@ -59,7 +58,7 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
             const x = marginLeft + c * cellWidth;
             doc
               .moveTo(x, marginTop)
-              .lineTo(x, marginTop + rows * cellHeight)
+              .lineTo(x, marginTop + gridHeight)
               .stroke();
           }
 
@@ -67,7 +66,7 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
             const y = marginTop + r * cellHeight;
             doc
               .moveTo(marginLeft, y)
-              .lineTo(marginLeft + cols * cellWidth, y)
+              .lineTo(marginLeft + gridWidth, y)
               .stroke();
           }
 
@@ -83,41 +82,52 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
           const x = marginLeft + col * cellWidth;
           const y = marginTop + row * cellHeight;
 
-          /** QR **/
-          const qrBuffer = await QRCode.toBuffer(products[i].qrCode, {
-            scale: 8,
-            margin: 10,
-          });
-
-          doc.image(qrBuffer, x, y, {
-            width: cellWidth,
-            height: qrHeight,
-          });
-
-          /** BANNER **/
-          const bannerY = y + qrHeight;
-
+          /** ── HEADER — dark blue band with "Scratch & Scan" ── **/
           doc
-            .rect(x, bannerY, cellWidth, bannerHeight)
-            .fill(options.bannerColor || "#0F4160");
+            .rect(x, y, cellWidth, headerHeight)
+            .fill(brandColor);
 
-          const centerY = bannerY + bannerHeight / 2;
-
-          /** First part */
           doc
             .fillColor("#FFF")
             .font("Helvetica-Bold")
-            .fontSize(6)
-            .text("Buy, Scratch & Scan on", x, centerY - 7, {
+            .fontSize(5)
+            .text("Scratch & Scan", x, y + headerHeight / 2 - 3, {
               width: cellWidth,
               align: "center",
               lineBreak: false,
             });
 
-          /** Bigger domain */
+          /** ── QR CODE — white area ── **/
+          const qrY = y + headerHeight;
+          doc.rect(x, qrY, cellWidth, qrAreaHeight).fill("#FFFFFF");
+
+          const qrBuffer = await QRCode.toBuffer(products[i].qrCode, {
+            scale: 6,
+            margin: 1,
+          });
+
+          // Fit QR square within the available area with small padding
+          const qrPad = 2;
+          const qrSide = Math.min(cellWidth, qrAreaHeight) - qrPad * 2;
+          const qrX = x + (cellWidth - qrSide) / 2;
+          const qrImgY = qrY + (qrAreaHeight - qrSide) / 2;
+
+          doc.image(qrBuffer, qrX, qrImgY, {
+            width: qrSide,
+            height: qrSide,
+          });
+
+          /** ── FOOTER BANNER — dark blue band with "Authentiks.in" ── **/
+          const footerY = qrY + qrAreaHeight;
           doc
-            .fontSize(8.2) // 👈 slightly bigger
-            .text("Authentiks.in", x, centerY + 2, {
+            .rect(x, footerY, cellWidth, footerBannerH)
+            .fill(brandColor);
+
+          doc
+            .fillColor("#FFF")
+            .font("Helvetica-Bold")
+            .fontSize(5.5)
+            .text("Authentiks.in", x, footerY + footerBannerH / 2 - 3, {
               width: cellWidth,
               align: "center",
               lineBreak: false,
@@ -125,6 +135,7 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
 
           doc.fillColor("#000");
 
+          /** Cell border for scoring **/
           if (options.scoring !== false) {
             doc
               .save()
@@ -138,38 +149,32 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
           idx++;
         }
 
-  /** FOOTER **/
-  // Prefer the product's own brand/company when present, then fall back to options
-  const orderId = options.orderId || products[start]?.orderId || "N/A";
-  const brand = products[start]?.brand || options.brand || "N/A";
-  const company = products[start]?.company || options.company || "N/A";
+        /** PAGE FOOTER — order / brand / page info **/
+        const orderId = options.orderId || products[start]?.orderId || "N/A";
+        const brand = products[start]?.brand || options.brand || "N/A";
 
-        const footerY = heightPts - marginBottom - 20;
+        const pageFooterY = marginTop + gridHeight + 4;
+        doc.font("Helvetica-Bold").fontSize(8);
 
-        doc.font("Helvetica-Bold").fontSize(14);
+        const footerWidth = gridWidth;
+        const colW = footerWidth / 3;
 
-        const footerWidth = usableWidth;
-        const colWidth = footerWidth / 3;
-
-        /** LEFT */
-        doc.text(`${orderId}`, marginLeft, footerY, {
-          width: colWidth,
+        doc.text(`${orderId}`, marginLeft, pageFooterY, {
+          width: colW,
           align: "left",
         });
 
-        /** CENTER */
-        doc.text(`${brand}`, marginLeft + colWidth, footerY, {
-          width: colWidth,
+        doc.text(`${brand}`, marginLeft + colW, pageFooterY, {
+          width: colW,
           align: "center",
         });
 
-        /** RIGHT */
         doc.text(
           `Page ${page + 1} of ${totalPages}`,
-          marginLeft + colWidth * 2,
-          footerY,
+          marginLeft + colW * 2,
+          pageFooterY,
           {
-            width: colWidth,
+            width: colW,
             align: "right",
           },
         );

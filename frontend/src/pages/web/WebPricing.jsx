@@ -44,31 +44,77 @@ export default function WebPricing() {
                     <h2 className="text-2xl md:text-4xl font-bold text-[#214B80] text-center whitespace-nowrap">Pricing Plans</h2>
                     <SectionSeparator />
                 </div>
-                <p className="text-center text-[#333] font-semibold text-base md:text-lg mb-2">
+                <p className="text-center text-[#214B80] font-semibold text-base md:text-lg mb-4">
                     Enterprise-grade product authentication. Zero platform fee.
                 </p>
-                <p className="text-center text-[#214B80] font-bold italic text-base md:text-lg mb-10">
+                <p className="text-center text-[#214B80] font-bold italic text-base md:text-lg mb-14">
                     "Don't Just Sell Products. Own the Data Behind Them, Subscribe Now."
                 </p>
 
                 {/* Overlapping Cards Layout - Desktop */}
-                <div className="flex flex-row ">
-
-
-
-                    {/* Price Section (White) */}
-                    <div className="bg-white pt-6 pb-4 text-center">
-                        <img src={scale4} alt="Save 50k" className=" h-[250px] w-[250px] object-contain drop-shadow-md" />
+                <div className="hidden md:flex items-end justify-center relative max-w-5xl mx-auto gap-6" style={{ minHeight: '520px' }}>
+                    {/* Starter Plan - Left */}
+                    <div className="relative z-15 -mr-4 mb-0 self-end">
+                        <img
+                            src={scale6}
+                            alt="Starter Plan"
+                            className="w-[300px] h-auto object-contain drop-shadow-lg rounded-4xl mb-4"
+                        />
                     </div>
 
-                    {/* Starter Plan - Left, Behind, Lower */}
-                    <div className="bg-white pt-6 pb-4 text-center">
-                        <img src={scal3} alt="Save 3L" className="w-[250px] object-contain drop-shadow-md" />
+                    {/* Growth Plan - Center, Elevated */}
+                    <div className="relative z-20 flex flex-col items-center -mt-8">
+                        {/* Most Popular Badge */}
+                        <div className="bg-[#1A9DD4] text-white font-bold text-lg px-16 py-2 rounded-t-[20px] shadow-md whitespace-nowrap">
+                            Most Popular
+                        </div>
+                        <img
+                            src={scale4}
+                            alt="Growth Plan"
+                            className="w-[320px] h-auto object-contain drop-shadow-xl rounded-4xl"
+                        />
                     </div>
 
-                    {/* Scale Plan - Right, Behind, Lower */}
-                    <div className="bg-white pt-6 pb-4 text-center">
-                        <img src={scal3} alt="Save 3L" className="w-[250px] object-contain drop-shadow-md" />
+                    {/* Scale Plan - Right */}
+                    <div className="relative z-10 -ml-4 mb-0 self-end">
+                        <img
+                            src={scal3}
+                            alt="Scale Plan"
+                            className="w-[310px] h-auto object-contain drop-shadow-lg rounded-4xl mb-4"
+                        />
+                    </div>
+                </div>
+
+                {/* Mobile Cards Layout - Stacked */}
+                <div className="flex md:hidden flex-col items-center gap-8">
+                    {/* Starter */}
+                    <div>
+                        <img
+                            src={scale6}
+                            alt="Starter Plan"
+                            className="w-[300px] h-auto object-contain drop-shadow-lg rounded-2xl"
+                        />
+                    </div>
+
+                    {/* Growth - with badge */}
+                    <div className="flex flex-col items-center">
+                        <div className="bg-[#214B80] text-white font-bold text-lg px-8 py-2 rounded-full mb-3 shadow-md">
+                            Most Popular
+                        </div>
+                        <img
+                            src={scale4}
+                            alt="Growth Plan"
+                            className="w-[320px] h-auto object-contain drop-shadow-xl rounded-2xl"
+                        />
+                    </div>
+
+                    {/* Scale */}
+                    <div>
+                        <img
+                            src={scal3}
+                            alt="Scale Plan"
+                            className="w-[300px] h-auto object-contain drop-shadow-lg rounded-2xl"
+                        />
                     </div>
                 </div>
 
@@ -166,13 +212,14 @@ function FeatureCard({ icon, title }) {
 function TrustCard({ title, items }) {
     return (
         <div className="border-2 border-gray-200 rounded-xl overflow-hidden">
-            <div className="bg-[#214B80] text-white py-2.5 px-4">
-                <h4 className="text-base font-bold italic underline">{title}</h4>
+            <div className="bg-gradient-to-r from-[#214B80] via-[#10233f] to-[#070F1A]
+ text-white text-center py-2.5 px-4">
+                <h4 className="text-base font-bold italic">{title}</h4>
             </div>
             <div className="p-4">
-                <ul className="space-y-1.5">
+                <ul className="">
                     {items.map((item, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-[#333] font-semibold text-[13px]">
+                        <li key={idx} className="flex items-start text-[#214B80] font-semibold text-[16px]">
                             <span className="text-[#214B80] font-bold">•</span>
                             {item}
                         </li>

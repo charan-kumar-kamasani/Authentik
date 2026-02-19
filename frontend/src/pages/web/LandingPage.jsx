@@ -125,7 +125,7 @@ export default function LandingPage() {
              <SectionSeparator />
         </div>
 
-        <div className="container mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12">
+        <div className="container mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-12">
             <IndustryCard title="FMCG" image={fmcgImg} />
             <IndustryCard title="Pharmaceuticals" image={pharmImg} />
             

@@ -133,7 +133,7 @@ export default function Home() {
     fetchRecentScans();
   }, []);
 
-  console.log("Home stats:", stats);
+  console.log("Home stats:", recentScans);
   return (
     <div className="min-h-screen bg-[#F8F9FA] font-sans flex flex-col relative w-full h-full overflow-hidden">
       {/* Header */}
@@ -188,10 +188,183 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Scan Button Section */}
-        <div className="px-5 mb-6">
-          <style>
-            {`
+        {recentScans.length > 0 ? (
+          <>
+            {/* Stats Grid */}
+            <div className="grid grid-cols-4 gap-3 px-4 mb-6">
+              <StatsCard icon={iconTotalScans} count={String(stats.totalScans)} label="Total Scans" />
+              <StatsCard icon={statusValid} count={String(stats.authentiks)} label="Authentiks" isLogo={true} />
+              <StatsCard icon={iconAlert} count={String(stats.alert)} label="Alert" color="text-amber-500" />
+              <StatsCard icon={iconCounterfeit} count={String(stats.counterfeit)} label="Counterfeit" color="text-red-500" />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-4 px-4 mb-6">
+              <ActionButton
+                icon={iconTopBrands}
+                label="Top Brands"
+                bgColor="bg-[#2CA4D6]"
+                onClick={() => { }}
+              />
+              <ActionButton
+                icon={iconScanHistory}
+                label="Scan History"
+                bgColor="bg-[#2CA4D6]"
+                onClick={() => navigate("/scan-history")}
+              />
+            </div>
+
+            {/* Recent Scans Section */}
+            <div className="px-4">
+              <h3 className="text-[#666] text-[15px] font-bold mb-3">
+                Recent Scans
+              </h3>
+              <div className="flex flex-col gap-3">
+                {loading ? (
+                  <p className="text-gray-500 text-sm text-center py-4">Loading recent scans...</p>
+                ) : recentScans.length === 0 ? (
+                  <p className="text-gray-500 text-sm text-center py-4">No recent scans found.</p>
+                ) : (
+                  recentScans.map((scan) => (
+                    <div
+                      key={scan.id}
+                      className="bg-white rounded-[16px] p-4 flex items-center shadow-[0_2px_8px_rgba(0,0,0,0.06)]"
+                    >
+                      {/* Icon */}
+                      <div className="w-[42px] h-[42px] flex-shrink-0 mr-4">
+                        <img
+                          src={scan.icon}
+                          alt={scan.title}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      {/* Text Content */}
+                      <div className="flex-1">
+                        <h4 className={`font-bold text-[15px] leading-tight mb-1 ${scan.statusColor}`}>
+                          {scan.title}
+                        </h4>
+                        <p className="text-[#777] text-[12px] font-medium">
+                          Scanned On: {scan.date} - {scan.time}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+
+            {/* Floating Scan Button */}
+            <div className="fixed bottom-[80px] left-0 right-0 px-6 z-30">
+        <ScanQrCodeButton />
+            </div>
+
+          </>
+        ) : (
+          <>
+            {/* Scan Button Section */}
+            <ScanQrCodeButton />
+
+            {/* Trusted By Card */}
+            <div className="mx-5 mb-6 bg-white rounded-[24px] p-6 shadow-[0_10px_30px_rgba(0,0,0,0.05)] flex items-center gap-5 border border-gray-50">
+              <div className="w-24 h-24 flex-shrink-0  rounded-full flex items-center justify-center">
+                {/* SVG Shield with Checkmark */}
+                {/* <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" fill="#2CA4D6" stroke="#2CA4D6" strokeWidth="2" strokeLinejoin="round" />
+              <path d="M9 12L11 14L15 10" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg> */}
+                <img src="logo.svg" alt="logo" />
+              </div>
+              <div>
+                <p className="text-[#6E6D6B] text-[18px] font-bold mb-1">Trusted by</p>
+                <h4 className="text-[#259DCF] font-black text-[24px] leading-tight">
+                  100+ Brands
+                  <br />
+                  2M+ Users
+                </h4>
+              </div>
+            </div>
+
+            {/* Why Scan Card */}
+            <div className="mx-5 mb-8 bg-white rounded-[24px] p-6 shadow-[0_10px_30px_rgba(0,0,0,0.05)] border border-gray-50">
+              <h3 className="text-[#0D4E96] text-[19px] font-black mb-5">
+                Why Scan with Authentiks?
+              </h3>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="bg-[#E8F4F9] p-2 rounded-lg">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2CA4D6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                  </div>
+                  <span className="text-[#555] font-bold text-[15px]">Direct Brand Verification</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="bg-[#FFF8E1] p-2 rounded-lg">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFB300" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                      <line x1="12" y1="9" x2="12" y2="13" />
+                      <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                  </div>
+                  <span className="text-[#555] font-bold text-[15px]">Identify Reused QR Codes</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="bg-[#FFEBEE] p-2 rounded-lg">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F44336" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="15" y1="9" x2="9" y2="15" />
+                      <line x1="9" y1="9" x2="15" y2="15" />
+                    </svg>
+                  </div>
+                  <span className="text-[#555] font-bold text-[15px]">Detect Fake Products Instantly</span>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+
+function StatsCard({ icon, count, label, color = "text-[#214B80]", isLogo = false }) {
+  return (
+    <div className="bg-white rounded-[16px] py-3 px-1 flex flex-col items-center justify-center shadow-[0_2px_6px_rgba(0,0,0,0.08)] h-[90px]">
+      <div className="mb-1.5 h-[24px] flex items-center">
+        <img src={icon} alt={label} className={`${isLogo ? 'w-5' : 'w-6'} h-auto object-contain`} />
+      </div>
+      <span className={`font-bold text-[18px] leading-none mb-1 ${color}`}>{count}</span>
+      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tight">{label}</span>
+    </div>
+  )
+}
+
+function ActionButton({ icon, label, bgColor, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex-1 ${bgColor} rounded-[20px] p-4 flex items-center justify-center shadow-md relative overflow-hidden h-[70px]`}
+    >
+      <div className="flex items-center gap-3 z-10">
+        <div className="w-12 h-12 flex items-center justify-center">
+          <img src={icon} alt={label} className="w-full h-full object-contain " />
+        </div>
+        <span className="text-white font-bold text-[16px] leading-tight text-left">
+          {label.split(' ').map((word, i) => <div key={i}>{word}</div>)}
+        </span>
+      </div>
+    </button>
+  )
+}
+
+function ScanQrCodeButton() {
+  return (
+    <div className="px-5 mb-6">
+      <style>
+        {`
               @keyframes float1 {
                 0% { transform: translate(-20%, -20%) scale(1); }
                 50% { transform: translate(20%, 20%) scale(1.2); }
@@ -203,98 +376,38 @@ export default function Home() {
                 100% { transform: translate(20%, 20%) scale(1.2); }
               }
             `}
-          </style>
-          <button
-            onClick={() => navigate("/scan")}
-            className="w-full bg-[#0D4E96] text-white text-[22px] font-bold h-[75px] rounded-[38px] shadow-[0_12px_28px_rgba(14,92,171,0.35)] flex items-center justify-center gap-4 active:scale-[0.97] transition-all relative overflow-hidden group"
-          >
-            {/* Animated Background Blobs */}
-            <div className="absolute inset-0 z-0">
-              <div
-                className="absolute top-[-20%] left-[-10%] w-[100%] h-[120%] rounded-full bg-[#0E5CAB] blur-[40px] opacity-70"
-                style={{ animation: 'float1 6s infinite ease-in-out' }}
-              />
-              <div
-                className="absolute bottom-[-20%] right-[-10%] w-[100%] h-[120%] rounded-full bg-[#1F2642] blur-[40px] opacity-80"
-                style={{ animation: 'float2 8s infinite ease-in-out' }}
-              />
-            </div>
-
-            {/* Content */}
-            <div className="relative z-10 flex items-center justify-center gap-4">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="7" height="7"></rect>
-                <rect x="14" y="3" width="7" height="7"></rect>
-                <rect x="14" y="14" width="7" height="7"></rect>
-                <rect x="3" y="14" width="7" height="7"></rect>
-                <path d="M7 7h.01M17 7h.01M17 17h.01M7 17h.01"></path>
-              </svg>
-              Scan to Verify
-            </div>
-
-            {/* Gloss Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-30 z-20" />
-          </button>
+      </style>
+      <button
+        onClick={() => navigate("/scan")}
+        className="w-full bg-[#0D4E96] text-white text-[22px] font-bold h-[75px] rounded-[38px] shadow-[0_12px_28px_rgba(14,92,171,0.35)] flex items-center justify-center gap-4 active:scale-[0.97] transition-all relative overflow-hidden group"
+      >
+        {/* Animated Background Blobs */}
+        <div className="absolute inset-0 z-0">
+          <div
+            className="absolute top-[-20%] left-[-10%] w-[100%] h-[120%] rounded-full bg-[#0E5CAB] blur-[40px] opacity-70"
+            style={{ animation: 'float1 6s infinite ease-in-out' }}
+          />
+          <div
+            className="absolute bottom-[-20%] right-[-10%] w-[100%] h-[120%] rounded-full bg-[#1F2642] blur-[40px] opacity-80"
+            style={{ animation: 'float2 8s infinite ease-in-out' }}
+          />
         </div>
 
-        {/* Trusted By Card */}
-        <div className="mx-5 mb-6 bg-white rounded-[24px] p-6 shadow-[0_10px_30px_rgba(0,0,0,0.05)] flex items-center gap-5 border border-gray-50">
-          <div className="w-24 h-24 flex-shrink-0  rounded-full flex items-center justify-center">
-            {/* SVG Shield with Checkmark */}
-            {/* <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" fill="#2CA4D6" stroke="#2CA4D6" strokeWidth="2" strokeLinejoin="round" />
-              <path d="M9 12L11 14L15 10" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg> */}
-            <img src="logo.svg" alt="logo" />
-          </div>
-          <div>
-            <p className="text-[#6E6D6B] text-[18px] font-bold mb-1">Trusted by</p>
-            <h4 className="text-[#259DCF] font-black text-[24px] leading-tight">
-              100+ Brands
-              <br />
-              2M+ Users
-            </h4>
-          </div>
+        {/* Content */}
+        <div className="relative z-10 flex items-center justify-center gap-4">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+            <path d="M7 7h.01M17 7h.01M17 17h.01M7 17h.01"></path>
+          </svg>
+          Scan to Verify
         </div>
 
-        {/* Why Scan Card */}
-        <div className="mx-5 mb-8 bg-white rounded-[24px] p-6 shadow-[0_10px_30px_rgba(0,0,0,0.05)] border border-gray-50">
-          <h3 className="text-[#0D4E96] text-[19px] font-black mb-5">
-            Why Scan with Authentiks?
-          </h3>
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-4">
-              <div className="bg-[#E8F4F9] p-2 rounded-lg">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2CA4D6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                </svg>
-              </div>
-              <span className="text-[#555] font-bold text-[15px]">Direct Brand Verification</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="bg-[#FFF8E1] p-2 rounded-lg">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFB300" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                  <line x1="12" y1="9" x2="12" y2="13" />
-                  <line x1="12" y1="17" x2="12.01" y2="17" />
-                </svg>
-              </div>
-              <span className="text-[#555] font-bold text-[15px]">Identify Reused QR Codes</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="bg-[#FFEBEE] p-2 rounded-lg">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F44336" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="15" y1="9" x2="9" y2="15" />
-                  <line x1="9" y1="9" x2="15" y2="15" />
-                </svg>
-              </div>
-              <span className="text-[#555] font-bold text-[15px]">Detect Fake Products Instantly</span>
-            </div>
-          </div>
-        </div>
-      </div>
+        {/* Gloss Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-30 z-20" />
+      </button>
     </div>
-  );
+  )
 }
-
