@@ -31,7 +31,7 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
       /** ─── GRID — 15 cols × 18 rows = 270 per page ─── **/
       const cols = 15;
       const rows = 18;
-      const perPage = cols * rows; // 270
+      const perPage = cols * rows - 1; // 269 — first cell left blank for paper cut
 
       /** ─── MARGINS — exactly centred on the page ─── **/
       // Width:  20mm × 15 = 300mm.  Paper ≈ 330.2mm.  Remaining ≈ 30.2mm → 15.1mm each side
@@ -95,7 +95,8 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
           doc.restore();
         }
 
-        let idx = 0;
+        // Start from cell index 1 (skip first cell — left blank for paper cut alignment)
+        let idx = 1;
 
         for (let i = start; i < end; i++) {
           const row = Math.floor(idx / cols);
@@ -112,7 +113,7 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
           doc
             .fillColor("#FFF")
             .font("Helvetica-Bold")
-            .fontSize(5)
+            .fontSize(6.5)
             .text("Scratch & Scan", x, y + headerHeight / 2 - 3, {
               width: cellWidth,
               align: "center",
@@ -128,9 +129,8 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
             margin: 1,
           });
 
-          // Fit QR square within the available area with small padding
-          const qrPad = 2;
-          const qrSide = Math.min(cellWidth, qrAreaHeight) - qrPad * 2;
+          // QR image is exactly 9mm × 9mm, centred in the QR area
+          const qrSide = 10 * MM; // 9mm
           const qrX = x + (cellWidth - qrSide) / 2;
           const qrImgY = qrY + (qrAreaHeight - qrSide) / 2;
 
@@ -183,7 +183,7 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
           doc
             .fillColor("#FFF")
             .font("Helvetica-Bold")
-            .fontSize(5.5)
+            .fontSize(6.5)
             .text("Authentiks.in", x, footerY + footerBannerH / 2 - 3, {
               width: cellWidth,
               align: "center",
