@@ -255,9 +255,9 @@ export default function Home() {
       <div className="flex-1 overflow-y-auto pb-24 bg-[#F8F9FA]">
         {/* Welcome Text */}
         <div className="px-6 pt-6 pb-2">
-          <p className="text-[#6F6F6F] text-[14px] font-medium mb-1">Welcome to Authentiks</p>
+          <p className="text-[#6F6F6F] text-[10px] font-medium mb-1">Welcome to Authentiks</p>
           <h2 className="text-[#257DD4] font-extrabold text-[20px] leading-tight">
-            A Product Authentication Platform
+            {recentScans.length > 0 ? ("Stay Protected") : ("A Product Authentication Platform")}
           </h2>
         </div>
 
