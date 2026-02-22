@@ -31,6 +31,7 @@ export default function Home() {
   });
   const [initialLoading, setInitialLoading] = useState(true);
   const [showProfilePrompt, setShowProfilePrompt] = useState(false);
+  const [isProfileIncomplete, setIsProfileIncomplete] = useState(false);
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const banners = [banner1, banner2, banner3];
@@ -63,6 +64,7 @@ export default function Home() {
 
         // Check if user has completed their profile
         if (profileData && !profileData.name) {
+          setIsProfileIncomplete(true);
           const skippedThisSession = sessionStorage.getItem("profilePromptSkipped");
           if (!skippedThisSession) {
             setShowProfilePrompt(true);
@@ -254,6 +256,14 @@ export default function Home() {
     setShowProfilePrompt(false);
   };
 
+  const handleScanClick = () => {
+    if (isProfileIncomplete) {
+      setShowProfilePrompt(true);
+    } else {
+      navigate("/scan");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F8F9FA] font-sans flex flex-col relative w-full h-full overflow-hidden">
       {/* Header */}
@@ -310,7 +320,7 @@ export default function Home() {
 
         {recentScans.length > 0 ? (
           <>
-            <ScanQrCodeButton />
+            <ScanQrCodeButton onScanClick={handleScanClick} />
             {/* Stats Grid */}
             <div className="grid grid-cols-4 gap-3 px-4 mb-6">
               <StatsCard icon={iconTotalScans} count={String(stats.totalScans)} label="Total Scans" />
@@ -377,14 +387,14 @@ export default function Home() {
 
             {/* Floating Scan Button */}
             {/* <div className="fixed bottom-[80px] left 0 right-0 px-6 z-30">
-              <ScanQrCodeButton />
+              <ScanQrCodeButton onScanClick={handleScanClick} />
             </div> */}
 
           </>
         ) : (
           <>
             {/* Scan Button Section */}
-            <ScanQrCodeButton />
+            <ScanQrCodeButton onScanClick={handleScanClick} />
 
             {/* Trusted By Card */}
             <div className="mx-5 mb-6 bg-white rounded-[24px] p-6 shadow-[0_10px_30px_rgba(0,0,0,0.05)] flex items-center gap-5 border border-gray-50">
@@ -547,8 +557,9 @@ function ActionButton({ icon, label, bgColor, onClick }) {
   )
 }
 
-function ScanQrCodeButton() {
+function ScanQrCodeButton({ onScanClick }) {
   const navigate = useNavigate();
+  const handleClick = onScanClick || (() => navigate("/scan"));
 
   return (
     <div className="px-5 mb-6">
@@ -567,7 +578,7 @@ function ScanQrCodeButton() {
             `}
       </style>
       <button
-        onClick={() => navigate("/scan")}
+        onClick={handleClick}
         className="w-full bg-[#0D4E96] text-white text-[22px] font-bold h-[65px] rounded-[38px]  flex items-center justify-center gap-4 active:scale-[0.97] transition-all relative overflow-hidden group"
       >
         {/* Animated Background Blobs */}
