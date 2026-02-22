@@ -29,6 +29,7 @@ export default function Home() {
     counterfeit: 0,
     alert: 0,
   });
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const banners = [banner1, banner2, banner3];
@@ -41,17 +42,26 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchAllData = async () => {
       const token = localStorage.getItem("token");
-      if (!token) return;
+      if (!token) {
+        setInitialLoading(false);
+        return;
+      }
 
       try {
-        const res = await fetch(`${API_BASE_URL}/scan/stats`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const [statsRes, historyRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/scan/stats`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(`${API_BASE_URL}/scan/history`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
 
-        if (res.ok) {
-          const data = await res.json();
+        // Handle stats
+        if (statsRes.ok) {
+          const data = await statsRes.json();
           setStats({
             totalScans: data.totalScans || 0,
             authentiks: data.authentiks || 0,
@@ -59,12 +69,64 @@ export default function Home() {
             alert: data.alert || 0,
           });
         }
+
+        // Handle history
+        if (historyRes.ok) {
+          const data = await historyRes.json();
+          const slicedData = data.slice(0, 10);
+
+          const mappedData = slicedData.map((item) => {
+            const dateObj = new Date(item.createdAt);
+
+            const day = String(dateObj.getDate()).padStart(2, "0");
+            const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+            const year = String(dateObj.getFullYear()).slice(-2);
+
+            const timeStr = dateObj.toLocaleTimeString("en-US", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            });
+
+            let title = "Authentic Product";
+            let icon = statusValid;
+            let statusColor = "text-[#214B80]";
+
+            if (item.status === "FAKE") {
+              title = "Fake or Counterfeit";
+              icon = statusFake;
+              statusColor = "text-red-600";
+            } else if (
+              item.status === "ALREADY_USED" ||
+              item.status === "DUPLICATE"
+            ) {
+              title = "Duplicate Scan";
+              icon = statusWarning;
+              statusColor = "text-amber-500";
+            } else {
+              title = item.productName || "Herbtox+";
+            }
+
+            return {
+              id: item._id,
+              title,
+              date: `${day}/${month}/${year}`,
+              time: timeStr,
+              icon,
+              statusColor,
+            };
+          });
+
+          setRecentScans(mappedData);
+        }
       } catch (err) {
-        console.error("Failed to fetch scan stats:", err);
+        console.error("Failed to fetch home data:", err);
+      } finally {
+        setInitialLoading(false);
       }
     };
 
-    fetchStats();
+    fetchAllData();
   }, []);
 
   useEffect(() => {
@@ -133,6 +195,48 @@ export default function Home() {
     fetchRecentScans();
   }, []);
 
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen bg-[#F8F9FA] p-4 space-y-6">
+
+        {/* Header Skeleton */}
+        <div className="h-6 w-40 rounded skeleton"></div>
+        <div className="h-8 w-64 rounded skeleton"></div>
+
+        {/* Banner Skeleton */}
+        <div className="h-[120px] w-full rounded-[24px] skeleton"></div>
+
+        {/* Stats Grid Skeleton */}
+        <div className="grid grid-cols-4 gap-3">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-[90px] rounded-[16px] skeleton"></div>
+          ))}
+        </div>
+
+        {/* Action Buttons Skeleton */}
+        <div className="flex gap-4">
+          <div className="flex-1 h-[70px] rounded-[20px] skeleton"></div>
+          <div className="flex-1 h-[70px] rounded-[20px] skeleton"></div>
+        </div>
+
+        {/* Recent Scans Skeleton */}
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex items-center gap-4 bg-white p-4 rounded-[16px] shadow-sm">
+              <div className="w-12 h-12 rounded-full skeleton"></div>
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-40 rounded skeleton"></div>
+                <div className="h-3 w-28 rounded skeleton"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Scan Button Skeleton */}
+        <div className="h-[75px] rounded-[38px] skeleton mt-6"></div>
+      </div>
+    );
+  }
   console.log("Home stats:", recentScans);
   return (
     <div className="min-h-screen bg-[#F8F9FA] font-sans flex flex-col relative w-full h-full overflow-hidden">
@@ -256,7 +360,7 @@ export default function Home() {
 
             {/* Floating Scan Button */}
             <div className="fixed bottom-[80px] left-0 right-0 px-6 z-30">
-        <ScanQrCodeButton />
+              <ScanQrCodeButton />
             </div>
 
           </>
@@ -410,4 +514,24 @@ function ScanQrCodeButton() {
       </button>
     </div>
   )
+
 }
+<style>
+  {`
+@keyframes shimmer {
+  0% { background-position: -468px 0; }
+  100% { background-position: 468px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    to right,
+    #eeeeee 8%,
+    #dddddd 18%,
+    #eeeeee 33%
+  );
+  background-size: 800px 104px;
+  animation: shimmer 1.6s infinite linear;
+}
+`}
+</style>
