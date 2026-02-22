@@ -15,11 +15,11 @@ import scale4 from "../../assets/web/pricing/scale_4.png"; // Save 50k
 import scal3 from "../../assets/web/pricing/scal_3.png"; // Save 3L
 
 import pricing from '../../assets/web/pricing/price.png';
-import trial from '../../assets/web/pricing/Trial.png';
-import starter from '../../assets/web/pricing/Starter.png';
-import growth from '../../assets/web/pricing/Growth.png';
-import scale from '../../assets/web/pricing/Scale.png';
-import shield from '../../assets/web/pricing/Shield.png';
+import trial from '../../assets/web/pricing/trial.png';
+import starter from '../../assets/web/pricing/starter.png';
+import growth from '../../assets/web/pricing/growth.png';
+import scale from '../../assets/web/pricing/scale.png';
+import shield from '../../assets/web/pricing/shield.png';
 
 const SectionSeparator = () => (
     <div className="h-[3px] bg-gray-200 flex-grow"></div>
