@@ -282,7 +282,7 @@ export default function Home() {
         {/* Welcome Text */}
         <div className="px-6 pt-6 pb-2">
           <p className="text-[#6F6F6F] text-[10px] font-medium mb-1">Welcome to Authentiks</p>
-          <h2 className="text-[#257DD4] font-extrabold text-[20px] leading-tight">
+          <h2 className="text-[#257DD4] font-extrabold text-[18px] leading-tight">
             {recentScans.length > 0 ? ("Stay Protected") : ("A Product Authentication Platform")}
           </h2>
         </div>
@@ -397,18 +397,13 @@ export default function Home() {
             <ScanQrCodeButton onScanClick={handleScanClick} />
 
             {/* Trusted By Card */}
-            <div className="mx-5 mb-6 bg-white rounded-[24px] p-6 shadow-[0_10px_30px_rgba(0,0,0,0.05)] flex items-center gap-5 border border-gray-50">
-              <div className="w-24 h-24 flex-shrink-0  rounded-full flex items-center justify-center">
-                {/* SVG Shield with Checkmark */}
-                {/* <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" fill="#2CA4D6" stroke="#2CA4D6" strokeWidth="2" strokeLinejoin="round" />
-              <path d="M9 12L11 14L15 10" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg> */}
+            <div className="mx-5 mb-6 bg-white rounded-[24px] p-4 shadow-[0_10px_30px_rgba(0,0,0,0.05)] flex items-center gap-5 border border-gray-50">
+              <div className="w-12 h-12 flex-shrink-0  rounded-full flex items-center justify-center">
                 <img src="logo.svg" alt="logo" />
               </div>
               <div>
-                <p className="text-[#6E6D6B] text-[18px] font-bold mb-1">Trusted by</p>
-                <h4 className="text-[#259DCF] font-black text-[24px] leading-tight">
+                <p className="text-[#6E6D6B] text-[12px] font-bold mb-1">Trusted by</p>
+                <h4 className="text-[#259DCF] font-black text-[18px] leading-tight">
                   100+ Brands
                   <br />
                   2M+ Users
@@ -421,34 +416,34 @@ export default function Home() {
               <h3 className="text-[#0D4E96] text-[19px] font-black mb-5">
                 Why Scan with Authentiks?
               </h3>
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-4">
                   <div className="bg-[#E8F4F9] p-2 rounded-lg">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2CA4D6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2CA4D6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                     </svg>
                   </div>
-                  <span className="text-[#555] font-bold text-[15px]">Direct Brand Verification</span>
+                  <span className="text-[#555] font-bold text-[13px]">Direct Brand Verification</span>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="bg-[#FFF8E1] p-2 rounded-lg">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFB300" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FFB300" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
                       <line x1="12" y1="9" x2="12" y2="13" />
                       <line x1="12" y1="17" x2="12.01" y2="17" />
                     </svg>
                   </div>
-                  <span className="text-[#555] font-bold text-[15px]">Identify Reused QR Codes</span>
+                  <span className="text-[#555] font-bold text-[13px]">Identify Reused QR Codes</span>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="bg-[#FFEBEE] p-2 rounded-lg">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F44336" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F44336" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                       <circle cx="12" cy="12" r="10" />
                       <line x1="15" y1="9" x2="9" y2="15" />
                       <line x1="9" y1="9" x2="15" y2="15" />
                     </svg>
                   </div>
-                  <span className="text-[#555] font-bold text-[15px]">Detect Fake Products Instantly</span>
+                  <span className="text-[#555] font-bold text-[13px]">Detect Fake Products Instantly</span>
                 </div>
               </div>
             </div>
