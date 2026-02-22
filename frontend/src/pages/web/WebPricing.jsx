@@ -14,6 +14,13 @@ import scale6 from "../../assets/web/pricing/scale_6.png"; // Most Popular
 import scale4 from "../../assets/web/pricing/scale_4.png"; // Save 50k
 import scal3 from "../../assets/web/pricing/scal_3.png"; // Save 3L
 
+import pricing from '../../assets/web/pricing/price.png';
+import trial from '../../assets/web/pricing/Trial.png';
+import starter from '../../assets/web/pricing/Starter.png';
+import growth from '../../assets/web/pricing/Growth.png';
+import scale from '../../assets/web/pricing/Scale.png';
+import shield from '../../assets/web/pricing/Shield.png';
+
 const SectionSeparator = () => (
     <div className="h-[3px] bg-gray-200 flex-grow"></div>
 );
@@ -52,33 +59,49 @@ export default function WebPricing() {
                 </p>
 
                 {/* Overlapping Cards Layout - Desktop */}
-                <div className="hidden md:flex items-end justify-center relative max-w-5xl mx-auto gap-6" style={{ minHeight: '520px' }}>
+                <div className="hidden md:flex items-end justify-center relative w-[800px] mx-auto gap-6" style={{ minHeight: '520px' }}>
                     {/* Starter Plan - Left */}
-                    <div className="relative z-15 -mr-4 mb-0 self-end">
+                    <div className="relative z-15 -mr-8 mb-14 self-end">
                         <img
-                            src={scale6}
+                            src={pricing}
                             alt="Starter Plan"
-                            className="w-[300px] h-auto object-contain drop-shadow-lg rounded-4xl mb-4"
+                            className="w-[307px] h-auto object-contain drop-shadow-lg mb-4"
                         />
                     </div>
 
-                    {/* Growth Plan - Center, Elevated */}
-                    <div className="relative z-20 flex flex-col items-center -mt-8">
-                        {/* Most Popular Badge */}
-                        <div className="bg-[#1A9DD4] text-white font-bold text-lg px-16 py-2 rounded-t-[20px] shadow-md whitespace-nowrap">
-                            Most Popular
-                        </div>
+
+                    <div className="relative z-10 -ml-[24px] mb-0 self-end">
                         <img
-                            src={scale4}
-                            alt="Growth Plan"
-                            className="w-[320px] h-auto object-contain drop-shadow-xl rounded-4xl"
+                            src={trial}
+                            alt="Scale Plan"
+                            className="w-[310px] h-auto object-contain drop-shadow-lg mb-4"
                         />
                     </div>
 
-                    {/* Scale Plan - Right */}
-                    <div className="relative z-10 -ml-4 mb-0 self-end">
+                    <div className="relative z-10 -ml-[80px] mb-0 self-end">
                         <img
-                            src={scal3}
+                            src={starter}
+                            alt="Scale Plan"
+                            className="w-[310px] h-auto object-contain drop-shadow-lg rounded-4xl mb-4"
+                        />
+                    </div>
+                    <div className="relative z-10 -ml-[80px] mb-0 self-end">
+                        <img
+                            src={growth}
+                            alt="Scale Plan"
+                            className="w-[310px] h-auto object-contain drop-shadow-lg rounded-4xl mb-4"
+                        />
+                    </div>
+                    <div className="relative z-10 -ml-[80px] mb-0 self-end">
+                        <img
+                            src={scale}
+                            alt="Scale Plan"
+                            className="w-[310px] h-auto object-contain drop-shadow-lg rounded-4xl mb-4"
+                        />
+                    </div>
+                    <div className="relative z-10 -ml-[80px] mb-0 self-end">
+                        <img
+                            src={shield}
                             alt="Scale Plan"
                             className="w-[310px] h-auto object-contain drop-shadow-lg rounded-4xl mb-4"
                         />
