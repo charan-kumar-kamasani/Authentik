@@ -47,9 +47,11 @@ module.exports.collection && module.exports.collection.createIndex && (async () 
     await module.exports.collection.createIndex({ userId: 1, qrCode: 1 }, { unique: true, sparse: true });
     await module.exports.collection.createIndex({ userId: 1, productId: 1 }, { unique: true, sparse: true });
     // Prevent multiple ORIGINAL scans for the same product (enforced only for status === 'ORIGINAL')
+    // Drop old index with unsupported $ne expression if it exists
+    try { await module.exports.collection.dropIndex('productId_1_status_1'); } catch (_) { /* may not exist */ }
     await module.exports.collection.createIndex(
       { productId: 1, status: 1 },
-      { unique: true, partialFilterExpression: { status: 'ORIGINAL', productId: { $exists: true, $ne: null } } }
+      { unique: true, partialFilterExpression: { status: 'ORIGINAL', productId: { $type: 'objectId' } } }
     );
   } catch (err) {
     // Index creation may fail if duplicates exist; log and continue

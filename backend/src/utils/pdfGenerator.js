@@ -1,37 +1,59 @@
 const PDFDocument = require("pdfkit");
 const QRCode = require("qrcode");
 
+/**
+ * Fetch a remote image (e.g. brand logo from Cloudinary) and return it as a Buffer.
+ * Returns null on any error so callers can gracefully skip the logo overlay.
+ */
+const fetchImageBuffer = async (url) => {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const arrayBuffer = await res.arrayBuffer();
+    return Buffer.from(arrayBuffer);
+  } catch {
+    return null;
+  }
+};
+
 const generateQrPdf = async (products, creatorEmail, options = {}) => {
   return new Promise(async (resolve, reject) => {
     try {
-      /** PAGE SIZE — A3 Plus (13 × 19 inches) **/
-      const widthPts = 13 * 72;   // 936 pts
-      const heightPts = 19 * 72;  // 1368 pts
+      /** ─── PAGE SIZE — A3 Plus (13 × 19 inches) ─── **/
+      const widthPts = 13 * 72;   // 936 pts  ≈ 330.2 mm
+      const heightPts = 19 * 72;  // 1368 pts ≈ 482.6 mm
 
-      /** CELL SIZE — 20 mm wide × 25 mm tall (portrait) **/
+      /** ─── CELL SIZE — 20 mm wide × 25 mm tall ─── **/
       const MM = 2.83465;         // 1 mm ≈ 2.835 pts
       const cellWidth = 20 * MM;  // ~56.69 pts
       const cellHeight = 25 * MM; // ~70.87 pts
 
-      /** GRID — 15 cols × 18 rows = 270 per page **/
+      /** ─── GRID — 15 cols × 18 rows = 270 per page ─── **/
       const cols = 15;
       const rows = 18;
       const perPage = cols * rows; // 270
 
-      /** MARGINS — 10 mm left/right, vertically centred **/
-      const sideMargin = 10 * MM; // ~28.35 pts
+      /** ─── MARGINS — exactly centred on the page ─── **/
+      // Width:  20mm × 15 = 300mm.  Paper ≈ 330.2mm.  Remaining ≈ 30.2mm → 15.1mm each side
+      // Height: 25mm × 18 = 450mm.  Paper ≈ 482.6mm.  Remaining ≈ 32.6mm → 16.3mm each side
       const gridWidth = cols * cellWidth;
       const gridHeight = rows * cellHeight;
-      const marginLeft = sideMargin;
+      const marginLeft = (widthPts - gridWidth) / 2;
       const marginTop = (heightPts - gridHeight) / 2;
 
-      /** STICKER INTERNAL ZONES **/
+      /** ─── STICKER INTERNAL ZONES ─── **/
       const brandColor = options.bannerColor || "#283890";
-      const headerHeight = cellHeight * 0.20;  // ~20 % for "Scratch & Scan"
-      const footerBannerH = cellHeight * 0.20; // ~20 % for "Authentiks.in"
-      const qrAreaHeight = cellHeight - headerHeight - footerBannerH; // ~60 % QR
+      const headerHeight = cellHeight * 0.20;  // ~20% for "Scratch & Scan"
+      const footerBannerH = cellHeight * 0.20; // ~20% for "Authentiks.in"
+      const qrAreaHeight = cellHeight - headerHeight - footerBannerH; // ~60% QR
 
       const totalPages = Math.ceil(products.length / perPage);
+
+      /** ─── FETCH BRAND LOGO (if provided) ─── **/
+      let logoBuffer = null;
+      if (options.brandLogo) {
+        logoBuffer = await fetchImageBuffer(options.brandLogo);
+      }
 
       const doc = new PDFDocument({
         size: [widthPts, heightPts],
@@ -116,6 +138,41 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
             width: qrSide,
             height: qrSide,
           });
+
+          /** ── COMPANY LOGO OVERLAY — PayPal-style centred on QR ── **/
+          if (logoBuffer) {
+            // Logo at ~22% of QR side for visibility while staying scannable
+            const logoSize = qrSide * 0.22;
+            // Background area: logo + generous padding (like PayPal's clean white box)
+            const bgPadding = logoSize * 0.35;
+            const bgSize = logoSize + bgPadding * 2;
+            const bgX = qrX + (qrSide - bgSize) / 2;
+            const bgY = qrImgY + (qrSide - bgSize) / 2;
+            const cornerRadius = bgSize * 0.18; // Rounded corners
+
+            // White rounded-rectangle background
+            doc
+              .save()
+              .roundedRect(bgX, bgY, bgSize, bgSize, cornerRadius)
+              .fill("#FFFFFF");
+
+            // Subtle border around the white box
+            doc
+              .roundedRect(bgX, bgY, bgSize, bgSize, cornerRadius)
+              .lineWidth(0.6)
+              .strokeColor("#E0E0E0")
+              .stroke();
+            doc.restore();
+
+            // Logo image centred inside the white box
+            const logoX = bgX + bgPadding;
+            const logoY = bgY + bgPadding;
+            doc.image(logoBuffer, logoX, logoY, {
+              fit: [logoSize, logoSize],
+              align: "center",
+              valign: "center",
+            });
+          }
 
           /** ── FOOTER BANNER — dark blue band with "Authentiks.in" ── **/
           const footerY = qrY + qrAreaHeight;

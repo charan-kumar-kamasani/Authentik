@@ -154,6 +154,7 @@ router.post(
         const pdfOptions = {
             brand: productName || createdProducts[0]?.productName || 'N/A',
             brandId: brandDoc?._id?.toString() || '',
+            brandLogo: brandDoc?.brandLogo || '',
             company: brandDoc?.companyName || 'N/A',
             companyName: brandDoc?.companyName || 'N/A',
             orderId: batchNo || 'Bulk-Generated'
@@ -224,6 +225,7 @@ router.post(
         const pdfOptions = {
             brand: productName || results[0]?.productName || 'N/A',
             brandId: brandDoc?._id?.toString() || '',
+            brandLogo: brandDoc?.brandLogo || '',
             company: brandDoc?.companyName || 'N/A',
             companyName: brandDoc?.companyName || 'N/A',
             orderId: batchNo || 'Bulk-Upload'

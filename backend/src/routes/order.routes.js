@@ -541,11 +541,15 @@ router.get('/:id/download', protect, authorize('admin', 'superadmin'), async (re
       return res.status(404).json({ message: 'No QR codes found for this order' });
     }
     
+    // Fetch the Brand document to get the logo URL
+    const brandDoc = order.brandId ? await Brand.findById(order.brandId._id || order.brandId) : null;
+
     // Prepare options with order, brand, and company information
     const pdfOptions = {
       orderId: order.orderNumber || order._id.toString(),
-      brand: order.brandName || 'N/A',
+      brand: order.brandName || brandDoc?.brandName || 'N/A',
       brandId: order.brandId || '',
+      brandLogo: brandDoc?.brandLogo || '',
       company: order.companyName || 'N/A',
       companyName: order.companyName || 'N/A'
     };
