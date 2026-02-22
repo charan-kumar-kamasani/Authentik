@@ -294,6 +294,7 @@ export default function Home() {
 
         {recentScans.length > 0 ? (
           <>
+            <ScanQrCodeButton />
             {/* Stats Grid */}
             <div className="grid grid-cols-4 gap-3 px-4 mb-6">
               <StatsCard icon={iconTotalScans} count={String(stats.totalScans)} label="Total Scans" />
@@ -303,7 +304,7 @@ export default function Home() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-4 px-4 mb-6">
+            {/* <div className="flex gap-4 px-4 mb-6">
               <ActionButton
                 icon={iconTopBrands}
                 label="Top Brands"
@@ -316,7 +317,7 @@ export default function Home() {
                 bgColor="bg-[#2CA4D6]"
                 onClick={() => navigate("/scan-history")}
               />
-            </div>
+            </div> */}
 
             {/* Recent Scans Section */}
             <div className="px-4">
@@ -359,9 +360,9 @@ export default function Home() {
 
 
             {/* Floating Scan Button */}
-            <div className="fixed bottom-[80px] left-0 right-0 px-6 z-30">
+            {/* <div className="fixed bottom-[80px] left-0 right-0 px-6 z-30">
               <ScanQrCodeButton />
-            </div>
+            </div> */}
 
           </>
         ) : (
@@ -483,7 +484,7 @@ function ScanQrCodeButton() {
       </style>
       <button
         onClick={() => navigate("/scan")}
-        className="w-full bg-[#0D4E96] text-white text-[22px] font-bold h-[75px] rounded-[38px] shadow-[0_12px_28px_rgba(14,92,171,0.35)] flex items-center justify-center gap-4 active:scale-[0.97] transition-all relative overflow-hidden group"
+        className="w-full bg-[#0D4E96] text-white text-[22px] font-bold h-[65px] rounded-[38px]  flex items-center justify-center gap-4 active:scale-[0.97] transition-all relative overflow-hidden group"
       >
         {/* Animated Background Blobs */}
         <div className="absolute inset-0 z-0">
