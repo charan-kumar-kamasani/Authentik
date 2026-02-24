@@ -65,7 +65,7 @@ export default function Profile() {
         {[
           [
             { icon: IconScanHistory, text: "Scan History", action: () => navigate("/scan-history") },
-            { icon: IconReports, text: "Reports", action: () => { } }
+            { icon: IconReports, text: "Reports", action: () => navigate("/my-reports") }
           ],
           [
             { icon: IconAboutUs, text: "About Us", action: () => navigate("/about-us") },

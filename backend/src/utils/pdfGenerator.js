@@ -125,7 +125,8 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
           doc.rect(x, qrY, cellWidth, qrAreaHeight).fill("#FFFFFF");
 
           const qrBuffer = await QRCode.toBuffer(products[i].qrCode, {
-            scale: 6,
+            errorCorrectionLevel: 'H', // Use High error correction to allow logo overlay
+            scale: 8, // Increase scale for sharper output
             margin: 1,
           });
 
@@ -141,8 +142,8 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
 
           /** ── COMPANY LOGO OVERLAY — PayPal-style centred on QR ── **/
           if (logoBuffer) {
-            // Logo at ~22% of QR side for visibility while staying scannable
-            const logoSize = qrSide * 0.22;
+            // Logo at ~20% of QR side for visibility while staying scannable with Level H error correction
+            const logoSize = qrSide * 0.20;
             // Background area: logo + generous padding (like PayPal's clean white box)
             const bgPadding = logoSize * 0.35;
             const bgSize = logoSize + bgPadding * 2;

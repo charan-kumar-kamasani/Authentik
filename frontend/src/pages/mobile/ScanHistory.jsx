@@ -39,13 +39,15 @@ export default function ScanHistory() {
             let icon = StatusValid;
             let content = {};
 
-            if (item.status === "FAKE") {
-              type = "fake";
+            if (item.status === "FAKE" || item.status === "INACTIVE") {
+              type = item.status.toLowerCase();
               // "dangerous" icon (red circle x)
               icon = StatusFake;
               content = {
-                title: "Fake or Counterfeit",
-                subtitle: "This product doesn't match our authenticity records",
+                title: item.status === "FAKE" ? "Fake or Counterfeit" : "Inactive QR Code",
+                subtitle: item.status === "FAKE"
+                  ? "This product doesn't match our authenticity records"
+                  : "This product is currently inactive and cannot be verified",
               };
             } else if (item.status === "ALREADY_USED" || item.status === "DUPLICATE") {
               type = "duplicate";
@@ -78,6 +80,7 @@ export default function ScanHistory() {
               latitude: item.latitude,
               longitude: item.longitude,
               place: item.place,
+              originalScan: item.originalScan,
             };
           });
           setHistoryItems(mappedData);
@@ -116,7 +119,7 @@ export default function ScanHistory() {
               </div>
             ) : (
               <div>
-                <h3 className={`font-bold text-[18px] mb-1 ${item.type === 'fake' ? 'text-[#E30211]' : 'text-[#0D4E96]'}`}>
+                <h3 className={`font-bold text-[18px] mb-1 ${['fake', 'inactive'].includes(item.type) ? 'text-[#E30211]' : 'text-[#0D4E96]'}`}>
                   {item.content.title}
                 </h3>
                 <p className="text-[#0D4E96] text-[13px] font-bold leading-tight">
@@ -130,12 +133,17 @@ export default function ScanHistory() {
         {/* Footer - Blue Bar with Location */}
         <div className="bg-[#0E5CAB] text-white py-2 px-4 text-[12px] font-bold">
           <div className="text-center mb-2">Scanned on: {item.scannedDate} <span className="ml-2">Time: {item.scannedTime}</span></div>
-          {/* {item.latitude && item.longitude && (
-            <div className="text-center text-[11px] font-normal border-t border-blue-400 pt-2">
+          {item.latitude && item.longitude && (
+            <div className="text-center text-[11px] font-normal border-t border-blue-400/30 pt-2 mt-2">
               📍 Location: {parseFloat(item.latitude).toFixed(4)}, {parseFloat(item.longitude).toFixed(4)}
-              {item.place && <div className="text-[10px] mt-1">{item.place}</div>}
+              {item.place && <div className="text-[10px] mt-1 opacity-90">{item.place}</div>}
             </div>
-          )} */}
+          )}
+          {item.originalScan && (
+            <div className="text-center text-[11px] font-normal border-t border-blue-400/30 pt-2 mt-2 italic">
+              Original scan by {item.originalScan.scannedBy} on {new Date(item.originalScan.scannedAt).toLocaleDateString()}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -145,7 +153,11 @@ export default function ScanHistory() {
     <div className="min-h-screen bg-white font-sans flex flex-col pb-10">
       {/* Header */}
       {/* Header */}
-      <MobileHeader onLeftClick={() => navigate(-1)} />
+      <MobileHeader
+        title="Scan History"
+        onLeftClick={() => navigate(-1)}
+        rightIcon={<div className="w-10" />}
+      />
 
       <div className="px-5 flex-1">
         <h2 className="text-[#2CA4D6] text-[18px] font-bold mb-4 mt-2">Scan History</h2>

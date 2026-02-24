@@ -43,6 +43,8 @@ export default function Result() {
     return <ResultRepeat data={data} />;
   } else if (status === "FAKE") {
     return <ResultFake data={data} />;
+  } else if (status === "INACTIVE") {
+    return <ResultInactive data={data} />;
   } else {
     // Fallback/Default
     return <ResultFake data={data} />;
@@ -91,7 +93,8 @@ function Header({ title = "Authentiks", showBell = true }) {
   );
 }
 
-function ResultAuthentic({ data }) {
+function ResultAuthentic({ data }: { data: any }) {
+  const navigate = useNavigate();
   // Determine colors
   const themeColor = "#2CA4D6"; // Blue
   const productName = data.productName || "Herbtox+";
@@ -99,26 +102,12 @@ function ResultAuthentic({ data }) {
   return (
     <div className="min-h-screen bg-[#F5F5F5] font-sans flex flex-col items-center">
       <MobileHeader
+        title="Scan Result"
         onLeftClick={() => navigate("/profile")}
-        leftIcon={
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        }
+        rightIcon={<div className="w-10" />}
       />
 
-      <div className="w-full max-w-md px-4 py-4 flex flex-col  pb-24">
+      <div className="w-full max-w-md px-4 py-4 flex flex-col pb-24">
         {/* Status Card */}
         <div className="bg-[#2CA4D6] rounded-t-[16px] p-4 text-center text-white relative shadow-md z-10">
           <div className="flex flex-row justify-center items-center gap-2">
@@ -177,10 +166,10 @@ function ResultAuthentic({ data }) {
                 value={
                   data.scannedAt
                     ? new Date(data.scannedAt).toLocaleDateString("en-GB", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })
                     : "20/Oct/2025"
                 }
               />
@@ -225,27 +214,14 @@ function ResultAuthentic({ data }) {
   );
 }
 
-function ResultRepeat({ data }) {
+function ResultRepeat({ data }: { data: any }) {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-[#F5F5F5] font-sans flex flex-col items-center">
       <MobileHeader
+        title="Scan Result"
         onLeftClick={() => navigate("/profile")}
-        leftIcon={
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        }
+        rightIcon={<div className="w-10" />}
       />
 
       <div className="w-full max-w-md px-4 py-4 flex flex-col pb-24">
@@ -278,16 +254,16 @@ function ResultRepeat({ data }) {
               <p className="text-[#6E6D6B] text-[14px] font-bold">
                 {data.originalScan?.scannedAt
                   ? new Date(data.originalScan.scannedAt).toLocaleString(
-                      "en-GB",
-                      {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: true,
-                      },
-                    )
+                    "en-GB",
+                    {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: true,
+                    },
+                  )
                   : "20/Oct/2025  08:30 PM (IST)"}
               </p>
             </div>
@@ -348,7 +324,10 @@ function ResultRepeat({ data }) {
             Report this product now
           </p>
 
-          <button className="w-full bg-[#FFA808] text-white font-bold text-[18px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(255,168,8,0.4)] hover:bg-[#e59410] transition-colors">
+          <button
+            onClick={() => navigate("/report", { state: { qrCode: data.qrCode } })}
+            className="w-full bg-[#FFA808] text-white font-bold text-[18px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(255,168,8,0.4)] hover:bg-[#e59410] transition-colors"
+          >
             Click to Report
           </button>
         </div>
@@ -357,27 +336,14 @@ function ResultRepeat({ data }) {
   );
 }
 
-function ResultFake({ data }) {
+function ResultFake({ data }: { data: any }) {
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-[#F5F5F5] font-sans flex flex-col items-center">
-         <MobileHeader
+      <MobileHeader
+        title="Scan Result"
         onLeftClick={() => navigate("/profile")}
-        leftIcon={
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        }
+        rightIcon={<div className="w-10" />}
       />
 
       <div className="w-full max-w-md px-4 py-4 flex flex-col pb-24">
@@ -439,7 +405,10 @@ function ResultFake({ data }) {
             Report this product now
           </p>
 
-          <button className="w-full bg-[#E30211] text-white font-bold text-[20px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(227,2,17,0.4)] hover:bg-[#c9020f] transition-colors">
+          <button
+            onClick={() => navigate("/report", { state: { qrCode: data.qrCode } })}
+            className="w-full bg-[#E30211] text-white font-bold text-[20px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(227,2,17,0.4)] hover:bg-[#c9020f] transition-colors"
+          >
             Click to Report
           </button>
         </div>
@@ -448,7 +417,7 @@ function ResultFake({ data }) {
   );
 }
 
-function DetailBox({ label, value }) {
+function DetailBox({ label, value }: { label: string; value: any }) {
   return (
     <div className="bg-[#259DCF] rounded-[16px] p-3 shadow-lg text-left">
       <p className="text-white/80 text-[11px] font-bold uppercase tracking-wider mb-0.5">
@@ -459,7 +428,59 @@ function DetailBox({ label, value }) {
   );
 }
 
-const maskPhone = (value) => {
+function ResultInactive({ data }: { data: any }) {
+  const navigate = useNavigate();
+  return (
+    <div className="min-h-screen bg-[#F5F5F5] font-sans flex flex-col items-center">
+      <MobileHeader
+        title="Scan Result"
+        onLeftClick={() => navigate("/profile")}
+        rightIcon={<div className="w-10" />}
+      />
+
+      <div className="w-full max-w-md px-4 py-4 flex flex-col pb-24">
+        {/* Inactive Card */}
+        <div className="bg-[#444444] rounded-[16px] shadow-[0_10px_20px_rgba(68,68,68,0.3)] text-center text-white flex flex-col items-center gap-3 pb-6">
+          <div className="flex flex-col justify-center items-center gap-2 mt-4">
+            <div className="w-[80px] h-[80px] bg-white rounded-full flex items-center justify-center">
+              <img
+                src={fakeIcon}
+                alt="Inactive"
+                className="w-[64px] h-[64px] opacity-50 grayscale"
+              />
+            </div>
+            <h2 className="text-[20px] font-bold uppercase tracking-wide">
+              INACTIVE QR CODE
+            </h2>
+          </div>
+          <div className="px-6 w-full">
+            <p className="text-[14px] font-medium leading-tight opacity-95">
+              This QR code has been recorded but is currently not active in our system.
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-b-[16px] shadow-sm p-4 pt-6 text-center">
+          <h3 className="text-[#333] font-bold text-[18px] mb-2 text-left">
+            What does this mean?
+          </h3>
+          <p className="text-[#666] text-[14px] leading-relaxed text-left mb-6">
+            A product might be marked as inactive if it's still in the warehouse, awaiting market release, or has been recalled.
+          </p>
+
+          <button
+            onClick={() => navigate("/home")}
+            className="w-full bg-[#0D4E96] text-white font-bold text-[18px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(13,78,150,0.3)]"
+          >
+            Scan Another Product
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const maskPhone = (value: any) => {
   if (!value) return "Unknown";
   const str = value.toString();
   if (str.length < 6) return str;

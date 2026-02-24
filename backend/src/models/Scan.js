@@ -16,6 +16,14 @@ module.exports = mongoose.model(
         default: null, // FAKE products won’t have this
       },
 
+      brandId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Brand",
+        default: null,
+      },
+
+      brand: String, // String name of the brand
+
       qrCode: { type: String, required: true },
 
       productName: String,
@@ -23,7 +31,7 @@ module.exports = mongoose.model(
 
       status: {
         type: String,
-        enum: ["ORIGINAL", "FAKE", "ALREADY_USED"],
+        enum: ["ORIGINAL", "FAKE", "ALREADY_USED", "INACTIVE"],
         required: true,
       },
 
@@ -44,8 +52,14 @@ module.exports.schema = module.exports.schema || null;
 // - Using sparse avoids conflicts where productId is null for FAKE scans.
 module.exports.collection && module.exports.collection.createIndex && (async () => {
   try {
-    await module.exports.collection.createIndex({ userId: 1, qrCode: 1 }, { unique: true, sparse: true });
-    await module.exports.collection.createIndex({ userId: 1, productId: 1 }, { unique: true, sparse: true });
+    // We want to record every scan in history, so we don't use unique indexes for userId + qrCode anymore.
+    // However, we still want to index them for fast lookups.
+    try { await module.exports.collection.dropIndex('userId_1_qrCode_1'); } catch (_) {}
+    try { await module.exports.collection.dropIndex('userId_1_productId_1'); } catch (_) {}
+    
+    await module.exports.collection.createIndex({ userId: 1, qrCode: 1 });
+    await module.exports.collection.createIndex({ userId: 1, productId: 1 });
+    await module.exports.collection.createIndex({ brandId: 1, status: 1 }); // Useful for company dashboard
     // Prevent multiple ORIGINAL scans for the same product (enforced only for status === 'ORIGINAL')
     // Drop old index with unsupported $ne expression if it exists
     try { await module.exports.collection.dropIndex('productId_1_status_1'); } catch (_) { /* may not exist */ }

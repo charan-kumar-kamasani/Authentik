@@ -29,6 +29,9 @@ import UserManagement from "./pages/admin/UserManagement";
 import AdminLayout from "./pages/admin/AdminLayout";
 import GenerateQrs from "./pages/admin/GenerateQrs";
 import QrManagement from "./pages/admin/QrManagement";
+import ReportProduct from "./pages/mobile/ReportProduct";
+import MyReports from "./pages/mobile/MyReports";
+
 // User private route
 function PrivateRoute({ children }) {
   const token = localStorage.getItem("token");
@@ -180,6 +183,8 @@ export default function App() {
             <Route path="/terms-conditions" element={<TermsConditions />} />
             <Route path="/policies" element={<Policies />} />
             <Route path="/result/:status" element={<Result />} />
+            <Route path="/report" element={<ReportProduct />} />
+            <Route path="/my-reports" element={<MyReports />} />
           </Route>
 
           {/* Admin (mobile access optional) */}

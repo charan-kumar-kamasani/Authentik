@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import techBg from "../../assets/web/hero_image.png";
@@ -21,11 +21,34 @@ import growth from '../../assets/web/pricing/growth.png';
 import scale from '../../assets/web/pricing/scale.png';
 import shield from '../../assets/web/pricing/shield.png';
 
+import india from '../../assets/web/pricing/india.png';
+import global from '../../assets/web/pricing/us.png';
+
 const SectionSeparator = () => (
     <div className="h-[3px] bg-gray-200 flex-grow"></div>
 );
 
+
+
 export default function WebPricing() {
+    const [isIndia, setIsIndia] = useState(false);
+    useEffect(() => {
+        fetch("https://ipapi.co/json/")
+            .then(res => res.json())
+            .then(data => {
+                console.log("User country:", data.country_name);
+
+                if (data.country_code == "IN") {
+                    setIsIndia(true)
+                    console.log("User is from India 🇮🇳");
+                } else {
+                    setIsIndia(false)
+                    console.log("User is outside India 🌍");
+                }
+            });
+
+    }, []);
+
     return (
         <div className="font-sans min-h-screen bg-white w-full overflow-x-hidden">
             <WebHeader />
@@ -63,49 +86,14 @@ export default function WebPricing() {
                     {/* Starter Plan - Left */}
                     <div className="relative z-15 -mr-8 mb-14 self-end">
                         <img
-                            src={pricing}
+                            src={isIndia ? india : global}
                             alt="Starter Plan"
-                            className="w-[307px] h-auto object-contain drop-shadow-lg mb-4"
+                            className="w-[100%] h-auto object-contain drop-shadow-lg mb-4"
                         />
                     </div>
 
 
-                    <div className="relative z-10 -ml-[24px] mb-0 self-end">
-                        <img
-                            src={trial}
-                            alt="Scale Plan"
-                            className="w-[310px] h-auto object-contain drop-shadow-lg mb-4"
-                        />
-                    </div>
 
-                    <div className="relative z-10 -ml-[80px] mb-0 self-end">
-                        <img
-                            src={starter}
-                            alt="Scale Plan"
-                            className="w-[310px] h-auto object-contain drop-shadow-lg rounded-4xl mb-4"
-                        />
-                    </div>
-                    <div className="relative z-10 -ml-[80px] mb-0 self-end">
-                        <img
-                            src={growth}
-                            alt="Scale Plan"
-                            className="w-[310px] h-auto object-contain drop-shadow-lg rounded-4xl mb-4"
-                        />
-                    </div>
-                    <div className="relative z-10 -ml-[80px] mb-0 self-end">
-                        <img
-                            src={scale}
-                            alt="Scale Plan"
-                            className="w-[310px] h-auto object-contain drop-shadow-lg rounded-4xl mb-4"
-                        />
-                    </div>
-                    <div className="relative z-10 -ml-[80px] mb-0 self-end">
-                        <img
-                            src={shield}
-                            alt="Scale Plan"
-                            className="w-[310px] h-auto object-contain drop-shadow-lg rounded-4xl mb-4"
-                        />
-                    </div>
                 </div>
 
                 {/* Mobile Cards Layout - Stacked */}

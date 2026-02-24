@@ -1,6 +1,8 @@
 const express = require("express");
 const Product = require("../models/Product");
 const Scan = require("../models/Scan");
+const Report = require("../models/Report");
+const User = require("../models/User");
 const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -107,7 +109,7 @@ router.get("/history", protect, async (req, res) => {
 router.post("/check", async (req, res) => {
   try {
     const { qrCode } = req.body;
-
+console.log(qrCode)
     if (!qrCode) {
       return res.status(400).json({ error: "qrCode required" });
     }
@@ -118,7 +120,7 @@ router.post("/check", async (req, res) => {
       return res.json({ status: "FAKE", isActive: false, product: null });
     }
 
-    // If product exists but is inactive, do NOT return product details.
+    // If product exists but is inactive, return INACTIVE status
     if (!product.isActive) {
       return res.json({ status: "INACTIVE", isActive: false, message: "This QR code is inactive." });
     }
@@ -142,8 +144,29 @@ router.post("/check", async (req, res) => {
 router.post("/", protect, async (req, res) => {
   try {
     const userId = req.user._id;
-
     const { qrCode, latitude, longitude } = req.body;
+    console.log("Scan POST body:", { qrCode, latitude, longitude });
+
+    if (!qrCode) {
+      return res.status(400).json({ error: "qrCode is required for scanning." });
+    }
+
+    // --- BRAND RESOLUTION (Guess from QR prefix even if product not found) ---
+    let brandIdFromPrefix = null;
+    let brandNameFromPrefix = null;
+
+    const qrParts = qrCode.split('-');
+    if (qrParts.length > 1) {
+      const guessedBrand = qrParts[0];
+      const Brand = require("../models/Brand");
+      const foundBrand = await Brand.findOne({ 
+        brandName: { $regex: new RegExp(`^${guessedBrand}$`, "i") } 
+      });
+      if (foundBrand) {
+        brandIdFromPrefix = foundBrand._id;
+        brandNameFromPrefix = foundBrand.brandName;
+      }
+    }
 
     const place = await getPlaceFromCoords(latitude, longitude);
     const scannedAt = new Date();
@@ -151,91 +174,19 @@ router.post("/", protect, async (req, res) => {
     // 1️⃣ Check product
     const product = await Product.findOne({ qrCode });
 
-    // 1.a️⃣ Prevent duplicate scans for the same user + qrCode/product
-    // If a scan already exists for this user and this QR (or product), return it instead of creating a duplicate.
-    let existingScan = null;
-    if (product) {
-      existingScan = await Scan.findOne({ userId, productId: product._id });
-    } else {
-      existingScan = await Scan.findOne({ userId, qrCode });
-    }
+    // --- We record EVERY attempt, so we skip searching for existingScan here ---
 
-    if (existingScan) {
-      // if product exists, populate productId for richer response
-      if (existingScan.productId) await existingScan.populate('productId');
-
-      // Build response matching the shape used elsewhere
-      if (existingScan.status === 'FAKE') {
-        return res.json({
-          status: 'FAKE',
-          data: {
-            qrCode: existingScan.qrCode,
-            productId: null,
-            productName: existingScan.productName || null,
-            expiryDate: existingScan.expiryDate || null,
-            place: existingScan.place,
-            latitude: existingScan.latitude,
-            longitude: existingScan.longitude,
-            scannedAt: existingScan.createdAt,
-          }
-        });
-      }
-
-        if (existingScan.status === 'ALREADY_USED') {
-        // find the original scanner for this product and return mobile instead of email
-        const original = await Scan.findOne({ productId: existingScan.productId, status: 'ORIGINAL' }).populate('userId', 'mobile');
-        return res.json({
-          status: 'ALREADY_USED',
-          data: {
-            qrCode: existingScan.qrCode,
-            productId: existingScan.productId?._id || existingScan.productId,
-            productName: existingScan.productName,
-            brand: existingScan.productId?.brand || undefined,
-            batchNo: existingScan.productId?.batchNo || undefined,
-            manufactureDate: existingScan.productId?.manufactureDate || undefined,
-            expiryDate: existingScan.expiryDate,
-            place: existingScan.place,
-            latitude: existingScan.latitude,
-            longitude: existingScan.longitude,
-            scannedAt: existingScan.createdAt,
-            originalScan: original ? {
-              scannedBy: original.userId ? original.userId.mobile : 'Unknown',
-              scannedAt: original.createdAt,
-              place: original.place
-            } : null
-          }
-        });
-      }
-
-      // ORIGINAL
-      if (existingScan.status === 'ORIGINAL') {
-        return res.json({
-          status: 'ORIGINAL',
-          data: {
-            qrCode: existingScan.qrCode,
-            productId: existingScan.productId?._id || existingScan.productId,
-            productName: existingScan.productName,
-            brand: existingScan.productId?.brand || undefined,
-            batchNo: existingScan.productId?.batchNo || undefined,
-            manufactureDate: existingScan.productId?.manufactureDate || undefined,
-            expiryDate: existingScan.expiryDate,
-            place: existingScan.place,
-            latitude: existingScan.latitude,
-            longitude: existingScan.longitude,
-            scannedAt: existingScan.createdAt,
-          }
-        });
-      }
-    }
-
-   /* =======================
-     ❌ FAKE PRODUCT
-   ======================= */
-   if (!product) {
+    /* =======================
+       ❌ FAKE PRODUCT
+    ======================= */
+    if (!product) {
+      console.log("Record scan: FAKE", { userId, qrCode, brandNameFromPrefix });
       const scan = await Scan.create({
         userId,
         productId: null,
-        qrCode,
+        brandId: brandIdFromPrefix,
+        brand: brandNameFromPrefix,
+        qrCode: String(qrCode || '').trim(),
         status: "FAKE",
         place,
         latitude,
@@ -248,6 +199,7 @@ router.post("/", protect, async (req, res) => {
           qrCode,
           productId: null,
           productName: null,
+          brand: brandNameFromPrefix,
           expiryDate: null,
           place,
           latitude,
@@ -257,16 +209,43 @@ router.post("/", protect, async (req, res) => {
       });
     }
 
-    // If QR exists but is not active, return INACTIVE without creating a scan
-    if (product && !product.isActive) {
-      // Return a minimal response with no QR/product/place details
+    // Resolve final brand data from product or prefix
+    const finalBrandId = product.brandId || brandIdFromPrefix;
+    const finalBrandName = product.brand || brandNameFromPrefix;
+
+    /* =======================
+       🚫 INACTIVE PRODUCT
+    ======================= */
+    if (!product.isActive) {
+      console.log("Record scan: INACTIVE", { userId, qrCode });
+      const scan = await Scan.create({
+        userId,
+        productId: product._id,
+        brandId: finalBrandId,
+        brand: finalBrandName,
+        qrCode,
+        productName: product.productName,
+        status: "INACTIVE",
+        place,
+        latitude,
+        longitude,
+      });
+
       return res.json({
         status: "INACTIVE",
         message: "This QR code is inactive.",
+        data: {
+          qrCode,
+          productId: product._id,
+          productName: product.productName,
+          brand: finalBrandName,
+          place,
+          scannedAt: scan.createdAt
+        }
       });
     }
 
-    // 2️⃣ Check if already used
+    // 2️⃣ Check if already used (Look for ANY original scan of this product)
     const alreadyUsed = await Scan.findOne({
       productId: product._id,
       status: "ORIGINAL",
@@ -282,6 +261,8 @@ router.post("/", protect, async (req, res) => {
       const scan = await Scan.create({
         userId,
         productId: product._id,
+        brandId: finalBrandId,
+        brand: finalBrandName,
         qrCode,
         productName: product.productName,
         expiryDate: product.expiryDate,
@@ -297,7 +278,7 @@ router.post("/", protect, async (req, res) => {
           qrCode,
           productId: product._id,
           productName: product.productName,
-          brand: product.brand,
+          brand: product.brand || finalBrandName,
           batchNo: product.batchNo,
           manufactureDate: product.manufactureDate,
           expiryDate: product.expiryDate,
@@ -305,12 +286,11 @@ router.post("/", protect, async (req, res) => {
           latitude,
           longitude,
           scannedAt: scan.createdAt,
-          // History of Original Scan
-      originalScan: {
-        scannedBy: alreadyUsed.userId ? alreadyUsed.userId.mobile : "Unknown",
-        scannedAt: alreadyUsed.createdAt,
-        place: alreadyUsed.place
-      }
+          originalScan: {
+            scannedBy: alreadyUsed.userId ? alreadyUsed.userId.mobile : "Unknown",
+            scannedAt: alreadyUsed.createdAt,
+            place: alreadyUsed.place
+          }
         },
       });
     }
@@ -321,6 +301,8 @@ router.post("/", protect, async (req, res) => {
     const scan = await Scan.create({
       userId,
       productId: product._id,
+      brandId: finalBrandId,
+      brand: finalBrandName,
       qrCode,
       productName: product.productName,
       expiryDate: product.expiryDate,
@@ -336,7 +318,7 @@ router.post("/", protect, async (req, res) => {
         qrCode,
         productId: product._id,
         productName: product.productName,
-        brand: product.brand,
+        brand: product.brand || finalBrandName,
         batchNo: product.batchNo,
         manufactureDate: product.manufactureDate,
         expiryDate: product.expiryDate,
@@ -347,8 +329,131 @@ router.post("/", protect, async (req, res) => {
       },
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Scan failed" });
+    console.error("Scan storage error:", err);
+    res.status(500).json({ error: "Scan failed to save" });
+  }
+});
+
+// Get all scans for a brand (Company/Admin view)
+router.get("/company/all", protect, async (req, res) => {
+  try {
+    let query = {};
+    
+    if (req.user.role === 'company' || req.user.role === 'authorizer') {
+      const bid = req.user.brandId;
+      if (!bid) return res.status(403).json({ error: "No brand associated with this user" });
+      query = { brandId: bid };
+    } else if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    // Admins can filter by brandId via query param
+    if ((req.user.role === 'admin' || req.user.role === 'superadmin') && req.query.brandId) {
+      query = { brandId: req.query.brandId };
+    }
+
+    const scans = await Scan.find(query)
+      .populate('userId', 'name mobile email')
+      .populate('productId', 'productName brand batchNo')
+      .sort({ createdAt: -1 });
+
+    res.json(scans);
+  } catch (err) {
+    console.error("Error fetching company scans:", err);
+    res.status(500).json({ error: "Failed to fetch scans" });
+  }
+});
+
+// --- REPORTING SYSTEM ---
+
+// Submit a report
+router.post("/report", protect, async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // 1. Check if user profile is updated (Name and Mobile required)
+    const user = await User.findById(userId);
+    if (!user.name || !user.mobile) {
+      return res.status(400).json({ 
+        error: "Profile incomplete", 
+        message: "Please update your name and contact details in your profile before reporting." 
+      });
+    }
+
+    // 2. Limit: max 5 complaints per user
+    const reportCount = await Report.countDocuments({ userId });
+    if (reportCount >= 5) {
+      return res.status(400).json({ 
+        error: "Limit exceeded", 
+        message: "You can only submit a maximum of 5 reports." 
+      });
+    }
+
+    const { productName, brand, images, latitude, longitude, qrCode } = req.body;
+
+    if (!images || !Array.isArray(images) || images.length < 3) {
+      return res.status(400).json({ error: "Minimum 3 images required" });
+    }
+
+    const place = await getPlaceFromCoords(latitude, longitude);
+
+    const report = await Report.create({
+      userId,
+      productName,
+      brand,
+      images,
+      latitude,
+      longitude,
+      place,
+      qrCode,
+      status: "Pending"
+    });
+
+    res.status(201).json({ 
+      success: true, 
+      message: "Report submitted successfully. Our team will investigate this.",
+      report 
+    });
+  } catch (err) {
+    console.error("Report submission error:", err);
+    res.status(500).json({ error: "Failed to submit report" });
+  }
+});
+
+// Get user's reports
+router.get("/reports/my", protect, async (req, res) => {
+  try {
+    const reports = await Report.find({ userId: req.user._id }).sort({ createdAt: -1 });
+    res.json(reports);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch reports" });
+  }
+});
+
+// Get all reports (Admin/Company View)
+// If it's a company user, they only see reports for their brands
+router.get("/reports/all", protect, async (req, res) => {
+  try {
+    let query = {};
+    if (req.user.role === 'company' || req.user.role === 'authorizer') {
+      const brandId = req.user.brandId;
+      // Resolve brand name from brandId to filter reports
+      // This is a bit loose since reports are by string name, but better than nothing
+      // Ideally reports should link to a Brand ID if possible
+      const Brand = require("../models/Brand");
+      const brand = await Brand.findById(brandId);
+      if (brand) {
+        query.brand = { $regex: new RegExp(brand.brandName, "i") };
+      }
+    } else if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    const reports = await Report.find(query).populate('userId', 'name mobile').sort({ createdAt: -1 });
+    res.json(reports);
+  } catch (err) {
+    console.error("Error fetching all reports:", err);
+    res.status(500).json({ error: "Failed to fetch reports" });
   }
 });
 

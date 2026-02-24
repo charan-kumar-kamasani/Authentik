@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import jsQR from "jsqr";
-import { getCurrentPlace } from "../../utils/helper";
 import API_BASE_URL from "../../config/api";
 import { useLoading } from '../../context/LoadingContext';
 import MobileHeader from "../../components/MobileHeader";
@@ -11,6 +10,7 @@ export default function Scan() {
   const canvasRef = useRef(null);
   const [scanning, setScanning] = useState(true);
   const [locationPermission, setLocationPermission] = useState('pending'); // 'granted', 'denied', 'pending'
+  const coordsRef = useRef(null);
   const [locationCoords, setLocationCoords] = useState(null);
   const navigate = useNavigate();
   const { setLoading: setGlobalLoading } = useLoading();
@@ -26,10 +26,12 @@ export default function Scan() {
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setLocationCoords({
+        const coords = {
           latitude: pos.coords.latitude,
           longitude: pos.coords.longitude,
-        });
+        };
+        coordsRef.current = coords;
+        setLocationCoords(coords);
         setLocationPermission('granted');
       },
       (error) => {
@@ -51,72 +53,70 @@ export default function Scan() {
     }
   }, []);
 
-  const scanFrame = useCallback(async function scanFrameFn() {
-    if (!videoRef.current || !canvasRef.current) return;
+  const scanFrame = useCallback(async () => {
+    if (!videoRef.current || !canvasRef.current || !scanning) return;
 
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
 
+    if (video.readyState !== video.HAVE_ENOUGH_DATA) {
+      animationId.current = requestAnimationFrame(scanFrame);
+      return;
+    }
+
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-    const code = jsQR(imageData.data, canvas.width, canvas.height);
+    const code = jsQR(imageData.data, canvas.width, canvas.height, {
+      inversionAttempts: "dontInvert",
+    });
 
     if (code) {
       console.log("QR detected:", code.data);
-
-      // pause camera and UI
       stopCamera();
       setScanning(false);
+      setGlobalLoading(true);
 
-      // 1) Lightweight check to ensure QR exists and isActive
       try {
-        setGlobalLoading(true);
-        const checkResRaw = await fetch(`${API_BASE_URL}/scan/check`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ qrCode: code.data }),
-        });
-
-        const checkData = await checkResRaw.json();
-
-        // If QR is fake or inactive, immediately show result message and do not send full scan
-        if (checkData.status === "FAKE") {
+        // Check location permission before proceeding
+        if (!coordsRef.current) {
+          alert("Location is required for scanning. Please enable location permissions.");
           setGlobalLoading(false);
-          navigate(`/result/FAKE`, { state: { qrCode: code.data } });
+          setScanning(true);
+          startCamera();
           return;
         }
-
-        // If product exists but is inactive, show counterfeit screen (FAKE) per requirement
-        if (checkData.status === "FOUND" && !checkData.isActive) {
-          setGlobalLoading(false);
-          navigate(`/result/FAKE`, {
-            state: {
-              qrCode: code.data,
-              product: checkData.product,
-              message: "This QR code is inactive.",
-            },
-          });
-          return;
-        }
-
-  // Otherwise QR exists and isActive -> continue with location + scan POST
-        // Use stored location coordinates
-        const place = await getCurrentPlace();
 
         const storedToken = localStorage.getItem("token");
         const authHeader = storedToken
           ? (storedToken.startsWith("Bearer ") ? storedToken : `Bearer ${storedToken}`)
           : null;
 
-        const res = await fetch(`${API_BASE_URL}/scan`, {
+        // 1. Lightweight Check
+        const checkResRaw = await fetch(`${API_BASE_URL}/scan/check`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(authHeader ? { Authorization: authHeader } : {}),
+          },
+          body: JSON.stringify({ qrCode: code.data }),
+        });
+
+        const checkData = await checkResRaw.json();
+
+        // If product is INACTIVE, we stop here (as per previous logic)
+        // if (checkData.status === "INACTIVE") {
+        //   setGlobalLoading(false);
+        //   navigate(`/result/INACTIVE`, { state: { message: checkData.message } });
+        //   return;
+        // }
+
+        // For FAKE or FOUND, we proceed to POST /scan to record the scan history
+        console.log("Final scan request with QR:", code.data);
+        const scanResRaw = await fetch(`${API_BASE_URL}/scan`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -124,43 +124,48 @@ export default function Scan() {
           },
           body: JSON.stringify({
             qrCode: code.data,
-            place,
-            latitude: locationCoords?.latitude || null,
-            longitude: locationCoords?.longitude || null,
+            latitude: coordsRef.current?.latitude || null,
+            longitude: coordsRef.current?.longitude || null,
           }),
         });
 
-        const data = await res.json();
-
-        if (!res.ok) {
-          // If backend returned an error (e.g., unauthorized), show a friendly screen
-          console.error('Scan API error:', data);
-          setGlobalLoading(false);
-          navigate(`/result/ERROR`, { state: { message: data.error || 'Scan failed' } });
-          return;
+        if (!scanResRaw.ok) {
+          const err = await scanResRaw.json();
+          throw new Error(err.error || "Scan failed");
         }
-        // If backend marks product INACTIVE, map to FAKE (counterfeit) screen
-        const finalStatus = data.status === 'INACTIVE' ? 'FAKE' : data.status;
+
+        const res = await scanResRaw.json();
+        const finalStatus = res.status;
+
         setGlobalLoading(false);
-        navigate(`/result/${finalStatus}`, { state: data.data });
-        return;
+        navigate(`/result/${finalStatus}`, { state: res.data });
       } catch (err) {
-        console.error("Scan/check error:", err);
-        // Ensure loader hidden and show generic error result
-        try { setGlobalLoading(false); } catch(e){}
+        console.error("Scan error:", err);
+        setGlobalLoading(false);
         navigate(`/result/ERROR`, { state: { message: "Scan failed. Please try again." } });
-        return;
       }
+      return;
     }
 
-    animationId.current = requestAnimationFrame(scanFrameFn);
-  }, [navigate, stopCamera]);
+    animationId.current = requestAnimationFrame(scanFrame);
+  }, [navigate, stopCamera, scanning, setGlobalLoading]);
 
   useEffect(() => {
     let ignore = false;
 
     async function initCamera() {
       if (!scanning) return;
+
+      // Wait for location permission before even attempting to start the camera
+      if (locationPermission === 'pending') {
+        console.log("Waiting for location permission...");
+        return;
+      }
+
+      if (locationPermission === 'denied') {
+        // We handle the denied state in the UI overlay
+        return;
+      }
 
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         alert("Camera API not supported in this browser.");
@@ -180,32 +185,32 @@ export default function Scan() {
 
         videoRef.current.srcObject = stream;
         videoRef.current.setAttribute("playsinline", "true");
-        
+
         // Wait for metadata to be loaded before playing
         await new Promise((resolve) => {
-            videoRef.current.onloadedmetadata = () => {
-                resolve();
-            };
+          videoRef.current.onloadedmetadata = () => {
+            resolve();
+          };
         });
 
         // Check again after await
         if (ignore || !videoRef.current) return;
 
         await videoRef.current.play().catch(e => {
-            if (e.name === 'AbortError') {
-                 // Ignore abort errors caused by cleanup
-                 return;
-            }
-            throw e;
+          if (e.name === 'AbortError') {
+            // Ignore abort errors caused by cleanup
+            return;
+          }
+          throw e;
         });
-        
+
         scanFrame();
 
       } catch (error) {
         if (!ignore) {
-            console.error("Camera error:", error);
-            alert(`Cannot access camera: ${error.name} - ${error.message}`);
-            navigate("/");
+          console.error("Camera error:", error);
+          alert(`Cannot access camera: ${error.name} - ${error.message}`);
+          navigate("/");
         }
       }
     }
@@ -216,7 +221,7 @@ export default function Scan() {
       ignore = true;
       stopCamera();
     };
-  }, [navigate, scanFrame, scanning, stopCamera]);
+  }, [navigate, scanFrame, scanning, stopCamera, locationPermission]);
 
   return (
     <div className="min-h-screen bg-white relative flex flex-col">
@@ -246,26 +251,26 @@ export default function Scan() {
 
             {/* Dark Overlay with Transparent Center Window */}
             <div className="absolute inset-0 z-10 bg-black/50">
-               {/* Center clear hole is simulated by SVG or clip-path in more complex apps, 
+              {/* Center clear hole is simulated by SVG or clip-path in more complex apps, 
                    but here we use borders. 
                    Actually to make the center transparent while sides are dark, simple CSS borders on a full-screen div won't work well 
                    unless we use a HUGE box shadow (common trick) or SVG mask.
                    Let's use the Box Shadow trick for the cleanest "Hole" effect. 
                */}
-               <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[280px] h-[280px] rounded-[30px] shadow-[0_0_0_9999px_rgba(0,0,0,0.7)] flex items-center justify-center overflow-hidden">
-                  {/* Yellow Corners inside the clear area */}
-                   {/* Top Left */}
-                   <div className="absolute top-[20px] left-[20px] w-12 h-12 border-t-[6px] border-l-[6px] border-[#F2C94C] rounded-tl-[12px]"></div>
-                   {/* Top Right */}
-                   <div className="absolute top-[20px] right-[20px] w-12 h-12 border-t-[6px] border-r-[6px] border-[#F2C94C] rounded-tr-[12px]"></div>
-                   {/* Bottom Left */}
-                   <div className="absolute bottom-[20px] left-[20px] w-12 h-12 border-b-[6px] border-l-[6px] border-[#F2C94C] rounded-bl-[12px]"></div>
-                   {/* Bottom Right */}
-                   <div className="absolute bottom-[20px] right-[20px] w-12 h-12 border-b-[6px] border-r-[6px] border-[#F2C94C] rounded-br-[12px]"></div>
-                  
-                  {/* Scan Line Animation - Thicker and glowing */}
-                  <div className="w-[90%] h-[4px] bg-[#F2C94C] absolute animate-scan shadow-[0_0_10px_#F2C94C] rounded-full"></div>
-               </div>
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[280px] h-[280px] rounded-[30px] shadow-[0_0_0_9999px_rgba(0,0,0,0.7)] flex items-center justify-center overflow-hidden">
+                {/* Yellow Corners inside the clear area */}
+                {/* Top Left */}
+                <div className="absolute top-[20px] left-[20px] w-12 h-12 border-t-[6px] border-l-[6px] border-[#F2C94C] rounded-tl-[12px]"></div>
+                {/* Top Right */}
+                <div className="absolute top-[20px] right-[20px] w-12 h-12 border-t-[6px] border-r-[6px] border-[#F2C94C] rounded-tr-[12px]"></div>
+                {/* Bottom Left */}
+                <div className="absolute bottom-[20px] left-[20px] w-12 h-12 border-b-[6px] border-l-[6px] border-[#F2C94C] rounded-bl-[12px]"></div>
+                {/* Bottom Right */}
+                <div className="absolute bottom-[20px] right-[20px] w-12 h-12 border-b-[6px] border-r-[6px] border-[#F2C94C] rounded-br-[12px]"></div>
+
+                {/* Scan Line Animation - Thicker and glowing */}
+                <div className="w-[90%] h-[4px] bg-[#F2C94C] absolute animate-scan shadow-[0_0_10px_#F2C94C] rounded-full"></div>
+              </div>
             </div>
           </>
         ) : (
@@ -273,11 +278,37 @@ export default function Scan() {
         )}
       </div>
 
-      {/* Location Permission Alert */}
+      {/* Location Requirements Overlays */}
+      {locationPermission === 'pending' && (
+        <div className="fixed inset-0 bg-white z-[60] flex flex-col items-center justify-center p-6 text-center">
+          <div className="w-16 h-16 border-4 border-[#2CA4D6] border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-[#333] font-bold">Checking Location Permission...</p>
+          <p className="text-gray-500 text-sm mt-2">Please allow location access to start scanning.</p>
+        </div>
+      )}
+
       {locationPermission === 'denied' && (
-        <div className="fixed top-0 left-0 right-0 bg-amber-500 text-black p-4 z-50 text-center shadow-lg">
-          <p className="font-bold text-sm">📍 Location Permission Denied</p>
-          <p className="text-xs mt-1">Enable location to record scan location. Your scans will have no location data.</p>
+        <div className="fixed inset-0 bg-white z-[60] flex flex-col items-center justify-center p-6 text-center">
+          <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mb-6">
+            <span className="text-4xl">📍</span>
+          </div>
+          <h2 className="text-[24px] font-bold text-[#333] mb-2">Location Required</h2>
+          <p className="text-gray-600 mb-8">
+            Authentik requires location access to verify product authenticity and protect against counterfeit items.
+            Scanning is disabled without location data.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="w-full bg-[#2CA4D6] text-white font-bold py-4 rounded-[20px] shadow-lg"
+          >
+            Allow Location & Retry
+          </button>
+          <button
+            onClick={() => navigate("/profile")}
+            className="mt-4 text-[#2CA4D6] font-bold"
+          >
+            Go Back
+          </button>
         </div>
       )}
     </div>

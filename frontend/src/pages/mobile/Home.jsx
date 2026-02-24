@@ -151,6 +151,7 @@ export default function Home() {
           headers: { Authorization: `Bearer ${token}` },
         });
 
+        console.log("Recent scans response:", res);
         if (res.ok) {
           const data = await res.json();
           // Take top 10 recent scans
