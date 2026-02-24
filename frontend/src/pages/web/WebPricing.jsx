@@ -14,12 +14,12 @@ import scale6 from "../../assets/web/pricing/scale_6.png"; // Most Popular
 import scale4 from "../../assets/web/pricing/scale_4.png"; // Save 50k
 import scal3 from "../../assets/web/pricing/scal_3.png"; // Save 3L
 
-import pricing from '../../assets/web/pricing/price.png';
-import trial from '../../assets/web/pricing/trial.png';
-import starter from '../../assets/web/pricing/starter.png';
-import growth from '../../assets/web/pricing/growth.png';
-import scale from '../../assets/web/pricing/scale.png';
-import shield from '../../assets/web/pricing/shield.png';
+// import pricing from '../../assets/web/pricing/price.png';
+// import trial from '../../assets/web/pricing/trial.png';
+// import starter from '../../assets/web/pricing/starter.png';
+// import growth from '../../assets/web/pricing/growth.png';
+// import scale from '../../assets/web/pricing/scale.png';
+// import shield from '../../assets/web/pricing/shield.png';
 
 import india from '../../assets/web/pricing/india.png';
 import global from '../../assets/web/pricing/us.png';
