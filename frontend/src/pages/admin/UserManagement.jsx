@@ -5,6 +5,7 @@ import React, {
   useMemo,
   useRef,
 } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import {
   createCompanyUser,
   createStaffUser,
@@ -1299,6 +1300,8 @@ const UserManagement = () => {
 export default UserManagement;
 
 function EmailRow({ entry, idx, emails, setEmails, showOtp, showPassword, onSendOtp, onVerifyOtp }) {
+  const [showPwd, setShowPwd] = useState(false);
+  
   return (
     <div className="flex flex-wrap items-center gap-2">
       <input type="email" placeholder="email@company.com" value={entry.value}
@@ -1307,10 +1310,20 @@ function EmailRow({ entry, idx, emails, setEmails, showOtp, showPassword, onSend
         className={"flex-1 min-w-[180px] px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all font-medium " + (entry.verified ? "bg-green-50 border-green-300 text-green-700" : "bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400")}
       />
       {showPassword && (
-        <input type="password" placeholder="Password" value={entry.password || ''}
-          onChange={e => setEmails(prev => prev.map((x, i) => i === idx ? { ...x, password: e.target.value } : x))}
-          className="w-36 px-3 py-2.5 border border-gray-200 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all font-medium placeholder:text-gray-400"
-        />
+        <div className="relative">
+          <input type={showPwd ? "text" : "password"} placeholder="Password" value={entry.password || ''}
+            onChange={e => setEmails(prev => prev.map((x, i) => i === idx ? { ...x, password: e.target.value } : x))}
+            className="w-36 pl-3 pr-9 py-2.5 border border-gray-200 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all font-medium placeholder:text-gray-400"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPwd(!showPwd)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            tabIndex={-1}
+          >
+            {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+        </div>
       )}
       {showOtp && entry.verified && (
         <span className="inline-flex items-center gap-1 text-green-600 text-xs font-semibold">
@@ -1348,17 +1361,32 @@ function EmailRow({ entry, idx, emails, setEmails, showOtp, showPassword, onSend
 }
 
 function InputGroup({ label, placeholder, value, onChange, type = "text", required = true }) {
+  const [showPassword, setShowPassword] = useState(false);
+  const isPassword = type === "password";
+  
   return (
     <div className="flex flex-col gap-1.5">
       <label className="text-sm font-medium text-gray-700 ml-1">{label}</label>
-      <input
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all font-medium"
-        required={required}
-      />
+      <div className="relative">
+        <input
+          type={isPassword ? (showPassword ? "text" : "password") : type}
+          placeholder={placeholder}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={`w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all font-medium ${isPassword ? 'pr-11' : ''}`}
+          required={required}
+        />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            tabIndex={-1}
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
