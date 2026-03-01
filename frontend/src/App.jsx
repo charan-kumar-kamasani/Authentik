@@ -56,7 +56,7 @@ function PublicRoute({ children }) {
 // Admin private route
 function AdminRoute({ children }) {
   const adminToken = localStorage.getItem("adminToken");
-  return adminToken ? children : <Navigate to="/admin" replace />;
+  return adminToken ? children : <Navigate to="/enterprise" replace />;
 }
 
 /* ================= APP ================= */
@@ -88,7 +88,7 @@ export default function App() {
             <Route path="/contact-us" element={<WebContactUs />} />
 
             {/* Admin */}
-            <Route path="/admin" element={<AdminLogin />} />
+            <Route path="/enterprise" element={<AdminLogin />} />
             <Route
               path="/admin/dashboard"
               element={
@@ -153,8 +153,8 @@ export default function App() {
             <Route
               path="*"
               element={
-                window.location.pathname.startsWith("/admin")
-                  ? <Navigate to="/admin" replace />
+                window.location.pathname.startsWith("/enterprise")
+                  ? <Navigate to="/enterprise" replace />
                   : <Navigate to="/" replace />
               }
             />
@@ -206,7 +206,7 @@ export default function App() {
           </Route>
 
           {/* Admin (mobile access optional) */}
-          <Route path="/admin" element={<AdminLogin />} />
+          <Route path="/enterprise" element={<AdminLogin />} />
           <Route
             path="/admin/dashboard"
             element={
@@ -273,8 +273,8 @@ export default function App() {
           <Route
             path="*"
             element={
-              window.location.pathname.startsWith("/admin")
-                ? <Navigate to="/admin" replace />
+              window.location.pathname.startsWith("/enterprise")
+                ? <Navigate to="/enterprise" replace />
                 : <Navigate to="/" replace />
             }
           />
