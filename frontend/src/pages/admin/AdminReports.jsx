@@ -114,6 +114,18 @@ export default function AdminReports() {
   const dupCount = dupScans.length;
   const fmt = (d) => d ? new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
 
+  const toggleRow = (id) => {
+    setExpandedRows(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
   const StatusBadge = ({ status }) => {
     if (status === 'Resolved') return <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg text-xs font-bold"><Check size={12} strokeWidth={3} /> Resolved</span>;
     if (status === 'Investigating') return <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-bold"><Search size={12} strokeWidth={3} /> Reviewing</span>;
@@ -221,6 +233,7 @@ export default function AdminReports() {
               <table className="w-full text-left border-collapse min-w-[900px]">
                 <thead className="bg-slate-50/80 border-b border-slate-100">
                   <tr className="text-[11px] font-black uppercase text-slate-400 tracking-wider">
+                    <th className="px-4 py-4 w-12"></th>
                     <th className="px-6 py-4">Product &amp; Brand</th>
                     <th className="px-6 py-4">Report Type</th>
                     <th className="px-6 py-4">Counterfeit</th>
@@ -231,67 +244,208 @@ export default function AdminReports() {
                 </thead>
                 <tbody className="divide-y divide-slate-100/80">
                   {fakeReports.length === 0 ? (
-                    <tr><td colSpan="6" className="px-6 py-16 text-center">
+                    <tr><td colSpan="7" className="px-6 py-16 text-center">
                       <div className="flex flex-col items-center gap-3">
                         <div className="w-14 h-14 bg-slate-50 text-slate-300 rounded-2xl flex items-center justify-center"><CheckCircle2 size={28} /></div>
                         <p className="font-bold text-slate-400">No reports match your filters.</p>
                       </div>
                     </td></tr>
                   ) : paginatedFake.map(r => (
-                    <tr key={r._id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="font-bold text-slate-800 text-sm truncate max-w-[200px]">{r.productName || 'Unknown'}</div>
-                        <div className="text-xs font-semibold text-slate-400 mt-1 flex items-center gap-1.5">
-                          <div className="w-1 h-1 rounded-full bg-slate-300" />{r.brand || 'Unknown'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${
-                          r.reportType === 'FAKE' ? 'bg-orange-100 text-orange-700' : 'bg-red-50 text-red-600'
-                        }`}><AlertTriangle size={10} strokeWidth={3} /> {r.reportType || 'FLAGGED'}</span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <button onClick={() => toggleCounterfeit(r._id, r.isCounterfeit)}
-                          className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all border-2 cursor-pointer select-none active:scale-95 ${
-                            r.isCounterfeit
-                              ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100 shadow-sm shadow-red-500/10'
-                              : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'
-                          }`}>
-                          {r.isCounterfeit ? <><ShieldX size={16} strokeWidth={2.5} className="text-red-500" /> Counterfeit</> : <><ShieldCheck size={16} strokeWidth={2.5} className="text-slate-400" /> Not Marked</>}
-                        </button>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-start gap-2 max-w-[220px]">
-                          <MapPin size={14} className="text-slate-400 mt-0.5 shrink-0" />
-                          <div>
-                            <span className="text-sm text-slate-600 font-medium line-clamp-2">{r.place || 'Unknown'}</span>
-                            {r.latitude && r.longitude && (
-                              <a href={`https://www.google.com/maps?q=${r.latitude},${r.longitude}`} target="_blank" rel="noopener noreferrer"
-                                className="text-[10px] text-blue-500 hover:text-blue-700 font-bold flex items-center gap-1 mt-0.5">
-                                Open Map <ExternalLink size={10} />
-                              </a>
-                            )}
+                    <React.Fragment key={r._id}>
+                      <tr className="hover:bg-slate-50/50 transition-colors">
+                        <td className="px-4 py-4">
+                          <button onClick={() => toggleRow(r._id)}
+                            className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 hover:text-slate-700">
+                            {expandedRows.has(r._id) ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                          </button>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="font-bold text-slate-800 text-sm truncate max-w-[200px]">{r.productName || 'Unknown'}</div>
+                          <div className="text-xs font-semibold text-slate-400 mt-1 flex items-center gap-1.5">
+                            <div className="w-1 h-1 rounded-full bg-slate-300" />{r.brand || 'Unknown'}
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
-                          <Calendar size={12} /> {fmt(r.createdAt)}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-4">
-                          <StatusBadge status={r.status} />
-                          <div className="flex flex-col items-center gap-1">
-                            <label className="relative inline-flex items-center cursor-pointer">
-                              <input type="checkbox" className="sr-only peer" checked={r.status === 'Resolved'} onChange={() => toggleStatus(r._id, r.status)} />
-                              <div className="w-10 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-[16px] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner" />
-                            </label>
-                            <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">Done</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${
+                            r.reportType === 'FAKE' ? 'bg-orange-100 text-orange-700' : 'bg-red-50 text-red-600'
+                          }`}><AlertTriangle size={10} strokeWidth={3} /> {r.reportType || 'FLAGGED'}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <button onClick={() => toggleCounterfeit(r._id, r.isCounterfeit)}
+                            className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all border-2 cursor-pointer select-none active:scale-95 ${
+                              r.isCounterfeit
+                                ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100 shadow-sm shadow-red-500/10'
+                                : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'
+                            }`}>
+                            {r.isCounterfeit ? <><ShieldX size={16} strokeWidth={2.5} className="text-red-500" /> Counterfeit</> : <><ShieldCheck size={16} strokeWidth={2.5} className="text-slate-400" /> Not Marked</>}
+                          </button>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-start gap-2 max-w-[220px]">
+                            <MapPin size={14} className="text-slate-400 mt-0.5 shrink-0" />
+                            <div>
+                              <span className="text-sm text-slate-600 font-medium line-clamp-2">{r.place || 'Unknown'}</span>
+                              {r.latitude && r.longitude && (
+                                <a href={`https://www.google.com/maps?q=${r.latitude},${r.longitude}`} target="_blank" rel="noopener noreferrer"
+                                  className="text-[10px] text-blue-500 hover:text-blue-700 font-bold flex items-center gap-1 mt-0.5">
+                                  Open Map <ExternalLink size={10} />
+                                </a>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                    </tr>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
+                            <Calendar size={12} /> {fmt(r.createdAt)}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-4">
+                            <StatusBadge status={r.status} />
+                            <div className="flex flex-col items-center gap-1">
+                              <label className="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" className="sr-only peer" checked={r.status === 'Resolved'} onChange={() => toggleStatus(r._id, r.status)} />
+                                <div className="w-10 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-[16px] after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 shadow-inner" />
+                              </label>
+                              <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">Done</span>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                      {expandedRows.has(r._id) && (
+                        <tr className="bg-slate-50/30">
+                          <td colSpan="7" className="px-4 py-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
+                              
+                              {/* Images Section */}
+                              {r.images && r.images.length > 0 && (
+                                <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200/60">
+                                  <div className="flex items-center gap-2 mb-4">
+                                    <ImageIcon size={18} className="text-purple-500" />
+                                    <h3 className="font-bold text-slate-700 text-sm">Evidence Images</h3>
+                                    <span className="ml-auto text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded">{r.images.length} {r.images.length === 1 ? 'image' : 'images'}</span>
+                                  </div>
+                                  <div className="grid grid-cols-3 gap-3">
+                                    {r.images.map((img, idx) => (
+                                      <a key={idx} href={img} target="_blank" rel="noopener noreferrer"
+                                        className="aspect-square rounded-lg overflow-hidden border-2 border-slate-200 hover:border-purple-400 transition-all group cursor-pointer">
+                                        <img src={img} alt={`Evidence ${idx + 1}`} 
+                                          className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                                      </a>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* User Info Section */}
+                              {r.userId && (
+                                <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200/60">
+                                  <div className="flex items-center gap-2 mb-4">
+                                    <User size={18} className="text-blue-500" />
+                                    <h3 className="font-bold text-slate-700 text-sm">Reporter Information</h3>
+                                  </div>
+                                  <div className="space-y-3">
+                                    <div className="flex items-start gap-3">
+                                      <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
+                                        <User size={18} className="text-blue-500" />
+                                      </div>
+                                      <div>
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Full Name</div>
+                                        <div className="text-sm font-bold text-slate-800">{r.userId.name || 'N/A'}</div>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                      <div className="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center shrink-0">
+                                        <Phone size={18} className="text-emerald-500" />
+                                      </div>
+                                      <div>
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Mobile Number</div>
+                                        <div className="text-sm font-bold text-slate-800">{r.userId.mobile || 'N/A'}</div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Product Details Section */}
+                              <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200/60">
+                                <div className="flex items-center gap-2 mb-4">
+                                  <FileText size={18} className="text-orange-500" />
+                                  <h3 className="font-bold text-slate-700 text-sm">Product Details</h3>
+                                </div>
+                                <div className="space-y-3">
+                                  <div>
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Product Name</div>
+                                    <div className="text-sm font-bold text-slate-800">{r.productName || 'Unknown'}</div>
+                                  </div>
+                                  <div>
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Brand</div>
+                                    <div className="text-sm font-bold text-slate-800">{r.brand || 'Unknown'}</div>
+                                  </div>
+                                  {r.qrCode && (
+                                    <div>
+                                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">QR Code</div>
+                                      <div className="text-xs font-mono text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-200 break-all">{r.qrCode}</div>
+                                    </div>
+                                  )}
+                                  {r.description && (
+                                    <div>
+                                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Description</div>
+                                      <div className="text-sm text-slate-600 leading-relaxed">{r.description}</div>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Scan Metadata Section */}
+                              {r.scanData && (
+                                <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200/60">
+                                  <div className="flex items-center gap-2 mb-4">
+                                    <Clock size={18} className="text-indigo-500" />
+                                    <h3 className="font-bold text-slate-700 text-sm">Scan Metadata</h3>
+                                  </div>
+                                  <div className="space-y-3">
+                                    <div>
+                                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Scan Status</div>
+                                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${
+                                        r.scanData.scanStatus === 'FAKE' ? 'bg-red-50 text-red-600 border border-red-200' :
+                                        r.scanData.scanStatus === 'ORIGINAL' ? 'bg-green-50 text-green-600 border border-green-200' :
+                                        'bg-amber-50 text-amber-600 border border-amber-200'
+                                      }`}>
+                                        <div className={`w-1.5 h-1.5 rounded-full ${
+                                          r.scanData.scanStatus === 'FAKE' ? 'bg-red-500' :
+                                          r.scanData.scanStatus === 'ORIGINAL' ? 'bg-green-500' : 'bg-amber-500'
+                                        }`} />
+                                        {r.scanData.scanStatus}
+                                      </span>
+                                    </div>
+                                    {r.scanData.scannedAt && (
+                                      <div>
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Scanned At</div>
+                                        <div className="text-sm font-medium text-slate-700">{new Date(r.scanData.scannedAt).toLocaleString()}</div>
+                                      </div>
+                                    )}
+                                    {r.scanData.productId && (
+                                      <div>
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Product ID</div>
+                                        <div className="text-xs font-mono text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">{r.scanData.productId}</div>
+                                      </div>
+                                    )}
+                                    {r.scanData.brandId && (
+                                      <div>
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Brand ID</div>
+                                        <div className="text-xs font-mono text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">{r.scanData.brandId}</div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   ))}
                 </tbody>
               </table>

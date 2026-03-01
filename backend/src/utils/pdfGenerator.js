@@ -124,7 +124,9 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
           const qrY = y + headerHeight;
           doc.rect(x, qrY, cellWidth, qrAreaHeight).fill("#FFFFFF");
 
-          const qrBuffer = await QRCode.toBuffer(products[i].qrCode, {
+          // Generate QR code with full URL including the code parameter
+          const qrUrl = `https://authentiks.in/scan?code=${encodeURIComponent(products[i].qrCode)}`;
+          const qrBuffer = await QRCode.toBuffer(qrUrl, {
             errorCorrectionLevel: 'H', // Use High error correction to allow logo overlay
             scale: 8, // Increase scale for sharper output
             margin: 1,

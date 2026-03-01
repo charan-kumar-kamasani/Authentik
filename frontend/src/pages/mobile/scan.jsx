@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import jsQR from "jsqr";
 import API_BASE_URL from "../../config/api";
-import { useLoading } from '../../context/LoadingContext';
 import MobileHeader from "../../components/MobileHeader";
 
 export default function Scan() {
@@ -13,8 +12,26 @@ export default function Scan() {
   const coordsRef = useRef(null);
   const [locationCoords, setLocationCoords] = useState(null);
   const navigate = useNavigate();
-  const { setLoading: setGlobalLoading } = useLoading();
+  const [searchParams] = useSearchParams();
   let animationId = useRef(null);
+
+  // Helper function to extract QR code from URL if it's a full URL
+  const extractQrCode = (data) => {
+    try {
+      // If it's already a simple code (not a URL), return it
+      if (!data.includes('://')) {
+        return data;
+      }
+      
+      // Parse as URL and extract the 'code' parameter
+      const url = new URL(data);
+      const codeParam = url.searchParams.get('code');
+      return codeParam || data; // fallback to original data if no code param
+    } catch {
+      // If URL parsing fails, return original data
+      return data;
+    }
+  };
 
   // Request location permission first when component mounts
   useEffect(() => {
@@ -42,7 +59,6 @@ export default function Scan() {
     );
   }, []);
 
-
   const stopCamera = useCallback(() => {
     cancelAnimationFrame(animationId.current);
 
@@ -52,6 +68,82 @@ export default function Scan() {
       videoRef.current.srcObject = null;
     }
   }, []);
+
+  // Function to process a QR code (shared between camera scan and URL parameter)
+  const processQrCode = useCallback(async (qrData) => {
+    stopCamera();
+    setScanning(false);
+
+    try {
+      // Extract the actual QR code if it's a URL
+      const qrCode = extractQrCode(qrData);
+      console.log("Extracted QR code:", qrCode);
+
+      // Check location permission before proceeding
+      if (!coordsRef.current) {
+        alert("Location is required for scanning. Please enable location permissions.");
+        setScanning(true);
+        return;
+      }
+
+      const storedToken = localStorage.getItem("token");
+      const authHeader = storedToken
+        ? (storedToken.startsWith("Bearer ") ? storedToken : `Bearer ${storedToken}`)
+        : null;
+
+      // 1. Lightweight Check
+      const checkResRaw = await fetch(`${API_BASE_URL}/scan/check`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(authHeader ? { Authorization: authHeader } : {}),
+        },
+        body: JSON.stringify({ qrCode }),
+      });
+
+      const checkData = await checkResRaw.json();
+
+      // For FAKE or FOUND, we proceed to POST /scan to record the scan history
+      console.log("Final scan request with QR:", qrCode);
+      const scanResRaw = await fetch(`${API_BASE_URL}/scan`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(authHeader ? { Authorization: authHeader } : {}),
+        },
+        body: JSON.stringify({
+          qrCode,
+          latitude: coordsRef.current?.latitude || null,
+          longitude: coordsRef.current?.longitude || null,
+        }),
+      });
+
+      if (!scanResRaw.ok) {
+        const err = await scanResRaw.json();
+        throw new Error(err.error || "Scan failed");
+      }
+
+      const res = await scanResRaw.json();
+      const finalStatus = res.status;
+
+      navigate(`/result/${finalStatus}`, { state: res.data });
+    } catch (err) {
+      console.error("Scan error:", err);
+      navigate(`/result/ERROR`, { state: { message: "Scan failed. Please try again." } });
+    }
+  }, [navigate, stopCamera]);
+
+  // Process QR code from URL parameter (for Google Lens / external link scans)
+  useEffect(() => {
+    const codeParam = searchParams.get('code');
+    const token = localStorage.getItem("token");
+    
+    // Only process if user is authenticated and location is granted
+    if (codeParam && token && locationPermission === 'granted') {
+      console.log("Processing QR code from URL parameter:", codeParam);
+      processQrCode(codeParam);
+    }
+  }, [searchParams, locationPermission, processQrCode]);
 
   const scanFrame = useCallback(async () => {
     if (!videoRef.current || !canvasRef.current || !scanning) return;
@@ -76,79 +168,12 @@ export default function Scan() {
 
     if (code) {
       console.log("QR detected:", code.data);
-      stopCamera();
-      setScanning(false);
-      setGlobalLoading(true);
-
-      try {
-        // Check location permission before proceeding
-        if (!coordsRef.current) {
-          alert("Location is required for scanning. Please enable location permissions.");
-          setGlobalLoading(false);
-          setScanning(true);
-          startCamera();
-          return;
-        }
-
-        const storedToken = localStorage.getItem("token");
-        const authHeader = storedToken
-          ? (storedToken.startsWith("Bearer ") ? storedToken : `Bearer ${storedToken}`)
-          : null;
-
-        // 1. Lightweight Check
-        const checkResRaw = await fetch(`${API_BASE_URL}/scan/check`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(authHeader ? { Authorization: authHeader } : {}),
-          },
-          body: JSON.stringify({ qrCode: code.data }),
-        });
-
-        const checkData = await checkResRaw.json();
-
-        // If product is INACTIVE, we stop here (as per previous logic)
-        // if (checkData.status === "INACTIVE") {
-        //   setGlobalLoading(false);
-        //   navigate(`/result/INACTIVE`, { state: { message: checkData.message } });
-        //   return;
-        // }
-
-        // For FAKE or FOUND, we proceed to POST /scan to record the scan history
-        console.log("Final scan request with QR:", code.data);
-        const scanResRaw = await fetch(`${API_BASE_URL}/scan`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            ...(authHeader ? { Authorization: authHeader } : {}),
-          },
-          body: JSON.stringify({
-            qrCode: code.data,
-            latitude: coordsRef.current?.latitude || null,
-            longitude: coordsRef.current?.longitude || null,
-          }),
-        });
-
-        if (!scanResRaw.ok) {
-          const err = await scanResRaw.json();
-          throw new Error(err.error || "Scan failed");
-        }
-
-        const res = await scanResRaw.json();
-        const finalStatus = res.status;
-
-        setGlobalLoading(false);
-        navigate(`/result/${finalStatus}`, { state: res.data });
-      } catch (err) {
-        console.error("Scan error:", err);
-        setGlobalLoading(false);
-        navigate(`/result/ERROR`, { state: { message: "Scan failed. Please try again." } });
-      }
+      processQrCode(code.data);
       return;
     }
 
     animationId.current = requestAnimationFrame(scanFrame);
-  }, [navigate, stopCamera, scanning, setGlobalLoading]);
+  }, [scanning, processQrCode]);
 
   useEffect(() => {
     let ignore = false;

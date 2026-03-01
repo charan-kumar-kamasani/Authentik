@@ -306,7 +306,17 @@ function ResultRepeat({ data }: { data: any }) {
           </p>
 
           <button
-            onClick={() => navigate("/report", { state: { qrCode: data.qrCode, reportType: "FAKE", productName: data.productName, brand: data.brand } })}
+            onClick={() => navigate("/report", { 
+              state: { 
+                qrCode: data.qrCode, 
+                reportType: "FAKE", 
+                productName: data.productName, 
+                brand: data.brand,
+                productId: data.productId || null,
+                brandId: data.brandId || null,
+                scanStatus: "FAKE"
+              } 
+            })}
             className="w-full bg-[#FFA808] text-white font-bold text-[18px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(255,168,8,0.4)] hover:bg-[#e59410] transition-colors"
           >
             Click to Report
@@ -387,7 +397,17 @@ function ResultFake({ data }: { data: any }) {
           </p>
 
           <button
-            onClick={() => navigate("/report", { state: { qrCode: data.qrCode, reportType: "COUNTERFEIT", productName: data.productName, brand: data.brand } })}
+            onClick={() => navigate("/report", { 
+              state: { 
+                qrCode: data.qrCode, 
+                reportType: "COUNTERFEIT", 
+                productName: data.productName, 
+                brand: data.brand,
+                productId: data.productId || null,
+                brandId: data.brandId || null,
+                scanStatus: data.status || "ALREADY_USED"
+              } 
+            })}
             className="w-full bg-[#E30211] text-white font-bold text-[20px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(227,2,17,0.4)] hover:bg-[#c9020f] transition-colors"
           >
             Click to Report

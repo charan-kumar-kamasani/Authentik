@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import API_BASE_URL from "../../config/api";
 import logo from "../../assets/logo.svg";
 import indianIcon from "../../assets/v2/login/indian_icon.png";
+import MobileHeader from "../../components/MobileHeader";
 
 export default function Login() {
   const [mobile, setMobile] = useState("");
@@ -54,31 +55,32 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen font-sans flex flex-col items-center justify-between py-6 px-4 bg-[linear-gradient(180deg,_#FFFFFF_0%,_#E6F4FA_25%,_#0D4E96_100%)]">
-
-      {/* Top Section */}
-      <div className="w-full flex flex-col items-center flex-grow justify-center pb-10">
+    <div className="min-h-screen bg-[#F8F9FA] font-sans">
+      <MobileHeader />
+      
+      {/* Content Container */}
+      <div className="px-6 pt-6 pb-10 flex flex-col items-center justify-center min-h-[calc(100vh-80px)]">
 
         {/* Logo Section */}
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-2">
-            <div className="w-[80px] h-[80px] flex items-center justify-center">
-              <img src={logo} alt="Authentiks Logo" className="w-full h-full object-contain" />
+          <div className="flex justify-center mb-4">
+            <div className="w-[100px] h-[100px] rounded-full bg-gradient-to-br from-[#E8F4F9] to-[#F0F9FF] flex items-center justify-center shadow-lg">
+              <img src={logo} alt="Authentiks Logo" className="w-[70px] h-[70px] object-contain" />
             </div>
           </div>
-          <h1 className="text-[32px] font-bold tracking-tight text-[#0D4E96] leading-none mb-1">
+          <h1 className="text-[28px] font-black tracking-tight text-[#0D4E96] leading-none mb-2">
             Authentiks
           </h1>
-          <p className="text-[#555] text-[14px] font-semibold italic">
+          <p className="text-gray-600 text-[14px] font-semibold">
             You Buy it, We Verify it
           </p>
         </div>
 
         {/* Card */}
-        <div className="w-full max-w-sm bg-white rounded-[40px] p-6 pt-6 pb-8 shadow-xl text-center relative mx-4">
+        <div className="w-full max-w-sm bg-white rounded-[30px] p-6 pt-6 pb-8 shadow-[0_4px_20px_rgba(13,78,150,0.12)] text-center">
 
-          <h2 className="text-[22px] font-bold text-[#0D4E96] mb-1">Welcome to Authentiks</h2>
-          <p className="text-[#888] text-[13px] mb-8 font-medium">
+          <h2 className="text-[20px] font-black text-[#0D4E96] mb-1">Welcome to Authentiks</h2>
+          <p className="text-gray-600 text-[13px] mb-8 font-semibold">
             Secure login with OTP verification
           </p>
 
@@ -113,18 +115,10 @@ export default function Login() {
           <button
             onClick={() => mobile.length === 10 && sendOtp()}
             disabled={mobile.length !== 10 || loading}
-            className={`
-              w-[200px] mx-auto h-[50px] rounded-[30px] font-bold text-[18px] text-white shadow-md
-              flex items-center justify-center gap-2
-              ${mobile.length === 10
-                ? 'bg-[#0E5AA7] hover:bg-[#0b4d91]'
-                : 'bg-[#0E5AA7] opacity-80'
-              }
-              transition-all duration-300 ease-out
-            `}
+            className="w-full bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] text-white font-bold py-4 rounded-[30px] text-[16px] shadow-[0_8px_24px_rgba(13,78,150,0.35)] active:scale-[0.97] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (
-              "Sending..."
+              <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
             ) : (
               <>
                 Get OTP
@@ -134,19 +128,15 @@ export default function Login() {
               </>
             )}
           </button>
-
-          {/* <p className="text-[10px] text-gray-500 mt-6 font-medium">
-            secure login * we never share your data * end-to-end encrypted
-          </p> */}
         </div>
-      </div>
-
-      {/* Footer */}
-      <div className="text-center px-6 pb-4">
-        <p className="text-white text-[11px] font-medium leading-tight opacity-90">
-          By continuing you agree to Authentiks<br />
-          <span className="font-bold">Policies, Terms & Conditions</span>
-        </p>
+        
+        {/* Footer */}
+        <div className="text-center px-6 mt-8">
+          <p className="text-gray-600 text-[11px] font-medium leading-tight">
+            By continuing you agree to Authentiks<br />
+            <span className="font-bold">Policies, Terms & Conditions</span>
+          </p>
+        </div>
       </div>
     </div>
   );

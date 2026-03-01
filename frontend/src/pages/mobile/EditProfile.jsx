@@ -98,6 +98,13 @@ export default function EditProfile() {
       }
 
       await updateProfile(dataToSave, token);
+      
+      // Reset profile prompt tracking since user completed their profile
+      if (formData.name) {
+        localStorage.removeItem("profilePromptLastDismissed");
+        localStorage.removeItem("profilePromptDismissCount");
+      }
+      
       alert("Profile updated successfully!");
       navigate(-1);
     } catch (error) {
@@ -110,11 +117,11 @@ export default function EditProfile() {
   // Custom Radio Button
   const RadioOption = ({ label, name, value, checked, onChange }) => (
     <label className="flex items-center gap-3 cursor-pointer group">
-      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${checked ? 'border-[#0F4160]' : 'border-[#BBB]'}`}>
+      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${checked ? 'border-[#0D4E96] shadow-[0_0_8px_rgba(13,78,150,0.3)]' : 'border-[#BBB]'}`}>
         {checked ? (
-          <div className="w-3 h-3 rounded-full bg-[#0F4160]"></div>
+          <div className="w-3 h-3 rounded-full bg-gradient-to-br from-[#0D4E96] to-[#2CA4D6]"></div>
         ) : (
-          <div className="w-3 h-3 rounded-full bg-[#E0E0E0]"></div>
+          <div className="w-3 h-3 rounded-full bg-[#E8F4F9]"></div>
         )}
       </div>
       <input
@@ -125,24 +132,28 @@ export default function EditProfile() {
         onChange={onChange}
         className="hidden"
       />
-      <span className="text-[#666] text-[15px] font-bold whitespace-nowrap">{label}</span>
+      <span className="text-[#1e3a5f] text-[15px] font-bold whitespace-nowrap group-hover:text-[#0D4E96] transition-colors">{label}</span>
     </label>
   );
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA] font-sans flex flex-col items-center pb-10">
+    <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-[#FFFFFF] to-[#E8F4F9] font-sans flex flex-col items-center pb-10">
       {/* Header */}
       <MobileHeader onLeftClick={() => navigate(-1)} />
 
       {/* User Avatar Section */}
       <div className="mt-8 mb-8 flex flex-col items-center">
-        <div className="w-28 h-28 rounded-full bg-[#0E5CAB] flex items-center justify-center mb-3 shadow-md relative overflow-hidden">
-          <div className="w-24 h-24 rounded-full bg-[#0E5CAB] flex items-center justify-center overflow-hidden">
-            {formData.profileImage ? (
-              <img src={formData.profileImage} alt="Profile" className="w-full h-full object-cover" />
-            ) : (
-              <img src={UserAvatar} alt="Profile" className="w-14 h-14 object-contain" />
-            )}
+        <div className="relative w-28 h-28 rounded-full flex items-center justify-center mb-4">
+          {/* Glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0D4E96] to-[#2CA4D6] rounded-full blur-xl opacity-30 animate-pulse" />
+          <div className="relative w-28 h-28 rounded-full bg-gradient-to-br from-[#0D4E96] via-[#1a5fa8] to-[#2CA4D6] flex items-center justify-center shadow-[0_8px_24px_rgba(13,78,150,0.3)] p-[3px]">
+            <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
+              {formData.profileImage ? (
+                <img src={formData.profileImage} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <img src={UserAvatar} alt="Profile" className="w-14 h-14 object-contain" />
+              )}
+            </div>
           </div>
         </div>
         <input
@@ -155,7 +166,7 @@ export default function EditProfile() {
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={uploadingImage}
-          className="bg-[#0D4E96] text-white px-8 py-2 rounded-[20px] font-bold text-[14px] shadow-[0_4px_15px_rgba(13,78,150,0.3)] disabled:opacity-50"
+          className="bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] text-white px-10 py-2.5 rounded-[25px] font-black text-[14px] shadow-[0_6px_20px_rgba(13,78,150,0.35)] hover:shadow-[0_8px_24px_rgba(13,78,150,0.45)] active:scale-95 transition-all disabled:opacity-50"
         >
           {uploadingImage ? "Uploading..." : "Edit Image"}
         </button>
@@ -166,13 +177,13 @@ export default function EditProfile() {
 
         {/* Full Name */}
         <div>
-          <label className="block text-[#0D4E96] font-bold text-[16px] mb-2">Full Name</label>
-          <div className="bg-white rounded-[30px] px-6 py-4 shadow-[0_2px_8px_rgba(0,0,0,0.05)] border border-gray-100">
+          <label className="block text-[#0D4E96] font-black text-[16px] mb-2">Full Name</label>
+          <div className="bg-white rounded-[30px] px-6 py-3 shadow-[0_4px_16px_rgba(13,78,150,0.1)] border-2 border-[#E8F4F9] focus-within:border-[#2CA4D6] focus-within:shadow-[0_4px_20px_rgba(44,164,214,0.2)] transition-all">
             <input
               type="text"
               name="name"
               placeholder="Enter your name"
-              className="w-full outline-none text-[#333] font-medium placeholder-transparent" /* Placeholder simplified */
+              className="w-full outline-none text-[#1e3a5f] font-semibold placeholder:text-[#BBB]" 
               value={formData.name}
               onChange={handleChange}
             />
@@ -183,7 +194,7 @@ export default function EditProfile() {
 
         {/* Age Group */}
         <div>
-          <label className="block text-[#0D4E96] font-bold text-[16px] mb-3">Age Group</label>
+          <label className="block text-[#0D4E96] font-black text-[16px] mb-3">Age Group</label>
           <div className="grid grid-cols-2 gap-y-4 gap-x-2">
             <RadioOption label="1 - 12 Years" name="ageGroup" value="1-12" checked={formData.ageGroup === '1-12'} onChange={handleChange} />
             <RadioOption label="13 - 19 Years" name="ageGroup" value="13-19" checked={formData.ageGroup === '13-19'} onChange={handleChange} />
@@ -196,7 +207,7 @@ export default function EditProfile() {
 
         {/* Gender */}
         <div>
-          <label className="block text-[#0D4E96] font-bold text-[16px] mb-3">Gender</label>
+          <label className="block text-[#0D4E96] font-black text-[16px] mb-3">Gender</label>
           <div className="flex flex-wrap gap-4">
             <RadioOption label="Male" name="gender" value="male" checked={formData.gender === 'male'} onChange={handleChange} />
             <RadioOption label="Female" name="gender" value="female" checked={formData.gender === 'female'} onChange={handleChange} />
@@ -206,15 +217,31 @@ export default function EditProfile() {
       </div>
 
       {/* Save Button */}
-      <div className="mt-12 w-full px-6 mb-8">
+      <div className="mt-12 w-full px-6 mb-16">
         <button
           onClick={handleSave}
           disabled={loading || uploadingImage}
-          className="w-full bg-[#1B3A6B] text-white font-bold py-4 rounded-[30px] shadow-[0_10px_25px_rgba(27,58,107,0.4)] text-[20px] hover:bg-[#152e55] transition-colors disabled:opacity-50"
+          className="w-full bg-gradient-to-r from-[#0D4E96] via-[#1a5fa8] to-[#2CA4D6] text-white font-black py-4 rounded-[30px] shadow-[0_12px_32px_rgba(13,78,150,0.35)] hover:shadow-[0_16px_40px_rgba(13,78,150,0.45)] text-[18px] active:scale-[0.98] transition-all disabled:opacity-50 relative overflow-hidden"
         >
-          {loading ? "Saving..." : "Save Profile"}
+          {/* Shimmer effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
+          <span className="relative">{loading ? "Saving..." : "Save Profile"}</span>
         </button>
       </div>
+
+      {/* Animations */}
+      <style>
+        {`
+          @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+          }
+          
+          .animate-shimmer {
+            animation: shimmer 3s infinite linear;
+          }
+        `}
+      </style>
 
     </div>
   );

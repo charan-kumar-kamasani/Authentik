@@ -6,31 +6,31 @@ export default function TermsConditions() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen font-sans flex flex-col items-center pb-10">
+    <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-[#FFFFFF] to-[#E8F4F9] font-sans flex flex-col items-center pb-10">
       {/* Header */}
-      <div className="w-full flex items-center justify-between p-4 pt-6">
-        <button onClick={() => navigate(-1)} className="p-2">
-           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0F4160" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <div className="w-full flex items-center justify-between p-4 pt-6 bg-white/50 backdrop-blur-sm border-b-2 border-[#E8F4F9]">
+        <button onClick={() => navigate(-1)} className="p-2.5 rounded-[12px] hover:bg-[#F0F7FF] active:scale-95 transition-all">
+           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0D4E96" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M15 18l-6-6 6-6" />
             </svg>
         </button>
-        <h1
-          className="text-[24px] font-bold tracking-tight text-[#214B80]"
-          style={{ textShadow: "0 2px 4px rgba(0,0,0,0.2)" }}
-        >
-          Authen<span className="text-[#2CA4D6]">tiks</span>
+        <h1 className="text-[24px] font-black tracking-tight">
+          <span className="bg-gradient-to-r from-[#0D4E96] to-[#1e3a5f] bg-clip-text text-transparent">Authen</span><span className="bg-gradient-to-r from-[#2CA4D6] to-[#1a5fa8] bg-clip-text text-transparent">tiks</span>
         </h1>
-        <button className="p-2">
-           <img src={NotificationIcon} alt="Notifications" className="w-6 h-6" />
+        <button className="p-2.5 rounded-[12px] hover:bg-[#F0F7FF] active:scale-95 transition-all" onClick={() => navigate('/notifications')}>
+           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0D4E96" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+             <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+           </svg>
         </button>
       </div>
 
       <div className="w-full max-w-md px-5 flex-1 pb-10 overflow-y-auto">
-        <h1 className="text-[#0F4160] text-[22px] font-bold mb-6">Terms & Conditions</h1>
+        <h1 className="text-[#0D4E96] text-[24px] font-black mb-6 mt-4">Terms & Conditions</h1>
         
-        <div className="text-[#214B80] text-[14px] leading-relaxed space-y-6">
+        <div className="bg-white rounded-[24px] p-6 shadow-[0_8px_32px_rgba(13,78,150,0.12)] border-2 border-white text-[#1e3a5f] text-[14px] leading-relaxed space-y-6">
             <div>
-                <h2 className="font-bold text-[16px]">Authentiks – Terms & Conditions</h2>
+                <h2 className="font-black text-[17px] text-[#0D4E96]">Authentiks – Terms & Conditions</h2>
                 <p className="opacity-75">Last updated: [01/01/2026]</p>
             </div>
             
@@ -38,7 +38,7 @@ export default function TermsConditions() {
 
             {/* PART A */}
             <div>
-                <h3 className="font-bold text-[16px] mb-3 text-[#0F4160] decoration-2 underline underline-offset-4">PART A: TERMS FOR APP USERS (BUYERS / SCANNERS)</h3>
+                <h3 className="font-black text-[16px] mb-3 text-[#0D4E96] border-b-2 border-[#E8F4F9] pb-2">PART A: TERMS FOR APP USERS (BUYERS / SCANNERS)</h3>
                 
                 <h4 className="font-bold mb-1">1. Eligibility</h4>
                 <p className="mb-4">You must be at least 18 years old or have legal parental consent to use the Authentiks app.</p>

@@ -225,6 +225,7 @@ router.post("/", protect, async (req, res) => {
         data: {
           qrCode,
           productId: product._id,
+          brandId: finalBrandId,
           productName: product.productName,
           brand: finalBrandName,
           place,
@@ -295,6 +296,7 @@ router.post("/", protect, async (req, res) => {
         data: {
           qrCode,
           productId: product._id,
+          brandId: finalBrandId,
           productName: product.productName,
           brand: product.brand || finalBrandName,
           batchNo: product.batchNo,
@@ -335,6 +337,7 @@ router.post("/", protect, async (req, res) => {
       data: {
         qrCode,
         productId: product._id,
+        brandId: finalBrandId,
         productName: product.productName,
         brand: product.brand || finalBrandName,
         batchNo: product.batchNo,

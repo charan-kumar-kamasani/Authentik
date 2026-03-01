@@ -1,7 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { LoadingProvider } from './context/LoadingContext';
-import GlobalLoader from './components/GlobalLoader';
 
 import Login from "./pages/mobile/Login";
 import OTP from "./pages/mobile/OTP";
@@ -40,17 +39,38 @@ import QrFormConfig from "./pages/admin/QrFormConfig";
 import AuthDashboard from "./pages/admin/AuthDashboard";
 import ReportProduct from "./pages/mobile/ReportProduct";
 import MyReports from "./pages/mobile/MyReports";
+import Notifications from "./pages/mobile/Notifications";
 
 // User private route
 function PrivateRoute({ children }) {
   const token = localStorage.getItem("token");
-  return token ? children : <Navigate to="/" replace />;
+  const location = useLocation();
+  
+  if (!token) {
+    // Save the intended destination (including query params) for redirect after login
+    const redirectPath = `${location.pathname}${location.search}`;
+    sessionStorage.setItem("redirectAfterLogin", redirectPath);
+    return <Navigate to="/" replace />;
+  }
+  
+  return children;
 }
 
 // User public route
 function PublicRoute({ children }) {
   const token = localStorage.getItem("token");
-  return token ? <Navigate to="/home" replace /> : children;
+  
+  if (token) {
+    // Check if there's a saved redirect path
+    const redirectPath = sessionStorage.getItem("redirectAfterLogin");
+    if (redirectPath) {
+      sessionStorage.removeItem("redirectAfterLogin");
+      return <Navigate to={redirectPath} replace />;
+    }
+    return <Navigate to="/home" replace />;
+  }
+  
+  return children;
 }
 
 // Admin private route
@@ -78,7 +98,6 @@ export default function App() {
     return (
       <LoadingProvider>
         <BrowserRouter>
-          <GlobalLoader />
           <Routes>
             {/* Public Website */}
             <Route path="/" element={<LandingPage />} />
@@ -169,7 +188,6 @@ export default function App() {
   return (
     <LoadingProvider>
       <BrowserRouter>
-        <GlobalLoader />
         <Routes>
           {/* Public */}
           <Route
@@ -203,6 +221,7 @@ export default function App() {
             <Route path="/result/:status" element={<Result />} />
             <Route path="/report" element={<ReportProduct />} />
             <Route path="/my-reports" element={<MyReports />} />
+            <Route path="/notifications" element={<Notifications />} />
           </Route>
 
           {/* Admin (mobile access optional) */}

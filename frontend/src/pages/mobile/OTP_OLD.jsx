@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import API_BASE_URL from "../../config/api";
 import logo from "../../assets/logo.svg";
-import MobileHeader from "../../components/MobileHeader";
 
 export default function OTP() {
   const { state } = useLocation();
@@ -111,32 +110,31 @@ export default function OTP() {
   }, [resendCooldown]);
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] font-sans">
-      <MobileHeader onBackClick={() => nav(-1)} />
-      
-      {/* Content Container */}
-      <div className="px-6 pt-6 pb-10 flex flex-col items-center justify-center min-h-[calc(100vh-80px)]">
+    <div className="min-h-screen font-sans flex flex-col items-center justify-between py-6 px-4 bg-[linear-gradient(180deg,_#FFFFFF_0%,_#E6F4FA_25%,_#0D4E96_100%)]">
+
+      {/* Top Section */}
+      <div className="w-full flex flex-col items-center flex-grow justify-center pb-10">
 
         {/* Logo Section */}
         <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <div className="w-[100px] h-[100px] rounded-full bg-gradient-to-br from-[#E8F4F9] to-[#F0F9FF] flex items-center justify-center shadow-lg">
-              <img src={logo} alt="Authentiks Logo" className="w-[70px] h-[70px] object-contain" />
+          <div className="flex justify-center mb-2">
+            <div className="w-[80px] h-[80px] flex items-center justify-center">
+              <img src={logo} alt="Authentiks Logo" className="w-full h-full object-contain" />
             </div>
           </div>
-          <h1 className="text-[28px] font-black tracking-tight text-[#0D4E96] leading-none mb-2">
+          <h1 className="text-[32px] font-bold tracking-tight text-[#0D4E96] leading-none mb-1">
             Authentiks
           </h1>
-          <p className="text-gray-600 text-[14px] font-semibold">
+          <p className="text-[#555] text-[14px] font-semibold italic">
             You Buy it, We Verify it
           </p>
         </div>
 
         {/* Card */}
-        <div className="w-full max-w-sm bg-white rounded-[30px] p-6 pt-6 pb-8 shadow-[0_4px_20px_rgba(13,78,150,0.12)] text-center">
+        <div className="w-full max-w-sm bg-white rounded-[40px] p-6 pt-4 pb-6 shadow-xl text-center relative mx-4">
           {/* Title */}
-          <h2 className="text-[20px] font-black text-[#0D4E96] mb-1 leading-snug">Enter Verification Code</h2>
-          <p className="text-gray-600 text-[13px] mb-8 font-semibold">
+          <h2 className="text-[22px] font-bold text-[#0D4E96] mb-1 leading-snug">Enter Verification Code</h2>
+          <p className="text-[#888] text-[12px] mb-8 font-medium tracking-wide">
             We’ve sent a SMS to +91{state?.mobile || '----------'}
           </p>
 
@@ -162,7 +160,12 @@ export default function OTP() {
           <button
             onClick={login}
             disabled={loading}
-            className="w-full bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] text-white font-bold py-4 rounded-[30px] text-[16px] shadow-[0_8px_24px_rgba(13,78,150,0.35)] active:scale-[0.97] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-6"
+            className={`
+              w-[200px] mx-auto h-[50px] rounded-[30px] font-bold text-[18px] text-white shadow-md
+               flex items-center justify-center gap-2 mb-6
+              bg-[#0E5AA7] hover:bg-[#0b4d91] disabled:opacity-70 disabled:cursor-not-allowed
+              transition-all duration-300 ease-out
+            `}
           >
             {loading ? (
               <div className="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -177,7 +180,7 @@ export default function OTP() {
           </button>
 
           {/* Resend Link */}
-          <div className="text-[#0D4E96] text-[13px] font-semibold">
+          <div className="text-[#0D4E96] text-[13px] font-medium">
             Didn’t receive the code?{' '}
             {resendCooldown > 0 ? (
               <span className="font-bold">Resend in {resendCooldown}s</span>
@@ -192,14 +195,14 @@ export default function OTP() {
             )}
           </div>
         </div>
-        
-        {/* Footer */}
-        <div className="text-center px-6 mt-8">
-          <p className="text-gray-600 text-[11px] font-medium leading-tight">
-            By continuing you agree to Authentiks<br />
-            <span className="font-bold">Policies, Terms & Conditions</span>
-          </p>
-        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="text-center px-6 pb-4">
+        <p className="text-white text-[11px] font-medium leading-tight opacity-90">
+          By continuing you agree to Authentiks<br />
+          <span className="font-bold">Policies, Terms & Conditions</span>
+        </p>
       </div>
     </div>
   );

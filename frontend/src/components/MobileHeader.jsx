@@ -6,6 +6,7 @@ export default function MobileHeader({
   onLeftClick,
   title,
   rightIcon,
+  onNotificationClick,
 }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -15,32 +16,32 @@ export default function MobileHeader({
     location.pathname === "/home";
 
   return (
-    <div className="w-full flex items-center justify-between p-4 bg-white sticky top-0 z-50 shadow-sm border-b border-gray-100">
+    <div className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-white via-[#F9FCFF] to-white sticky top-0 z-50 shadow-[0_4px_24px_rgba(13,78,150,0.1)] border-b-2 border-[#E8F4F9] backdrop-blur-sm">
 
       {/* LEFT SIDE */}
       {isHome ? (
         <button
           onClick={onLeftClick}
-          className="p-2 text-[#0D4E96]"
+          className="p-2.5 text-[#0D4E96] rounded-[12px] hover:bg-[#F0F7FF] active:scale-95 transition-all"
         >
-          <Menu className="w-6 h-6" />
+          <Menu className="w-6 h-6" strokeWidth={2.5} />
         </button>
       ) : (
         <button
           onClick={() => navigate(-1)}
-          className="p-2 text-[#0D4E96]"
+          className="p-2.5 text-[#0D4E96] rounded-[12px] hover:bg-[#F0F7FF] active:scale-95 transition-all"
         >
-          <ChevronLeft className="w-7 h-7" />
+          <ChevronLeft className="w-7 h-7" strokeWidth={2.5} />
         </button>
       )}
 
       {/* TITLE */}
       <div className="text-center">
         {title ? (
-          title
+          <span className="text-[20px] font-black text-[#0D4E96]">{title}</span>
         ) : (
-          <h1 className="text-[28px] font-black tracking-tight text-[#0D4E96]">
-            Authen<span className="text-[#2CA4D6]">tiks</span>
+          <h1 className="text-[28px] font-black tracking-tight">
+            <span className="bg-gradient-to-r from-[#0D4E96] to-[#1e3a5f] bg-clip-text text-transparent">Authen</span><span className="bg-gradient-to-r from-[#2CA4D6] to-[#1a5fa8] bg-clip-text text-transparent">tiks</span>
           </h1>
         )}
       </div>
@@ -48,15 +49,16 @@ export default function MobileHeader({
       {/* RIGHT SIDE — Only show on Home */}
       {isHome ? (
         <button
-          className="p-2"
-          // onClick={() => navigate("/edit-profile")}
+          className="p-2.5 rounded-[12px] hover:bg-[#F0F7FF] active:scale-95 transition-all relative"
+          onClick={onNotificationClick}
         >
           {rightIcon ? (
             rightIcon
           ) : (
             <>
-            <img src={bell} alt="" />
-           {/* <User className="w-6 h-6 text-[#259DCF]" /> */}
+            <img src={bell} alt="notifications" className="w-6 h-6" />
+            {/* Optional notification dot indicator */}
+            {/* <div className="absolute top-2 right-2 w-2 h-2 bg-[#FF4444] rounded-full animate-pulse" /> */}
             </>
           )}
         </button>
