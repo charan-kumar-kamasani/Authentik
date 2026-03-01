@@ -1,17 +1,50 @@
 const PDFDocument = require("pdfkit");
 const QRCode = require("qrcode");
+const fs = require('fs');
+const path = require('path');
+const svgToPdf = require('svg-to-pdfkit');
 
 /**
  * Fetch a remote image (e.g. brand logo from Cloudinary) and return it as a Buffer.
  * Returns null on any error so callers can gracefully skip the logo overlay.
  */
+/**
+ * Fetch a remote image (e.g. brand logo from Cloudinary) or read local
+ * `frontend/public` asset. Returns an object { type: 'png'|'svg'|'buffer', data }.
+ * On error returns null.
+ */
 const fetchImageBuffer = async (url) => {
   try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const arrayBuffer = await res.arrayBuffer();
-    return Buffer.from(arrayBuffer);
-  } catch {
+    if (!url) return null;
+    // If looks like http(s), fetch over network
+    if (/^https?:\/\//i.test(url)) {
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      const arrayBuffer = await res.arrayBuffer();
+      const buf = Buffer.from(arrayBuffer);
+      const txt = buf.toString('utf8', 0, Math.min(buf.length, 200)).trim();
+      if (txt.startsWith('<svg')) return { type: 'svg', data: txt };
+      return { type: 'buffer', data: buf };
+    }
+
+    // Otherwise try to read from frontend/public (project-relative).
+    // Try multiple likely locations: process.cwd()/frontend/public and repo-root relative to this file.
+    const rel = url.replace(/^\//, '');
+    const candidates = [
+      path.resolve(process.cwd(), 'frontend', 'public', rel),
+      path.resolve(__dirname, '..', '..', 'frontend', 'public', rel),
+    ];
+    for (const publicPath of candidates) {
+      if (fs.existsSync(publicPath)) {
+        const content = fs.readFileSync(publicPath);
+        const txt = content.toString('utf8', 0, Math.min(content.length, 200)).trim();
+        if (txt.startsWith('<svg')) return { type: 'svg', data: txt };
+        return { type: 'buffer', data: content };
+      }
+    }
+
+    return null;
+  } catch (err) {
     return null;
   }
 };
@@ -49,10 +82,25 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
 
       const totalPages = Math.ceil(products.length / perPage);
 
-      /** ─── FETCH BRAND LOGO (if provided) ─── **/
-      let logoBuffer = null;
-      if (options.brandLogo) {
-        logoBuffer = await fetchImageBuffer(options.brandLogo);
+      /** ─── FETCH BRAND LOGO — always embed logo.svg in QR center ─── **/
+      let logoAsset = null;
+      
+      // First try to load the default logo.svg from frontend/public
+      const logoPath = path.resolve(__dirname, '..', '..', '..', 'frontend', 'public', 'logo.svg');
+      try {
+        if (fs.existsSync(logoPath)) {
+          const logoSvg = fs.readFileSync(logoPath, 'utf8');
+          logoAsset = { type: 'svg', data: logoSvg };
+        }
+      } catch (err) {
+        // If default logo fails, try options
+      }
+      
+      // Allow override via options
+      if (!logoAsset && options.brandLogoSvg) {
+        logoAsset = { type: 'svg', data: options.brandLogoSvg };
+      } else if (!logoAsset && options.brandLogo) {
+        logoAsset = await fetchImageBuffer(options.brandLogo);
       }
 
       const doc = new PDFDocument({
@@ -143,7 +191,7 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
           });
 
           /** ── COMPANY LOGO OVERLAY — PayPal-style centred on QR ── **/
-          if (logoBuffer) {
+          if (logoAsset) {
             // Logo at ~20% of QR side for visibility while staying scannable with Level H error correction
             const logoSize = qrSide * 0.20;
             // Background area: logo + generous padding (like PayPal's clean white box)
@@ -170,11 +218,24 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
             // Logo image centred inside the white box
             const logoX = bgX + bgPadding;
             const logoY = bgY + bgPadding;
-            doc.image(logoBuffer, logoX, logoY, {
-              fit: [logoSize, logoSize],
-              align: "center",
-              valign: "center",
-            });
+
+            if (logoAsset.type === 'svg') {
+              try {
+                svgToPdf(doc, logoAsset.data, logoX, logoY, { width: logoSize, height: logoSize });
+              } catch (err) {
+                // fallback: ignore logo if svg rendering fails
+              }
+            } else if (logoAsset.type === 'buffer') {
+              try {
+                doc.image(logoAsset.data, logoX, logoY, {
+                  fit: [logoSize, logoSize],
+                  align: 'center',
+                  valign: 'center',
+                });
+              } catch (err) {
+                // ignore image errors
+              }
+            }
           }
 
           /** ── FOOTER BANNER — dark blue band with "Authentiks.in" ── **/
