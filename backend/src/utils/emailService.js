@@ -56,7 +56,7 @@ const sendOrderStatusEmail = async (recipients, orderDetails, statusChange) => {
       <body>
         <div class="container">
           <div class="header">
-            <h1>🔐 Authentik Order System</h1>
+            <h1>🔐 Authentiks Order System</h1>
             <p>Order Status Notification</p>
           </div>
           <div class="content">
@@ -100,7 +100,7 @@ const sendOrderStatusEmail = async (recipients, orderDetails, statusChange) => {
             </div>
           </div>
           <div class="footer">
-            <p>© 2026 Authentik - QR Authentication System</p>
+            <p>© 2026 Authentiks - QR Authentication System</p>
             <p>This is an automated notification. Please do not reply to this email.</p>
           </div>
         </div>
@@ -114,7 +114,7 @@ const sendOrderStatusEmail = async (recipients, orderDetails, statusChange) => {
       .filter(recipient => recipient && recipient.includes('@'))
       .map((recipient) => {
         return transporter.sendMail({
-          from: `"Authentik System" <${process.env.EMAIL_USER}>`,
+          from: `"Authentiks System" <${process.env.EMAIL_USER}>`,
           to: recipient,
           subject: subject,
           html: htmlContent,

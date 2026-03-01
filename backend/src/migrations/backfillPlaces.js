@@ -14,7 +14,7 @@ async function reverseGeocode(lat, lng) {
   try {
     const res = await fetch(
       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
-      { headers: { 'User-Agent': 'Authentik-Backfill/1.0 (contact@authentik.com)' } }
+      { headers: { 'User-Agent': 'Authentiks-Backfill/1.0 (support@authentiks.in)' } }
     );
     const data = await res.json();
     const city  = data.address?.city || data.address?.town || data.address?.village || data.address?.county || '';

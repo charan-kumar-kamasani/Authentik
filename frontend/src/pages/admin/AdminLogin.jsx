@@ -65,14 +65,14 @@ export default function AdminLogin() {
         {/* Left panel with brand color */}
         <div className="bg-[#214B80] text-white p-8 flex flex-col justify-center gap-4">
           <div>
-            <h1 className="text-2xl font-extrabold">Authentik</h1>
+            <h1 className="text-2xl font-extrabold">Authentiks</h1>
             <p className="text-sm opacity-90 mt-1">Admin Panel</p>
           </div>
           <div className="mt-6">
             <h2 className="text-lg font-semibold">Manage Brands & Users</h2>
             <p className="text-sm opacity-90 mt-2">Create and manage users, brands and staff access. Secure admin area.</p>
           </div>
-          <div className="mt-auto text-xs opacity-80">Need help? Contact support@authentik.example</div>
+          <div className="mt-auto text-xs opacity-80">Need help? Contact support@authentiks.in</div>
         </div>
 
         {/* Right panel - form */}

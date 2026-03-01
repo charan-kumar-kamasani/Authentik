@@ -510,6 +510,8 @@ export const initiatePayment = async (data, token) => {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(data),
     });
+
+    console.log('Initiate Payment Response:', res);
     if (!res.ok) { const err = await res.json(); throw new Error(err.message || 'Failed to initiate payment'); }
     return res.json();
 };

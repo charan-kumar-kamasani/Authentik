@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 // Simplified Navbar if not available
 const SimpleNav = () => (
     <nav className="bg-black text-white p-4 flex justify-between">
-        <span className="font-bold text-xl">Authentik</span>
+        <span className="font-bold text-xl">Authentiks</span>
         <a href="/admin-dashboard" className="text-gray-300">Dashboard</a>
     </nav>
 );
@@ -161,7 +161,7 @@ const OrderManagement = () => {
              <nav className="bg-white border-b border-gray-200 px-6 py-3 flex justify-between items-center sticky top-0 z-30">
                 <div className="flex items-center gap-4">
                     <button onClick={() => navigate('/admin/dashboard')} className="text-gray-500 hover:text-blue-600 font-medium">← Dashboard</button>
-                    <span className="font-bold text-xl tracking-tight text-[#214B80]">Authentik Logs</span>
+                    <span className="font-bold text-xl tracking-tight text-[#214B80]">Authentiks Logs</span>
                 </div>
                 <div className="flex items-center gap-4">
                      <span className="text-sm font-medium px-3 py-1 bg-gray-100 rounded-full capitalize">{role}</span>

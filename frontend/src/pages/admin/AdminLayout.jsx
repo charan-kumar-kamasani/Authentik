@@ -98,8 +98,8 @@ export default function AdminLayout({ children }) {
               <ShieldCheck size={24} strokeWidth={2.5} />
             </div>
             <div>
-              <h1 className="text-xl font-black tracking-tight text-slate-800">Authentick<span className="text-blue-600">.</span></h1>
-              <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-widest font-bold">Workspace</p>
+              <h1 className="text-xl font-black tracking-tight text-slate-800">Authenticks<span className="text-blue-600">.</span></h1>
+              <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-widest font-bold">Enterprize panel</p>
             </div>
           </div>
         </div>

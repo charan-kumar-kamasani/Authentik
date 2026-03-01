@@ -319,7 +319,7 @@ export default function Scan() {
           </div>
           <h2 className="text-[24px] font-bold text-[#333] mb-2">Location Required</h2>
           <p className="text-gray-600 mb-8">
-            Authentik requires location access to verify product authenticity and protect against counterfeit items.
+            Authentiks requires location access to verify product authenticity and protect against counterfeit items.
             Scanning is disabled without location data.
           </p>
           <button

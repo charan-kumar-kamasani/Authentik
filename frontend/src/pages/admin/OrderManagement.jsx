@@ -146,37 +146,38 @@ const OrderManagement = () => {
   };
 
   const handleCreditProceedPayment = async () => {
-    setCreditProcessing(true);
-    try {
-      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-      const payload = {
-        type: selectedCreditPlan ? 'plan' : 'topup',
-        ...(selectedCreditPlan ? { planId: selectedCreditPlan._id } : { quantity: creditModal?.shortfall || 0 }),
-        ...(creditCouponApplied ? { couponCode: creditCouponApplied.code } : {}),
-      };
-      const result = await initiatePayment(payload, token);
+//     setCreditProcessing(true);
+//     try {
+//       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+//       const payload = {
+//         type: selectedCreditPlan ? 'plan' : 'topup',
+//         ...(selectedCreditPlan ? { planId: selectedCreditPlan._id } : { quantity: creditModal?.shortfall || 0 }),
+//         ...(creditCouponApplied ? { couponCode: creditCouponApplied.code } : {}),
+//       };
+//       const result = await initiatePayment(payload, token);
+// console.log('Initiate Payment Result:', result);
+// await new Promise(resolve => setTimeout(resolve, 20000000)); // Simulate waiting for payment completion
+//       // if (result.redirectUrl) {
+//       //   // window.location.href = result.redirectUrl;
+//       //   return;
+//       // }
 
-      if (result.redirectUrl) {
-        window.location.href = result.redirectUrl;
-        return;
-      }
-
-      // Auto-completed — re-try authorize
-      setCreditView('processing');
-      await updateOrderStatus(creditModal.orderId, 'authorize', {}, token);
-      setCreditModal(null);
-      resetCreditCheckout();
-      fetchOrders();
-      alert('Credits purchased & order authorized successfully!');
-    } catch (e) {
-      if (e.creditData) {
-        setCreditModal({ orderId: creditModal.orderId, ...e.creditData });
-        setCreditView('choice');
-        alert('Payment completed but still insufficient credits. Please buy more.');
-      } else {
-        alert('Error: ' + e.message);
-      }
-    } finally { setCreditProcessing(false); }
+//       // Auto-completed — re-try authorize
+//       // setCreditView('processing');
+//       // await updateOrderStatus(creditModal.orderId, 'authorize', {}, token);
+//       // setCreditModal(null);
+//       // resetCreditCheckout();
+//       // fetchOrders();
+//       alert('Credits purchased & order authorized successfully!');
+//     } catch (e) {
+//       if (e.creditData) {
+//         setCreditModal({ orderId: creditModal.orderId, ...e.creditData });
+//         setCreditView('choice');
+//         alert('Payment completed but still insufficient credits. Please buy more.');
+//       } else {
+//         alert('Error: ' + e.message);
+//       }
+//     } finally { setCreditProcessing(false); }
   };
 
   const resetCreditCheckout = () => {
