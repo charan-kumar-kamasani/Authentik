@@ -384,8 +384,17 @@ export const buyTopupCredits = async (quantity, token) => {
     return res.json();
 };
 
-export const getCreditTransactions = async (token, page = 1, limit = 20) => {
-    const res = await fetch(`${API_BASE_URL}/admin/credits/transactions?page=${page}&limit=${limit}`, {
+export const getCreditTransactions = async (token, page = 1, limit = 20, filters = {}) => {
+    const params = new URLSearchParams();
+    params.set('page', page);
+    params.set('limit', limit);
+    if (filters.type) params.set('type', filters.type);
+    if (filters.paymentStatus) params.set('paymentStatus', filters.paymentStatus);
+    if (filters.dateFrom) params.set('dateFrom', filters.dateFrom);
+    if (filters.dateTo) params.set('dateTo', filters.dateTo);
+    if (filters.search) params.set('search', filters.search);
+
+    const res = await fetch(`${API_BASE_URL}/admin/credits/transactions?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` }
     });
     if (!res.ok) throw new Error('Failed to fetch credit transactions');

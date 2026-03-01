@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Receipt, ArrowUpRight, ArrowDownRight, Search, TrendingUp, TrendingDown, 
   Calendar, Hash, Filter, X, Coins, CreditCard, Package, Gift, UserPlus, 
@@ -11,8 +11,10 @@ import TablePagination from '../../components/TablePagination';
 export default function AdminTransactions() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [tableLoading, setTableLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('All');
+  const [paymentStatus, setPaymentStatus] = useState('All');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,18 +22,39 @@ export default function AdminTransactions() {
   const [expandedRow, setExpandedRow] = useState(null);
 
   const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+  const role = localStorage.getItem('adminRole') || '';
+  const isSuperAdmin = role === 'superadmin';
 
-  useEffect(() => { fetchTransactions(); }, []);
+  const mountedRef = useRef(false);
 
-  const fetchTransactions = async () => {
-    setLoading(true);
+  // Initial full-page load
+  useEffect(() => {
+    fetchTransactions(1, true).then(() => { mountedRef.current = true; });
+  }, []);
+
+  // Subsequent filter changes should only reload the table
+  useEffect(() => {
+    if (!mountedRef.current) return;
+    fetchTransactions(1, false);
+  }, [typeFilter, paymentStatus, dateFrom, dateTo, searchTerm]);
+
+  const fetchTransactions = async (page = 1, initial = false) => {
+    if (initial) setLoading(true); else setTableLoading(true);
     try {
-      const data = await getCreditTransactions(token, 1, 500);
+      const filters = {
+        type: typeFilter !== 'All' ? typeFilter : undefined,
+        paymentStatus: paymentStatus !== 'All' ? paymentStatus : undefined,
+        dateFrom: dateFrom || undefined,
+        dateTo: dateTo || undefined,
+        search: searchTerm || undefined,
+      };
+      const data = await getCreditTransactions(token, page, 500, filters);
       setTransactions(Array.isArray(data) ? data : data.transactions || []);
+      setCurrentPage(1);
     } catch (e) {
       console.error('Failed to load transactions:', e);
     } finally {
-      setLoading(false);
+      if (initial) setLoading(false); else setTableLoading(false);
     }
   };
 
@@ -49,6 +72,13 @@ export default function AdminTransactions() {
       ) return false;
       
       if (typeFilter !== 'All' && t.type !== typeFilter) return false;
+      // Payment status filter: check payment.status where present
+      if (paymentStatus !== 'All') {
+        const st = t.payment?.status || 'none';
+        if (paymentStatus === 'completed' && st !== 'completed') return false;
+        if (paymentStatus === 'pending' && st !== 'pending') return false;
+        if (paymentStatus === 'failed' && st !== 'failed') return false;
+      }
       if (dateFrom && new Date(t.createdAt) < new Date(dateFrom)) return false;
       if (dateTo && new Date(t.createdAt) > new Date(dateTo + 'T23:59:59')) return false;
       return true;
@@ -146,11 +176,12 @@ export default function AdminTransactions() {
   const clearFilters = () => {
     setSearchTerm('');
     setTypeFilter('All');
+    setPaymentStatus('All');
     setDateFrom('');
     setDateTo('');
   };
 
-  const hasFilters = searchTerm || typeFilter !== 'All' || dateFrom || dateTo;
+  const hasFilters = searchTerm || typeFilter !== 'All' || paymentStatus !== 'All' || dateFrom || dateTo;
 
   const toggleRow = (txnId) => {
     setExpandedRow(expandedRow === txnId ? null : txnId);
@@ -186,7 +217,7 @@ export default function AdminTransactions() {
     );
   };
 
-  if (loading) return (
+  if (loading && transactions.length === 0) return (
     <div className="flex items-center justify-center min-h-[500px]">
       <div className="flex flex-col items-center gap-3">
         <div className="w-10 h-10 border-4 border-slate-100 border-t-indigo-500 rounded-full animate-spin" />
@@ -218,65 +249,131 @@ export default function AdminTransactions() {
         </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards - Different for SuperAdmin vs Company Users */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200/60 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full blur-2xl opacity-50" />
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
-                <ArrowUpRight size={16} className="text-emerald-600" strokeWidth={2.5} />
+        {isSuperAdmin ? (
+          // SuperAdmin: Global Overview
+          <>
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200/60 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full blur-2xl opacity-50" />
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                    <ArrowUpRight size={16} className="text-emerald-600" strokeWidth={2.5} />
+                  </div>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Credits In</span>
+                </div>
+                <div className="text-2xl font-black text-emerald-600">{stats.credits_in.toLocaleString()}</div>
+                <p className="text-xs text-slate-400 mt-1 font-semibold">All companies purchased</p>
               </div>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Credits In</span>
             </div>
-            <div className="text-2xl font-black text-emerald-600">{stats.credits_in.toLocaleString()}</div>
-            <p className="text-xs text-slate-400 mt-1 font-semibold">QR codes purchased</p>
-          </div>
-        </div>
 
-        <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200/60 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-rose-50 rounded-full blur-2xl opacity-50" />
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center">
-                <ArrowDownRight size={16} className="text-rose-600" strokeWidth={2.5} />
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200/60 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-rose-50 rounded-full blur-2xl opacity-50" />
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center">
+                    <ArrowDownRight size={16} className="text-rose-600" strokeWidth={2.5} />
+                  </div>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Credits Used</span>
+                </div>
+                <div className="text-2xl font-black text-rose-600">{stats.credits_out.toLocaleString()}</div>
+                <p className="text-xs text-slate-400 mt-1 font-semibold">All companies consumed</p>
               </div>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Credits Out</span>
             </div>
-            <div className="text-2xl font-black text-rose-600">{stats.credits_out.toLocaleString()}</div>
-            <p className="text-xs text-slate-400 mt-1 font-semibold">QR codes consumed</p>
-          </div>
-        </div>
 
-        <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200/60 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full blur-2xl opacity-50" />
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <TrendingUp size={16} className="text-blue-600" strokeWidth={2.5} />
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200/60 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full blur-2xl opacity-50" />
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <TrendingUp size={16} className="text-blue-600" strokeWidth={2.5} />
+                  </div>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Platform Balance</span>
+                </div>
+                <div className={`text-2xl font-black ${stats.net >= 0 ? 'text-blue-600' : 'text-amber-600'}`}>
+                  {stats.net.toLocaleString()}
+                </div>
+                <p className="text-xs text-slate-400 mt-1 font-semibold">System-wide net</p>
               </div>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Net Balance</span>
             </div>
-            <div className={`text-2xl font-black ${stats.net >= 0 ? 'text-blue-600' : 'text-amber-600'}`}>
-              {stats.net.toLocaleString()}
-            </div>
-            <p className="text-xs text-slate-400 mt-1 font-semibold">Available credits</p>
-          </div>
-        </div>
 
-        <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200/60 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-purple-50 rounded-full blur-2xl opacity-50" />
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                <CreditCard size={16} className="text-purple-600" strokeWidth={2.5} />
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200/60 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-purple-50 rounded-full blur-2xl opacity-50" />
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <CreditCard size={16} className="text-purple-600" strokeWidth={2.5} />
+                  </div>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Revenue</span>
+                </div>
+                <div className="text-2xl font-black text-purple-600">₹{stats.total_paid.toLocaleString()}</div>
+                <p className="text-xs text-slate-400 mt-1 font-semibold">Platform earnings</p>
               </div>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Revenue</span>
             </div>
-            <div className="text-2xl font-black text-purple-600">₹{stats.total_paid.toLocaleString()}</div>
-            <p className="text-xs text-slate-400 mt-1 font-semibold">Total collected</p>
-          </div>
-        </div>
+          </>
+        ) : (
+          // Company Users (Authorizers, Creators, Company Admin): Company-Specific View
+          <>
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200/60 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-50 rounded-full blur-2xl opacity-50" />
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                    <Package size={16} className="text-emerald-600" strokeWidth={2.5} />
+                  </div>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">My Credits Purchased</span>
+                </div>
+                <div className="text-2xl font-black text-emerald-600">{stats.credits_in.toLocaleString()}</div>
+                <p className="text-xs text-slate-400 mt-1 font-semibold">Your company total</p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200/60 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-rose-50 rounded-full blur-2xl opacity-50" />
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center">
+                    <ShoppingBag size={16} className="text-rose-600" strokeWidth={2.5} />
+                  </div>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">My Credits Used</span>
+                </div>
+                <div className="text-2xl font-black text-rose-600">{stats.credits_out.toLocaleString()}</div>
+                <p className="text-xs text-slate-400 mt-1 font-semibold">QR codes generated</p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200/60 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-full blur-2xl opacity-50" />
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Coins size={16} className="text-blue-600" strokeWidth={2.5} />
+                  </div>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">My Available</span>
+                </div>
+                <div className={`text-2xl font-black ${stats.net >= 0 ? 'text-blue-600' : 'text-amber-600'}`}>
+                  {stats.net.toLocaleString()}
+                </div>
+                <p className="text-xs text-slate-400 mt-1 font-semibold">Credits remaining</p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200/60 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-purple-50 rounded-full blur-2xl opacity-50" />
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <CreditCard size={16} className="text-purple-600" strokeWidth={2.5} />
+                  </div>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">My Spending</span>
+                </div>
+                <div className="text-2xl font-black text-purple-600">₹{stats.total_paid.toLocaleString()}</div>
+                <p className="text-xs text-slate-400 mt-1 font-semibold">Total invested</p>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Filters */}
@@ -311,6 +408,21 @@ export default function AdminTransactions() {
               <option value="spend">Spend</option>
               <option value="admin_grant">Admin Grant</option>
               <option value="refund">Refund</option>
+            </select>
+          </div>
+
+          {/* Payment Status Filter */}
+          <div className="min-w-[160px]">
+            <label className="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">Payment Status</label>
+            <select
+              value={paymentStatus}
+              onChange={(e) => setPaymentStatus(e.target.value)}
+              className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white"
+            >
+              <option value="All">All</option>
+              <option value="completed">Completed</option>
+              <option value="pending">Pending</option>
+              <option value="failed">Failed</option>
             </select>
           </div>
 
@@ -365,7 +477,16 @@ export default function AdminTransactions() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {paginatedTransactions.length === 0 ? (
+              {tableLoading ? (
+                <tr>
+                  <td colSpan={7} className="px-4 py-12 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="w-10 h-10 border-4 border-slate-100 border-t-indigo-500 rounded-full animate-spin" />
+                      <p className="text-slate-400 font-semibold text-sm">Loading...</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : paginatedTransactions.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-4 py-12 text-center">
                     <div className="flex flex-col items-center gap-3">

@@ -40,8 +40,92 @@ router.post('/email-otp/send', protect, authorize('superadmin', 'admin'), async 
         await transporter.sendMail({
           from: process.env.EMAIL_USER,
           to: email,
-          subject: 'Authentik – Email Verification OTP',
-          html: '<div style="font-family:sans-serif;max-width:400px;margin:auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px"><h2 style="color:#0f172a">Verify your email</h2><p>Your OTP is:</p><div style="font-size:32px;font-weight:800;letter-spacing:6px;text-align:center;padding:16px;background:#f1f5f9;border-radius:8px">' + otp + '</div><p style="color:#64748b;font-size:13px;margin-top:16px">This code expires in 10 minutes.</p></div>',
+          subject: '🔐 Authentiks – Email Verification OTP',
+          html: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Verification</title>
+</head>
+<body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background-color:#f8fafc;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background-color:#ffffff;border-radius:16px;box-shadow:0 4px 6px rgba(0,0,0,0.07);overflow:hidden;">
+          
+          <!-- Header with gradient -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#4f46e5 0%,#6366f1 100%);padding:40px 32px;text-align:center;">
+              <div style="background-color:rgba(255,255,255,0.2);width:80px;height:80px;margin:0 auto 20px;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M2 17L12 22L22 17" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M2 12L12 17L22 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <h1 style="color:#ffffff;font-size:28px;font-weight:800;margin:0;letter-spacing:-0.5px;">Verify Your Email</h1>
+              <p style="color:rgba(255,255,255,0.9);font-size:15px;margin:12px 0 0;font-weight:500;">Welcome to Authentiks</p>
+            </td>
+          </tr>
+
+          <!-- Body Content -->
+          <tr>
+            <td style="padding:40px 32px;">
+              <p style="color:#334155;font-size:16px;line-height:1.6;margin:0 0 24px;">
+                Hi there! 👋
+              </p>
+              <p style="color:#334155;font-size:16px;line-height:1.6;margin:0 0 32px;">
+                We received a request to verify your email address. Use the verification code below to complete your registration:
+              </p>
+
+              <!-- OTP Box -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 32px;">
+                <tr>
+                  <td align="center" style="background:linear-gradient(135deg,#f1f5f9 0%,#e2e8f0 100%);border-radius:12px;padding:24px;border:2px dashed #cbd5e1;">
+                    <p style="color:#64748b;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin:0 0 12px;">Your Verification Code</p>
+                    <div style="font-size:40px;font-weight:900;letter-spacing:12px;color:#1e293b;font-family:'Courier New',monospace;">${otp}</div>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Info Box -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#fef3c7;border-left:4px solid #f59e0b;border-radius:8px;padding:16px;margin:0 0 32px;">
+                <tr>
+                  <td>
+                    <p style="color:#92400e;font-size:14px;line-height:1.5;margin:0;">
+                      ⏰ <strong>This code expires in 10 minutes.</strong> If you didn't request this verification, please ignore this email.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="color:#64748b;font-size:14px;line-height:1.6;margin:0;">
+                If you have any questions or need assistance, feel free to reach out to our support team.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color:#f8fafc;padding:32px;text-align:center;border-top:1px solid #e2e8f0;">
+              <p style="color:#94a3b8;font-size:13px;line-height:1.6;margin:0 0 8px;">
+                &copy; ${new Date().getFullYear()} Authentiks. All rights reserved.
+              </p>
+              <p style="color:#cbd5e1;font-size:12px;margin:0;">
+                This is an automated message, please do not reply to this email.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+          `,
         });
       } else {
         console.log('[DEV] Email OTP for', email, ':', otp);
@@ -933,8 +1017,27 @@ router.get('/credits/transactions', protect, async (req, res) => {
         // Sort by date (newest first)
         allRecords.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
+        // Apply server-side filters if provided
+        let filtered = allRecords;
+        if (req.query.type) {
+            filtered = filtered.filter(r => r.type === req.query.type);
+        }
+        if (req.query.paymentStatus) {
+            const ps = req.query.paymentStatus;
+            filtered = filtered.filter(r => {
+                const st = r.payment?.status || 'none';
+                return ps === 'all' ? true : st === ps;
+            });
+        }
+        if (req.query.dateFrom) {
+            filtered = filtered.filter(r => new Date(r.createdAt) >= new Date(req.query.dateFrom));
+        }
+        if (req.query.dateTo) {
+            filtered = filtered.filter(r => new Date(r.createdAt) <= new Date(req.query.dateTo + 'T23:59:59'));
+        }
+
         // Limit results
-        const limited = allRecords.slice(0, parseInt(req.query.limit) || 100);
+        const limited = filtered.slice(0, parseInt(req.query.limit) || 100);
 
         res.json(limited);
     } catch (error) {
@@ -1196,7 +1299,7 @@ router.get('/form-config', protect, authorize('admin', 'superadmin', 'company', 
 // Create or update global form configuration (admin/superadmin only)
 router.post('/form-config', protect, authorize('admin', 'superadmin'), async (req, res) => {
     try {
-        const { formName, description, customFields, staticFields } = req.body;
+        const { formName, description, customFields, staticFields, variants } = req.body;
         
         // Find existing global config or create new
         let formConfig = await FormConfig.findOne({ isGlobal: true });
@@ -1207,6 +1310,10 @@ router.post('/form-config', protect, authorize('admin', 'superadmin'), async (re
             formConfig.description = description || formConfig.description;
             formConfig.customFields = customFields || formConfig.customFields;
             formConfig.staticFields = staticFields || formConfig.staticFields;
+            // Accept variant updates as well
+            if (typeof variants !== 'undefined') {
+                formConfig.variants = variants;
+            }
             formConfig.updatedBy = req.user._id;
             await formConfig.save();
         } else {
@@ -1216,6 +1323,7 @@ router.post('/form-config', protect, authorize('admin', 'superadmin'), async (re
                 formName: formName || 'QR Creation Form',
                 description: description || '',
                 customFields: customFields || [],
+                variants: variants || [],
                 staticFields: staticFields || {
                     mfdOn: { enabled: true, isMandatory: true },
                     bestBefore: { enabled: true, isMandatory: true },

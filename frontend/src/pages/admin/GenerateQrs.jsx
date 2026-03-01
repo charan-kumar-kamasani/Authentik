@@ -82,13 +82,16 @@ export default function GenerateQrs() {
 
   // Variant management functions
   const addVariantInstance = (variantConfig) => {
+    // Always resolve the variant from the latest formConfig so changes
+    // made in the FormBuilder (inputType/options) are respected immediately.
+    const resolved = (formConfig?.variants || []).find(v => v.variantName === variantConfig.variantName) || variantConfig;
     const newInstance = {
       id: Date.now(),
-      variantName: variantConfig.variantName,
-      variantLabel: variantConfig.variantLabel,
-      inputType: variantConfig.inputType,
-      options: variantConfig.options || [],
-      value: variantConfig.inputType === 'color' ? '#000000' : '',
+      variantName: resolved.variantName,
+      variantLabel: resolved.variantLabel,
+      inputType: resolved.inputType,
+      options: resolved.options || [],
+      value: resolved.inputType === 'color' ? '#000000' : '',
     };
     setVariantInstances(prev => [...prev, newInstance]);
   };
@@ -102,6 +105,21 @@ export default function GenerateQrs() {
   const removeVariantInstance = (id) => {
     setVariantInstances(prev => prev.filter(instance => instance.id !== id));
   };
+
+  // Keep existing variant instances in sync when admin updates variant types/options
+  useEffect(() => {
+    if (!formConfig?.variants || variantInstances.length === 0) return;
+    setVariantInstances(prev => prev.map(inst => {
+      const resolved = formConfig.variants.find(v => v.variantName === inst.variantName);
+      if (!resolved) return inst;
+      // If input type changed to color and current value is not a color, reset to a default
+      let newValue = inst.value;
+      if (resolved.inputType === 'color' && !(typeof newValue === 'string' && newValue.startsWith('#'))) {
+        newValue = '#000000';
+      }
+      return { ...inst, inputType: resolved.inputType, options: resolved.options || [], value: newValue, variantLabel: resolved.variantLabel };
+    }));
+  }, [formConfig?.variants]);
 
   const handleCreateQr = async (e) => {
     e.preventDefault();

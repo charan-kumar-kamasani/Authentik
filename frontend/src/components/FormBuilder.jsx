@@ -320,6 +320,75 @@ export default function FormBuilder({ onSave }) {
                 </div>
               )}
 
+              {/* Product Variants Preview */}
+              {formConfig.variants && formConfig.variants.length > 0 && (
+                <>
+                  <div className="col-span-2 border-t border-slate-200 pt-4 mt-2">
+                    <div className="flex items-center gap-2 mb-4">
+                      <List size={18} className="text-indigo-600" />
+                      <h4 className="text-sm font-semibold text-slate-800">Product Variants (Multi-Add Capable)</h4>
+                    </div>
+                  </div>
+                  
+                  {formConfig.variants.map((variant, idx) => (
+                    <div key={idx} className="flex flex-col gap-1.5">
+                      <label className="text-sm font-medium text-slate-700 ml-1 flex items-center gap-2">
+                        {variant.variantLabel}
+                        <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-bold rounded">
+                          {variant.inputType}
+                        </span>
+                        <span className="text-xs text-slate-400 font-normal">(Can add multiple)</span>
+                      </label>
+                      {variant.inputType === 'color' ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            disabled
+                            className="w-12 h-10 rounded-lg border border-slate-200 cursor-not-allowed"
+                          />
+                          <input
+                            type="text"
+                            placeholder="#000000"
+                            disabled
+                            className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-400"
+                          />
+                          <button disabled className="px-3 py-2.5 bg-slate-200 text-slate-400 rounded-lg text-sm cursor-not-allowed">
+                            <Plus size={16} />
+                          </button>
+                        </div>
+                      ) : variant.inputType === 'dropdown' ? (
+                        <div className="flex items-center gap-2">
+                          <select disabled className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-400">
+                            <option>Select {variant.variantLabel}</option>
+                            {(variant.options || []).map((opt, optIdx) => (
+                              <option key={optIdx}>{opt}</option>
+                            ))}
+                          </select>
+                          <button disabled className="px-3 py-2.5 bg-slate-200 text-slate-400 rounded-lg text-sm cursor-not-allowed">
+                            <Plus size={16} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            placeholder={`Enter ${variant.variantLabel.toLowerCase()}`}
+                            disabled
+                            className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-400"
+                          />
+                          <button disabled className="px-3 py-2.5 bg-slate-200 text-slate-400 rounded-lg text-sm cursor-not-allowed">
+                            <Plus size={16} />
+                          </button>
+                        </div>
+                      )}
+                      <div className="ml-1 text-xs text-slate-400">
+                        Sample instance - creators can add multiple {variant.variantLabel} values
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
+
               {/* Custom Fields */}
               {formConfig.customFields
                 .sort((a, b) => (a.order || 0) - (b.order || 0))
