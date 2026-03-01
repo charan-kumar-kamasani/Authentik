@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import API_BASE_URL from "../../config/api";
 import { useLoading } from '../../context/LoadingContext';
@@ -202,12 +202,25 @@ export default function AdminDashboard() {
     );
   };
 
-  const ActionBtn = ({ onClick, icon: Icon, label, color }) => (
-    <button onClick={onClick}
-      className={'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all border-2 cursor-pointer select-none active:scale-95 bg-' + color + '-50 border-' + color + '-200 text-' + color + '-700 hover:bg-' + color + '-100 shadow-sm'}>
-      <Icon size={14} strokeWidth={2.5} /> {label}
-    </button>
-  );
+  const ActionBtn = ({ onClick, icon: Icon, label, color }) => {
+    const [busy, setBusy] = useState(false);
+    const handle = async (e) => {
+      if (busy) return;
+      try {
+        setBusy(true);
+        const ret = onClick?.(e);
+        if (ret && ret.then) await ret;
+      } finally {
+        setBusy(false);
+      }
+    };
+    return (
+      <button onClick={handle} disabled={busy} aria-disabled={busy}
+        className={'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all border-2 select-none active:scale-95 bg-' + color + '-50 border-' + color + '-200 text-' + color + '-700 hover:bg-' + color + '-100 shadow-sm ' + (busy ? 'opacity-60 pointer-events-none' : 'cursor-pointer')}> 
+        <Icon size={14} strokeWidth={2.5} /> {label}
+      </button>
+    );
+  };
 
   const InputField = ({ label, required, ...props }) => (
     <div>

@@ -81,6 +81,24 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
     const count = await Order.countDocuments();
     const orderId = `ORD-${Date.now()}-${count + 1}`;
 
+    // Server-side: enforce plan minimum if a planId is provided
+    if (req.body.planId) {
+      try {
+        const PricePlan = require('../models/PricePlan');
+        const plan = await PricePlan.findById(req.body.planId);
+        if (plan) {
+          const minStr = plan.minQrPerOrder || plan.minQr || '';
+          const min = Number(minStr || 0);
+          if (min > 0 && (Number(quantity) || 0) < min) {
+            return res.status(400).json({ message: `Minimum quantity for the selected plan (${plan.name}) is ${min}`, minRequired: min });
+          }
+        }
+      } catch (e) {
+        console.warn('Plan validation failed:', e.message);
+        // continue silently; don't block request on plan lookup failure
+      }
+    }
+
     const order = new Order({
       orderId,
       productName,

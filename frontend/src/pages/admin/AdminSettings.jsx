@@ -8,9 +8,11 @@ import {
   getSettings, updateSettings,
   getCoupons, createCoupon, updateCoupon, deleteCoupon
 } from '../../config/api';
+import { useConfirm } from '../../components/ConfirmModal';
 
 export default function AdminSettings() {
   const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+  const confirm = useConfirm();
   const [tab, setTab] = useState('tax'); // 'tax' | 'coupons'
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -88,7 +90,8 @@ export default function AdminSettings() {
   };
 
   const handleDeleteCoupon = async (id) => {
-    if (!confirm('Delete this coupon?')) return;
+    const ok = await confirm({ title: 'Delete Coupon', description: 'Delete this coupon?' });
+    if (!ok) return;
     try {
       await deleteCoupon(id, token);
       showToast('Coupon deleted');

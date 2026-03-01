@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Beaker, Plus, Trash2, Edit2, Search, Check, X, Building2, IndianRupee } from 'lucide-react';
 import { getTestAccounts, createTestAccount, updateTestAccount, deleteTestAccount, getAllCompanies } from '../../config/api';
+import { useConfirm } from '../../components/ConfirmModal';
 
 export default function AdminTestAccounts() {
+  const confirm = useConfirm();
   const [testAccounts, setTestAccounts] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +66,8 @@ export default function AdminTestAccounts() {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this test account?')) return;
+    const ok = await confirm({ title: 'Delete Test Account', description: 'Are you sure you want to delete this test account?' });
+    if (!ok) return;
     try {
       await deleteTestAccount(id);
       await fetchData();

@@ -1,13 +1,15 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { getOrders, createOrder, updateOrderStatus, downloadOrderPdf, checkOrderCredits, getPlans, calculatePrice, validateCoupon, initiatePayment } from '../../config/api';
 import { useNavigate } from 'react-router-dom';
 import { useLoading } from '../../context/LoadingContext';
+import { useConfirm } from '../../components/ConfirmModal';
 import TablePagination from '../../components/TablePagination';
 import {
   Package, Search, Filter, X, Plus, Truck, CheckCircle2, Clock, Settings, ShieldCheck,
   FileDown, PackageCheck, AlertTriangle, ArrowRight, Hash, Calendar, ChevronRight, XCircle, Send,
-  CreditCard, Zap, Coins, ShoppingCart, Loader2, Percent, IndianRupee, Gift, Receipt, AlertCircle, Tag
+  CreditCard, Zap, Coins, ShoppingCart, Loader2, Percent, IndianRupee, Gift, Receipt, AlertCircle, Tag, Eye
 } from 'lucide-react';
+
 
 const OrderManagement = () => {
   const navigate = useNavigate();
@@ -24,6 +26,7 @@ const OrderManagement = () => {
   const [showDispatchModal, setShowDispatchModal] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [creatorSubmitting, setCreatorSubmitting] = useState(false);
 
   // Credit modal state
   const [creditModal, setCreditModal] = useState(null); // { orderId, required, available, shortfall, topupCostPerQr, topupTotalCost }
@@ -67,6 +70,8 @@ const OrderManagement = () => {
 
   const handleCreatorOrder = async (e) => {
     e.preventDefault();
+    if (creatorSubmitting) return;
+    setCreatorSubmitting(true);
     try {
       const token = localStorage.getItem('token');
       await createOrder({ ...newQr, quantity: Number(newQr.quantity) || 1 }, token);
@@ -74,6 +79,7 @@ const OrderManagement = () => {
       setNewQr({ productName: '', brand: '', batchNo: '', manufactureDate: '', expiryDate: '', quantity: 1, description: '' });
       fetchOrders();
     } catch (e) { alert('Error: ' + e.message); }
+    finally { setCreatorSubmitting(false); }
   };
 
   const handleAction = async (orderId, action, data = {}) => {
@@ -90,6 +96,17 @@ const OrderManagement = () => {
         return;
       }
       alert('Failed: ' + e.message);
+    }
+  };
+
+  const confirm = useConfirm();
+
+  const handleMarkReceived = async (orderId) => {
+    try {
+      const ok = await confirm({ title: 'Mark Received', description: 'Mark as received? This will ACTIVATE all QR codes!', confirmText: 'Yes, mark received', cancelText: 'Cancel' });
+      if (ok) await handleAction(orderId, 'received');
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -253,14 +270,46 @@ const OrderManagement = () => {
   const counts = {};
   orders.forEach(o => { counts[o.status] = (counts[o.status] || 0) + 1; });
   const fmt = d => d ? new Date(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
+  const [expandedOrder, setExpandedOrder] = useState(null);
+
+  const fmtMfd = (o) => {
+    if (o.manufactureDate) return fmt(o.manufactureDate);
+    if (o.mfdOn && (o.mfdOn.month || o.mfdOn.year)) {
+      const mm = o.mfdOn.month || '01';
+      const yy = o.mfdOn.year || '1970';
+      try { const dt = new Date(`${yy}-${mm}-01`); return dt.toLocaleDateString(undefined, { month: 'short', year: 'numeric' }); } catch { return `${mm}/${yy}`; }
+    }
+    return '-';
+  };
+
+  const fmtExp = (o) => {
+    if (o.expiryDate) return fmt(o.expiryDate);
+    if (o.calculatedExpiryDate) return o.calculatedExpiryDate;
+    if (o.bestBefore && (o.bestBefore.value || o.bestBefore.unit)) return `${o.bestBefore.value || '-'} ${o.bestBefore.unit || ''}`.trim();
+    return '-';
+  };
 
   // Action button renderer
-  const ActionBtn = ({ onClick, icon: Icon, label, color }) => (
-    <button onClick={onClick}
-      className={'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all border-2 cursor-pointer select-none active:scale-95 bg-' + color + '-50 border-' + color + '-200 text-' + color + '-700 hover:bg-' + color + '-100 shadow-sm'}>
-      <Icon size={14} strokeWidth={2.5} /> {label}
-    </button>
-  );
+  const ActionBtn = ({ onClick, icon: Icon, label, color }) => {
+    const [busy, setBusy] = React.useState(false);
+    const handle = async (e) => {
+      if (busy) return;
+      try {
+        setBusy(true);
+        const ret = onClick?.(e);
+        if (ret && ret.then) await ret;
+      } finally {
+        setBusy(false);
+      }
+    };
+    return (
+      <button onClick={handle} disabled={busy}
+        aria-disabled={busy}
+        className={'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all border-2 select-none active:scale-95 bg-' + color + '-50 border-' + color + '-200 text-' + color + '-700 hover:bg-' + color + '-100 shadow-sm ' + (busy ? 'opacity-60 pointer-events-none' : 'cursor-pointer')}> 
+        <Icon size={14} strokeWidth={2.5} /> {label}
+      </button>
+    );
+  };
 
   const InputField = ({ label, required, ...props }) => (
     <div>
@@ -331,8 +380,8 @@ const OrderManagement = () => {
             <InputField label="Manufacture Date" type="date" value={newQr.manufactureDate} onChange={e => setNewQr({ ...newQr, manufactureDate: e.target.value })} />
             <InputField label="Expiry Date" type="date" value={newQr.expiryDate} onChange={e => setNewQr({ ...newQr, expiryDate: e.target.value })} />
             <div className="md:col-span-2">
-              <button type="submit" className="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 hover:shadow-xl active:scale-[0.98] transition-all">
-                Generate Product & QR
+              <button type="submit" disabled={creatorSubmitting} className={"w-full py-3 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all " + (creatorSubmitting ? 'bg-blue-300 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:shadow-xl') }>
+                {creatorSubmitting ? 'Creating...' : 'Generate Product & QR'}
               </button>
             </div>
           </form>
@@ -439,7 +488,7 @@ const OrderManagement = () => {
                       )}
                       {/* Received */}
                       {order.status === 'Dispatched' && (role === 'company' || role === 'authorizer') && (
-                        <ActionBtn onClick={() => { if (confirm('Mark as received? This will ACTIVATE all QR codes!')) handleAction(order._id, 'received'); }}
+                        <ActionBtn onClick={() => handleMarkReceived(order._id)}
                           icon={CheckCircle2} label="Mark Received" color="emerald" />
                       )}
                       {/* PDF */}

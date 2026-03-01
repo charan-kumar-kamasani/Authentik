@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import API_BASE_URL from "../../config/api";
 
 export default function AdminLogin() {
@@ -13,8 +13,8 @@ export default function AdminLogin() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-  setError("");
-  setLoading(true);
+    setError("");
+    setLoading(true);
 
     try {
       const res = await fetch(`${API_BASE_URL}/admin/login`, {
@@ -42,7 +42,7 @@ export default function AdminLogin() {
           _id: data._id,
           email: data.email,
           role: data.role,
-        })
+        }),
       );
 
       /* ================= ROLE BASED REDIRECT ================= */
@@ -60,39 +60,53 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4">
-      <div className="max-w-3xl w-full bg-white rounded-2xl shadow-xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
-        {/* Left panel with brand color */}
-        <div className="bg-[#214B80] text-white p-8 flex flex-col justify-center gap-4">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white flex items-center justify-center py-12 px-4">
+      <div className="max-w-4xl w-full bg-transparent grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Left: Premium brand panel */}
+        <div className="rounded-2xl overflow-hidden shadow-lg bg-gradient-to-br from-[#0f4c81] to-[#2a9df4] text-white p-8 flex flex-col justify-between">
           <div>
-            <h1 className="text-2xl font-extrabold">Authentiks</h1>
-            <p className="text-sm opacity-90 mt-1">Admin Panel</p>
+            <div className="flex items-center gap-4">
+              <div className="bg-white w-12 h-12 rounded-full flex items-center justify-center shadow-inner">
+                <img src="/logo.svg" alt="Logo" className="w-10 h-10" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-extrabold tracking-tight">Authentiks</h1>
+              </div>
+            </div>
+
+            <div className="mt-23 text-sm leading-relaxed opacity-95">
+              <h2 className="text-sm font-extrabold mb-2">Turn Authentication into Business Intelligence</h2>
+              <p className="text-sm">Protect your brand, eliminate counterfeits and convert every product scan into measurable growth and customer engagement.</p>
+            </div>
           </div>
-          <div className="mt-6">
-            <h2 className="text-lg font-semibold">Manage Brands & Users</h2>
-            <p className="text-sm opacity-90 mt-2">Create and manage users, brands and staff access. Secure admin area.</p>
+
+          <div className="mt-6 text-xs opacity-80">
+            Need help? <a href="mailto:support@authentiks.in" className="underline">support@authentiks.in</a>
           </div>
-          <div className="mt-auto text-xs opacity-80">Need help? Contact support@authentiks.in</div>
         </div>
 
-        {/* Right panel - form */}
-        <div className="p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Sign in to Admin</h2>
-          <p className="text-sm text-gray-500 mb-6">Enter your admin credentials to continue.</p>
+        {/* Right: Form card */}
+        <div className="bg-white rounded-2xl shadow-lg p-8 flex flex-col justify-center">
+          <div className="mb-6">
+            <h2 className="text-2xl font-semibold text-slate-900">Enterprise Panel</h2>
+            <p className="text-sm text-slate-500">Sign in to manage your organization's account</p>
+          </div>
 
           {error && (
-            <div className="text-sm text-red-600 mb-4" role="alert">{error}</div>
+            <div className="text-sm text-red-600 mb-4" role="alert">
+              {error}
+            </div>
           )}
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+              <label htmlFor="email" className="block text-sm font-medium text-slate-700">Email</label>
               <input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#214B80]/20"
+                className="mt-1 block w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-300 shadow-sm"
                 placeholder="admin@yourdomain.com"
                 required
                 aria-required="true"
@@ -100,14 +114,14 @@ export default function AdminLogin() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+              <label htmlFor="password" className="block text-sm font-medium text-slate-700">Password</label>
               <div className="relative">
                 <input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="mt-1 block w-full px-4 py-2 pr-11 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#214B80]/20"
+                  className="mt-1 block w-full px-4 py-3 pr-12 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-300 shadow-sm"
                   placeholder="••••••••"
                   required
                   aria-required="true"
@@ -115,7 +129,7 @@ export default function AdminLogin() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 mt-0.5 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -124,19 +138,19 @@ export default function AdminLogin() {
             </div>
 
             <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 text-sm text-gray-600">
-                <input type="checkbox" className="h-4 w-4 text-[#214B80]" />
+              <label className="flex items-center gap-2 text-sm text-slate-600">
+                <input type="checkbox" className="h-4 w-4 text-indigo-600" />
                 Remember me
               </label>
-              <button type="button" className="text-sm text-[#214B80] hover:underline">Forgot?</button>
+              <button type="button" className="text-sm text-indigo-600 hover:underline">Forgot?</button>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-2 px-4 rounded-lg text-white ${loading ? 'bg-blue-300' : 'bg-[#214B80] hover:bg-[#193a62]'}`}
+              className={`w-full py-3 px-4 rounded-xl text-white shadow-md flex items-center justify-center gap-3 ${loading ? 'bg-gradient-to-r from-indigo-300 to-indigo-400 cursor-wait' : 'bg-gradient-to-r from-indigo-600 to-blue-500 hover:from-indigo-700 hover:to-blue-600'}`}
             >
-              {loading ? 'Signing in…' : 'Login'}
+              {loading ? <><Loader2 className="animate-spin" size={16} /> Signing in…</> : 'Login'}
             </button>
           </form>
         </div>

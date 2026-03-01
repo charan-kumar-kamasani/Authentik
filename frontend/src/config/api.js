@@ -1,4 +1,45 @@
+import loadingService from '../utils/loadingService';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://authentik-8p39.vercel.app";
+
+// Monkey-patch window.fetch to automatically increment/decrement the global
+// loading counter and dedupe identical in-flight requests (url+method+body).
+if (typeof window !== 'undefined' && window.fetch) {
+    const _origFetch = window.fetch.bind(window);
+    const inflight = new Map();
+
+    const makeKey = (args) => {
+        try {
+            const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || '';
+            const opts = args[1] || {};
+            const method = (opts.method || 'GET').toUpperCase();
+            const body = opts.body || '';
+            return `${method} ${url} ${typeof body === 'string' ? body : JSON.stringify(body)}`;
+        } catch (e) {
+            return Math.random().toString(36).slice(2);
+        }
+    };
+
+    window.fetch = async (...args) => {
+        const key = makeKey(args);
+        if (inflight.has(key)) {
+            const existing = inflight.get(key);
+            return existing.then(res => res.clone());
+        }
+        loadingService.start();
+        const p = (async () => {
+            try {
+                const res = await _origFetch(...args);
+                return res;
+            } finally {
+                inflight.delete(key);
+                loadingService.stop();
+            }
+        })();
+        inflight.set(key, p);
+        return p.then(res => res.clone());
+    };
+}
 
 export default API_BASE_URL;
 
@@ -41,7 +82,15 @@ export const createOrder = async (orderData, token) => {
             window.location.href = '/admin';
             throw new Error('Session expired.');
         }
-        if (!response.ok) throw new Error('Failed to create order');
+        if (!response.ok) {
+            const contentType = response.headers.get('content-type') || '';
+            if (contentType.includes('application/json')) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.message || err.error || JSON.stringify(err) || 'Failed to create order');
+            }
+            const txt = await response.text().catch(() => 'Failed to create order');
+            throw new Error(txt || 'Failed to create order');
+        }
         return await response.json();
     } catch (error) {
          console.error("Create Order Error:", error);

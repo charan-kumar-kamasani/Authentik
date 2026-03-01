@@ -65,6 +65,27 @@ export default function QrManagement() {
     } catch { return d; }
   };
 
+  const fmtMfd = (p) => {
+    if (p.manufactureDate) return fmt(p.manufactureDate);
+    if (p.mfdOn && (p.mfdOn.month || p.mfdOn.year)) {
+      const mm = p.mfdOn.month || '01';
+      const yy = p.mfdOn.year || '1970';
+      // show as MMM YYYY if possible
+      try {
+        const dt = new Date(`${yy}-${mm}-01`);
+        return dt.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+      } catch { return `${mm}/${yy}`; }
+    }
+    return '-';
+  };
+
+  const fmtExp = (p) => {
+    if (p.expiryDate) return fmt(p.expiryDate);
+    if (p.calculatedExpiryDate) return p.calculatedExpiryDate;
+    if (p.bestBefore && (p.bestBefore.value || p.bestBefore.unit)) return `${p.bestBefore.value || '-'} ${p.bestBefore.unit || ''}`.trim();
+    return '-';
+  };
+
   const statusConfig = {
     Active: { icon: CheckCircle2, bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500' },
     Inactive: { icon: XCircle, bg: 'bg-slate-100', text: 'text-slate-600', border: 'border-slate-300', dot: 'bg-slate-400' },
@@ -256,11 +277,11 @@ export default function QrManagement() {
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div className="bg-white rounded-xl p-3.5 border border-slate-200/60 shadow-sm">
                               <div className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Manufacture Date</div>
-                              <div className="text-sm font-bold text-slate-700 flex items-center gap-1.5"><Calendar size={13} className="text-slate-400" /> {fmt(p.manufactureDate)}</div>
+                                <div className="text-sm font-bold text-slate-700 flex items-center gap-1.5"><Calendar size={13} className="text-slate-400" /> {fmtMfd(p)}</div>
                             </div>
                             <div className="bg-white rounded-xl p-3.5 border border-slate-200/60 shadow-sm">
                               <div className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Expiry Date</div>
-                              <div className="text-sm font-bold text-slate-700 flex items-center gap-1.5"><Clock size={13} className="text-slate-400" /> {fmt(p.expiryDate)}</div>
+                              <div className="text-sm font-bold text-slate-700 flex items-center gap-1.5"><Clock size={13} className="text-slate-400" /> {fmtExp(p)}</div>
                             </div>
                             <div className="bg-white rounded-xl p-3.5 border border-slate-200/60 shadow-sm">
                               <div className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">QR Code</div>
@@ -276,6 +297,35 @@ export default function QrManagement() {
                                 <div className="w-full h-16 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center">
                                   <span className="text-xs text-slate-400 font-medium">No image</span>
                                 </div>
+                              )}
+                            </div>
+                            
+                            <div className="bg-white rounded-xl p-3.5 border border-slate-200/60 shadow-sm">
+                              <div className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Creator</div>
+                              {p.createdBy ? (
+                                <div className="text-sm font-bold text-slate-700">
+                                  <div>{p.createdBy.name || p.createdBy.email}</div>
+                                  <div className="text-xs text-slate-500">{p.createdBy.email || ''}</div>
+                                  <div className="text-xs text-slate-400 mt-1">Role: {p.createdBy.role || 'N/A'}</div>
+                                </div>
+                              ) : (
+                                <div className="text-sm text-slate-500">Unknown</div>
+                              )}
+                            </div>
+
+                            <div className="bg-white rounded-xl p-3.5 border border-slate-200/60 shadow-sm">
+                              <div className="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1">Custom Fields</div>
+                              {p.dynamicFields && Object.keys(p.dynamicFields || {}).length > 0 ? (
+                                <div className="text-sm text-slate-700 space-y-1">
+                                  {Object.entries(Object.fromEntries(p.dynamicFields)).map(([k, v]) => (
+                                    <div key={k} className="flex items-start gap-2">
+                                      <div className="text-xs text-slate-400 w-28">{k}</div>
+                                      <div className="text-sm font-medium text-slate-800">{String(v)}</div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <div className="text-sm text-slate-500">No custom fields</div>
                               )}
                             </div>
                           </div>

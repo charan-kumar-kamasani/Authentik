@@ -13,6 +13,7 @@ import {
   Calendar,
 } from "lucide-react";
 import API_BASE_URL from "../../config/api";
+import { useConfirm } from '../../components/ConfirmModal';
 
 const GRADIENTS = {
   Trial: "from-slate-500 to-slate-700",
@@ -73,6 +74,8 @@ export default function AdminPricePlans() {
     },
     features: [],
   });
+
+  const confirm = useConfirm();
 
   useEffect(() => {
     fetchAll();
@@ -175,7 +178,8 @@ export default function AdminPricePlans() {
   };
 
   const delFeature = async (id) => {
-    if (!window.confirm("Delete this feature from all plans?")) return;
+    const ok = await confirm({ title: 'Delete Feature', description: 'Delete this feature from all plans?' });
+    if (!ok) return;
     const token = localStorage.getItem("adminToken");
     await fetch(`${API_BASE_URL}/plans/features/${id}`, {
       method: "DELETE",
@@ -270,7 +274,8 @@ export default function AdminPricePlans() {
   };
 
   const delPlan = async (id) => {
-    if (!window.confirm("Delete this plan?")) return;
+    const ok = await confirm({ title: 'Delete Plan', description: 'Delete this plan?' });
+    if (!ok) return;
     const token = localStorage.getItem("adminToken");
     await fetch(`${API_BASE_URL}/plans/plans/${id}`, {
       method: "DELETE",

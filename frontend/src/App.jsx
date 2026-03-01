@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { LoadingProvider } from './context/LoadingContext';
+import { ConfirmProvider } from './components/ConfirmModal';
 
 import Login from "./pages/mobile/Login";
 import OTP from "./pages/mobile/OTP";
@@ -97,8 +98,9 @@ export default function App() {
   if (!isMobile) {
     return (
       <LoadingProvider>
-        <BrowserRouter>
-          <Routes>
+        <ConfirmProvider>
+          <BrowserRouter>
+            <Routes>
             {/* Public Website */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/about-us" element={<WebAboutUs />} />
@@ -179,6 +181,7 @@ export default function App() {
             />
           </Routes>
         </BrowserRouter>
+        </ConfirmProvider>
       </LoadingProvider>
     );
   }
@@ -187,8 +190,9 @@ export default function App() {
 
   return (
     <LoadingProvider>
-      <BrowserRouter>
-        <Routes>
+      <ConfirmProvider>
+        <BrowserRouter>
+          <Routes>
           {/* Public */}
           <Route
             path="/"
@@ -298,7 +302,8 @@ export default function App() {
             }
           />
         </Routes>
-      </BrowserRouter>
+        </BrowserRouter>
+      </ConfirmProvider>
     </LoadingProvider>
   );
 }

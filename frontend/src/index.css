@@ -15,3 +15,16 @@
 .animate-scan {
 	animation: scan-line 2.2s ease-in-out infinite;
 }
+
+/* When the app is performing network requests, visually dim and block interactions */
+body[data-loading="true"] * {
+	transition: opacity 120ms ease-in-out !important;
+}
+body[data-loading="true"] button,
+body[data-loading="true"] a,
+body[data-loading="true"] input,
+body[data-loading="true"] select {
+	pointer-events: none !important;
+	opacity: 0.65 !important;
+	user-select: none !important;
+}

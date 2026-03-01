@@ -12,6 +12,10 @@ app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
+// Response timing + short in-memory cache for dashboard endpoints
+const responseTimeCache = require('./middleware/responseTimeCache');
+app.use(responseTimeCache({ cachePrefixes: ['/dashboard'], ttlSeconds: 5 }));
+
 // Routes
 app.use("/auth", require("./routes/auth.routes"));
 app.use("/admin", require("./routes/admin.routes"));

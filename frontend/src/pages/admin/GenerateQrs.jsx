@@ -28,6 +28,8 @@ export default function GenerateQrs() {
   const [brands, setBrands] = useState([]);
   const [role, setRole] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
+  
+  const [submitting, setSubmitting] = useState(false);
 
   // Calculate expiry date when mfdOn or bestBefore changes
   useEffect(() => {
@@ -123,6 +125,8 @@ export default function GenerateQrs() {
 
   const handleCreateQr = async (e) => {
     e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
 
     // Validate mandatory fields from form config
@@ -160,7 +164,7 @@ export default function GenerateQrs() {
       };
 
       if (role === 'creator') {
-        // Creators create an Order
+        // Creators create an Order — server enforces any plan minimums
         await createOrder(orderData, token);
         alert('Order created. Admin will process it to generate QRs.');
         resetForm();
@@ -187,6 +191,8 @@ export default function GenerateQrs() {
     } catch (err) {
       console.error(err);
       alert('Failed to create QR');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -249,6 +255,7 @@ export default function GenerateQrs() {
               console.warn('Could not load company brands', err);
             }
           }
+
         } else {
           setLoadingConfig(false);
         }
@@ -436,6 +443,9 @@ export default function GenerateQrs() {
           </div>
         )}
 
+        
+        
+
         {/* Dynamic Custom Fields */}
         {formConfig?.customFields && formConfig.customFields.length > 0 && (
           <>
@@ -609,8 +619,8 @@ export default function GenerateQrs() {
 
         {/* Submit Button */}
         <div className="col-span-2 pt-4">
-          <button type="submit" className="w-full bg-indigo-600 text-white font-semibold py-3 rounded-xl hover:bg-indigo-700 transition-all shadow-sm">
-            Generate Product & QR
+          <button type="submit" disabled={submitting} className={"w-full text-white font-semibold py-3 rounded-xl transition-all shadow-sm " + (submitting ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700')}>
+            {submitting ? 'Creating...' : 'Generate Product & QR'}
           </button>
         </div>
       </form>
