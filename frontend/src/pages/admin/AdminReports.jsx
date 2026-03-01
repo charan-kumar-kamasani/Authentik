@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { ShieldAlert, AlertTriangle, CheckCircle2, Search, MapPin, Calendar, Check, ExternalLink, ShieldCheck, ShieldX, Copy, Filter, X } from 'lucide-react';
+import { ShieldAlert, AlertTriangle, CheckCircle2, Search, MapPin, Calendar, Check, ExternalLink, ShieldCheck, ShieldX, Copy, Filter, X, ChevronDown, ChevronUp, User, Phone, Image as ImageIcon, FileText, Clock } from 'lucide-react';
 import API_BASE_URL from '../../config/api';
 import TablePagination from '../../components/TablePagination';
 
@@ -12,6 +12,7 @@ export default function AdminReports() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [counterfeitFilter, setCounterfeitFilter] = useState('All');
+  const [expandedRows, setExpandedRows] = useState(new Set());
 
   // Duplicate scans state
   const [dupScans, setDupScans] = useState([]);

@@ -177,19 +177,8 @@ router.post("/", protect, async (req, res) => {
        ❌ FAKE PRODUCT
     ======================= */
     if (!product) {
-      console.log("Record scan: FAKE", { userId, qrCode, brandNameFromPrefix });
-      const scan = await Scan.create({
-        userId,
-        productId: null,
-        brandId: brandIdFromPrefix,
-        brand: brandNameFromPrefix,
-        qrCode: String(qrCode || '').trim(),
-        status: "FAKE",
-        place,
-        latitude,
-        longitude,
-      });
-
+      console.log("Scan detected: FAKE (not saved to DB - will save only if reported)", { userId, qrCode, brandNameFromPrefix });
+      // DON'T save to DB yet - only save when user reports it
       return res.json({
         status: "FAKE",
         data: {
@@ -201,7 +190,9 @@ router.post("/", protect, async (req, res) => {
           place,
           latitude,
           longitude,
-          scannedAt: scan.createdAt,
+          scannedAt: scannedAt,
+          // Include brand IDs for reporting
+          brandId: brandIdFromPrefix,
         },
       });
     }
@@ -407,7 +398,7 @@ router.post("/report", protect, async (req, res) => {
       });
     }
 
-    const { productName, brand, description, reportType, images, latitude, longitude, qrCode } = req.body;
+    const { productName, brand, description, reportType, images, latitude, longitude, qrCode, productId, brandId, scanStatus } = req.body;
 
     // 2. Check for duplicate report - same user, same QR code
     if (qrCode) {
@@ -426,6 +417,7 @@ router.post("/report", protect, async (req, res) => {
 
     const place = await getPlaceFromCoords(latitude, longitude);
 
+    // Create report with scan data
     const report = await Report.create({
       userId,
       productName,
@@ -437,8 +429,36 @@ router.post("/report", protect, async (req, res) => {
       longitude,
       place,
       qrCode,
-      status: "Pending"
+      status: "Pending",
+      scanData: {
+        productId: productId || null,
+        brandId: brandId || null,
+        scanStatus: scanStatus || "FAKE",
+        scannedAt: new Date(),
+      },
     });
+
+    // NOW create the scan record (only when report is submitted)
+    if (scanStatus === "FAKE" || scanStatus === "ALREADY_USED") {
+      try {
+        await Scan.create({
+          userId,
+          productId: productId || null,
+          brandId: brandId || null,
+          brand: brand || "",
+          qrCode: qrCode,
+          productName: productName,
+          status: scanStatus,
+          place,
+          latitude,
+          longitude,
+        });
+        console.log("Scan record created during report submission");
+      } catch (scanErr) {
+        console.warn("Failed to create scan record:", scanErr.message);
+        // Don't fail the report if scan creation fails
+      }
+    }
 
     res.status(201).json({ 
       success: true, 
@@ -468,7 +488,7 @@ router.get("/reports/my", protect, async (req, res) => {
   }
 });
 
-// Get all reports (Admin/Company View)
+// Get all reports (Admin/Company View) with user population
 // If it's a company user, they only see reports for their brands
 router.get("/reports/all", protect, async (req, res) => {
   try {

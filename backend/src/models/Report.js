@@ -51,6 +51,27 @@ const reportSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Store scan details when report is created
+    scanData: {
+      productId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+        default: null,
+      },
+      brandId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Brand",
+        default: null,
+      },
+      scanStatus: {
+        type: String,
+        enum: ["ORIGINAL", "FAKE", "ALREADY_USED", "INACTIVE"],
+      },
+      scannedAt: {
+        type: Date,
+        default: Date.now,
+      },
+    },
   },
   { timestamps: true }
 );
