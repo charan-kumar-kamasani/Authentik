@@ -35,6 +35,8 @@ import AdminTransactions from "./pages/admin/AdminTransactions";
 import AdminPricePlans from "./pages/admin/AdminPricePlans";
 import BillingCredits from "./pages/admin/BillingCredits";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminTestAccounts from "./pages/admin/AdminTestAccounts";
+import QrFormConfig from "./pages/admin/QrFormConfig";
 import AuthDashboard from "./pages/admin/AuthDashboard";
 import ReportProduct from "./pages/mobile/ReportProduct";
 import MyReports from "./pages/mobile/MyReports";
@@ -133,6 +135,8 @@ export default function App() {
             <Route path="/admin/price-plans" element={<AdminRoute><AdminLayout><AdminPricePlans /></AdminLayout></AdminRoute>} />
             <Route path="/admin/billing" element={<AdminRoute><AdminLayout><BillingCredits /></AdminLayout></AdminRoute>} />
             <Route path="/admin/settings" element={<AdminRoute><AdminLayout><AdminSettings /></AdminLayout></AdminRoute>} />
+            <Route path="/admin/test-accounts" element={<AdminRoute><AdminLayout><AdminTestAccounts /></AdminLayout></AdminRoute>} />
+            <Route path="/admin/form-config" element={<AdminRoute><AdminLayout><QrFormConfig /></AdminLayout></AdminRoute>} />
             <Route path="/admin/analytics" element={<AdminRoute><AdminLayout><AuthDashboard /></AdminLayout></AdminRoute>} />
             <Route
               path="/users"

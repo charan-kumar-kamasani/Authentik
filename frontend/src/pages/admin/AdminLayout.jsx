@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Users, Building, UserPlus, FileText, Component, 
   Search, BarChart2, Package, CreditCard, Tag, LogOut, 
-  ChevronRight, Box, ShieldCheck, Ticket, LayoutDashboard
+  ChevronRight, Box, ShieldCheck, Ticket, LayoutDashboard, Receipt, Beaker, FormInput
 } from 'lucide-react';
 import GenerateQrs from './GenerateQrs';
 import QrManagement from './QrManagement';
@@ -128,11 +128,13 @@ export default function AdminLayout({ children }) {
                 </div>
               )}
 
-              {['superadmin'].includes(role) && (
+              {['superadmin', 'admin'].includes(role) && (
                 <div className="pt-4 pb-2">
                   <p className="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Configuration</p>
                   <div className="space-y-1.5">
-                    <SidebarItem label="Settings" onClick={() => navigate('/admin/settings')} icon={Ticket} isActive={activePath === '/admin/settings'} />
+                    {['superadmin'].includes(role) && <SidebarItem label="Settings" onClick={() => navigate('/admin/settings')} icon={Ticket} isActive={activePath === '/admin/settings'} />}
+                    {['superadmin'].includes(role) && <SidebarItem label="Test Accounts" onClick={() => navigate('/admin/test-accounts')} icon={Beaker} isActive={activePath === '/admin/test-accounts'} />}
+                    <SidebarItem label="QR Form Config" onClick={() => navigate('/admin/form-config')} icon={FormInput} isActive={activePath === '/admin/form-config'} />
                   </div>
                 </div>
               )}
@@ -142,6 +144,7 @@ export default function AdminLayout({ children }) {
                   <p className="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Billing</p>
                   <div className="space-y-1.5">
                     <SidebarItem label="Credits & Billing" onClick={() => navigate('/admin/billing')} icon={CreditCard} isActive={activePath === '/admin/billing'} />
+                    <SidebarItem label="Transactions" onClick={() => navigate('/admin/transactions')} icon={Receipt} isActive={activePath === '/admin/transactions'} />
                   </div>
                 </div>
               )}
@@ -188,7 +191,7 @@ export default function AdminLayout({ children }) {
 
       {/* Main Content Area */}
       <main className="flex-1 ml-[280px] p-8 md:p-12 min-h-screen">
-        <div className="max-w-7xl mx-auto h-full animate-in fade-in duration-500">
+        <div className="w-full h-full animate-in fade-in duration-500">
           {role === 'creator' ? (
             creatorView === 'generate' ? <GenerateQrs /> : children
           ) : (

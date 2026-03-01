@@ -1,23 +1,27 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { getCreditsBalance, getCreditTransactions, getPlans, calculatePrice, validateCoupon, initiatePayment, checkPaymentStatus } from '../../config/api';
+import { useNavigate } from 'react-router-dom';
+import { getCreditsBalance, getCreditTransactions, getPlans, calculatePrice, validateCoupon, initiatePayment, checkPaymentStatus, checkIsTestAccount } from '../../config/api';
 import TablePagination from '../../components/TablePagination';
 import {
   CreditCard, Coins, Zap, ShoppingCart, ChevronRight, ArrowUpRight, ArrowDownRight,
   TrendingUp, Package, Calendar, Hash, Loader2, Plus, RefreshCw, Tag, Gift, X,
-  Percent, IndianRupee, CheckCircle2, AlertCircle, Receipt
+  Percent, IndianRupee, CheckCircle2, AlertCircle, Receipt, FileText, Eye, Beaker
 } from 'lucide-react';
 
 const BillingCredits = () => {
+  const navigate = useNavigate();
   const [balance, setBalance] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [plans, setPlans] = useState([]);
   const [showBuyModal, setShowBuyModal] = useState(false);
-  const [buyView, setBuyView] = useState('choice'); // 'choice' | 'plans' | 'topup' | 'checkout'
+  const [buyView, setBuyView] = useState('choice'); // 'choice' | 'comparison' | 'plans' | 'topup' | 'checkout'
   const [topupQty, setTopupQty] = useState('');
   const [processing, setProcessing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [isTestAccount, setIsTestAccount] = useState(false);
+  const [testAmount, setTestAmount] = useState(null);
 
   // Checkout state
   const [selectedPlan, setSelectedPlan] = useState(null);
@@ -34,12 +38,15 @@ const BillingCredits = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [bal, txns] = await Promise.all([
+      const [bal, txns, testAccountStatus] = await Promise.all([
         getCreditsBalance(token),
-        getCreditTransactions(token)
+        getCreditTransactions(token),
+        checkIsTestAccount().catch(() => ({ isTestAccount: false, testAmount: null }))
       ]);
       setBalance(bal);
       setTransactions(Array.isArray(txns) ? txns : txns.transactions || []);
+      setIsTestAccount(testAccountStatus.isTestAccount || false);
+      setTestAmount(testAccountStatus.testAmount || null);
     } catch (e) {
       console.error('Failed to load billing data:', e);
     } finally { setLoading(false); }
@@ -51,7 +58,17 @@ const BillingCredits = () => {
     setCouponCode('');
     setCouponApplied(null);
     setCouponError('');
-    await fetchPriceBreakdown(plan.price || 0, '');
+    // Check if it's an on-demand/starter plan
+    const isOnDemand = plan.qrCodes === 'On-Demand' || plan.name?.toLowerCase().includes('starter');
+    if (isOnDemand) {
+      // Redirect to topup for custom quantity
+      setBuyView('topup');
+      return;
+    }
+    // Calculate total price as pricePerQr * number of QR codes
+    const credits = parseInt(String(plan.qrCodes || '0').replace(/,/g, ''), 10) || 0;
+    const baseAmount = credits * (plan.pricePerQr || 0);
+    await fetchPriceBreakdown(baseAmount, '');
   };
 
   const handleBuyTopup = async () => {
@@ -78,7 +95,9 @@ const BillingCredits = () => {
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
     setCouponError('');
-    const baseAmt = selectedPlan ? selectedPlan.price : parseInt(topupQty) * 5;
+    const baseAmt = selectedPlan 
+      ? (parseInt(String(selectedPlan.qrCodes || '0').replace(/,/g, ''), 10) * (selectedPlan.pricePerQr || 0))
+      : parseInt(topupQty) * 5;
     try {
       const result = await validateCoupon(couponCode, baseAmt, token);
       setCouponApplied(result);
@@ -94,7 +113,9 @@ const BillingCredits = () => {
     setCouponCode('');
     setCouponApplied(null);
     setCouponError('');
-    const baseAmt = selectedPlan ? selectedPlan.price : parseInt(topupQty) * 5;
+    const baseAmt = selectedPlan 
+      ? (parseInt(String(selectedPlan.qrCodes || '0').replace(/,/g, ''), 10) * (selectedPlan.pricePerQr || 0))
+      : parseInt(topupQty) * 5;
     await fetchPriceBreakdown(baseAmt, '');
   };
 
@@ -210,6 +231,33 @@ const BillingCredits = () => {
         </button>
       </div>
 
+      {/* Test Account Banner */}
+      {isTestAccount && (
+        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-6 relative overflow-hidden">
+          <div className="absolute right-0 top-0 w-48 h-48 bg-purple-200/30 rounded-full blur-3xl"></div>
+          <div className="relative z-10 flex items-start gap-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+              <Beaker size={24} className="text-white" strokeWidth={2.5} />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h3 className="text-lg font-black text-purple-900">Test Account Mode</h3>
+                <span className="px-3 py-1 bg-purple-600 text-white text-xs font-bold rounded-full">TESTING</span>
+              </div>
+              <p className="text-sm text-purple-800 leading-relaxed">
+                This account is configured for payment gateway testing. When you initiate any payment, 
+                you will be charged <span className="font-black">₹{testAmount}</span> instead of the actual package price. 
+                This allows you to test the complete payment flow without paying the full amount.
+              </p>
+              <div className="mt-3 flex items-center gap-2 text-xs text-purple-700">
+                <AlertCircle size={14} strokeWidth={2.5} />
+                <span className="font-semibold">All credits will be added normally after successful payment</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Balance Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Current Balance */}
@@ -258,15 +306,15 @@ const BillingCredits = () => {
         </div>
       </div>
 
-      {/* Transaction History */}
+      {/* Transaction History - Navigate to Full Page */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-1.5 h-6 bg-violet-500 rounded-full" />
             <h3 className="text-lg font-black text-slate-800 tracking-tight">Transaction History</h3>
           </div>
-          <button onClick={fetchData} className="text-xs font-bold text-slate-400 hover:text-blue-600 flex items-center gap-1 transition-colors">
-            <RefreshCw size={12} /> Refresh
+          <button onClick={() => navigate('/admin/transactions')} className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1.5 transition-colors px-3 py-1.5 bg-blue-50 rounded-lg hover:bg-blue-100">
+            <Eye size={14} /> View All
           </button>
         </div>
 
@@ -290,7 +338,7 @@ const BillingCredits = () => {
                     <p className="font-bold text-slate-400">No transactions yet.</p>
                   </div>
                 </td></tr>
-              ) : paginatedTxns.map(txn => {
+              ) : paginatedTxns.slice(0, 5).map(txn => {
                 const cfg = typeConfig[txn.type] || { label: txn.type, icon: Hash, color: 'slate', sign: '' };
                 const Icon = cfg.icon;
                 const isPositive = txn.amount > 0;
@@ -337,21 +385,27 @@ const BillingCredits = () => {
             </tbody>
           </table>
         </div>
-        <TablePagination
-          totalItems={transactions.length}
-          filteredCount={transactions.length}
-          currentPage={currentPage}
-          rowsPerPage={rowsPerPage}
-          onPageChange={setCurrentPage}
-          onRowsPerPageChange={(n) => { setRowsPerPage(n); setCurrentPage(1); }}
-          itemLabel="transactions"
-        />
+        
+        {transactions.length > 5 && (
+          <div className="px-6 py-4 bg-slate-50/50 border-t border-slate-100">
+            <button 
+              onClick={() => navigate('/admin/transactions')}
+              className="w-full py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 active:scale-95"
+            >
+              <FileText size={16} strokeWidth={2.5} />
+              View All Transactions & Download Invoices
+            </button>
+            <p className="text-xs text-slate-500 text-center mt-3">
+              View complete transaction history with payment details, status tracking, and invoice downloads
+            </p>
+          </div>
+        )}
       </div>
 
       {/* ── Buy Credits Modal ── */}
       {showBuyModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => { if (!processing) { setShowBuyModal(false); resetCheckout(); } }}>
-          <div onClick={e => e.stopPropagation()} className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col">
+          <div onClick={e => e.stopPropagation()} className={`bg-white rounded-2xl shadow-2xl w-full overflow-hidden max-h-[90vh] flex flex-col ${buyView === 'comparison' ? 'max-w-6xl' : 'max-w-lg'}`}>
             <div className="bg-gradient-to-r from-violet-500 to-purple-600 p-5 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm text-white">
@@ -384,6 +438,18 @@ const BillingCredits = () => {
               {/* Choice */}
               {!processing && buyView === 'choice' && (
                 <div className="space-y-3">
+                  <button onClick={() => setBuyView('comparison')}
+                    className="w-full flex items-center gap-4 p-4 bg-purple-50 border-2 border-purple-200 rounded-xl hover:bg-purple-100 hover:border-purple-300 transition-all group text-left">
+                    <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 group-hover:bg-purple-200 shrink-0">
+                      <Package size={22} />
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-black text-slate-800 text-sm">View Pricing Comparison</div>
+                      <div className="text-xs text-slate-500 font-medium mt-0.5">Compare all plans with full pricing breakdown</div>
+                    </div>
+                    <ChevronRight size={16} className="text-slate-400" />
+                  </button>
+
                   <button onClick={() => setBuyView('plans')}
                     className="w-full flex items-center gap-4 p-4 bg-blue-50 border-2 border-blue-200 rounded-xl hover:bg-blue-100 hover:border-blue-300 transition-all group text-left">
                     <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 group-hover:bg-blue-200 shrink-0">
@@ -410,6 +476,154 @@ const BillingCredits = () => {
                 </div>
               )}
 
+              {/* Pricing Comparison Table */}
+              {!processing && buyView === 'comparison' && (
+                <div className="space-y-4">
+                  <button onClick={() => setBuyView('choice')} className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 mb-2">
+                    <ChevronRight size={12} className="rotate-180" /> Back
+                  </button>
+                  
+                  {plans.length === 0 ? (
+                    <div className="text-center py-6 text-slate-400 font-medium text-sm">
+                      <Loader2 size={20} className="animate-spin mx-auto mb-2" /> Loading plans...
+                    </div>
+                  ) : (
+                    <div className="bg-white rounded-lg border border-slate-200 overflow-hidden -mx-6">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm min-w-[900px]">
+                          <thead>
+                            <tr className="bg-slate-50">
+                              <th className="px-4 py-3 text-left text-xs font-black text-slate-600 uppercase tracking-wider border-r border-slate-200 w-48">Feature</th>
+                              {plans.map(plan => {
+                                const isOnDemand = plan.qrCodes === 'On-Demand' || plan.name?.toLowerCase().includes('starter');
+                                const credits = isOnDemand ? 0 : parseInt(String(plan.qrCodes || '0').replace(/,/g, ''), 10);
+                                const calculatedPrice = isOnDemand ? 0 : credits * (plan.pricePerQr || 0);
+                                return (
+                                  <th key={plan._id} className="px-4 py-3 text-center border-r border-slate-200 last:border-r-0">
+                                    <div className="font-black text-slate-800 text-base mb-1">{plan.name}</div>
+                                    <div className="text-3xl font-black text-blue-600 mb-0.5">₹{plan.pricePerQr || 0}</div>
+                                    <div className="text-[10px] font-bold text-slate-500">per QR • Yearly</div>
+                                    {plan.isPopular && (
+                                      <div className="mt-2">
+                                        <span className="inline-block text-[9px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-md">POPULAR</span>
+                                      </div>
+                                    )}
+                                  </th>
+                                );
+                              })}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-200">
+                            {/* Price per QR */}
+                            <tr className="hover:bg-slate-50">
+                              <td className="px-4 py-3 text-xs font-bold text-blue-600 border-r border-slate-200">Price per QR (Yearly)</td>
+                              {plans.map(plan => (
+                                <td key={plan._id} className="px-4 py-3 text-center font-bold text-slate-700 text-base border-r border-slate-200 last:border-r-0">
+                                  ₹{plan.pricePerQr || 0}
+                                </td>
+                              ))}
+                            </tr>
+                            
+                            {/* Validity */}
+                            <tr className="hover:bg-slate-50">
+                              <td className="px-4 py-3 text-xs font-semibold text-slate-600 border-r border-slate-200">
+                                <span className="flex items-center gap-1.5"><Calendar size={14} /> Validity (Yearly)</span>
+                              </td>
+                              {plans.map(plan => (
+                                <td key={plan._id} className="px-4 py-3 text-center font-semibold text-slate-700 border-r border-slate-200 last:border-r-0">
+                                  {plan.planValidity || '365 days'}
+                                </td>
+                              ))}
+                            </tr>
+                            
+                            {/* Save Amount */}
+                            <tr className="hover:bg-slate-50 bg-amber-50/30">
+                              <td className="px-4 py-3 text-xs font-bold text-orange-600 border-r border-slate-200">Save (Yearly)</td>
+                              {plans.map(plan => (
+                                <td key={plan._id} className="px-4 py-3 text-center font-bold text-orange-600 border-r border-slate-200 last:border-r-0">
+                                  {plan.saveText || '-'}
+                                </td>
+                              ))}
+                            </tr>
+                            
+                            {/* No. of QR Codes */}
+                            <tr className="hover:bg-slate-50">
+                              <td className="px-4 py-3 text-xs font-semibold text-slate-600 border-r border-slate-200">No. of QR Codes</td>
+                              {plans.map(plan => {
+                                const isOnDemand = plan.qrCodes === 'On-Demand' || plan.name?.toLowerCase().includes('starter');
+                                const credits = isOnDemand ? 0 : parseInt(String(plan.qrCodes || '0').replace(/,/g, ''), 10);
+                                return (
+                                  <td key={plan._id} className="px-4 py-3 text-center font-bold text-slate-800 border-r border-slate-200 last:border-r-0">
+                                    {isOnDemand ? 'On-Demand' : (plan.qrCodes === 'Unlimited' ? plan.qrCodes : (credits || 0).toLocaleString())}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                            
+                            {/* Min. QR Codes / Order */}
+                            <tr className="hover:bg-slate-50">
+                              <td className="px-4 py-3 text-xs font-semibold text-slate-600 border-r border-slate-200">Min. QR Codes / Order</td>
+                              {plans.map(plan => (
+                                <td key={plan._id} className="px-4 py-3 text-center font-semibold text-slate-700 border-r border-slate-200 last:border-r-0">
+                                  {plan.minQrPerOrder || '-'}
+                                </td>
+                              ))}
+                            </tr>
+                            
+                            {/* Total Price */}
+                            <tr className="hover:bg-slate-50 bg-blue-50/50">
+                              <td className="px-4 py-3 text-xs font-black text-slate-800 border-r border-slate-200">Total Price</td>
+                              {plans.map(plan => {
+                                const isOnDemand = plan.qrCodes === 'On-Demand' || plan.name?.toLowerCase().includes('starter');
+                                const credits = isOnDemand ? 0 : parseInt(String(plan.qrCodes || '0').replace(/,/g, ''), 10);
+                                const calculatedPrice = isOnDemand ? 0 : credits * (plan.pricePerQr || 0);
+                                return (
+                                  <td key={plan._id} className="px-4 py-3 text-center border-r border-slate-200 last:border-r-0">
+                                    {isOnDemand ? (
+                                      <div>
+                                        <div className="font-black text-green-600 text-sm">Pay as you go</div>
+                                        <div className="text-[9px] text-slate-500 font-semibold mt-0.5">
+                                          Qty × ₹{plan.pricePerQr || 0}
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div>
+                                        <div className="font-black text-blue-600 text-lg">₹{(calculatedPrice || 0).toLocaleString()}</div>
+                                        <div className="text-[9px] text-slate-500 font-semibold mt-0.5">
+                                          {(credits || 0).toLocaleString()} × ₹{plan.pricePerQr || 0}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                             
+                            {/* Select button */}
+                            <tr className="bg-slate-50">
+                              <td className="px-4 py-3 border-r border-slate-200"></td>
+                              {plans.map(plan => {
+                                const isOnDemand = plan.qrCodes === 'On-Demand' || plan.name?.toLowerCase().includes('starter');
+                                return (
+                                  <td key={plan._id} className="px-4 py-3 text-center border-r border-slate-200 last:border-r-0">
+                                    <button
+                                      onClick={() => isOnDemand ? setBuyView('topup') : handleBuyPlan(plan)}
+                                      className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white text-xs font-bold rounded-lg hover:shadow-lg hover:shadow-blue-500/30 active:scale-95 transition-all"
+                                    >
+                                      {isOnDemand ? 'Buy Custom' : 'Select Plan'}
+                                    </button>
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Plans list */}
               {!processing && buyView === 'plans' && (
                 <div className="space-y-3">
@@ -423,7 +637,9 @@ const BillingCredits = () => {
                   ) : (
                     <div className="max-h-[320px] overflow-y-auto space-y-2 pr-1">
                       {plans.map(plan => {
-                        const credits = parseInt(String(plan.qrCodes || '0').replace(/,/g, ''), 10);
+                        const isOnDemand = plan.qrCodes === 'On-Demand' || plan.name?.toLowerCase().includes('starter');
+                        const credits = isOnDemand ? 0 : parseInt(String(plan.qrCodes || '0').replace(/,/g, ''), 10) || 0;
+                        const calculatedPrice = credits * (plan.pricePerQr || 0);
                         return (
                           <button key={plan._id} onClick={() => handleBuyPlan(plan)}
                             className="w-full flex items-center gap-4 p-4 bg-white border-2 border-slate-200 rounded-xl hover:bg-blue-50 hover:border-blue-300 transition-all group text-left">
@@ -433,11 +649,13 @@ const BillingCredits = () => {
                             <div className="flex-1 min-w-0">
                               <div className="font-black text-slate-800 text-sm truncate">{plan.name}</div>
                               <div className="text-xs text-slate-500 font-medium mt-0.5">
-                                {credits.toLocaleString()} credits • ₹{plan.pricePerQr}/QR
+                                {isOnDemand ? 'Pay as you go' : `${credits.toLocaleString()} credits × ₹${plan.pricePerQr}/QR`}
                               </div>
                             </div>
                             <div className="text-right shrink-0">
-                              <div className="font-black text-blue-600 text-sm">₹{Number(plan.price).toLocaleString()}</div>
+                              <div className="font-black text-blue-600 text-sm">
+                                {isOnDemand ? '₹' + plan.pricePerQr + '/QR' : '₹' + calculatedPrice.toLocaleString()}
+                              </div>
                               {plan.isPopular && <span className="text-[9px] font-bold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-md">POPULAR</span>}
                             </div>
                           </button>
@@ -487,12 +705,18 @@ const BillingCredits = () => {
                       <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Order Summary</span>
                     </div>
                     {selectedPlan ? (
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-bold text-slate-800 text-sm">{selectedPlan.name}</div>
-                          <div className="text-xs text-slate-500">{parseInt(String(selectedPlan.qrCodes || '0').replace(/,/g, '')).toLocaleString()} credits</div>
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <div>
+                            <div className="font-bold text-slate-800 text-sm">{selectedPlan.name}</div>
+                            <div className="text-xs text-slate-500">
+                              {(parseInt(String(selectedPlan.qrCodes || '0').replace(/,/g, '')) || 0).toLocaleString()} credits × ₹{selectedPlan.pricePerQr}/QR
+                            </div>
+                          </div>
+                          <div className="font-black text-slate-800">
+                            ₹{((parseInt(String(selectedPlan.qrCodes || '0').replace(/,/g, '')) || 0) * (selectedPlan.pricePerQr || 0)).toLocaleString()}
+                          </div>
                         </div>
-                        <div className="font-black text-slate-800">₹{Number(selectedPlan.price).toLocaleString()}</div>
                       </div>
                     ) : (
                       <div className="flex items-center justify-between">
@@ -586,6 +810,22 @@ const BillingCredits = () => {
                             <span className="text-xl font-black text-violet-700">₹{priceBreakdown.finalAmount?.toLocaleString()}</span>
                           </div>
                         </div>
+                        
+                        {/* Test Account Notice */}
+                        {isTestAccount && (
+                          <div className="mt-3 p-3 bg-purple-50 border-2 border-purple-200 rounded-lg">
+                            <div className="flex items-start gap-2">
+                              <Beaker size={16} className="text-purple-600 mt-0.5 flex-shrink-0" strokeWidth={2.5} />
+                              <div>
+                                <p className="text-xs font-bold text-purple-900 mb-1">Test Account Payment</p>
+                                <p className="text-xs text-purple-700 leading-relaxed">
+                                  You will be charged only <span className="font-black">₹{testAmount}</span> for testing purposes. 
+                                  Full credits will be added after successful payment.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -594,9 +834,11 @@ const BillingCredits = () => {
                   <button onClick={handleProceedPayment} disabled={!priceBreakdown}
                     className="w-full py-3.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white font-bold rounded-xl shadow-lg shadow-violet-500/20 hover:shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 text-base">
                     <CreditCard size={18} />
-                    {priceBreakdown?.finalAmount > 0
-                      ? `Pay ₹${priceBreakdown.finalAmount?.toLocaleString()}`
-                      : 'Complete Purchase'}
+                    {isTestAccount
+                      ? `Pay Test Amount ₹${testAmount}`
+                      : priceBreakdown?.finalAmount > 0
+                        ? `Pay ₹${priceBreakdown.finalAmount?.toLocaleString()}`
+                        : 'Complete Purchase'}
                   </button>
                 </div>
               )}

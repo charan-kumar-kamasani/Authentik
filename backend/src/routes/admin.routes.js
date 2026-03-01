@@ -6,6 +6,7 @@ const User = require("../models/User");
 const Product = require("../models/Product");
 const Brand = require("../models/Brand");
 const Company = require("../models/Company");
+const FormConfig = require("../models/FormConfig");
 const { protect, authorize } = require("../middleware/authMiddleware");
 const { generateQrPdf } = require("../utils/pdfGenerator");
 
@@ -179,7 +180,20 @@ router.post(
         // Only admin and manager should create QRs directly. Creators must create Orders instead.
         authorize("admin", "manager"),
   async (req, res) => {
-    let { productName, brand, batchNo, manufactureDate, expiryDate, quantity } = req.body;
+    let { 
+      productName, 
+      brand, 
+      batchNo, 
+      manufactureDate, 
+      expiryDate, 
+      quantity,
+      // New dynamic fields
+      mfdOn,
+      bestBefore,
+      calculatedExpiryDate,
+      dynamicFields,
+      variants // Array of {variantName, value}
+    } = req.body;
     
     // Ensure quantity is a number, default to 1 if invalid
     const qty = parseInt(quantity) > 0 ? parseInt(quantity) : 1;
@@ -206,11 +220,17 @@ router.post(
           brand,
                     brandId: brandDoc ? brandDoc._id : null,
           batchNo,
-          manufactureDate,
-          expiryDate,
+          manufactureDate: manufactureDate || null,
+          expiryDate: expiryDate || calculatedExpiryDate || null,
           quantity: 1, // Each individual unit is 1
           sequence: nextSeq,
           createdBy: req.user._id,
+          // New dynamic fields
+          mfdOn: mfdOn || null,
+          bestBefore: bestBefore || null,
+          calculatedExpiryDate: calculatedExpiryDate || null,
+          dynamicFields: dynamicFields || {},
+          variants: variants || [],
         });
         
         createdProducts.push(product);
@@ -733,6 +753,9 @@ router.post('/credits/buy-plan', protect, authorize('company', 'authorizer'), as
         }
         if (creditsToAdd <= 0) return res.status(400).json({ message: 'This plan does not include QR credits' });
 
+        // Calculate total price as pricePerQr * number of QR codes
+        const totalPrice = creditsToAdd * (plan.pricePerQr || 0);
+
         const newBalance = (company.qrCredits || 0) + creditsToAdd;
         company.qrCredits = newBalance;
         await company.save({ validateModifiedOnly: true });
@@ -743,13 +766,13 @@ router.post('/credits/buy-plan', protect, authorize('company', 'authorizer'), as
             amount: creditsToAdd,
             balanceAfter: newBalance,
             unitPrice: plan.pricePerQr || 0,
-            totalPaid: plan.price || 0,
+            totalPaid: totalPrice,
             planName: plan.name,
             performedBy: req.user._id,
             note: 'Purchased plan: ' + plan.name,
         });
 
-        res.json({ message: 'Plan purchased successfully', qrCredits: newBalance, creditsAdded: creditsToAdd });
+        res.json({ message: 'Plan purchased successfully', qrCredits: newBalance, creditsAdded: creditsToAdd, totalPaid: totalPrice });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -830,15 +853,415 @@ router.get('/credits/transactions', protect, async (req, res) => {
             query.companyId = user.companyId;
         }
 
+        // Get all credit transactions (completed purchases, spends, grants, refunds)
         const transactions = await CreditTransaction.find(query)
-            .populate('performedBy', 'name email role')
+            .populate('performedBy', 'name email mobile role')
+            .populate('companyId', 'companyName email phoneNumber supportNumber city country qrCredits')
             .populate('orderId', 'orderId productName quantity')
-            .sort({ createdAt: -1 })
-            .limit(parseInt(req.query.limit) || 100);
+            .lean();
 
-        res.json(transactions);
+        // Get all payment attempts (including pending and failed)
+        const Payment = require('../models/Payment');
+        const payments = await Payment.find(query)
+            .populate('performedBy', 'name email mobile role')
+            .populate('companyId', 'companyName email phoneNumber supportNumber city country qrCredits')
+            .populate('planId', 'name pricePerQr qrCodes')
+            .lean();
+
+        // Merge transactions and payments
+        const allRecords = [];
+
+        // Add completed transactions with their payment data
+        for (const txn of transactions) {
+            const payment = payments.find(p => p.creditTransactionId?.toString() === txn._id.toString());
+            allRecords.push({
+                ...txn,
+                recordType: 'transaction',
+                payment: payment ? {
+                    status: payment.status,
+                    phonePeTransactionId: payment.phonePeTransactionId,
+                    merchantOrderId: payment.merchantOrderId,
+                    finalAmount: payment.finalAmount,
+                    baseAmount: payment.baseAmount,
+                    gstAmount: payment.gstAmount,
+                    gstPercentage: payment.gstPercentage,
+                    additionalCharges: payment.additionalCharges,
+                    couponCode: payment.couponCode,
+                    couponDiscount: payment.couponDiscount,
+                } : null
+            });
+        }
+
+        // Add pending/failed payments that don't have a transaction yet
+        for (const payment of payments) {
+            if (!payment.creditTransactionId) {
+                // This is a pending or failed payment with no completed transaction
+                const creditsAmount = payment.type === 'plan' && payment.planId 
+                    ? parseInt(String(payment.planId.qrCodes || '0').replace(/[^\d]/g, ''), 10) || 0
+                    : payment.quantity || 0;
+
+                allRecords.push({
+                    _id: payment._id,
+                    recordType: 'payment_only',
+                    type: payment.type === 'plan' ? 'purchase_plan' : 'purchase_topup',
+                    amount: 0, // No credits added yet
+                    balanceAfter: payment.companyId?.qrCredits || 0,
+                    unitPrice: payment.type === 'topup' ? 5 : (payment.baseAmount / (creditsAmount || 1)),
+                    totalPaid: payment.status === 'completed' ? payment.finalAmount : 0,
+                    planName: payment.planId?.name || null,
+                    performedBy: payment.performedBy,
+                    companyId: payment.companyId,
+                    note: `Payment ${payment.status} - ${payment.merchantOrderId}`,
+                    createdAt: payment.createdAt,
+                    updatedAt: payment.updatedAt,
+                    payment: {
+                        status: payment.status,
+                        phonePeTransactionId: payment.phonePeTransactionId,
+                        merchantOrderId: payment.merchantOrderId,
+                        finalAmount: payment.finalAmount,
+                        baseAmount: payment.baseAmount,
+                        gstAmount: payment.gstAmount,
+                        gstPercentage: payment.gstPercentage,
+                        additionalCharges: payment.additionalCharges,
+                        couponCode: payment.couponCode,
+                        couponDiscount: payment.couponDiscount,
+                    }
+                });
+            }
+        }
+
+        // Sort by date (newest first)
+        allRecords.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        // Limit results
+        const limited = allRecords.slice(0, parseInt(req.query.limit) || 100);
+
+        res.json(limited);
     } catch (error) {
         res.status(500).json({ message: error.message });
+    }
+});
+
+// Get transaction with payment details for invoice
+router.get('/credits/transactions/:transactionId/invoice-data', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        const { transactionId } = req.params;
+
+        const transaction = await CreditTransaction.findById(transactionId)
+            .populate('performedBy', 'name email mobile role')
+            .populate('companyId', 'companyName email phoneNumber supportNumber city country qrCredits')
+            .populate('orderId', 'orderId productName quantity');
+
+        if (!transaction) {
+            return res.status(404).json({ message: 'Transaction not found' });
+        }
+
+        // Authorization check
+        if (!['superadmin', 'admin'].includes(user.role)) {
+            if (!user.companyId || user.companyId.toString() !== transaction.companyId._id.toString()) {
+                return res.status(403).json({ message: 'Unauthorized' });
+            }
+        }
+
+        // Find associated payment if exists
+        const Payment = require('../models/Payment');
+        const payment = await Payment.findOne({ creditTransactionId: transactionId })
+            .populate('planId', 'name pricePerQr qrCodes');
+
+        res.json({ transaction, payment });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Download invoice PDF
+router.get('/credits/transactions/:transactionId/invoice', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        const { transactionId } = req.params;
+
+        const transaction = await CreditTransaction.findById(transactionId)
+            .populate('performedBy', 'name email mobile role')
+            .populate('companyId', 'companyName email phoneNumber supportNumber city country qrCredits')
+            .populate('orderId', 'orderId productName quantity');
+
+        if (!transaction) {
+            return res.status(404).json({ message: 'Transaction not found' });
+        }
+
+        // Authorization check
+        if (!['superadmin', 'admin'].includes(user.role)) {
+            if (!user.companyId || user.companyId.toString() !== transaction.companyId._id.toString()) {
+                return res.status(403).json({ message: 'Unauthorized' });
+            }
+        }
+
+        // Find associated payment if exists
+        const Payment = require('../models/Payment');
+        const payment = await Payment.findOne({ creditTransactionId: transactionId })
+            .populate('planId', 'name pricePerQr qrCodes');
+
+        // Generate invoice PDF
+        const { generateInvoicePdf } = require('../utils/invoiceGenerator');
+        const pdfBuffer = await generateInvoicePdf(transaction, payment);
+
+        // Set response headers
+        const filename = `Invoice_${transaction._id.toString().slice(-8).toUpperCase()}_${new Date(transaction.createdAt).toISOString().split('T')[0]}.pdf`;
+        
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.setHeader('Content-Length', pdfBuffer.length);
+
+        res.send(pdfBuffer);
+    } catch (error) {
+        console.error('Invoice generation error:', error);
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// ========================================
+// TEST ACCOUNTS FOR PAYMENT GATEWAY TESTING
+// ========================================
+
+const TestAccount = require('../models/TestAccount');
+
+// Get all test accounts (superadmin only)
+router.get('/test-accounts', protect, authorize('superadmin'), async (req, res) => {
+    try {
+        const testAccounts = await TestAccount.find()
+            .populate('companyId', 'companyName email phoneNumber')
+            .populate('createdBy', 'name email')
+            .sort({ createdAt: -1 });
+        
+        res.json({ success: true, testAccounts });
+    } catch (error) {
+        console.error('Get test accounts error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Create test account (superadmin only)
+router.post('/test-accounts', protect, authorize('superadmin'), async (req, res) => {
+    try {
+        const { companyId, testAmount, description } = req.body;
+        
+        if (!companyId || !testAmount) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Company ID and test amount are required' 
+            });
+        }
+
+        // Check if company exists
+        const company = await Company.findById(companyId);
+        if (!company) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Company not found' 
+            });
+        }
+
+        // Check if test account already exists for this company
+        const existing = await TestAccount.findOne({ companyId });
+        if (existing) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Test account already exists for this company' 
+            });
+        }
+
+        const testAccount = await TestAccount.create({
+            companyId,
+            testAmount: parseFloat(testAmount),
+            description: description || '',
+            createdBy: req.user._id,
+        });
+
+        const populated = await TestAccount.findById(testAccount._id)
+            .populate('companyId', 'companyName email phoneNumber')
+            .populate('createdBy', 'name email');
+
+        res.status(201).json({ success: true, testAccount: populated });
+    } catch (error) {
+        console.error('Create test account error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Update test account (superadmin only)
+router.put('/test-accounts/:id', protect, authorize('superadmin'), async (req, res) => {
+    try {
+        const { testAmount, description, isActive } = req.body;
+        
+        const testAccount = await TestAccount.findById(req.params.id);
+        if (!testAccount) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Test account not found' 
+            });
+        }
+
+        if (testAmount !== undefined) testAccount.testAmount = parseFloat(testAmount);
+        if (description !== undefined) testAccount.description = description;
+        if (isActive !== undefined) testAccount.isActive = isActive;
+
+        await testAccount.save();
+
+        const populated = await TestAccount.findById(testAccount._id)
+            .populate('companyId', 'companyName email phoneNumber')
+            .populate('createdBy', 'name email');
+
+        res.json({ success: true, testAccount: populated });
+    } catch (error) {
+        console.error('Update test account error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Delete test account (superadmin only)
+router.delete('/test-accounts/:id', protect, authorize('superadmin'), async (req, res) => {
+    try {
+        const testAccount = await TestAccount.findById(req.params.id);
+        if (!testAccount) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Test account not found' 
+            });
+        }
+
+        await testAccount.deleteOne();
+        res.json({ success: true, message: 'Test account deleted successfully' });
+    } catch (error) {
+        console.error('Delete test account error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Check if current user is a test account
+router.get('/test-accounts/check', protect, async (req, res) => {
+    try {
+        const companyId = req.user.companyId;
+        if (!companyId) {
+            return res.json({ success: true, isTestAccount: false });
+        }
+
+        const testAccount = await TestAccount.findOne({ companyId, isActive: true });
+        res.json({ 
+            success: true, 
+            isTestAccount: !!testAccount,
+            testAmount: testAccount?.testAmount || null 
+        });
+    } catch (error) {
+        console.error('Check test account error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// ========================================
+// DYNAMIC FORM CONFIGURATION FOR QR CREATION
+// ========================================
+
+// Get form configuration for company (admin/superadmin)
+router.get('/form-config', protect, authorize('admin', 'superadmin', 'company', 'authorizer', 'creator'), async (req, res) => {
+    try {
+        // Fetch global form config
+        let formConfig = await FormConfig.findOne({ isGlobal: true, isActive: true })
+            .populate('createdBy', 'name email')
+            .populate('updatedBy', 'name email');
+
+        // If no config exists, return default structure
+        if (!formConfig) {
+            formConfig = {
+                isGlobal: true,
+                formName: 'QR Creation Form',
+                description: '',
+                customFields: [],
+                staticFields: {
+                    brand: { enabled: true, isMandatory: true },
+                    mfdOn: { enabled: true, isMandatory: true },
+                    bestBefore: { enabled: true, isMandatory: true },
+                },
+                isActive: true,
+            };
+        }
+
+        res.json({ success: true, formConfig });
+    } catch (error) {
+        console.error('Get form config error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Create or update global form configuration (admin/superadmin only)
+router.post('/form-config', protect, authorize('admin', 'superadmin'), async (req, res) => {
+    try {
+        const { formName, description, customFields, staticFields } = req.body;
+        
+        // Find existing global config or create new
+        let formConfig = await FormConfig.findOne({ isGlobal: true });
+
+        if (formConfig) {
+            // Update existing
+            formConfig.formName = formName || formConfig.formName;
+            formConfig.description = description || formConfig.description;
+            formConfig.customFields = customFields || formConfig.customFields;
+            formConfig.staticFields = staticFields || formConfig.staticFields;
+            formConfig.updatedBy = req.user._id;
+            await formConfig.save();
+        } else {
+            // Create new global config
+            formConfig = await FormConfig.create({
+                isGlobal: true,
+                formName: formName || 'QR Creation Form',
+                description: description || '',
+                customFields: customFields || [],
+                staticFields: staticFields || {
+                    mfdOn: { enabled: true, isMandatory: true },
+                    bestBefore: { enabled: true, isMandatory: true },
+                },
+                createdBy: req.user._id,
+                updatedBy: req.user._id,
+            });
+        }
+
+        const populated = await FormConfig.findById(formConfig._id)
+            .populate('createdBy', 'name email')
+            .populate('updatedBy', 'name email');
+
+        res.json({ success: true, formConfig: populated });
+    } catch (error) {
+        console.error('Save form config error:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Delete form configuration (revert to default)
+router.delete('/form-config/:id', protect, authorize('admin', 'superadmin'), async (req, res) => {
+    try {
+        const formConfig = await FormConfig.findById(req.params.id);
+        if (!formConfig) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Form configuration not found' 
+            });
+        }
+
+        // Admin can only delete their own company's config
+        if (req.user.role === 'admin' && req.user.companyId) {
+            if (formConfig.companyId.toString() !== req.user.companyId.toString()) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: 'Not authorized to delete this configuration' 
+                });
+            }
+        }
+
+        await formConfig.deleteOne();
+        res.json({ success: true, message: 'Form configuration deleted successfully' });
+    } catch (error) {
+        console.error('Delete form config error:', error);
+        res.status(500).json({ success: false, message: error.message });
     }
 });
 

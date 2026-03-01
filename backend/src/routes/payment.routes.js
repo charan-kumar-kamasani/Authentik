@@ -9,6 +9,7 @@ const Company = require('../models/Company');
 const User = require('../models/User');
 const CreditTransaction = require('../models/CreditTransaction');
 const PricePlan = require('../models/PricePlan');
+const TestAccount = require('../models/TestAccount');
 
 const QR_TOPUP_PRICE = 5;
 
@@ -32,6 +33,8 @@ async function getPhonePeClient() {
             console.warn('⚠️ PhonePe credentials not configured');
             return null;
         }
+        
+        console.log(`🔧 PhonePe initializing: ${process.env.PHONEPE_ENV} mode, Client ID: ${clientId.slice(0, 6)}...`);
 
         phonePeClient = StandardCheckoutClient.getInstance(clientId, clientSecret, apiVersion, env);
         return phonePeClient;
@@ -94,7 +97,15 @@ router.post('/initiate', protect, async (req, res) => {
         if (type === 'plan') {
             plan = await PricePlan.findById(planId);
             if (!plan) return res.status(404).json({ message: 'Plan not found' });
-            baseAmount = plan.price || 0;
+            
+            // Calculate price as pricePerQr * number of QR codes
+            const qrCount = parseInt(String(plan.qrCodes || '0').replace(/[^\d]/g, ''), 10);
+            const pricePerQr = plan.pricePerQr || 0;
+            baseAmount = qrCount * pricePerQr;
+            
+            if (qrCount <= 0 || baseAmount <= 0) {
+                return res.status(400).json({ message: 'Invalid plan configuration' });
+            }
         } else {
             topupQty = parseInt(quantity) || 0;
             if (topupQty <= 0) return res.status(400).json({ message: 'Invalid quantity' });
@@ -102,6 +113,19 @@ router.post('/initiate', protect, async (req, res) => {
         }
 
         const breakdown = await calculateBreakdown(baseAmount, couponCode);
+        
+        // Check if this company is a test account
+        const testAccount = await TestAccount.findOne({ companyId: company._id, isActive: true });
+        let actualPaymentAmount = breakdown.finalAmount;
+        let isTestPayment = false;
+        
+        if (testAccount) {
+            actualPaymentAmount = testAccount.testAmount;
+            isTestPayment = true;
+            console.log(`🧪 Test account detected: ${company.companyName} - Using test amount: ₹${testAccount.testAmount}`);
+        }
+        
+        // Generate merchantOrderId (max 63 chars, only alphanumeric, _ and -)
         const merchantOrderId = 'ORD_' + randomUUID().replace(/-/g, '').slice(0, 16).toUpperCase();
 
         // Save payment record
@@ -124,14 +148,21 @@ router.post('/initiate', protect, async (req, res) => {
 
         // Try PhonePe
         const client = await getPhonePeClient();
-        if (client && breakdown.finalAmount > 0) {
+        if (client && actualPaymentAmount > 0) {
             try {
-                const amountInPaise = Math.round(breakdown.finalAmount * 100);
-                const callbackUrl = `${process.env.BACKEND_URL || 'http://localhost:5000'}/payments/callback`;
+                const amountInPaise = Math.round(actualPaymentAmount * 100);
+                
+                // PhonePe requires minimum 100 paise (₹1)
+                if (amountInPaise < 100) {
+                    throw new Error('Minimum amount is ₹1');
+                }
+                
                 const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5175'}/admin/billing?payment=${merchantOrderId}`;
 
-                const request = pgSdkRequest(merchantOrderId, amountInPaise, callbackUrl, redirectUrl);
-                console.log('🔵 PhonePe request:', { merchantOrderId, amountInPaise, callbackUrl, redirectUrl });
+                // Note: callbackUrl is configured in PhonePe dashboard, not sent in request
+                // Configure it as: https://api.authentiks.in/payments/callback
+                const request = pgSdkRequest(merchantOrderId, amountInPaise, redirectUrl);
+                console.log('🔵 PhonePe request:', { merchantOrderId, amountInPaise, redirectUrl, isTestPayment });
                 const response = await client.pay(request);
                 console.log('✅ PhonePe response:', JSON.stringify(response).slice(0, 500));
 
@@ -143,6 +174,8 @@ router.post('/initiate', protect, async (req, res) => {
                     merchantOrderId,
                     redirectUrl: payment.redirectUrl,
                     finalAmount: breakdown.finalAmount,
+                    actualPaymentAmount: actualPaymentAmount,
+                    isTestAccount: isTestPayment,
                     breakdown: {
                         baseAmount,
                         gstPercentage: breakdown.gstPercentage,
@@ -150,6 +183,7 @@ router.post('/initiate', protect, async (req, res) => {
                         additionalCharges: breakdown.charges,
                         couponDiscount: breakdown.couponDiscount,
                         finalAmount: breakdown.finalAmount,
+                        testAmount: isTestPayment ? actualPaymentAmount : null,
                     },
                 });
             } catch (phonePeErr) {
@@ -181,6 +215,8 @@ router.post('/initiate', protect, async (req, res) => {
             redirectUrl: null,
             autoCompleted: true,
             finalAmount: breakdown.finalAmount,
+            actualPaymentAmount: actualPaymentAmount,
+            isTestAccount: isTestPayment,
             breakdown: {
                 baseAmount,
                 gstPercentage: breakdown.gstPercentage,
@@ -188,6 +224,7 @@ router.post('/initiate', protect, async (req, res) => {
                 additionalCharges: breakdown.charges,
                 couponDiscount: breakdown.couponDiscount,
                 finalAmount: breakdown.finalAmount,
+                testAmount: isTestPayment ? actualPaymentAmount : null,
             },
             ...creditsResult,
         });
@@ -198,19 +235,18 @@ router.post('/initiate', protect, async (req, res) => {
 });
 
 // Helper to build PhonePe payment request
-function pgSdkRequest(merchantOrderId, amountInPaise, callbackUrl, redirectUrl) {
+function pgSdkRequest(merchantOrderId, amountInPaise, redirectUrl) {
     try {
         const pgSdk = require('pg-sdk-node');
         const { StandardCheckoutPayRequest } = pgSdk;
         const request = StandardCheckoutPayRequest.builder()
             .merchantOrderId(merchantOrderId)
             .amount(amountInPaise)
-            .callbackUrl(callbackUrl)
             .redirectUrl(redirectUrl)
             .build();
         return request;
     } catch {
-        return { merchantOrderId, amount: amountInPaise, callbackUrl, redirectUrl };
+        return { merchantOrderId, amount: amountInPaise, redirectUrl };
     }
 }
 

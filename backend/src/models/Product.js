@@ -27,6 +27,28 @@ module.exports = mongoose.model(
         ref: "User",
         required: true,
       },
+      // Dynamic form fields
+      mfdOn: {
+        month: String, // MM format (01-12)
+        year: String,  // YYYY format
+      },
+      bestBefore: {
+        value: Number,
+        unit: { type: String, enum: ['months', 'years'] },
+      },
+      // Auto-calculated expiry based on mfdOn + bestBefore
+      calculatedExpiryDate: String, // MM/YYYY format
+      // Store variants (repeatable fields like Color, Size, Model)
+      variants: [{
+        variantName: String,  // e.g., "Color", "Size", "Model"
+        value: String,        // e.g., "Red", "Large", "Pro Series"
+      }],
+      // Store all dynamic field values as key-value pairs
+      dynamicFields: {
+        type: Map,
+        of: mongoose.Schema.Types.Mixed,
+        default: {},
+      },
     },
     { timestamps: true }
   )

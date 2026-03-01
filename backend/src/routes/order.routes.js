@@ -52,7 +52,20 @@ const getNotificationRecipients = async (order) => {
 // 1. CREATE ORDER (Creator only)
 router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
   try {
-    const { productName, brand, batchNo, manufactureDate, expiryDate, quantity, description } = req.body;
+    const { 
+      productName, 
+      brand, 
+      batchNo, 
+      manufactureDate, 
+      expiryDate, 
+      quantity, 
+      description,
+      mfdOn,
+      bestBefore,
+      calculatedExpiryDate,
+      dynamicFields,
+      variants
+    } = req.body;
     
     // Determine the brandId (preferred) or fallback to company owner
     let brandId = req.body.brandId || req.user.brandId || null;
@@ -80,6 +93,12 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       createdBy: req.user._id,
       brandId,
       status: 'Pending Authorization',
+      // New dynamic fields
+      mfdOn: mfdOn || null,
+      bestBefore: bestBefore || null,
+      calculatedExpiryDate: calculatedExpiryDate || null,
+      dynamicFields: dynamicFields || {},
+      variants: variants || [],
       history: [{
         status: 'Pending Authorization',
         changedBy: req.user._id,

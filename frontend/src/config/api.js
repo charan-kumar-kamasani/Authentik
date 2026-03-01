@@ -392,6 +392,24 @@ export const getCreditTransactions = async (token, page = 1, limit = 20) => {
     return res.json();
 };
 
+export const downloadInvoice = async (token, transactionId) => {
+    const res = await fetch(`${API_BASE_URL}/admin/credits/transactions/${transactionId}/invoice`, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error('Failed to download invoice');
+    
+    // Get the blob and create download link
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Invoice_${transactionId.slice(-8).toUpperCase()}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+};
+
 export const getPlans = async () => {
     const res = await fetch(`${API_BASE_URL}/plans/plans`);
     if (!res.ok) throw new Error('Failed to fetch plans');
@@ -520,3 +538,94 @@ export const getGeoAnomalies = (token) => dashboardFetch('geo-anomalies', token)
 export const getRecentActivity = (token, limit = 10) => dashboardFetch(`recent-activity?limit=${limit}`, token);
 export const getConsumerInsights = (token) => dashboardFetch('consumer-insights', token);
 export const getProductPerformance = (token, days = 30) => dashboardFetch(`product-performance?days=${days}`, token);
+
+// ─── Test Accounts APIs ───
+export const getTestAccounts = async () => {
+    const token = localStorage.getItem('adminToken');
+    const res = await fetch(`${API_BASE_URL}/admin/test-accounts`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.status === 401) {
+        localStorage.removeItem('adminToken');
+        window.location.href = '/admin';
+        throw new Error('Session expired');
+    }
+    if (!res.ok) throw new Error('Failed to fetch test accounts');
+    return res.json();
+};
+
+export const createTestAccount = async (data) => {
+    const token = localStorage.getItem('adminToken');
+    const res = await fetch(`${API_BASE_URL}/admin/test-accounts`, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify(data),
+    });
+    if (res.status === 401) {
+        localStorage.removeItem('adminToken');
+        window.location.href = '/admin';
+        throw new Error('Session expired');
+    }
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || 'Failed to create test account');
+    }
+    return res.json();
+};
+
+export const updateTestAccount = async (id, data) => {
+    const token = localStorage.getItem('adminToken');
+    const res = await fetch(`${API_BASE_URL}/admin/test-accounts/${id}`, {
+        method: 'PUT',
+        headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify(data),
+    });
+    if (res.status === 401) {
+        localStorage.removeItem('adminToken');
+        window.location.href = '/admin';
+        throw new Error('Session expired');
+    }
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || 'Failed to update test account');
+    }
+    return res.json();
+};
+
+export const deleteTestAccount = async (id) => {
+    const token = localStorage.getItem('adminToken');
+    const res = await fetch(`${API_BASE_URL}/admin/test-accounts/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.status === 401) {
+        localStorage.removeItem('adminToken');
+        window.location.href = '/admin';
+        throw new Error('Session expired');
+    }
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || 'Failed to delete test account');
+    }
+    return res.json();
+};
+
+export const checkIsTestAccount = async () => {
+    const token = localStorage.getItem('adminToken');
+    const res = await fetch(`${API_BASE_URL}/admin/test-accounts/check`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) throw new Error('Failed to check test account status');
+    return res.json();
+};
+
+// Alias for convenience
+export const getAllCompanies = getCompanies;
+
+
