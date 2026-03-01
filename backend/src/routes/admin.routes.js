@@ -1,6 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const nodemailer = require('nodemailer');
 const User = require("../models/User");
 const Product = require("../models/Product");
 const Brand = require("../models/Brand");
@@ -9,6 +10,72 @@ const { protect, authorize } = require("../middleware/authMiddleware");
 const { generateQrPdf } = require("../utils/pdfGenerator");
 
 const router = express.Router();
+
+// ── In-memory Email OTP store (prod: use Redis) ──
+const emailOtpStore = new Map(); // key: email, value: { otp, expiresAt }
+
+const generateOtp = () => String(Math.floor(100000 + Math.random() * 900000));
+
+const getEmailTransporter = () => nodemailer.createTransport({
+  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+  port: process.env.EMAIL_PORT || 587,
+  secure: false,
+  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASSWORD },
+});
+
+// Send OTP to an email address (protected – admin/superadmin only)
+router.post('/email-otp/send', protect, authorize('superadmin', 'admin'), async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ success: false, message: 'email is required' });
+
+    const otp = generateOtp();
+    emailOtpStore.set(email.toLowerCase(), { otp, expiresAt: Date.now() + 10 * 60 * 1000 }); // 10 min
+
+    // Try to send real email; fall back gracefully
+    try {
+      if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
+        const transporter = getEmailTransporter();
+        await transporter.sendMail({
+          from: process.env.EMAIL_USER,
+          to: email,
+          subject: 'Authentik – Email Verification OTP',
+          html: '<div style="font-family:sans-serif;max-width:400px;margin:auto;padding:24px;border:1px solid #e2e8f0;border-radius:12px"><h2 style="color:#0f172a">Verify your email</h2><p>Your OTP is:</p><div style="font-size:32px;font-weight:800;letter-spacing:6px;text-align:center;padding:16px;background:#f1f5f9;border-radius:8px">' + otp + '</div><p style="color:#64748b;font-size:13px;margin-top:16px">This code expires in 10 minutes.</p></div>',
+        });
+      } else {
+        console.log('[DEV] Email OTP for', email, ':', otp);
+      }
+    } catch (mailErr) {
+      console.warn('Failed to send email OTP, but stored:', mailErr.message);
+      console.log('[FALLBACK] Email OTP for', email, ':', otp);
+    }
+
+    res.json({ success: true, message: 'OTP sent to ' + email });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Verify email OTP
+router.post('/email-otp/verify', protect, authorize('superadmin', 'admin'), async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ success: false, message: 'email and otp are required' });
+
+    const entry = emailOtpStore.get(email.toLowerCase());
+    if (!entry) return res.status(400).json({ success: false, message: 'No OTP found for this email. Please request a new one.' });
+    if (Date.now() > entry.expiresAt) {
+      emailOtpStore.delete(email.toLowerCase());
+      return res.status(400).json({ success: false, message: 'OTP expired. Please request a new one.' });
+    }
+    if (entry.otp !== otp) return res.status(400).json({ success: false, message: 'Invalid OTP' });
+
+    emailOtpStore.delete(email.toLowerCase());
+    res.json({ success: true, message: 'Email verified successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
 
 // Admin Login
 router.post("/login", async (req, res) => {
@@ -449,37 +516,57 @@ router.post('/companies', protect, authorize('superadmin', 'admin'), async (req,
     try {
         const {
             companyName,
+            officialEmails,
             legalEntity,
             companyWebsite,
             industry,
+            category,
             country,
             city,
             cinGst,
             registerOfficeAddress,
+            courierAddress,
             dispatchAddress,
-            email,
-            phoneNumber,
+            email, // support mail
+            supportNumber,
+            phoneNumber, // contact number
             contactPersonName,
+            authorizerEmails, // array of { email, password } or plain strings
+            creatorEmails, // array of { email, password } or plain strings
             brands // optional array: [{ brandName, brandLogo }, ...]
         } = req.body;
 
-        if (!companyName || !legalEntity) {
-            return res.status(400).json({ message: 'companyName and legalEntity are required' });
+        if (!companyName) {
+            return res.status(400).json({ message: 'companyName is required' });
         }
+
+        // Normalise authorizer emails: support both { email, password } objects and plain strings
+        const authorizerList = (authorizerEmails || []).map(e => typeof e === 'string' ? { email: e, password: '' } : e);
+        const authorizerEmailStrings = authorizerList.map(e => e.email);
+
+        // Normalise creator emails the same way
+        const creatorList = (creatorEmails || []).map(e => typeof e === 'string' ? { email: e, password: '' } : e);
+        const creatorEmailStrings = creatorList.map(e => e.email);
 
         const company = await Company.create({
             companyName,
+            officialEmails: officialEmails || [],
             legalEntity,
             companyWebsite,
             industry,
+            category,
             country,
             city,
             cinGst,
             registerOfficeAddress,
+            courierAddress,
             dispatchAddress,
             email,
+            supportNumber,
             phoneNumber,
             contactPersonName,
+            authorizerEmails: authorizerEmailStrings,
+            creatorEmails: creatorEmailStrings,
             createdBy: req.user._id
         });
 
@@ -497,7 +584,50 @@ router.post('/companies', protect, authorize('superadmin', 'admin'), async (req,
             }
         }
 
-        res.status(201).json({ company, brands: createdBrands });
+        // Determine brandId/brandIds for new users (all brands of this company)
+        const allBrandIds = createdBrands.map(b => b._id);
+        const firstBrandId = allBrandIds.length > 0 ? allBrandIds[0] : null;
+
+        // Create user accounts for authorizers
+        const createdUsers = [];
+        for (const auth of authorizerList) {
+            if (!auth.email || !auth.password) continue;
+            const exists = await User.findOne({ email: auth.email });
+            if (exists) continue; // skip if user already exists
+            const salt = await bcrypt.genSalt(10);
+            const hashed = await bcrypt.hash(auth.password, salt);
+            const user = await User.create({
+                email: auth.email,
+                password: hashed,
+                role: 'authorizer',
+                brandId: firstBrandId,
+                brandIds: allBrandIds,
+                companyId: company._id,
+                createdBy: req.user._id
+            });
+            createdUsers.push(user);
+        }
+
+        // Create user accounts for creators
+        for (const cr of creatorList) {
+            if (!cr.email || !cr.password) continue;
+            const exists = await User.findOne({ email: cr.email });
+            if (exists) continue;
+            const salt = await bcrypt.genSalt(10);
+            const hashed = await bcrypt.hash(cr.password, salt);
+            const user = await User.create({
+                email: cr.email,
+                password: hashed,
+                role: 'creator',
+                brandId: firstBrandId,
+                brandIds: allBrandIds,
+                companyId: company._id,
+                createdBy: req.user._id
+            });
+            createdUsers.push(user);
+        }
+
+        res.status(201).json({ company, brands: createdBrands, users: createdUsers });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -510,9 +640,203 @@ router.get('/me', protect, async (req, res) => {
         const user = await User.findById(req.user._id)
             .select('-password')
             .populate('brandId', 'brandName')
-            .populate('companyId', 'companyName');
+            .populate('companyId', 'companyName qrCredits');
         if (!user) return res.status(404).json({ message: 'User not found' });
         res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// ══════════════════════════════════════════════════════════
+// ═══  QR CREDITS  ═══
+// ══════════════════════════════════════════════════════════
+const CreditTransaction = require('../models/CreditTransaction');
+
+const QR_TOPUP_PRICE = 5; // ₹5 per QR for top-up purchases
+
+// Get credit balance for the logged-in user's company
+router.get('/credits/balance', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user || !user.companyId) return res.status(400).json({ message: 'User not linked to a company' });
+        const company = await Company.findById(user.companyId);
+        if (!company) return res.status(404).json({ message: 'Company not found' });
+        res.json({ companyId: company._id, companyName: company.companyName, qrCredits: company.qrCredits || 0 });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Get credit balance for a specific company (superadmin)
+router.get('/credits/balance/:companyId', protect, authorize('superadmin', 'admin'), async (req, res) => {
+    try {
+        const company = await Company.findById(req.params.companyId);
+        if (!company) return res.status(404).json({ message: 'Company not found' });
+        res.json({ companyId: company._id, companyName: company.companyName, qrCredits: company.qrCredits || 0 });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Check if company has enough credits for an order
+router.get('/credits/check/:orderId', protect, async (req, res) => {
+    try {
+        const Order = require('../models/Order');
+        const order = await Order.findById(req.params.orderId);
+        if (!order) return res.status(404).json({ message: 'Order not found' });
+
+        // Find company via brand
+        const brand = await Brand.findById(order.brandId);
+        if (!brand) return res.status(400).json({ message: 'Brand not found for this order' });
+        const company = await Company.findById(brand.companyId);
+        if (!company) return res.status(400).json({ message: 'Company not found for this brand' });
+
+        const required = order.quantity;
+        const available = company.qrCredits || 0;
+        const sufficient = available >= required;
+        const shortfall = sufficient ? 0 : required - available;
+
+        res.json({
+            sufficient,
+            required,
+            available,
+            shortfall,
+            topupCostPerQr: QR_TOPUP_PRICE,
+            topupTotalCost: shortfall * QR_TOPUP_PRICE,
+            companyId: company._id,
+            companyName: company.companyName,
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Buy credits via plan
+router.post('/credits/buy-plan', protect, authorize('company', 'authorizer'), async (req, res) => {
+    try {
+        const { planId } = req.body;
+        const PricePlan = require('../models/PricePlan');
+        const plan = await PricePlan.findById(planId);
+        if (!plan) return res.status(404).json({ message: 'Plan not found' });
+
+        const user = await User.findById(req.user._id);
+        if (!user || !user.companyId) return res.status(400).json({ message: 'User not linked to a company' });
+        const company = await Company.findById(user.companyId);
+        if (!company) return res.status(404).json({ message: 'Company not found' });
+
+        // Parse qrCodes from plan (e.g. "5,000" -> 5000 or "Unlimited" -> 999999)
+        let creditsToAdd = 0;
+        if (plan.qrCodes) {
+            const parsed = parseInt(String(plan.qrCodes).replace(/[^\d]/g, ''), 10);
+            creditsToAdd = isNaN(parsed) ? 0 : parsed;
+        }
+        if (creditsToAdd <= 0) return res.status(400).json({ message: 'This plan does not include QR credits' });
+
+        const newBalance = (company.qrCredits || 0) + creditsToAdd;
+        company.qrCredits = newBalance;
+        await company.save({ validateModifiedOnly: true });
+
+        await CreditTransaction.create({
+            companyId: company._id,
+            type: 'purchase_plan',
+            amount: creditsToAdd,
+            balanceAfter: newBalance,
+            unitPrice: plan.pricePerQr || 0,
+            totalPaid: plan.price || 0,
+            planName: plan.name,
+            performedBy: req.user._id,
+            note: 'Purchased plan: ' + plan.name,
+        });
+
+        res.json({ message: 'Plan purchased successfully', qrCredits: newBalance, creditsAdded: creditsToAdd });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Buy top-up credits (pay per QR at ₹5 each)
+router.post('/credits/buy-topup', protect, authorize('company', 'authorizer'), async (req, res) => {
+    try {
+        const { quantity } = req.body; // number of QR credits to buy
+        if (!quantity || quantity <= 0) return res.status(400).json({ message: 'Invalid quantity' });
+
+        const user = await User.findById(req.user._id);
+        if (!user || !user.companyId) return res.status(400).json({ message: 'User not linked to a company' });
+        const company = await Company.findById(user.companyId);
+        if (!company) return res.status(404).json({ message: 'Company not found' });
+
+        const totalCost = quantity * QR_TOPUP_PRICE;
+        const newBalance = (company.qrCredits || 0) + quantity;
+        company.qrCredits = newBalance;
+        await company.save({ validateModifiedOnly: true });
+
+        await CreditTransaction.create({
+            companyId: company._id,
+            type: 'purchase_topup',
+            amount: quantity,
+            balanceAfter: newBalance,
+            unitPrice: QR_TOPUP_PRICE,
+            totalPaid: totalCost,
+            performedBy: req.user._id,
+            note: 'Top-up: ' + quantity + ' QR credits at ₹' + QR_TOPUP_PRICE + '/QR',
+        });
+
+        res.json({ message: 'Credits purchased successfully', qrCredits: newBalance, creditsAdded: quantity, totalPaid: totalCost });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Grant credits manually (superadmin only)
+router.post('/credits/grant', protect, authorize('superadmin'), async (req, res) => {
+    try {
+        const { companyId, quantity, note } = req.body;
+        if (!companyId || !quantity) return res.status(400).json({ message: 'companyId and quantity are required' });
+
+        const company = await Company.findById(companyId);
+        if (!company) return res.status(404).json({ message: 'Company not found' });
+
+        const newBalance = (company.qrCredits || 0) + quantity;
+        company.qrCredits = newBalance;
+        await company.save({ validateModifiedOnly: true });
+
+        await CreditTransaction.create({
+            companyId: company._id,
+            type: 'admin_grant',
+            amount: quantity,
+            balanceAfter: newBalance,
+            performedBy: req.user._id,
+            note: note || 'Admin granted ' + quantity + ' credits',
+        });
+
+        res.json({ message: 'Credits granted', qrCredits: newBalance });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Transaction history
+router.get('/credits/transactions', protect, async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        let query = {};
+
+        if (['superadmin', 'admin'].includes(user.role)) {
+            // Admin sees all, or filter by companyId query param
+            if (req.query.companyId) query.companyId = req.query.companyId;
+        } else {
+            if (!user.companyId) return res.status(400).json({ message: 'User not linked to a company' });
+            query.companyId = user.companyId;
+        }
+
+        const transactions = await CreditTransaction.find(query)
+            .populate('performedBy', 'name email role')
+            .populate('orderId', 'orderId productName quantity')
+            .sort({ createdAt: -1 })
+            .limit(parseInt(req.query.limit) || 100);
+
+        res.json(transactions);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

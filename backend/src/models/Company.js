@@ -4,17 +4,24 @@ const mongoose = require('mongoose');
 const companySchema = new mongoose.Schema(
   {
     companyName: { type: String, required: true },
-    legalEntity: { type: String, required: true },
+    officialEmails: [{ type: String }], // verified official email IDs
+    legalEntity: { type: String },
     companyWebsite: { type: String },
-    industry: { type: String, required: true },
-    country: { type: String, required: true },
-    city: { type: String, required: true },
-    cinGst: { type: String, required: true }, // CIN/GST
+    industry: { type: String },
+    category: { type: String },
+    country: { type: String },
+    city: { type: String },
+    cinGst: { type: String }, // GST number
     registerOfficeAddress: { type: String, required: true },
-    dispatchAddress: { type: String, required: true },
-    email: { type: String, required: true },
-    phoneNumber: { type: String, required: true },
-    contactPersonName: { type: String, required: true },
+    courierAddress: { type: String, required: true },
+    dispatchAddress: { type: String },
+    email: { type: String, required: true }, // support mail
+    supportNumber: { type: String, required: true },
+    phoneNumber: { type: String, required: true }, // contact number
+    contactPersonName: { type: String },
+    authorizerEmails: [{ type: String }], // authorizer email IDs
+    creatorEmails: [{ type: String }], // creator email IDs
+    qrCredits: { type: Number, default: 0 }, // available QR credits balance
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

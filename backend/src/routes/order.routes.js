@@ -5,6 +5,8 @@ const Order = require('../models/Order');
 const User = require('../models/User');
 const Product = require('../models/Product');
 const Brand = require('../models/Brand');
+const Company = require('../models/Company');
+const CreditTransaction = require('../models/CreditTransaction');
 const { generateQrPdf } = require('../utils/pdfGenerator');
 const { sendOrderStatusEmail } = require('../utils/emailService');
 
@@ -202,6 +204,48 @@ router.put('/:id/authorize', protect, authorize('company', 'authorizer'), async 
     if (order.status !== 'Pending Authorization') {
       return res.status(400).json({ message: 'Order cannot be authorized in its current state' });
     }
+
+    // --- Credit check & deduction ---
+    const brand = await Brand.findById(order.brandId);
+    if (!brand || !brand.companyId) {
+      return res.status(400).json({ message: 'Brand or company not found for this order' });
+    }
+    const company = await Company.findById(brand.companyId);
+    if (!company) {
+      return res.status(400).json({ message: 'Company not found' });
+    }
+    const required = order.quantity || 0;
+    const available = company.qrCredits || 0;
+    if (available < required) {
+      const shortfall = required - available;
+      return res.status(400).json({
+        insufficientCredits: true,
+        required,
+        available,
+        shortfall,
+        topupCostPerQr: 5,
+        topupTotalCost: shortfall * 5,
+        companyId: company._id,
+        companyName: company.companyName,
+        message: `Insufficient QR credits. Need ${required}, have ${available}. ${shortfall} more needed.`
+      });
+    }
+
+    // Deduct credits
+    company.qrCredits -= required;
+    await company.save({ validateModifiedOnly: true });
+
+    // Record spend transaction
+    await CreditTransaction.create({
+      companyId: company._id,
+      type: 'spend',
+      amount: -required,
+      balanceAfter: company.qrCredits,
+      orderId: order._id,
+      performedBy: req.user._id,
+      note: `Authorized order ${order.orderId} — ${required} QR credits spent`
+    });
+    // --- End credit check ---
 
     order.status = 'Authorized';
     order.history.push({

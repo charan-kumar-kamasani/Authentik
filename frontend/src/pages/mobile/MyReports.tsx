@@ -71,10 +71,27 @@ export default function MyReports() {
                                 )}
                                 <div className="flex-1">
                                     <h3 className="font-bold text-[#333] leading-tight mb-1">{report.productName}</h3>
-                                    <p className="text-xs text-gray-500 mb-2">{report.brand}</p>
-                                    <div className="flex items-center gap-1 text-[10px] text-[#2CA4D6]">
-                                        <span>📍</span>
-                                        <span className="truncate max-w-[150px]">{report.place || "Unknown Location"}</span>
+                                    {report.brand && (
+                                        <p className="text-xs text-gray-500 mb-1">{report.brand}</p>
+                                    )}
+                                    {report.qrCode && (
+                                        <div className="flex items-center gap-1 text-[10px] text-gray-400 mb-2">
+                                            <span>#️⃣</span>
+                                            <span className="truncate max-w-[150px]">{report.qrCode}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex flex-col gap-1 text-[10px] text-[#2CA4D6]">
+                                        <div className="flex items-center gap-1">
+                                            <span>📍</span>
+                                            <span className="truncate max-w-[150px]">{report.place || "Unknown Location"}</span>
+                                        </div>
+                                        {(report.latitude && report.longitude) && (
+                                            <div className="flex items-center gap-1 text-gray-400 pl-4">
+                                                <span className="truncate max-w-[150px]">
+                                                    {report.latitude.toFixed(4)}, {report.longitude.toFixed(4)}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>

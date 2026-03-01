@@ -7,13 +7,22 @@ const reportSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    reportType: {
+      type: String,
+      enum: ["COUNTERFEIT", "FAKE"],
+      required: true,
+      default: "COUNTERFEIT",
+    },
     productName: {
       type: String,
       required: true,
     },
     brand: {
       type: String,
-      required: true,
+    },
+    description: {
+      type: String,
+      default: "",
     },
     images: [
       {
@@ -38,8 +47,15 @@ const reportSchema = new mongoose.Schema(
       enum: ["Pending", "Resolved", "Investigating"],
       default: "Pending",
     },
+    isCounterfeit: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
+
+// Prevent a user from reporting the same QR code more than once
+reportSchema.index({ userId: 1, qrCode: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model("Report", reportSchema);

@@ -29,6 +29,13 @@ import UserManagement from "./pages/admin/UserManagement";
 import AdminLayout from "./pages/admin/AdminLayout";
 import GenerateQrs from "./pages/admin/GenerateQrs";
 import QrManagement from "./pages/admin/QrManagement";
+import AdminScannedQrs from "./pages/admin/AdminScannedQrs";
+import AdminReports from "./pages/admin/AdminReports";
+import AdminTransactions from "./pages/admin/AdminTransactions";
+import AdminPricePlans from "./pages/admin/AdminPricePlans";
+import BillingCredits from "./pages/admin/BillingCredits";
+import AdminSettings from "./pages/admin/AdminSettings";
+import AuthDashboard from "./pages/admin/AuthDashboard";
 import ReportProduct from "./pages/mobile/ReportProduct";
 import MyReports from "./pages/mobile/MyReports";
 
@@ -120,6 +127,13 @@ export default function App() {
                 </AdminRoute>
               }
             />
+            <Route path="/admin/scanned-qrs" element={<AdminRoute><AdminLayout><AdminScannedQrs /></AdminLayout></AdminRoute>} />
+            <Route path="/admin/reports" element={<AdminRoute><AdminLayout><AdminReports /></AdminLayout></AdminRoute>} />
+            <Route path="/admin/transactions" element={<AdminRoute><AdminLayout><AdminTransactions /></AdminLayout></AdminRoute>} />
+            <Route path="/admin/price-plans" element={<AdminRoute><AdminLayout><AdminPricePlans /></AdminLayout></AdminRoute>} />
+            <Route path="/admin/billing" element={<AdminRoute><AdminLayout><BillingCredits /></AdminLayout></AdminRoute>} />
+            <Route path="/admin/settings" element={<AdminRoute><AdminLayout><AdminSettings /></AdminLayout></AdminRoute>} />
+            <Route path="/admin/analytics" element={<AdminRoute><AdminLayout><AuthDashboard /></AdminLayout></AdminRoute>} />
             <Route
               path="/users"
               element={
@@ -232,6 +246,13 @@ export default function App() {
               </AdminRoute>
             }
           />
+
+          <Route path="/admin/scanned-qrs" element={<AdminRoute><AdminLayout><AdminScannedQrs /></AdminLayout></AdminRoute>} />
+          <Route path="/admin/reports" element={<AdminRoute><AdminLayout><AdminReports /></AdminLayout></AdminRoute>} />
+          <Route path="/admin/transactions" element={<AdminRoute><AdminLayout><AdminTransactions /></AdminLayout></AdminRoute>} />
+          <Route path="/admin/price-plans" element={<AdminRoute><AdminLayout><AdminPricePlans /></AdminLayout></AdminRoute>} />
+          <Route path="/admin/billing" element={<AdminRoute><AdminLayout><BillingCredits /></AdminLayout></AdminRoute>} />
+          <Route path="/admin/analytics" element={<AdminRoute><AdminLayout><AuthDashboard /></AdminLayout></AdminRoute>} />
 
           <Route
             path="/users"

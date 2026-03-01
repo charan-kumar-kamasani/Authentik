@@ -15,8 +15,10 @@ import {
   getCompanies,
   getBrandsForCompany,
 } from "../../config/api";
+import API_BASE_URL from "../../config/api";
 import { useNavigate, useLocation } from "react-router-dom";
 import { debounce } from "../../utils/helper";
+import TablePagination from "../../components/TablePagination";
 
 const UserManagement = () => {
   const navigate = useNavigate();
@@ -42,6 +44,8 @@ const UserManagement = () => {
   const [loadingStaff, setLoadingStaff] = useState(false);
   const [, setLoadingBrands] = useState(false);
   const [query, setQuery] = useState("");
+  const [userPage, setUserPage] = useState(1);
+  const [userRowsPerPage, setUserRowsPerPage] = useState(10);
   // Form State
   const [formData, setFormData] = useState({
     name: "",
@@ -62,17 +66,23 @@ const UserManagement = () => {
     legalEntity: "",
     companyWebsite: "",
     industry: "",
+    category: "",
     country: "",
     city: "",
     cinGst: "",
     registerOfficeAddress: "",
+    courierAddress: "",
     dispatchAddress: "",
-    email: "",
-    phoneNumber: "",
+    email: "", // support mail
+    supportNumber: "",
+    phoneNumber: "", // contact number
     contactPersonName: "",
   });
+  const [officialEmails, setOfficialEmails] = useState([{ value: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }]);
+  const [authorizerEmails, setAuthorizerEmails] = useState([{ value: "", password: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }]);
+  const [creatorEmails, setCreatorEmails] = useState([{ value: "", password: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }]);
   const [companyBrands, setCompanyBrands] = useState([
-    { brandName: "", brandLogo: "" },
+    { brandName: "", brandLogo: "", logoType: "url" },
   ]);
   const [brandForm, setBrandForm] = useState({
     brandName: "",
@@ -346,16 +356,34 @@ const UserManagement = () => {
   const handleCompanySubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
+
+    // Validate all official emails are verified
+    const filledOfficials = officialEmails.filter(e => e.value.trim());
+    if (filledOfficials.length === 0) {
+      alert('Please add at least one official email ID');
+      return;
+    }
+    const unverifiedOfficials = filledOfficials.filter(e => !e.verified);
+    if (unverifiedOfficials.length > 0) {
+      alert('Please verify all official email IDs before creating the company');
+      return;
+    }
+
+    // Validate brands
+    const validBrands = companyBrands.filter(b => b.brandName && b.brandName.trim());
+    if (validBrands.length === 0) {
+      alert('Please add at least one brand');
+      return;
+    }
+
     try {
-      // Build payload
       const payload = {
         ...companyForm,
-        brands: companyBrands.filter((b) => b.brandName && b.brandName.trim() !== ""),
+        officialEmails: filledOfficials.map(e => e.value.trim()),
+        authorizerEmails: authorizerEmails.filter(e => e.value.trim()).map(e => ({ email: e.value.trim(), password: e.password || '' })),
+        creatorEmails: creatorEmails.filter(e => e.value.trim()).map(e => ({ email: e.value.trim(), password: e.password || '' })),
+        brands: validBrands.map(b => ({ brandName: b.brandName, brandLogo: b.brandLogo })),
       };
-      if (payload.brands.length === 0) {
-        // allow company creation without brands but warn
-        if (!confirm('No brands added. Continue creating company without brands?')) return;
-      }
       const res = await createCompany(payload, token);
       alert('Company created successfully');
       // reset form
@@ -364,17 +392,22 @@ const UserManagement = () => {
         legalEntity: "",
         companyWebsite: "",
         industry: "",
+        category: "",
         country: "",
         city: "",
         cinGst: "",
         registerOfficeAddress: "",
+        courierAddress: "",
         dispatchAddress: "",
         email: "",
+        supportNumber: "",
         phoneNumber: "",
         contactPersonName: "",
       });
-      setCompanyBrands([{ brandName: "", brandLogo: "" }]);
-      // reload companies and brands
+      setOfficialEmails([{ value: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }]);
+      setAuthorizerEmails([{ value: "", password: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }]);
+      setCreatorEmails([{ value: "", password: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }]);
+      setCompanyBrands([{ brandName: "", brandLogo: "", logoType: "url" }]);
       loadCompanies();
       if (res && res.company && res.company._id) loadBrandsForCompany(res.company._id);
     } catch (err) {
@@ -382,8 +415,53 @@ const UserManagement = () => {
     }
   };
 
+  // Email OTP helpers
+  const sendEmailOtp = async (email, listSetter, index) => {
+    const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
+    listSetter(prev => prev.map((e, i) => i === index ? { ...e, sending: true } : e));
+    try {
+      const res = await fetch(API_BASE_URL + '/admin/email-otp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        listSetter(prev => prev.map((e, i) => i === index ? { ...e, otpSent: true, sending: false } : e));
+      } else {
+        alert(data.message || 'Failed to send OTP');
+        listSetter(prev => prev.map((e, i) => i === index ? { ...e, sending: false } : e));
+      }
+    } catch (err) {
+      alert('Failed to send OTP');
+      listSetter(prev => prev.map((e, i) => i === index ? { ...e, sending: false } : e));
+    }
+  };
+
+  const verifyEmailOtp = async (email, otp, listSetter, index) => {
+    const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
+    listSetter(prev => prev.map((e, i) => i === index ? { ...e, verifying: true } : e));
+    try {
+      const res = await fetch(API_BASE_URL + '/admin/email-otp/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+        body: JSON.stringify({ email, otp }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        listSetter(prev => prev.map((e, i) => i === index ? { ...e, verified: true, verifying: false } : e));
+      } else {
+        alert(data.message || 'Invalid OTP');
+        listSetter(prev => prev.map((e, i) => i === index ? { ...e, verifying: false } : e));
+      }
+    } catch (err) {
+      alert('Verification failed');
+      listSetter(prev => prev.map((e, i) => i === index ? { ...e, verifying: false } : e));
+    }
+  };
+
   const addCompanyBrandRow = () => {
-    setCompanyBrands((s) => [...s, { brandName: "", brandLogo: "" }]);
+    setCompanyBrands((s) => [...s, { brandName: "", brandLogo: "", logoType: "url" }]);
   };
 
   const updateCompanyBrandRow = (index, key, value) => {
@@ -424,94 +502,131 @@ const UserManagement = () => {
             Create Company
           </h2>
           <form onSubmit={handleCompanySubmit} className="grid grid-cols-1 gap-4">
-            <InputGroup label="Company Name" placeholder="Acme Holdings" value={companyForm.companyName} onChange={(v)=>setCompanyForm({...companyForm, companyName: v})} />
-            <InputGroup label="Legal Entity" placeholder="Pvt Ltd" value={companyForm.legalEntity} onChange={(v)=>setCompanyForm({...companyForm, legalEntity: v})} />
-            <InputGroup label="Website" placeholder="https://..." value={companyForm.companyWebsite} onChange={(v)=>setCompanyForm({...companyForm, companyWebsite: v})} />
+            {/* Row 1 */}
             <div className="grid grid-cols-2 gap-4">
-              <InputGroup label="Industry" placeholder="FMCG" value={companyForm.industry} onChange={(v)=>setCompanyForm({...companyForm, industry: v})} />
-              <InputGroup label="Country" placeholder="India" value={companyForm.country} onChange={(v)=>setCompanyForm({...companyForm, country: v})} />
+              <InputGroup label="Company Name *" placeholder="Acme Holdings" value={companyForm.companyName} onChange={(v)=>setCompanyForm({...companyForm, companyName: v})} />
+              <InputGroup label="Category" placeholder="FMCG, Pharma..." value={companyForm.category} onChange={(v)=>setCompanyForm({...companyForm, category: v})} required={false} />
             </div>
+            {/* Row 2 */}
             <div className="grid grid-cols-2 gap-4">
-              <InputGroup label="City" placeholder="Bengaluru" value={companyForm.city} onChange={(v)=>setCompanyForm({...companyForm, city: v})} />
-              <InputGroup label="CIN / GST" placeholder="CIN/GST" value={companyForm.cinGst} onChange={(v)=>setCompanyForm({...companyForm, cinGst: v})} />
+              <InputGroup label="GST Number" placeholder="22AAAAA0000A1Z5" value={companyForm.cinGst} onChange={(v)=>setCompanyForm({...companyForm, cinGst: v})} required={false} />
+              <InputGroup label="Website" placeholder="https://..." value={companyForm.companyWebsite} onChange={(v)=>setCompanyForm({...companyForm, companyWebsite: v})} required={false} />
             </div>
-            <InputGroup label="Register Office Address" placeholder="Address" value={companyForm.registerOfficeAddress} onChange={(v)=>setCompanyForm({...companyForm, registerOfficeAddress: v})} />
-            <InputGroup label="Dispatch Address" placeholder="Address" value={companyForm.dispatchAddress} onChange={(v)=>setCompanyForm({...companyForm, dispatchAddress: v})} />
-            <div className="grid grid-cols-2 gap-4">
-              <InputGroup label="Email" type="email" placeholder="contact@company.com" value={companyForm.email} onChange={(v)=>setCompanyForm({...companyForm, email: v})} />
-              <InputGroup label="Phone" placeholder="+91..." value={companyForm.phoneNumber} onChange={(v)=>setCompanyForm({...companyForm, phoneNumber: v})} />
-            </div>
-            <InputGroup label="Contact Person" placeholder="Name" value={companyForm.contactPersonName} onChange={(v)=>setCompanyForm({...companyForm, contactPersonName: v})} />
-            <div className="mt-2">
-              <h4 className="font-medium mb-2">Brands (optional)</h4>
-              {companyBrands.map((b, idx) => (
-                <div
-                  key={idx}
-                  className="flex flex-col sm:flex-row sm:items-start gap-4 mb-3 p-3 border border-gray-100 rounded-lg bg-white shadow-sm"
-                >
-                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <InputGroup
-                        label="Brand Name"
-                        placeholder="Brand name"
-                        value={b.brandName}
-                        onChange={(v) => updateCompanyBrandRow(idx, 'brandName', v)}
-                        required={false}
-                      />
 
-                      <div>
-                        <InputGroup
-                          label="Brand Logo (URL)"
-                          placeholder="https://..."
-                          value={b.brandLogo}
-                          onChange={(v) => updateCompanyBrandRow(idx, 'brandLogo', v)}
-                          type="url"
-                          required={false}
-                        />
-                        {b.brandLogo && (
-                          <div className="mt-2 flex items-center gap-3">
-                            <img
-                              src={b.brandLogo}
-                              alt="brand logo"
-                              className="w-16 h-12 object-contain border rounded-md shadow-sm"
-                              onError={(e) => {
-                                e.target.style.display = 'none';
-                              }}
-                            />
-                            <span className="text-xs text-gray-500">Preview</span>
-                          </div>
+            {/* Official Emails */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium text-gray-700 ml-1">Official Email IDs *</label>
+                <button type="button" onClick={() => setOfficialEmails(prev => [...prev, { value: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }])}
+                  className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>Add
+                </button>
+              </div>
+              <div className="space-y-2">
+                {officialEmails.map((entry, idx) => (
+                  <EmailRow key={idx} entry={entry} idx={idx} emails={officialEmails} setEmails={setOfficialEmails} showOtp={true} onSendOtp={sendEmailOtp} onVerifyOtp={verifyEmailOtp} />
+                ))}
+              </div>
+            </div>
+
+            {/* Brands */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-sm font-medium text-gray-700 ml-1">Brands *</label>
+                <button type="button" onClick={addCompanyBrandRow}
+                  className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>Add Brand
+                </button>
+              </div>
+              {companyBrands.map((b, idx) => (
+                <div key={idx} className="flex flex-col sm:flex-row sm:items-start gap-3 mb-3 p-3 border border-gray-100 rounded-xl bg-white">
+                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm font-medium text-gray-700 ml-1">Brand Name *</label>
+                      <input value={b.brandName} onChange={e => updateCompanyBrandRow(idx, 'brandName', e.target.value)}
+                        placeholder="Brand name" required
+                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all font-medium" />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-sm font-medium text-gray-700 ml-1">Brand Logo (URL/File) *</label>
+                      <div className="flex items-center gap-2">
+                        <div className="flex bg-gray-100 rounded-lg p-0.5 flex-shrink-0">
+                          <button type="button" onClick={() => updateCompanyBrandRow(idx, 'logoType', 'url')}
+                            className={"px-2 py-1 rounded-md text-[11px] font-bold transition-all " + ((b.logoType || "url") === "url" ? "bg-white text-gray-800 shadow-sm" : "text-gray-400")}>URL</button>
+                          <button type="button" onClick={() => updateCompanyBrandRow(idx, 'logoType', 'file')}
+                            className={"px-2 py-1 rounded-md text-[11px] font-bold transition-all " + ((b.logoType || "url") === "file" ? "bg-white text-gray-800 shadow-sm" : "text-gray-400")}>File</button>
+                        </div>
+                        {(b.logoType || "url") === "url" ? (
+                          <input value={b.brandLogo} onChange={e => updateCompanyBrandRow(idx, 'brandLogo', e.target.value)}
+                            placeholder="https://..."
+                            className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all" />
+                        ) : (
+                          <input type="file" accept="image/*"
+                            onChange={e => { const f = e.target.files[0]; if (f) { const r = new FileReader(); r.onloadend = () => updateCompanyBrandRow(idx, 'brandLogo', r.result); r.readAsDataURL(f); } }}
+                            className="flex-1 text-sm text-gray-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-gray-200 file:text-xs file:font-medium file:bg-gray-50 hover:file:bg-gray-100" />
                         )}
+                        {b.brandLogo && <img src={b.brandLogo} alt="" className="w-9 h-9 object-contain border rounded-lg" onError={e => { e.target.style.display = 'none'; }} />}
                       </div>
                     </div>
-
-                  <div className="flex flex-col items-end justify-between gap-2 w-auto">
-                    <button
-                      type="button"
-                      onClick={() => removeCompanyBrandRow(idx)}
-                      className="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-700 rounded border text-sm flex items-center justify-center"
-                      aria-label="Remove brand"
-                      title="Remove brand"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
-                      </svg>
-                    </button>
-                    {idx === companyBrands.length - 1 && (
-                      <button
-                        type="button"
-                        onClick={addCompanyBrandRow}
-                        className="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded text-sm flex items-center justify-center"
-                        aria-label="Add brand"
-                        title="Add brand"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                      </button>
-                    )}
                   </div>
+                  {companyBrands.length > 1 && (
+                    <button type="button" onClick={() => removeCompanyBrandRow(idx)}
+                      className="self-end sm:self-start sm:mt-7 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Remove">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" /></svg>
+                    </button>
+                  )}
                 </div>
               ))}
             </div>
+
+            {/* Authorizer + Creator row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium text-gray-700 ml-1">Authorizer Emails</label>
+                  <button type="button" onClick={() => setAuthorizerEmails(prev => [...prev, { value: "", password: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }])}
+                    className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>Add
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {authorizerEmails.map((entry, idx) => (
+                    <EmailRow key={idx} entry={entry} idx={idx} emails={authorizerEmails} setEmails={setAuthorizerEmails} showOtp={false} showPassword={true} onSendOtp={sendEmailOtp} onVerifyOtp={verifyEmailOtp} />
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium text-gray-700 ml-1">Creator Emails</label>
+                  <button type="button" onClick={() => setCreatorEmails(prev => [...prev, { value: "", password: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }])}
+                    className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>Add
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {creatorEmails.map((entry, idx) => (
+                    <EmailRow key={idx} entry={entry} idx={idx} emails={creatorEmails} setEmails={setCreatorEmails} showOtp={false} showPassword={true} onSendOtp={sendEmailOtp} onVerifyOtp={verifyEmailOtp} />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Address row */}
+            <div className="grid grid-cols-2 gap-4">
+              <InputGroup label="Address *" placeholder="Registered office address" value={companyForm.registerOfficeAddress} onChange={(v)=>setCompanyForm({...companyForm, registerOfficeAddress: v})} />
+              <InputGroup label="Courier Address *" placeholder="Courier / dispatch address" value={companyForm.courierAddress} onChange={(v)=>setCompanyForm({...companyForm, courierAddress: v})} />
+            </div>
+            {/* Phone row */}
+            <div className="grid grid-cols-2 gap-4">
+              <InputGroup label="Contact Number *" placeholder="+91 98765 43210" value={companyForm.phoneNumber} onChange={(v)=>setCompanyForm({...companyForm, phoneNumber: v})} />
+              <InputGroup label="Support Number *" placeholder="+91 1800 XXX XXX" value={companyForm.supportNumber} onChange={(v)=>setCompanyForm({...companyForm, supportNumber: v})} />
+            </div>
+            {/* Email + person row */}
+            <div className="grid grid-cols-2 gap-4">
+              <InputGroup label="Support Mail ID *" type="email" placeholder="support@company.com" value={companyForm.email} onChange={(v)=>setCompanyForm({...companyForm, email: v})} />
+              <InputGroup label="Contact Person" placeholder="Name" value={companyForm.contactPersonName} onChange={(v)=>setCompanyForm({...companyForm, contactPersonName: v})} required={false} />
+            </div>
+
             <div>
               <button className="w-full bg-gray-900 text-white font-medium py-3 rounded-xl hover:bg-black transition-all shadow-lg shadow-gray-200">Create Company</button>
             </div>
@@ -1081,7 +1196,7 @@ const UserManagement = () => {
                             return (
                               <tr>
                                 <td
-                                  colSpan={4}
+                                  colSpan={5}
                                   className="px-8 py-12 text-center text-gray-400"
                                 >
                                   Loading users...
@@ -1093,7 +1208,7 @@ const UserManagement = () => {
                             return (
                               <tr>
                                 <td
-                                  colSpan={4}
+                                  colSpan={5}
                                   className="px-8 py-12 text-center text-gray-400"
                                 >
                                   No users found
@@ -1101,7 +1216,11 @@ const UserManagement = () => {
                               </tr>
                             );
                           }
-                          return displayed.map((u) => (
+                          const startIdx = (userPage - 1) * userRowsPerPage;
+                          const paginated = displayed.slice(startIdx, startIdx + userRowsPerPage);
+                          return (
+                            <>
+                              {paginated.map((u) => (
                             <tr
                               key={u._id}
                               className="hover:bg-gray-50/50 transition-colors"
@@ -1140,11 +1259,34 @@ const UserManagement = () => {
                                 </span>
                               </td>
                             </tr>
-                          ));
+                          ))}
+                            </>
+                          );
                         })()}
                       </tbody>
                     </table>
                   </div>
+                  {(() => {
+                    const q = query.trim().toLowerCase();
+                    const displayed = q
+                      ? staff.filter(
+                          (u) =>
+                            (u.name || "").toLowerCase().includes(q) ||
+                            (u.email || "").toLowerCase().includes(q),
+                        )
+                      : staff;
+                    return (
+                      <TablePagination
+                        totalItems={staff.length}
+                        filteredCount={displayed.length}
+                        currentPage={userPage}
+                        rowsPerPage={userRowsPerPage}
+                        onPageChange={setUserPage}
+                        onRowsPerPageChange={(n) => { setUserRowsPerPage(n); setUserPage(1); }}
+                        itemLabel="users"
+                      />
+                    );
+                  })()}
                 </div>
               )}
             </div>
@@ -1155,6 +1297,55 @@ const UserManagement = () => {
   );
 };
 export default UserManagement;
+
+function EmailRow({ entry, idx, emails, setEmails, showOtp, showPassword, onSendOtp, onVerifyOtp }) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <input type="email" placeholder="email@company.com" value={entry.value}
+        onChange={e => setEmails(prev => prev.map((x, i) => i === idx ? { ...x, value: e.target.value, otpSent: false, verified: false, otp: "" } : x))}
+        disabled={entry.verified}
+        className={"flex-1 min-w-[180px] px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all font-medium " + (entry.verified ? "bg-green-50 border-green-300 text-green-700" : "bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400")}
+      />
+      {showPassword && (
+        <input type="password" placeholder="Password" value={entry.password || ''}
+          onChange={e => setEmails(prev => prev.map((x, i) => i === idx ? { ...x, password: e.target.value } : x))}
+          className="w-36 px-3 py-2.5 border border-gray-200 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all font-medium placeholder:text-gray-400"
+        />
+      )}
+      {showOtp && entry.verified && (
+        <span className="inline-flex items-center gap-1 text-green-600 text-xs font-semibold">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>Verified
+        </span>
+      )}
+      {showOtp && !entry.otpSent && !entry.verified && (
+        <button type="button" disabled={!entry.value || entry.sending} onClick={() => onSendOtp(entry.value, setEmails, idx)}
+          className="px-3 py-2 bg-gray-900 text-white rounded-xl text-xs font-medium hover:bg-black disabled:opacity-40 disabled:cursor-not-allowed transition-all whitespace-nowrap">
+          {entry.sending ? "Sending..." : "Send OTP"}
+        </button>
+      )}
+      {showOtp && entry.otpSent && !entry.verified && (
+        <>
+          <input type="text" maxLength={6} placeholder="OTP" value={entry.otp}
+            onChange={e => setEmails(prev => prev.map((x, i) => i === idx ? { ...x, otp: e.target.value.replace(/\D/g, '').slice(0, 6) } : x))}
+            className="w-24 px-3 py-2.5 border border-gray-200 bg-gray-50 rounded-xl text-sm font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-gray-900/10" />
+          <button type="button" disabled={entry.otp.length !== 6 || entry.verifying}
+            onClick={() => onVerifyOtp(entry.value, entry.otp, setEmails, idx)}
+            className="px-3 py-2 bg-gray-900 text-white rounded-xl text-xs font-medium hover:bg-black disabled:opacity-40 disabled:cursor-not-allowed transition-all whitespace-nowrap">
+            {entry.verifying ? "..." : "Verify"}
+          </button>
+          <button type="button" onClick={() => onSendOtp(entry.value, setEmails, idx)}
+            className="text-xs text-gray-500 hover:text-gray-800 font-medium whitespace-nowrap">Resend</button>
+        </>
+      )}
+      {emails.length > 1 && !entry.verified && (
+        <button type="button" onClick={() => setEmails(prev => prev.filter((_, i) => i !== idx))}
+          className="p-1 text-gray-400 hover:text-red-500 transition-colors" title="Remove">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      )}
+    </div>
+  );
+}
 
 function InputGroup({ label, placeholder, value, onChange, type = "text", required = true }) {
   return (

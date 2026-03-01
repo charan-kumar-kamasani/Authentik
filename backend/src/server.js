@@ -17,6 +17,9 @@ app.use("/auth", require("./routes/auth.routes"));
 app.use("/admin", require("./routes/admin.routes"));
 app.use("/scan", require("./routes/scan.routes"));
 app.use('/orders', require('./routes/order.routes'));
+app.use('/plans', require('./routes/plan.routes'));
+app.use('/payments', require('./routes/payment.routes'));
+app.use('/dashboard', require('./routes/dashboard.routes'));
 
 const PORT = process.env.PORT || 5000;
 const HOST = process.env.IP_ADDRESS || "localhost";

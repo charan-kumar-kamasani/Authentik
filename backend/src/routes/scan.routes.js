@@ -7,10 +7,7 @@ const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-// helper for reverse geocoding
-const fetch = (...args) =>
-  import("node-fetch").then(({ default: fetch }) => fetch(...args));
-
+// helper for reverse geocoding (using native fetch — Node 18+)
 async function getPlaceFromCoords(lat, lon) {
   if (!lat || !lon) return "Unknown location";
 
@@ -19,7 +16,7 @@ async function getPlaceFromCoords(lat, lon) {
       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`,
       {
         headers: {
-          "User-Agent": "Authentick/1.0 (contact@authentick.com)",
+          "User-Agent": "Authentik/1.0 (contact@authentik.com)",
         },
       }
     );
@@ -30,13 +27,13 @@ async function getPlaceFromCoords(lat, lon) {
       data.address?.city ||
       data.address?.town ||
       data.address?.village ||
+      data.address?.county ||
       "";
 
     const state = data.address?.state || "";
-    const country = data.address?.country || "";
 
     return (
-      [city, state, country].filter(Boolean).join(", ") ||
+      [city, state].filter(Boolean).join(", ") ||
       "Unknown location"
     );
   } catch {
@@ -245,19 +242,49 @@ router.post("/", protect, async (req, res) => {
       });
     }
 
-    // 2️⃣ Check if already used (Look for ANY original scan of this product)
-    const alreadyUsed = await Scan.findOne({
+    // 2️⃣  Has THIS user already scanned this product?
+    const myPreviousScan = await Scan.findOne({
       productId: product._id,
+      userId: userId,
       status: "ORIGINAL",
     });
 
     /* =======================
-       ⚠️ ALREADY USED
+       ✅ SAME USER RE-SCANNING THEIR OWN PRODUCT
+    ======================= */
+    if (myPreviousScan) {
+      // Don't create another record — just return ORIGINAL for their own product
+      return res.json({
+        status: "ORIGINAL",
+        data: {
+          qrCode,
+          productId: product._id,
+          productName: product.productName,
+          brand: product.brand || finalBrandName,
+          batchNo: product.batchNo,
+          manufactureDate: product.manufactureDate,
+          expiryDate: product.expiryDate,
+          place,
+          latitude,
+          longitude,
+          scannedAt: new Date(),
+        },
+      });
+    }
+
+    // 3️⃣  Has a DIFFERENT user already scanned this product?
+    const alreadyUsed = await Scan.findOne({
+      productId: product._id,
+      userId: { $ne: userId },
+      status: "ORIGINAL",
+    });
+
+    /* =======================
+       ⚠️ ALREADY USED BY ANOTHER USER
     ======================= */
     if (alreadyUsed) {
-      // Fetch user details of the original scanner (mobile only)
-      await alreadyUsed.populate("userId", "mobile"); 
-      
+      await alreadyUsed.populate("userId", "mobile");
+
       const scan = await Scan.create({
         userId,
         productId: product._id,
@@ -380,16 +407,18 @@ router.post("/report", protect, async (req, res) => {
       });
     }
 
-    // 2. Limit: max 5 complaints per user
-    const reportCount = await Report.countDocuments({ userId });
-    if (reportCount >= 5) {
-      return res.status(400).json({ 
-        error: "Limit exceeded", 
-        message: "You can only submit a maximum of 5 reports." 
-      });
-    }
+    const { productName, brand, description, reportType, images, latitude, longitude, qrCode } = req.body;
 
-    const { productName, brand, images, latitude, longitude, qrCode } = req.body;
+    // 2. Check for duplicate report - same user, same QR code
+    if (qrCode) {
+      const existing = await Report.findOne({ userId, qrCode });
+      if (existing) {
+        return res.status(400).json({ 
+          error: "Duplicate report", 
+          message: "You have already submitted a report for this product. Each user can report a product only once." 
+        });
+      }
+    }
 
     if (!images || !Array.isArray(images) || images.length < 3) {
       return res.status(400).json({ error: "Minimum 3 images required" });
@@ -400,7 +429,9 @@ router.post("/report", protect, async (req, res) => {
     const report = await Report.create({
       userId,
       productName,
-      brand,
+      brand: brand || "",
+      description: description || "",
+      reportType: reportType || "COUNTERFEIT",
       images,
       latitude,
       longitude,
@@ -415,6 +446,13 @@ router.post("/report", protect, async (req, res) => {
       report 
     });
   } catch (err) {
+    // Handle MongoDB duplicate key error gracefully
+    if (err.code === 11000) {
+      return res.status(400).json({ 
+        error: "Duplicate report", 
+        message: "You have already submitted a report for this product." 
+      });
+    }
     console.error("Report submission error:", err);
     res.status(500).json({ error: "Failed to submit report" });
   }
@@ -438,14 +476,15 @@ router.get("/reports/all", protect, async (req, res) => {
     if (req.user.role === 'company' || req.user.role === 'authorizer') {
       const brandId = req.user.brandId;
       // Resolve brand name from brandId to filter reports
-      // This is a bit loose since reports are by string name, but better than nothing
-      // Ideally reports should link to a Brand ID if possible
       const Brand = require("../models/Brand");
       const brand = await Brand.findById(brandId);
       if (brand) {
         query.brand = { $regex: new RegExp(brand.brandName, "i") };
       }
-    } else if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+      query.reportType = "FAKE"; // Company/Authorizer sees Duplicate/Repeated scans
+    } else if (req.user.role === 'admin' || req.user.role === 'superadmin') {
+      query.reportType = "COUNTERFEIT"; // Admins see Counterfeit scans initially
+    } else {
       return res.status(403).json({ error: "Not authorized" });
     }
 
@@ -454,6 +493,40 @@ router.get("/reports/all", protect, async (req, res) => {
   } catch (err) {
     console.error("Error fetching all reports:", err);
     res.status(500).json({ error: "Failed to fetch reports" });
+  }
+});
+
+// Toggle counterfeit flag on a report
+router.put("/reports/:id/counterfeit", protect, async (req, res) => {
+  try {
+    if (!['admin', 'superadmin', 'company'].includes(req.user.role)) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+    const report = await Report.findById(req.params.id);
+    if (!report) return res.status(404).json({ error: "Report not found" });
+    report.isCounterfeit = !report.isCounterfeit;
+    await report.save();
+    res.json(report);
+  } catch (err) {
+    console.error("Error toggling counterfeit:", err);
+    res.status(500).json({ error: "Failed to update report" });
+  }
+});
+
+// Update report status
+router.put("/reports/:id/status", protect, async (req, res) => {
+  try {
+    if (!['admin', 'superadmin', 'company'].includes(req.user.role)) {
+      return res.status(403).json({ error: "Not authorized to update status" });
+    }
+    const report = await Report.findByIdAndUpdate(
+        req.params.id, 
+        { status: req.body.status },
+        { new: true }
+    );
+    res.json(report);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update report" });
   }
 });
 

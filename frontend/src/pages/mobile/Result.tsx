@@ -1,13 +1,11 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 // Assets
-import logo from "../../assets/logo.svg"; // Fallback or use standard logo
 import authenticIcon from "../../assets/logo.svg";
 import warningIcon from "../../assets/v2/home/header/warning.svg"; // Triangle
 import fakeIcon from "../../assets/v2/home/header/dangerous.svg"; // Red X
 
-import productImg from "../../assets/product_placeholder.png"; // Need a placeholder or real image
 import MobileHeader from "../../components/MobileHeader";
 
 export default function Result() {
@@ -15,40 +13,23 @@ export default function Result() {
   const navigate = useNavigate();
   const { state } = useLocation();
 
-  // Safety: direct URL access handling
-  if (!state && !status) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white p-4 text-center">
-        <p className="mb-4 text-gray-600">Invalid scan session</p>
-        <button
-          onClick={() => navigate("/home")}
-          className="bg-[#0D4E96] text-white px-6 py-3 rounded-full font-bold"
-        >
-          Scan Again
-        </button>
-      </div>
-    );
-  }
+  const validStatuses = ["ORIGINAL", "ALREADY_USED", "ALREADY_SCANNED", "DUPLICATE", "FAKE", "INACTIVE"];
+  const shouldRedirect = !state || !validStatuses.includes(status ?? "");
 
-  const data = state || {};
+  useEffect(() => {
+    if (shouldRedirect) navigate("/scan", { replace: true });
+  }, [shouldRedirect, navigate]);
 
-  // Render based on status
-  if (status === "ORIGINAL") {
-    return <ResultAuthentic data={data} />;
-  } else if (
-    status === "ALREADY_USED" ||
-    status === "ALREADY_SCANNED" ||
-    status === "DUPLICATE"
-  ) {
-    return <ResultRepeat data={data} />;
-  } else if (status === "FAKE") {
-    return <ResultFake data={data} />;
-  } else if (status === "INACTIVE") {
-    return <ResultInactive data={data} />;
-  } else {
-    // Fallback/Default
-    return <ResultFake data={data} />;
-  }
+  if (shouldRedirect) return null;
+
+  const data = state as any;
+
+  if (status === "ORIGINAL") return <ResultAuthentic data={data} />;
+  if (status === "ALREADY_USED" || status === "ALREADY_SCANNED" || status === "DUPLICATE") return <ResultRepeat data={data} />;
+  if (status === "FAKE") return <ResultFake data={data} />;
+  if (status === "INACTIVE") return <ResultInactive data={data} />;
+
+  return null;
 }
 
 // --- Sub-Components ---
@@ -325,7 +306,7 @@ function ResultRepeat({ data }: { data: any }) {
           </p>
 
           <button
-            onClick={() => navigate("/report", { state: { qrCode: data.qrCode } })}
+            onClick={() => navigate("/report", { state: { qrCode: data.qrCode, reportType: "FAKE", productName: data.productName, brand: data.brand } })}
             className="w-full bg-[#FFA808] text-white font-bold text-[18px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(255,168,8,0.4)] hover:bg-[#e59410] transition-colors"
           >
             Click to Report
@@ -406,7 +387,7 @@ function ResultFake({ data }: { data: any }) {
           </p>
 
           <button
-            onClick={() => navigate("/report", { state: { qrCode: data.qrCode } })}
+            onClick={() => navigate("/report", { state: { qrCode: data.qrCode, reportType: "COUNTERFEIT", productName: data.productName, brand: data.brand } })}
             className="w-full bg-[#E30211] text-white font-bold text-[20px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(227,2,17,0.4)] hover:bg-[#c9020f] transition-colors"
           >
             Click to Report
