@@ -1,5 +1,5 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 
 // Assets
 import authenticIcon from "../../assets/logo.svg";
@@ -76,9 +76,75 @@ function Header({ title = "Authentiks", showBell = true }) {
 
 function ResultAuthentic({ data }: { data: any }) {
   const navigate = useNavigate();
+  const [showAll, setShowAll] = useState(false);
+
   // Determine colors
-  const themeColor = "#2CA4D6"; // Blue
-  const productName = data.productName || "Herbtox+";
+  const productName = data.productName || "Product Info";
+
+  const productImage =
+    (data.images && data.images.length && data.images[0]) ||
+    data.productImage ||
+    "https://placehold.co/200x200?text=Product";
+
+  const companyName = data.companyName || data.company || data.manufacturer || data.brand || "-";
+
+  const coreFieldsMap: Record<string, string> = {
+    brand: "Brand",
+    category: "Category",
+    batchNo: "Batch #",
+    scannedAt: "Verified On",
+    manufactureDate: "Mfd on",
+    expiryDate: "Exp on",
+  };
+
+  const knownKeys = new Set([
+    "productName", "brand", "category", "batchNo", "scannedAt", "manufactureDate", "expiryDate",
+    "description", "images", "productImage", "productStats", "_id", "productId", "brandId",
+    "originalScan", "qrCode", "status", "companyName", "company", "manufacturer", "dynamicFields", "variants"
+  ]);
+
+  // Combine all fields into a single list
+  const allFields: { label: string; value: any }[] = [];
+
+  // 1. Core fields (prioritized order)
+  Object.entries(coreFieldsMap).forEach(([key, label]) => {
+    if (data[key]) {
+      let val = data[key];
+      if (key === "scannedAt") {
+        val = new Date(val).toLocaleDateString("en-GB", {
+          day: "numeric", month: "short", year: "numeric",
+        });
+      }
+      allFields.push({ label, value: val });
+    }
+  });
+
+  // 2. Variants
+  if (data.variants && Array.isArray(data.variants)) {
+    data.variants.forEach((v: any) => {
+      allFields.push({ label: v.variantName, value: v.value });
+    });
+  }
+
+  // 3. Dynamic Fields
+  if (data.dynamicFields) {
+    Object.entries(data.dynamicFields).forEach(([k, v]) => {
+      allFields.push({ label: k, value: String(v) });
+    });
+  }
+
+  // 4. Any other top-level fields not already covered
+  Object.entries(data).forEach(([k, v]) => {
+    if (knownKeys.has(k)) return;
+    if (coreFieldsMap[k]) return;
+    if (v === null || v === undefined || typeof v === "object") return;
+
+    const label = k.charAt(0).toUpperCase() + k.slice(1).replace(/([A-Z])/g, ' $1').trim();
+    allFields.push({ label, value: String(v) });
+  });
+
+  const displayedFields = showAll ? allFields : allFields.slice(0, 6);
+  const hasMore = allFields.length > 6;
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] font-sans flex flex-col items-center">
@@ -111,22 +177,18 @@ function ResultAuthentic({ data }: { data: any }) {
         </div>
 
         <div className="bg-white shadow-sm rounded-b-[16px]">
-          {/* Product Image & Name Section - Overlaps/Connects visually */}
-          <div className="bg-white pb-6  flex flex-col items-center relative gap-3">
+          {/* Product Image & Name Section */}
+          <div className="bg-white pb-6 flex flex-col items-center relative gap-3">
             <div className="w-full bg-[#1F2642] py-2 text-center">
               <h3 className="text-white font-bold text-[20px]">
                 {productName}
               </h3>
             </div>
-            <div className="relative w-32 h-32 mt-4">
-              {/* Placeholder for Product Image */}
+            <div className="relative w-40 h-40 mt-4">
               <img
-                src={
-                  data.productStats ||
-                  "https://placehold.co/200x200?text=Product"
-                }
+                src={productImage}
                 alt={productName}
-                className="w-full h-full object-contain mix-blend-multiply"
+                className="w-full h-full object-contain mix-blend-multiply rounded"
               />
               <img
                 src={authenticIcon}
@@ -139,61 +201,58 @@ function ResultAuthentic({ data }: { data: any }) {
           <div className="p-2">
             {/* Grid Details */}
             <div className="grid grid-cols-2 gap-3">
-              <DetailBox label="Brand" value={data.brand || "Indian Essence"} />
-              <DetailBox label="Category" value={data.category || "Pharma"} />
-              <DetailBox label="Batch #" value={data.batchNo || "25SD3F"} />
-              <DetailBox
-                label="Verified On"
-                value={
-                  data.scannedAt
-                    ? new Date(data.scannedAt).toLocaleDateString("en-GB", {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })
-                    : "20/Oct/2025"
-                }
-              />
-              <DetailBox
-                label="Mfd on"
-                value={data.manufactureDate || "May 2025"}
-              />
-              <DetailBox label="Exp on" value={data.expiryDate || "May 2027"} />
+              {displayedFields.map((field, idx) => (
+                <DetailBox key={idx} label={field.label} value={field.value} />
+              ))}
             </div>
 
-            {/* Additional Info */}
+            {/* Show More Button */}
+            {hasMore && (
+              <div className="w-full flex justify-center mt-4 mb-2">
+                <button
+                  onClick={() => setShowAll(!showAll)}
+                  className="bg-[#F0F7FF] text-[#0D4E96] px-6 py-2 rounded-full font-bold text-[14px] border border-[#0D4E96]/20 shadow-sm flex items-center gap-2"
+                >
+                  {showAll ? "Show Less Info" : "Show More Info"}
+                  <svg
+                    width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                    className={`transition-transform duration-300 ${showAll ? 'rotate-180' : ''}`}
+                  >
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </button>
+              </div>
+            )}
+
             <div className="">
               <h4 className="font-bold text-[#333] text-[18px] mb-2 mt-4">
                 Additional Info:
               </h4>
-              <div className="bg-[#F8F8F8] p-2 rounded-[16px] shadow-[2px_2px_1px_1px_rgba(1,1,1,0.1)]">
-                <p className="text-[#666] text-[16px] mb-4">
-                  {data.description ||
-                    `${productName} is a carefully formulated herbal blood purifier syrup designed to support the body's natural detox process. Enriched with time-tested herbs.`}
-                </p>
+              <div className="bg-[#F8F8F8] p-4 rounded-[16px] shadow-[2px_2px_1px_1px_rgba(1,1,1,0.1)]">
+                {data.description && (
+                  <p className="text-[#666] text-[16px] mb-4">
+                    {data.description}
+                  </p>
+                )}
 
-                <h4 className="font-bold text-[#333] text-[14px] mb-2">
-                  Key Benefits
-                </h4>
-                <ul className="list-disc pl-5 text-[#6E6D6B] text-[16px]">
-                  <li>Supports natural blood purification</li>
-                  <li>Helps reduce toxins from the body</li>
-                  <li>Promotes healthy, clear skin</li>
-                  <li>Supports liver function and metabolism</li>
-                </ul>
+                <div className="mb-3">
+                  <p className="text-[#333] text-[14px] font-bold uppercase tracking-wider text-xs opacity-60">Company</p>
+                  <p className="text-[#666] text-[15px] font-medium">{companyName}</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Review Button */}
-        <button className="w-full bg-gradient-to-r from-[#0E5CAB] to-[#1F2642] text-white font-bold text-[18px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(14,92,171,0.3)] mt-2">
+        <button className="w-full bg-gradient-to-r from-[#0E5CAB] to-[#1F2642] text-white font-bold text-[18px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(14,92,171,0.3)] mt-4">
           Review Product
         </button>
       </div>
     </div>
   );
 }
+
 
 function ResultRepeat({ data }: { data: any }) {
   const navigate = useNavigate();
@@ -306,16 +365,16 @@ function ResultRepeat({ data }: { data: any }) {
           </p>
 
           <button
-            onClick={() => navigate("/report", { 
-              state: { 
-                qrCode: data.qrCode, 
-                reportType: "FAKE", 
-                productName: data.productName, 
+            onClick={() => navigate("/report", {
+              state: {
+                qrCode: data.qrCode,
+                reportType: "FAKE",
+                productName: data.productName,
                 brand: data.brand,
                 productId: data.productId || null,
                 brandId: data.brandId || null,
                 scanStatus: "FAKE"
-              } 
+              }
             })}
             className="w-full bg-[#FFA808] text-white font-bold text-[18px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(255,168,8,0.4)] hover:bg-[#e59410] transition-colors"
           >
@@ -397,16 +456,16 @@ function ResultFake({ data }: { data: any }) {
           </p>
 
           <button
-            onClick={() => navigate("/report", { 
-              state: { 
-                qrCode: data.qrCode, 
-                reportType: "COUNTERFEIT", 
-                productName: data.productName, 
+            onClick={() => navigate("/report", {
+              state: {
+                qrCode: data.qrCode,
+                reportType: "COUNTERFEIT",
+                productName: data.productName,
                 brand: data.brand,
                 productId: data.productId || null,
                 brandId: data.brandId || null,
                 scanStatus: data.status || "ALREADY_USED"
-              } 
+              }
             })}
             className="w-full bg-[#E30211] text-white font-bold text-[20px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(227,2,17,0.4)] hover:bg-[#c9020f] transition-colors"
           >

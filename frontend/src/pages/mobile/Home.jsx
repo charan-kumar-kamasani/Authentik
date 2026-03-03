@@ -258,7 +258,7 @@ export default function Home() {
               <StatsCard
                 icon={statusValid}
                 count={String(stats.authentiks)}
-                label="Verify"
+                label="Verified"
                 isLogo={true}
               />
               <StatsCard

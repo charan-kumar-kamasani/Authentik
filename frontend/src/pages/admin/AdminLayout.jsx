@@ -179,7 +179,7 @@ export default function AdminLayout({ children }) {
             </div>
             <div>
               <h1 className="text-xl font-black tracking-tight text-slate-800">
-                Authenticks<span className="text-blue-600">.</span>
+                Authentiks<span className="text-blue-600">.</span>
               </h1>
               <p className="text-[10px] text-slate-400 mt-0.5 uppercase tracking-widest font-bold">
                 Enterprise panel
