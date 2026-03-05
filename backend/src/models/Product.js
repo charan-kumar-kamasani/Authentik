@@ -12,7 +12,9 @@ module.exports = mongoose.model(
       manufactureDate: String,
       expiryDate: String,
       quantity: Number,
+      productImage: String,
       sequence: { type: Number, default: 0 },
+
       orderId: { 
         type: mongoose.Schema.Types.ObjectId, 
         ref: "Order",

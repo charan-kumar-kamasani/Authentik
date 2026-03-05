@@ -271,6 +271,7 @@ router.post(
       manufactureDate, 
       expiryDate, 
       quantity,
+      productImage,
       // New dynamic fields
       mfdOn,
       bestBefore,
@@ -309,12 +310,13 @@ router.post(
           quantity: 1, // Each individual unit is 1
           sequence: nextSeq,
           createdBy: req.user._id,
-          // New dynamic fields
-          mfdOn: mfdOn || null,
-          bestBefore: bestBefore || null,
+          // New dynamic fields (sanitize to avoid empty objects)
+          mfdOn: (mfdOn && mfdOn.month && mfdOn.year) ? mfdOn : undefined,
+          bestBefore: (bestBefore && bestBefore.value) ? bestBefore : undefined,
           calculatedExpiryDate: calculatedExpiryDate || null,
           dynamicFields: dynamicFields || {},
           variants: variants || [],
+          productImage: productImage || null,
         });
         
         createdProducts.push(product);

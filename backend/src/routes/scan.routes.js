@@ -111,15 +111,31 @@ console.log(qrCode)
       return res.status(400).json({ error: "qrCode required" });
     }
 
-    const product = await Product.findOne({ qrCode });
+    const product = await Product.findOne({ qrCode }).populate('orderId');
  
     if (!product) {
       return res.json({ status: "FAKE", isActive: false, product: null });
     }
 
-    // If product exists but is inactive, return INACTIVE status
+    // If product exists but is inactive, return INACTIVE status with product details for UI context
     if (!product.isActive) {
-      return res.json({ status: "INACTIVE", isActive: false, message: "This QR code is inactive." });
+      return res.json({ 
+        status: "INACTIVE", 
+        isActive: false, 
+        message: "This QR code is inactive.",
+        product: {
+          productId: product._id,
+          productName: product.productName || product.orderId?.productName,
+          brand: product.brand || product.orderId?.brand,
+          batchNo: product.batchNo || product.orderId?.batchNo,
+          productImage: product.productImage || product.orderId?.productImage,
+          mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
+          bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
+          calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
+          dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
+          variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
+        }
+      });
     }
 
     return res.json({
@@ -130,6 +146,12 @@ console.log(qrCode)
         productName: product.productName,
         brand: product.brand,
         batchNo: product.batchNo,
+        productImage: product.productImage || product.orderId?.productImage,
+        mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
+        bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
+        calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
+        dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
+        variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
       },
     });
   } catch (err) {
@@ -169,10 +191,10 @@ router.post("/", protect, async (req, res) => {
     const scannedAt = new Date();
 
     // 1️⃣ Check product
-    const product = await Product.findOne({ qrCode });
+    const product = await Product.findOne({ qrCode }).populate('orderId');
 
     // --- We record EVERY attempt, so we skip searching for existingScan here ---
-
+console.log("______product", product) 
     /* =======================
        ❌ FAKE PRODUCT
     ======================= */
@@ -226,8 +248,15 @@ router.post("/", protect, async (req, res) => {
           qrCode,
           productId: product._id,
           brandId: finalBrandId,
-          productName: product.productName,
+          productName: product.productName || product.orderId?.productName,
           brand: finalBrandName,
+          batchNo: product.batchNo || product.orderId?.batchNo,
+          productImage: product.productImage || product.orderId?.productImage,
+          mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
+          bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
+          calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
+          dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
+          variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
           place,
           scannedAt: scan.createdAt
         }
@@ -251,13 +280,17 @@ router.post("/", protect, async (req, res) => {
         data: {
           qrCode,
           productId: product._id,
-          productName: product.productName,
+          productName: product.productName || product.orderId?.productName,
           brand: product.brand || finalBrandName,
-          batchNo: product.batchNo,
-          manufactureDate: product.manufactureDate,
-          expiryDate: product.expiryDate,
-          dynamicFields: product.dynamicFields,
-          variants: product.variants,
+          batchNo: product.batchNo || product.orderId?.batchNo,
+          manufactureDate: product.manufactureDate || product.orderId?.manufactureDate,
+          expiryDate: product.expiryDate || product.orderId?.expiryDate,
+          productImage: product.productImage || product.orderId?.productImage,
+          mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
+          bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
+          calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
+          dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
+          variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
           place,
           latitude,
           longitude,
@@ -299,22 +332,20 @@ router.post("/", protect, async (req, res) => {
           qrCode,
           productId: product._id,
           brandId: finalBrandId,
-          productName: product.productName,
+          productName: product.productName || product.orderId?.productName,
           brand: product.brand || finalBrandName,
-          batchNo: product.batchNo,
-          manufactureDate: product.manufactureDate,
-          expiryDate: product.expiryDate,
-          dynamicFields: product.dynamicFields,
-          variants: product.variants,
+          batchNo: product.batchNo || product.orderId?.batchNo,
+          manufactureDate: product.manufactureDate || product.orderId?.manufactureDate,
+          expiryDate: product.expiryDate || product.orderId?.expiryDate,
+          productImage: product.productImage || product.orderId?.productImage,
+          mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
+          bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
+          calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
+          dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
+          variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
           place,
-          latitude,
-          longitude,
           scannedAt: scan.createdAt,
-          originalScan: {
-            scannedBy: alreadyUsed.userId ? alreadyUsed.userId.mobile : "Unknown",
-            scannedAt: alreadyUsed.createdAt,
-            place: alreadyUsed.place
-          }
+          originalScannerMobile: alreadyUsed.userId?.mobile,
         },
       });
     }
@@ -347,8 +378,12 @@ router.post("/", protect, async (req, res) => {
         batchNo: product.batchNo,
         manufactureDate: product.manufactureDate,
         expiryDate: product.expiryDate,
-        dynamicFields: product.dynamicFields,
-        variants: product.variants,
+        productImage: product.productImage || product.orderId?.productImage,
+        mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
+        bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
+        calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
+        dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
+        variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
         place,
         latitude,
         longitude,

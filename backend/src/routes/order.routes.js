@@ -64,7 +64,8 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       bestBefore,
       calculatedExpiryDate,
       dynamicFields,
-      variants
+      variants,
+      productImage
     } = req.body;
     
     // Determine the brandId (preferred) or fallback to company owner
@@ -111,12 +112,13 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       createdBy: req.user._id,
       brandId,
       status: 'Pending Authorization',
-      // New dynamic fields
-      mfdOn: mfdOn || null,
-      bestBefore: bestBefore || null,
+      // New dynamic fields (sanitize to avoid empty objects)
+      mfdOn: (mfdOn && mfdOn.month && mfdOn.year) ? mfdOn : undefined,
+      bestBefore: (bestBefore && bestBefore.value) ? bestBefore : undefined,
       calculatedExpiryDate: calculatedExpiryDate || null,
       dynamicFields: dynamicFields || {},
       variants: variants || [],
+      productImage: productImage || null,
       history: [{
         status: 'Pending Authorization',
         changedBy: req.user._id,
@@ -182,7 +184,14 @@ router.get('/', protect, async (req, res) => {
 
     const orders = await Order.find(query)
       .populate('createdBy', 'name email role')
-      .populate('brandId', 'brandName')
+      .populate({
+        path: 'brandId',
+        select: 'brandName companyId',
+        populate: {
+          path: 'companyId',
+          select: 'companyName courierAddress'
+        }
+      })
       .sort({ createdAt: -1 });
       
     res.json(orders);
@@ -197,7 +206,14 @@ router.get('/:id', protect, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id)
       .populate('createdBy', 'name email role')
-      .populate('brandId', 'brandName')
+      .populate({
+        path: 'brandId',
+        select: 'brandName companyId',
+        populate: {
+          path: 'companyId',
+          select: 'companyName courierAddress'
+        }
+      })
       .populate({
         path: 'history.changedBy',
         select: 'name email role'
@@ -362,6 +378,12 @@ router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req
         batchNo: order.batchNo,
         manufactureDate: order.manufactureDate,
         expiryDate: order.expiryDate,
+        productImage: order.productImage,
+        mfdOn: (order.mfdOn && order.mfdOn.month && order.mfdOn.year) ? order.mfdOn : undefined,
+        bestBefore: (order.bestBefore && order.bestBefore.value) ? order.bestBefore : undefined,
+        calculatedExpiryDate: order.calculatedExpiryDate,
+        dynamicFields: order.dynamicFields,
+        variants: order.variants,
         quantity: 1,
         sequence: currentSeq,
         orderId: order._id,

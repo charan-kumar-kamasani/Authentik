@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   FormInput, Plus, Trash2, GripVertical, Check, X, ChevronDown, ChevronUp,
   Type, Hash, List, FileText, Image, Calendar, Mail, Phone, Settings, Eye, EyeOff
 } from 'lucide-react';
@@ -62,13 +62,13 @@ export default function FormBuilder({ onSave }) {
       const token = localStorage.getItem('adminToken');
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://authentik-8p39.vercel.app'}/admin/form-config`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify(formConfig),
       });
-      
+
       if (res.ok) {
         const data = await res.json();
         setFormConfig(data.formConfig);
@@ -105,7 +105,14 @@ export default function FormBuilder({ onSave }) {
 
   const updateCustomField = (index, updates) => {
     const updatedFields = [...formConfig.customFields];
-    updatedFields[index] = { ...updatedFields[index], ...updates };
+    const field = { ...updatedFields[index], ...updates };
+
+    // If isQuantity is turned on, recommend/set isMandatory to true
+    if (updates.isQuantity === true) {
+      field.isMandatory = true;
+    }
+
+    updatedFields[index] = field;
     setFormConfig({ ...formConfig, customFields: updatedFields });
   };
 
@@ -118,7 +125,7 @@ export default function FormBuilder({ onSave }) {
     const updatedFields = [...formConfig.customFields];
     const newIndex = direction === 'up' ? index - 1 : index + 1;
     if (newIndex < 0 || newIndex >= updatedFields.length) return;
-    
+
     [updatedFields[index], updatedFields[newIndex]] = [updatedFields[newIndex], updatedFields[index]];
     setFormConfig({ ...formConfig, customFields: updatedFields });
   };
@@ -329,7 +336,7 @@ export default function FormBuilder({ onSave }) {
                       <h4 className="text-sm font-semibold text-slate-800">Product Variants (Multi-Add Capable)</h4>
                     </div>
                   </div>
-                  
+
                   {formConfig.variants.map((variant, idx) => (
                     <div key={idx} className="flex flex-col gap-1.5">
                       <label className="text-sm font-medium text-slate-700 ml-1 flex items-center gap-2">
@@ -620,6 +627,47 @@ export default function FormBuilder({ onSave }) {
                       <label className="text-sm font-semibold text-slate-700">Make this field mandatory</label>
                     </div>
 
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={field.isQuantity || false}
+                        onChange={(e) => updateCustomField(index, { isQuantity: e.target.checked })}
+                        className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                      />
+                      <label className="text-sm font-semibold text-slate-700">This field represents Product Quantity</label>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={field.isProductName || false}
+                        onChange={(e) => updateCustomField(index, { isProductName: e.target.checked })}
+                        className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                      />
+                      <label className="text-sm font-semibold text-slate-700">This field represents Product Name</label>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={field.isBatchNo || false}
+                        onChange={(e) => updateCustomField(index, { isBatchNo: e.target.checked })}
+                        className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                      />
+                      <label className="text-sm font-semibold text-slate-700">This field represents Batch Number</label>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={field.isProductImage || false}
+                        onChange={(e) => updateCustomField(index, { isProductImage: e.target.checked })}
+                        className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                      />
+                      <label className="text-sm font-semibold text-slate-700">This field represents Product Image</label>
+                    </div>
+
                     {/* Dropdown Options */}
                     {field.fieldType === 'dropdown' && (
                       <div>
@@ -698,7 +746,7 @@ export default function FormBuilder({ onSave }) {
                     <Trash2 size={16} />
                   </button>
                 </div>
-                
+
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-600 mb-1">Variant Label</label>
@@ -803,6 +851,6 @@ export default function FormBuilder({ onSave }) {
           )}
         </button>
       </div>
-    </div>
+    </div >
   );
 }

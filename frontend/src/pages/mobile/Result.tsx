@@ -81,11 +81,8 @@ function ResultAuthentic({ data }: { data: any }) {
   // Determine colors
   const productName = data.productName || "Product Info";
 
-  const productImage =
-    (data.images && data.images.length && data.images[0]) ||
-    data.productImage ||
-    "https://placehold.co/200x200?text=Product";
-
+  const productImage = data.productImage || (data.images && data.images.length > 0 ? data.images[0] : null);
+  console.log("______product image", productImage, data)
   const companyName = data.companyName || data.company || data.manufacturer || data.brand || "-";
 
   const coreFieldsMap: Record<string, string> = {
@@ -95,6 +92,7 @@ function ResultAuthentic({ data }: { data: any }) {
     scannedAt: "Verified On",
     manufactureDate: "Mfd on",
     expiryDate: "Exp on",
+    calculatedExpiryDate: "Calculated Exp",
   };
 
   const knownKeys = new Set([
@@ -106,7 +104,6 @@ function ResultAuthentic({ data }: { data: any }) {
   // Combine all fields into a single list
   const allFields: { label: string; value: any }[] = [];
 
-  // 1. Core fields (prioritized order)
   Object.entries(coreFieldsMap).forEach(([key, label]) => {
     if (data[key]) {
       let val = data[key];
@@ -118,6 +115,16 @@ function ResultAuthentic({ data }: { data: any }) {
       allFields.push({ label, value: val });
     }
   });
+
+  // 1a. Mfd On (Month/Year)
+  if (data.mfdOn && data.mfdOn.month && data.mfdOn.year) {
+    allFields.push({ label: "Mfd Month/Year", value: `${data.mfdOn.month}/${data.mfdOn.year}` });
+  }
+
+  // 1b. Best Before
+  if (data.bestBefore && data.bestBefore.value && data.bestBefore.unit) {
+    allFields.push({ label: "Best Before", value: `${data.bestBefore.value} ${data.bestBefore.unit}` });
+  }
 
   // 2. Variants
   if (data.variants && Array.isArray(data.variants)) {
@@ -184,17 +191,19 @@ function ResultAuthentic({ data }: { data: any }) {
                 {productName}
               </h3>
             </div>
-            <div className="relative w-40 h-40 mt-4">
-              <img
-                src={productImage}
-                alt={productName}
-                className="w-full h-full object-contain mix-blend-multiply rounded"
-              />
-              <img
-                src={authenticIcon}
-                className="absolute bottom-0 right-0 w-8 h-8"
-                alt="Verified"
-              />
+            <div className="relative group">
+              <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              <div className="relative aspect-square rounded-[2rem] overflow-hidden bg-white shadow-2xl border-4 border-white shadow-indigo-200/50">
+                {productImage ? (
+                  <img src={productImage} alt={data.productName} className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+                    {/* Assuming 'Package' icon is available or needs to be imported/defined */}
+                    {/* <Package size={80} className="text-slate-300 stroke-[1.5]" /> */}
+                    <span className="text-slate-300 text-xl">No Image</span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -520,7 +529,28 @@ function ResultInactive({ data }: { data: any }) {
           </div>
         </div>
 
-        <div className="bg-white rounded-b-[16px] shadow-sm p-4 pt-6 text-center">
+        {/* Display product info even if inactive */}
+        <div className="bg-white rounded-b-[16px] shadow-sm p-4 pt-6">
+          <div className="bg-[#F8F8F8] rounded-[16px] p-4 border border-gray-200 mb-6">
+            <h3 className="text-[#333] font-bold text-[16px] mb-3 text-left">Product Details</h3>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500 font-medium">Product</span>
+                <span className="text-gray-900 font-bold">{data.productName || 'N/A'}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500 font-medium">Brand</span>
+                <span className="text-gray-900 font-bold">{data.brand || 'N/A'}</span>
+              </div>
+              {data.batchNo && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500 font-medium">Batch #</span>
+                  <span className="text-gray-900 font-bold">{data.batchNo}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
           <h3 className="text-[#333] font-bold text-[18px] mb-2 text-left">
             What does this mean?
           </h3>
@@ -540,9 +570,12 @@ function ResultInactive({ data }: { data: any }) {
   );
 }
 
-const maskPhone = (value: any) => {
-  if (!value) return "Unknown";
-  const str = value.toString();
-  if (str.length < 6) return str;
-  return `${str.slice(0, 3)}xxxx${str.slice(-3)}`;
+const maskPhone = (phone: any) => {
+  if (!phone) return 'N/A';
+  const str = phone.toString();
+  if (str.length <= 5) return str;
+  const first3 = str.slice(0, 3);
+  const last2 = str.slice(-2);
+  const mid = '*'.repeat(str.length - 5);
+  return `${first3}${mid}${last2}`;
 };

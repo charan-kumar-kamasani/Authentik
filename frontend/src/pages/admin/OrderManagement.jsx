@@ -11,6 +11,56 @@ import {
 } from 'lucide-react';
 
 
+// --- Sub-components moved outside to fix focus issues ---
+const statusConfig = {
+  'Pending Authorization': { icon: Clock, color: 'amber', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500' },
+  'Authorized': { icon: ShieldCheck, color: 'violet', bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-violet-200', dot: 'bg-violet-500' },
+  'Order Processing': { icon: Settings, color: 'blue', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', dot: 'bg-blue-500' },
+  'Dispatching': { icon: Package, color: 'orange', bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', dot: 'bg-orange-500' },
+  'Dispatched': { icon: Truck, color: 'sky', bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200', dot: 'bg-sky-500' },
+  'Received': { icon: CheckCircle2, color: 'emerald', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500' },
+  'Rejected': { icon: XCircle, color: 'red', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', dot: 'bg-red-500' },
+};
+
+const StatusBadge = ({ status }) => {
+  const cfg = statusConfig[status] || { icon: Package, bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-200', dot: 'bg-slate-400' };
+  const Icon = cfg.icon;
+  return (
+    <span className={'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border ' + cfg.bg + ' ' + cfg.text + ' ' + cfg.border}>
+      <Icon size={12} strokeWidth={3} /> {status}
+    </span>
+  );
+};
+
+const ActionBtn = ({ onClick, icon: Icon, label, color }) => {
+  const [busy, setBusy] = React.useState(false);
+  const handle = async (e) => {
+    if (busy) return;
+    try {
+      setBusy(true);
+      const ret = onClick?.(e);
+      if (ret && ret.then) await ret;
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <button onClick={handle} disabled={busy}
+      aria-disabled={busy}
+      className={'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all border-2 select-none active:scale-95 bg-' + color + '-50 border-' + color + '-200 text-' + color + '-700 hover:bg-' + color + '-100 shadow-sm ' + (busy ? 'opacity-60 pointer-events-none' : 'cursor-pointer')}>
+      <Icon size={14} strokeWidth={2.5} /> {label}
+    </button>
+  );
+};
+
+const InputField = ({ label, required, ...props }) => (
+  <div>
+    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{label}</label>
+    <input {...props} required={required}
+      className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-300 transition-all" />
+  </div>
+);
+
 const OrderManagement = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
@@ -163,38 +213,38 @@ const OrderManagement = () => {
   };
 
   const handleCreditProceedPayment = async () => {
-//     setCreditProcessing(true);
-//     try {
-//       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-//       const payload = {
-//         type: selectedCreditPlan ? 'plan' : 'topup',
-//         ...(selectedCreditPlan ? { planId: selectedCreditPlan._id } : { quantity: creditModal?.shortfall || 0 }),
-//         ...(creditCouponApplied ? { couponCode: creditCouponApplied.code } : {}),
-//       };
-//       const result = await initiatePayment(payload, token);
-// console.log('Initiate Payment Result:', result);
-// await new Promise(resolve => setTimeout(resolve, 20000000)); // Simulate waiting for payment completion
-//       // if (result.redirectUrl) {
-//       //   // window.location.href = result.redirectUrl;
-//       //   return;
-//       // }
+    //     setCreditProcessing(true);
+    //     try {
+    //       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+    //       const payload = {
+    //         type: selectedCreditPlan ? 'plan' : 'topup',
+    //         ...(selectedCreditPlan ? { planId: selectedCreditPlan._id } : { quantity: creditModal?.shortfall || 0 }),
+    //         ...(creditCouponApplied ? { couponCode: creditCouponApplied.code } : {}),
+    //       };
+    //       const result = await initiatePayment(payload, token);
+    // console.log('Initiate Payment Result:', result);
+    // await new Promise(resolve => setTimeout(resolve, 20000000)); // Simulate waiting for payment completion
+    //       // if (result.redirectUrl) {
+    //       //   // window.location.href = result.redirectUrl;
+    //       //   return;
+    //       // }
 
-//       // Auto-completed — re-try authorize
-//       // setCreditView('processing');
-//       // await updateOrderStatus(creditModal.orderId, 'authorize', {}, token);
-//       // setCreditModal(null);
-//       // resetCreditCheckout();
-//       // fetchOrders();
-//       alert('Credits purchased & order authorized successfully!');
-//     } catch (e) {
-//       if (e.creditData) {
-//         setCreditModal({ orderId: creditModal.orderId, ...e.creditData });
-//         setCreditView('choice');
-//         alert('Payment completed but still insufficient credits. Please buy more.');
-//       } else {
-//         alert('Error: ' + e.message);
-//       }
-//     } finally { setCreditProcessing(false); }
+    //       // Auto-completed — re-try authorize
+    //       // setCreditView('processing');
+    //       // await updateOrderStatus(creditModal.orderId, 'authorize', {}, token);
+    //       // setCreditModal(null);
+    //       // resetCreditCheckout();
+    //       // fetchOrders();
+    //       alert('Credits purchased & order authorized successfully!');
+    //     } catch (e) {
+    //       if (e.creditData) {
+    //         setCreditModal({ orderId: creditModal.orderId, ...e.creditData });
+    //         setCreditView('choice');
+    //         alert('Payment completed but still insufficient credits. Please buy more.');
+    //       } else {
+    //         alert('Error: ' + e.message);
+    //       }
+    //     } finally { setCreditProcessing(false); }
   };
 
   const resetCreditCheckout = () => {
@@ -231,6 +281,17 @@ const OrderManagement = () => {
     finally { setGlobalLoading(false); }
   };
 
+  const handleOpenDispatchModal = (order) => {
+    const courierName = order.brandId?.companyId?.companyName || '';
+    const courierAddress = order.brandId?.companyId?.courierAddress || '';
+    setDispatchData({
+      trackingNumber: '',
+      courierName: courierName,
+      notes: courierAddress ? `Deliver to: ${courierAddress}` : ''
+    });
+    setShowDispatchModal(order._id);
+  };
+
   const statuses = ['All', 'Pending Authorization', 'Authorized', 'Order Processing', 'Dispatching', 'Dispatched', 'Received', 'Rejected'];
 
   const filtered = orders.filter(o => {
@@ -247,25 +308,7 @@ const OrderManagement = () => {
   }, [filtered, currentPage, rowsPerPage]);
   useMemo(() => { setCurrentPage(1); }, [searchTerm, statusFilter]);
 
-  const statusConfig = {
-    'Pending Authorization': { icon: Clock, color: 'amber', bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500' },
-    'Authorized': { icon: ShieldCheck, color: 'violet', bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-violet-200', dot: 'bg-violet-500' },
-    'Order Processing': { icon: Settings, color: 'blue', bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', dot: 'bg-blue-500' },
-    'Dispatching': { icon: Package, color: 'orange', bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', dot: 'bg-orange-500' },
-    'Dispatched': { icon: Truck, color: 'sky', bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200', dot: 'bg-sky-500' },
-    'Received': { icon: CheckCircle2, color: 'emerald', bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500' },
-    'Rejected': { icon: XCircle, color: 'red', bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', dot: 'bg-red-500' },
-  };
-
-  const StatusBadge = ({ status }) => {
-    const cfg = statusConfig[status] || { icon: Package, bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-200', dot: 'bg-slate-400' };
-    const Icon = cfg.icon;
-    return (
-      <span className={'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border ' + cfg.bg + ' ' + cfg.text + ' ' + cfg.border}>
-        <Icon size={12} strokeWidth={3} /> {status}
-      </span>
-    );
-  };
+  // StatusBadge and statusConfig moved outside the component to fix focus issues
 
   const counts = {};
   orders.forEach(o => { counts[o.status] = (counts[o.status] || 0) + 1; });
@@ -289,35 +332,7 @@ const OrderManagement = () => {
     return '-';
   };
 
-  // Action button renderer
-  const ActionBtn = ({ onClick, icon: Icon, label, color }) => {
-    const [busy, setBusy] = React.useState(false);
-    const handle = async (e) => {
-      if (busy) return;
-      try {
-        setBusy(true);
-        const ret = onClick?.(e);
-        if (ret && ret.then) await ret;
-      } finally {
-        setBusy(false);
-      }
-    };
-    return (
-      <button onClick={handle} disabled={busy}
-        aria-disabled={busy}
-        className={'inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all border-2 select-none active:scale-95 bg-' + color + '-50 border-' + color + '-200 text-' + color + '-700 hover:bg-' + color + '-100 shadow-sm ' + (busy ? 'opacity-60 pointer-events-none' : 'cursor-pointer')}> 
-        <Icon size={14} strokeWidth={2.5} /> {label}
-      </button>
-    );
-  };
-
-  const InputField = ({ label, required, ...props }) => (
-    <div>
-      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">{label}</label>
-      <input {...props} required={required}
-        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-300 transition-all" />
-    </div>
-  );
+  // ActionBtn and InputField moved outside the component to fix focus issues
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-[500px]">
@@ -380,7 +395,7 @@ const OrderManagement = () => {
             <InputField label="Manufacture Date" type="date" value={newQr.manufactureDate} onChange={e => setNewQr({ ...newQr, manufactureDate: e.target.value })} />
             <InputField label="Expiry Date" type="date" value={newQr.expiryDate} onChange={e => setNewQr({ ...newQr, expiryDate: e.target.value })} />
             <div className="md:col-span-2">
-              <button type="submit" disabled={creatorSubmitting} className={"w-full py-3 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all " + (creatorSubmitting ? 'bg-blue-300 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:shadow-xl') }>
+              <button type="submit" disabled={creatorSubmitting} className={"w-full py-3 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all " + (creatorSubmitting ? 'bg-blue-300 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:shadow-xl')}>
                 {creatorSubmitting ? 'Creating...' : 'Generate Product & QR'}
               </button>
             </div>
@@ -484,7 +499,7 @@ const OrderManagement = () => {
                       )}
                       {/* Dispatch */}
                       {order.status === 'Dispatching' && (role === 'admin' || role === 'superadmin') && (
-                        <ActionBtn onClick={() => setShowDispatchModal(order._id)} icon={Truck} label="Dispatch" color="amber" />
+                        <ActionBtn onClick={() => handleOpenDispatchModal(order)} icon={Truck} label="Dispatch" color="amber" />
                       )}
                       {/* Received */}
                       {order.status === 'Dispatched' && (role === 'company' || role === 'authorizer') && (

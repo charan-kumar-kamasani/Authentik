@@ -37,6 +37,10 @@ const fieldSchema = new mongoose.Schema({
     max: Number,
     pattern: String,
   },
+  isQuantity: {
+    type: Boolean,
+    default: false,
+  },
 }, { _id: true });
 
 // Variant configuration (for repeatable variant fields like Color, Size, Model)

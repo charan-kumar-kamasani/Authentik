@@ -3,6 +3,16 @@ import { ShieldAlert, AlertTriangle, CheckCircle2, Search, MapPin, Calendar, Che
 import API_BASE_URL from '../../config/api';
 import TablePagination from '../../components/TablePagination';
 
+const maskPhone = (phone) => {
+  if (!phone) return 'N/A';
+  const str = phone.toString();
+  if (str.length <= 5) return str;
+  const first3 = str.slice(0, 3);
+  const last2 = str.slice(-2);
+  const mid = '*'.repeat(str.length - 5);
+  return `${first3}${mid}${last2}`;
+};
+
 export default function AdminReports() {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -172,16 +182,14 @@ export default function AdminReports() {
       <div className="flex justify-center">
         <div className="bg-slate-100 p-1.5 rounded-2xl inline-flex gap-1">
           <button onClick={() => setTab('fake')}
-            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 flex items-center gap-2 ${
-              tab === 'fake' ? 'bg-white text-slate-800 shadow-md ring-1 ring-slate-200/50' : 'text-slate-500 hover:text-slate-700'
-            }`}>
+            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 flex items-center gap-2 ${tab === 'fake' ? 'bg-white text-slate-800 shadow-md ring-1 ring-slate-200/50' : 'text-slate-500 hover:text-slate-700'
+              }`}>
             <ShieldX size={15} /> Fake Reports
             <span className="text-[10px] font-black bg-red-100 text-red-600 px-1.5 py-0.5 rounded-md">{fakeCount}</span>
           </button>
           <button onClick={() => setTab('duplicate')}
-            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 flex items-center gap-2 ${
-              tab === 'duplicate' ? 'bg-white text-slate-800 shadow-md ring-1 ring-slate-200/50' : 'text-slate-500 hover:text-slate-700'
-            }`}>
+            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 flex items-center gap-2 ${tab === 'duplicate' ? 'bg-white text-slate-800 shadow-md ring-1 ring-slate-200/50' : 'text-slate-500 hover:text-slate-700'
+              }`}>
             <Copy size={15} /> Duplicate Scans
             <span className="text-[10px] font-black bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded-md">{dupCount}</span>
           </button>
@@ -266,17 +274,15 @@ export default function AdminReports() {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${
-                            r.reportType === 'FAKE' ? 'bg-orange-100 text-orange-700' : 'bg-red-50 text-red-600'
-                          }`}><AlertTriangle size={10} strokeWidth={3} /> {r.reportType || 'FLAGGED'}</span>
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${r.reportType === 'FAKE' ? 'bg-orange-100 text-orange-700' : 'bg-red-50 text-red-600'
+                            }`}><AlertTriangle size={10} strokeWidth={3} /> {r.reportType || 'FLAGGED'}</span>
                         </td>
                         <td className="px-6 py-4">
                           <button onClick={() => toggleCounterfeit(r._id, r.isCounterfeit)}
-                            className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all border-2 cursor-pointer select-none active:scale-95 ${
-                              r.isCounterfeit
+                            className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all border-2 cursor-pointer select-none active:scale-95 ${r.isCounterfeit
                                 ? 'bg-red-50 border-red-200 text-red-700 hover:bg-red-100 shadow-sm shadow-red-500/10'
                                 : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'
-                            }`}>
+                              }`}>
                             {r.isCounterfeit ? <><ShieldX size={16} strokeWidth={2.5} className="text-red-500" /> Counterfeit</> : <><ShieldCheck size={16} strokeWidth={2.5} className="text-slate-400" /> Not Marked</>}
                           </button>
                         </td>
@@ -316,7 +322,7 @@ export default function AdminReports() {
                         <tr className="bg-slate-50/30">
                           <td colSpan="7" className="px-4 py-6">
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-6xl mx-auto">
-                              
+
                               {/* Images Section */}
                               {r.images && r.images.length > 0 && (
                                 <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200/60">
@@ -329,7 +335,7 @@ export default function AdminReports() {
                                     {r.images.map((img, idx) => (
                                       <a key={idx} href={img} target="_blank" rel="noopener noreferrer"
                                         className="aspect-square rounded-lg overflow-hidden border-2 border-slate-200 hover:border-purple-400 transition-all group cursor-pointer">
-                                        <img src={img} alt={`Evidence ${idx + 1}`} 
+                                        <img src={img} alt={`Evidence ${idx + 1}`}
                                           className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
                                       </a>
                                     ))}
@@ -360,7 +366,7 @@ export default function AdminReports() {
                                       </div>
                                       <div>
                                         <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Mobile Number</div>
-                                        <div className="text-sm font-bold text-slate-800">{r.userId.mobile || 'N/A'}</div>
+                                        <div className="text-sm font-bold text-slate-800">{maskPhone(r.userId.mobile)}</div>
                                       </div>
                                     </div>
                                   </div>
@@ -407,15 +413,13 @@ export default function AdminReports() {
                                   <div className="space-y-3">
                                     <div>
                                       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Scan Status</div>
-                                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${
-                                        r.scanData.scanStatus === 'FAKE' ? 'bg-red-50 text-red-600 border border-red-200' :
-                                        r.scanData.scanStatus === 'ORIGINAL' ? 'bg-green-50 text-green-600 border border-green-200' :
-                                        'bg-amber-50 text-amber-600 border border-amber-200'
-                                      }`}>
-                                        <div className={`w-1.5 h-1.5 rounded-full ${
-                                          r.scanData.scanStatus === 'FAKE' ? 'bg-red-500' :
-                                          r.scanData.scanStatus === 'ORIGINAL' ? 'bg-green-500' : 'bg-amber-500'
-                                        }`} />
+                                      <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${r.scanData.scanStatus === 'FAKE' ? 'bg-red-50 text-red-600 border border-red-200' :
+                                          r.scanData.scanStatus === 'ORIGINAL' ? 'bg-green-50 text-green-600 border border-green-200' :
+                                            'bg-amber-50 text-amber-600 border border-amber-200'
+                                        }`}>
+                                        <div className={`w-1.5 h-1.5 rounded-full ${r.scanData.scanStatus === 'FAKE' ? 'bg-red-500' :
+                                            r.scanData.scanStatus === 'ORIGINAL' ? 'bg-green-500' : 'bg-amber-500'
+                                          }`} />
                                         {r.scanData.scanStatus}
                                       </span>
                                     </div>
@@ -521,9 +525,8 @@ export default function AdminReports() {
                         <span className="font-mono text-xs bg-slate-100 text-slate-600 px-2.5 py-1.5 rounded-lg border border-slate-200 break-all max-w-[180px] block">{s.qrCode || '-'}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${
-                          s.status === 'FAKE' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-700'
-                        }`}>
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest ${s.status === 'FAKE' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-700'
+                          }`}>
                           {s.status === 'FAKE' ? <><ShieldX size={10} /> Fake</> : <><Copy size={10} /> Already Used</>}
                         </span>
                       </td>

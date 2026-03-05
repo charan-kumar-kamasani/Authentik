@@ -28,7 +28,7 @@ export default function GenerateQrs() {
   const [brands, setBrands] = useState([]);
   const [role, setRole] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
-  
+
   const [submitting, setSubmitting] = useState(false);
 
   // Calculate expiry date when mfdOn or bestBefore changes
@@ -134,22 +134,84 @@ export default function GenerateQrs() {
       for (const field of formConfig.customFields) {
         if (field.isMandatory && !dynamicFieldValues[field.fieldName]) {
           alert(`${field.fieldLabel} is required`);
+          setSubmitting(false);
           return;
         }
       }
     }
 
+    const uploadImage = async (file) => {
+      const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+      const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+      if (!cloudName || !uploadPreset) {
+        console.warn('Cloudinary config missing, skipping upload');
+        return null;
+      }
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', uploadPreset);
+
+      try {
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await res.json();
+        return data.secure_url;
+      } catch (err) {
+        console.error('Image upload failed', err);
+        return null;
+      }
+    };
+
+    const uploadDynamicFiles = async (data) => {
+      const updatedData = { ...data };
+      for (const [key, value] of Object.entries(updatedData)) {
+        if (value instanceof File) {
+          updatedData[key] = await uploadImage(value);
+        }
+      }
+      return updatedData;
+    };
+
     try {
-      // Extract key fields from dynamicFieldValues
-      const productName = dynamicFieldValues['productName'] || '';
-      const batchNo = dynamicFieldValues['batchNo'] || '';
-      const quantity = Number(dynamicFieldValues['quantity']) || 1;
+      let productImage = null;
+      if (imageFile) {
+        productImage = await uploadImage(imageFile);
+      }
+
+      // 1. Upload any images/files in dynamic fields
+      const uploadedDynamicFields = await uploadDynamicFiles(dynamicFieldValues);
+
+      // 2. Extract standardized fields using markers
+      const nameField = formConfig?.customFields?.find(f => f.isProductName);
+      const batchField = formConfig?.customFields?.find(f => f.isBatchNo);
+      const imgField = formConfig?.customFields?.find(f => f.isProductImage);
+      const quantityField = formConfig?.customFields?.find(f => f.isQuantity);
+
+      // Resolve Product Name
+      const productName = (nameField ? uploadedDynamicFields[nameField.fieldName] : (uploadedDynamicFields['productName'] || '')) || '';
+
+      // Resolve Batch No
+      const batchNo = (batchField ? uploadedDynamicFields[batchField.fieldName] : (uploadedDynamicFields['batchNo'] || '')) || '';
+
+      // Resolve Product Image (fallback to a marked field if static one is empty)
+      if (!productImage && imgField) {
+        productImage = uploadedDynamicFields[imgField.fieldName];
+      }
+
+      // Resolve Quantity
+      const qtyValue = (quantityField ? uploadedDynamicFields[quantityField.fieldName] : (uploadedDynamicFields['quantity'] || '')) || 1;
+      const quantity = Number(qtyValue) || 1;
 
       const orderData = {
         productName,
         brand: newQr.brand,
         batchNo,
         quantity,
+        productImage,
         // Static date fields
         mfdOn,
         bestBefore,
@@ -160,7 +222,7 @@ export default function GenerateQrs() {
           value: instance.value,
         })),
         // Dynamic fields (all custom field values)
-        dynamicFields: dynamicFieldValues,
+        dynamicFields: uploadedDynamicFields,
       };
 
       if (role === 'creator') {
@@ -282,18 +344,6 @@ export default function GenerateQrs() {
       case 'text':
       case 'email':
       case 'phone':
-        return (
-          <InputGroup
-            key={field.fieldName}
-            label={field.fieldLabel}
-            placeholder={field.placeholder || ''}
-            value={value}
-            onChange={(v) => handleDynamicFieldChange(field.fieldName, v)}
-            type={field.fieldType === 'email' ? 'email' : field.fieldType === 'phone' ? 'tel' : 'text'}
-            required={field.isMandatory}
-          />
-        );
-
       case 'number':
         return (
           <InputGroup
@@ -302,8 +352,9 @@ export default function GenerateQrs() {
             placeholder={field.placeholder || ''}
             value={value}
             onChange={(v) => handleDynamicFieldChange(field.fieldName, v)}
-            type="number"
+            type={field.fieldType === 'number' ? 'number' : field.fieldType === 'email' ? 'email' : field.fieldType === 'phone' ? 'tel' : 'text'}
             required={field.isMandatory}
+            helpText={field.isQuantity ? "This field determines the number of QRs to be generated." : null}
           />
         );
 
@@ -406,10 +457,10 @@ export default function GenerateQrs() {
   }
 
   return (
-<div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200 relative">
-        <div className="flex justify-between items-center mb-6">
-          <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-            <span className="w-1 h-6 bg-indigo-600 rounded-full"></span>
+    <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200 relative">
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+          <span className="w-1 h-6 bg-indigo-600 rounded-full"></span>
           Create New Product Record
         </h3>
       </div>
@@ -443,8 +494,34 @@ export default function GenerateQrs() {
           </div>
         )}
 
-        
-        
+        {/* Product Image Upload */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-slate-700 ml-1">
+            Product Image
+          </label>
+          <div className="flex items-center gap-4">
+            <label className="relative overflow-hidden bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 cursor-pointer text-sm text-slate-700 hover:bg-slate-100 transition-colors font-medium">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+              {imageFile ? 'Change Image' : 'Choose Image'}
+            </label>
+            {imagePreview ? (
+              <img src={imagePreview} alt="preview" className="w-12 h-12 object-cover rounded-xl border border-slate-200" />
+            ) : (
+              <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center text-[10px] text-slate-400">No image</div>
+            )}
+            {imageFile && (
+              <span className="text-xs text-slate-500 truncate max-w-[100px]">{imageFile.name}</span>
+            )}
+          </div>
+        </div>
+
+
+
 
         {/* Dynamic Custom Fields */}
         {formConfig?.customFields && formConfig.customFields.length > 0 && (
@@ -628,7 +705,7 @@ export default function GenerateQrs() {
   );
 }
 
-function InputGroup({ label, placeholder, value, onChange, type = 'text', required = true }) {
+function InputGroup({ label, placeholder, value, onChange, type = 'text', required = true, helpText = null }) {
   return (
     <div className="flex flex-col gap-1.5">
       <label className="text-sm font-medium text-slate-700 ml-1">
@@ -642,6 +719,14 @@ function InputGroup({ label, placeholder, value, onChange, type = 'text', requir
         className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium"
         required={required}
       />
+      {helpText && (
+        <p className="text-[11px] text-blue-600 font-medium ml-1 flex items-center gap-1">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {helpText}
+        </p>
+      )}
     </div>
   );
 }

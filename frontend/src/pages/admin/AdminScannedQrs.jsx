@@ -7,6 +7,16 @@ import {
   ChevronDown, ChevronUp, Eye, Package, Clock
 } from 'lucide-react';
 
+const maskPhone = (phone) => {
+  if (!phone) return '-';
+  const str = phone.toString();
+  if (str.length <= 5) return str;
+  const first3 = str.slice(0, 3);
+  const last2 = str.slice(-2);
+  const mid = '*'.repeat(str.length - 5);
+  return `${first3}${mid}${last2}`;
+};
+
 export default function AdminScannedQrs() {
   const [scans, setScans] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -290,7 +300,7 @@ export default function AdminScannedQrs() {
                                 {scan.userId?.name || 'Anonymous'}
                               </p>
                               {scan.userId?.mobile && (
-                                <p className="text-[11px] font-medium text-slate-400 mt-0.5">{scan.userId.mobile}</p>
+                                <p className="text-[11px] font-medium text-slate-400 mt-0.5">{maskPhone(scan.userId.mobile)}</p>
                               )}
                             </div>
                           </div>
@@ -337,7 +347,7 @@ export default function AdminScannedQrs() {
                               <DetailCard icon={Package} label="Product" value={scan.productName || '-'} sub={scan.brand} />
                               <DetailCard icon={User} label="Scanned By"
                                 value={scan.userId?.name || 'Anonymous'}
-                                sub={[scan.userId?.mobile, scan.userId?.email].filter(Boolean).join(' | ') || null} />
+                                sub={[maskPhone(scan.userId?.mobile), scan.userId?.email].filter(s => s && s !== '-').join(' | ') || null} />
                               <DetailCard icon={MapPin} label="Location"
                                 value={scan.place || 'Unknown'}
                                 sub={hasLocation ? ('Lat: ' + Number(scan.latitude).toFixed(4) + ', Lng: ' + Number(scan.longitude).toFixed(4)) : null}

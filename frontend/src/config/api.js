@@ -1,6 +1,15 @@
 import loadingService from '../utils/loadingService';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://authentik-8p39.vercel.app";
+let API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://authentik-8p39.vercel.app";
+
+// If the API URL is a local IP or localhost and we are on HTTPS, 
+// but the backend is on HTTP, we use the /api proxy defined in vite.config.js
+// to avoid Mixed Content warnings and connection issues.
+if (typeof window !== 'undefined' && window.location.protocol === 'https:' && 
+    API_BASE_URL.startsWith('http://') &&
+    (API_BASE_URL.includes('192.168.') || API_BASE_URL.includes('localhost') || API_BASE_URL.includes('127.0.0.1'))) {
+    API_BASE_URL = '/api';
+}
 
 // Monkey-patch window.fetch to automatically increment/decrement the global
 // loading counter and dedupe identical in-flight requests (url+method+body).
