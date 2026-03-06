@@ -32,6 +32,11 @@ export default function Result() {
   return null;
 }
 
+const handleNotificationClick = () => {
+  // Placeholder for notification click
+  console.log("Notification clicked");
+};
+
 // --- Sub-Components ---
 
 function Header({ title = "Authentiks", showBell = true }) {
@@ -134,9 +139,10 @@ function ResultAuthentic({ data }: { data: any }) {
   }
 
   // 3. Dynamic Fields
+  const dynamicFieldList: { label: string; value: string }[] = [];
   if (data.dynamicFields) {
     Object.entries(data.dynamicFields).forEach(([k, v]) => {
-      allFields.push({ label: k, value: String(v) });
+      dynamicFieldList.push({ label: k, value: String(v) });
     });
   }
 
@@ -147,7 +153,7 @@ function ResultAuthentic({ data }: { data: any }) {
     if (v === null || v === undefined || typeof v === "object") return;
 
     const label = k.charAt(0).toUpperCase() + k.slice(1).replace(/([A-Z])/g, ' $1').trim();
-    allFields.push({ label, value: String(v) });
+    dynamicFieldList.push({ label, value: String(v) });
   });
 
   const displayedFields = showAll ? allFields : allFields.slice(0, 6);
@@ -158,6 +164,7 @@ function ResultAuthentic({ data }: { data: any }) {
       <MobileHeader
         title="Scan Result"
         onLeftClick={() => navigate("/profile")}
+        onNotificationClick={handleNotificationClick}
         rightIcon={<div className="w-10" />}
       />
 
@@ -237,15 +244,22 @@ function ResultAuthentic({ data }: { data: any }) {
               <h4 className="font-bold text-[#333] text-[18px] mb-2 mt-4">
                 Additional Info:
               </h4>
-              <div className="bg-[#F8F8F8] p-4 rounded-[16px] shadow-[2px_2px_1px_1px_rgba(1,1,1,0.1)]">
+              <div className="bg-[#F8F8F8] p-4 rounded-[16px] shadow-[2px_2px_1px_1px_rgba(1,1,1,0.1)] space-y-4">
                 {data.description && (
-                  <p className="text-[#666] text-[16px] mb-4">
+                  <p className="text-[#666] text-[16px]">
                     {data.description}
                   </p>
                 )}
 
-                <div className="mb-3">
-                  <p className="text-[#333] text-[14px] font-bold uppercase tracking-wider text-xs opacity-60">Company</p>
+                {dynamicFieldList.map((field, idx) => (
+                  <div key={idx} className="pb-2 border-b border-gray-100 last:border-0 last:pb-0">
+                    <p className="text-[#333] text-[12px] font-bold uppercase tracking-wider opacity-60 mb-0.5">{field.label}</p>
+                    <p className="text-[#666] text-[15px] font-medium whitespace-pre-wrap">{field.value}</p>
+                  </div>
+                ))}
+
+                <div className="pt-1">
+                  <p className="text-[#333] text-[12px] font-bold uppercase tracking-wider opacity-60 mb-0.5">Company</p>
                   <p className="text-[#666] text-[15px] font-medium">{companyName}</p>
                 </div>
               </div>
@@ -270,6 +284,7 @@ function ResultRepeat({ data }: { data: any }) {
       <MobileHeader
         title="Scan Result"
         onLeftClick={() => navigate("/profile")}
+        onNotificationClick={handleNotificationClick}
         rightIcon={<div className="w-10" />}
       />
 
@@ -402,6 +417,7 @@ function ResultFake({ data }: { data: any }) {
       <MobileHeader
         title="Scan Result"
         onLeftClick={() => navigate("/profile")}
+        onNotificationClick={handleNotificationClick}
         rightIcon={<div className="w-10" />}
       />
 
@@ -504,6 +520,7 @@ function ResultInactive({ data }: { data: any }) {
       <MobileHeader
         title="Scan Result"
         onLeftClick={() => navigate("/profile")}
+        onNotificationClick={handleNotificationClick}
         rightIcon={<div className="w-10" />}
       />
 

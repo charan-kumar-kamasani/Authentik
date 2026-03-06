@@ -1,5 +1,7 @@
 const PDFDocument = require("pdfkit");
 const QRCode = require("qrcode");
+const fs = require("fs");
+const path = require("path");
 
 /**
  * Fetch a remote image (e.g. brand logo from Cloudinary) and return it as a Buffer.
@@ -51,8 +53,16 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
 
       /** ─── FETCH BRAND LOGO (if provided) ─── **/
       let logoBuffer = null;
+      
       if (options.brandLogo) {
         logoBuffer = await fetchImageBuffer(options.brandLogo);
+      } else {
+        try {
+          const logoPath = path.join(__dirname, '../assets/logo.png');
+          logoBuffer = fs.readFileSync(logoPath);
+        } catch(e) {
+          console.error("Failed to read logo.png", e);
+        }
       }
 
       const doc = new PDFDocument({
@@ -170,6 +180,7 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
             // Logo image centred inside the white box
             const logoX = bgX + bgPadding;
             const logoY = bgY + bgPadding;
+            
             doc.image(logoBuffer, logoX, logoY, {
               fit: [logoSize, logoSize],
               align: "center",
