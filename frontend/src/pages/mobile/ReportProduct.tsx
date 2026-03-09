@@ -53,11 +53,11 @@ export default function ReportProduct() {
 
   const [productName, setProductName] = useState(passedName || "");
   const [description, setDescription] = useState("");
-  
+
   // We keep track of max 6 slots. Items are either plain strings (urls) or empty
   const [images, setImages] = useState<string[]>(Array(MAX_IMAGES).fill(""));
   const [imagePreviews, setImagePreviews] = useState<string[]>(Array(MAX_IMAGES).fill(""));
-  
+
   // We can track multiple uploading states now
   const [uploadingIndices, setUploadingIndices] = useState<boolean[]>(Array(MAX_IMAGES).fill(false));
   const [loading, setLoading] = useState(false);
@@ -71,7 +71,7 @@ export default function ReportProduct() {
       (pos) => {
         setCoords({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
       },
-      () => {}
+      () => { }
     );
   }, []);
 
@@ -79,13 +79,35 @@ export default function ReportProduct() {
     // If not all slots are filled, trigger file input to pick multiple files
     const allFilled = images.every((img) => img !== "");
     if (!allFilled && fileInputRef.current) {
-        fileInputRef.current.click();
+      fileInputRef.current.click();
     }
   };
 
   const handleMultipleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
+    const rawFiles = Array.from(e.target.files || []);
+    if (!rawFiles.length) return;
+
+    const files = [];
+    let hasNonSquare = false;
+    for (const f of rawFiles) {
+      const isSquare = await new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(img.width === img.height);
+        img.onerror = () => resolve(false);
+        img.src = URL.createObjectURL(f);
+      });
+      if (isSquare) files.push(f);
+      else hasNonSquare = true;
+    }
+
+    if (hasNonSquare) {
+      alert("Only square images (1:1 aspect ratio) are accepted. Non-square images were skipped.");
+    }
+
+    if (!files.length) {
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
 
     // Find all currently empty slots that are NOT uploading
     const emptySlotIndices = images
@@ -111,60 +133,60 @@ export default function ReportProduct() {
     });
 
     setUploadingIndices((prev) => {
-        const next = [...prev];
-        assignedIndices.forEach(idx => {
-            next[idx] = true;
-        });
-        return next;
+      const next = [...prev];
+      assignedIndices.forEach(idx => {
+        next[idx] = true;
+      });
+      return next;
     });
 
     setError("");
 
     // Upload them in parallel
     await Promise.all(
-        filesToUpload.map(async (file, i) => {
-            const slotIdx = assignedIndices[i];
-            try {
-                const formData = new FormData();
-                formData.append("file", file);
-                formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+      filesToUpload.map(async (file, i) => {
+        const slotIdx = assignedIndices[i];
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
 
-                const res = await fetch(
-                    `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
-                    { method: "POST", body: formData }
-                );
-                const data = await res.json();
+          const res = await fetch(
+            `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+            { method: "POST", body: formData }
+          );
+          const data = await res.json();
 
-                if (!data.secure_url) throw new Error("Upload failed");
+          if (!data.secure_url) throw new Error("Upload failed");
 
-                // Save secure URL
-                setImages((prev) => {
-                    const next = [...prev];
-                    next[slotIdx] = data.secure_url;
-                    return next;
-                });
-            } catch (err) {
-                console.error("Image upload failed:", err);
-                // Clear preview on failure
-                setImagePreviews((prev) => {
-                    const next = [...prev];
-                    next[slotIdx] = "";
-                    return next;
-                });
-                setError(prev => prev ? prev + "\nFailed to upload an image." : "Failed to upload an image.");
-            } finally {
-                // Remove loading state for this slot
-                setUploadingIndices((prev) => {
-                    const next = [...prev];
-                    next[slotIdx] = false;
-                    return next;
-                });
-            }
-        })
+          // Save secure URL
+          setImages((prev) => {
+            const next = [...prev];
+            next[slotIdx] = data.secure_url;
+            return next;
+          });
+        } catch (err) {
+          console.error("Image upload failed:", err);
+          // Clear preview on failure
+          setImagePreviews((prev) => {
+            const next = [...prev];
+            next[slotIdx] = "";
+            return next;
+          });
+          setError(prev => prev ? prev + "\nFailed to upload an image." : "Failed to upload an image.");
+        } finally {
+          // Remove loading state for this slot
+          setUploadingIndices((prev) => {
+            const next = [...prev];
+            next[slotIdx] = false;
+            return next;
+          });
+        }
+      })
     );
 
     if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+      fileInputRef.current.value = "";
     }
   };
 
@@ -235,6 +257,7 @@ export default function ReportProduct() {
       <MobileHeader
         title="Authentiks"
         onLeftClick={() => navigate(-1)}
+        onNotificationClick={() => console.log("Notification clicked")}
         rightIcon={<div className="w-10" />}
       />
 
@@ -303,12 +326,12 @@ export default function ReportProduct() {
 
             {/* Hidden Input for multiple file selection */}
             <input
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                ref={fileInputRef}
-                onChange={handleMultipleFileChange}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              ref={fileInputRef}
+              onChange={handleMultipleFileChange}
             />
 
             <div className="grid grid-cols-3 gap-3">
@@ -320,9 +343,9 @@ export default function ReportProduct() {
                   <div
                     key={idx}
                     onClick={() => {
-                        if (!hasImageOrPreview && !isLoading) {
-                            handleSlotClick();
-                        }
+                      if (!hasImageOrPreview && !isLoading) {
+                        handleSlotClick();
+                      }
                     }}
                     className={[
                       "relative w-full aspect-square rounded-[14px] flex items-center justify-center overflow-hidden",
@@ -339,23 +362,23 @@ export default function ReportProduct() {
                           className="w-full h-full object-cover"
                         />
                         {isLoading && (
-                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                <svg className="animate-spin w-8 h-8 text-white" fill="none" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                                </svg>
-                            </div>
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                            <svg className="animate-spin w-8 h-8 text-white" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                            </svg>
+                          </div>
                         )}
                         {!isLoading && (
-                            <button
-                                type="button"
-                                onClick={(ev) => { ev.stopPropagation(); removeImage(idx); }}
-                                className="absolute top-1 right-1 bg-black/60 rounded-full w-5 h-5 flex items-center justify-center"
-                            >
-                                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                                <path d="M1 1l8 8M9 1l-8 8" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
-                                </svg>
-                            </button>
+                          <button
+                            type="button"
+                            onClick={(ev) => { ev.stopPropagation(); removeImage(idx); }}
+                            className="absolute top-1 right-1 bg-black/60 rounded-full w-5 h-5 flex items-center justify-center"
+                          >
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                              <path d="M1 1l8 8M9 1l-8 8" stroke="white" strokeWidth="1.8" strokeLinecap="round" />
+                            </svg>
+                          </button>
                         )}
                       </>
                     ) : (

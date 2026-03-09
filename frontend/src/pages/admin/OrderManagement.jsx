@@ -7,7 +7,7 @@ import TablePagination from '../../components/TablePagination';
 import {
   Package, Search, Filter, X, Plus, Truck, CheckCircle2, Clock, Settings, ShieldCheck,
   FileDown, PackageCheck, AlertTriangle, ArrowRight, Hash, Calendar, ChevronRight, XCircle, Send,
-  CreditCard, Zap, Coins, ShoppingCart, Loader2, Percent, IndianRupee, Gift, Receipt, AlertCircle, Tag, Eye
+  CreditCard, Zap, Coins, ShoppingCart, Loader2, Percent, IndianRupee, Gift, Receipt, AlertCircle, Tag, Eye, ChevronDown, User
 } from 'lucide-react';
 
 
@@ -110,6 +110,8 @@ const OrderManagement = () => {
   const handleCreateOrder = async (e) => {
     e.preventDefault();
     try {
+      const ok = await confirm({ title: 'Create Order', description: 'Are you sure you want to create this order?', confirmText: 'Yes, Create', cancelText: 'Cancel' });
+      if (!ok) return;
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       await createOrder(newOrder, token);
       setShowCreateModal(false);
@@ -121,8 +123,10 @@ const OrderManagement = () => {
   const handleCreatorOrder = async (e) => {
     e.preventDefault();
     if (creatorSubmitting) return;
-    setCreatorSubmitting(true);
     try {
+      const ok = await confirm({ title: 'Create Order', description: 'Are you sure you want to create this order? Admin will process it to generate QR codes.', confirmText: 'Yes, Create', cancelText: 'Cancel' });
+      if (!ok) return;
+      setCreatorSubmitting(true);
       const token = localStorage.getItem('token');
       await createOrder({ ...newQr, quantity: Number(newQr.quantity) || 1 }, token);
       alert('Order created! Admin will process it to generate QR codes.');
@@ -134,6 +138,16 @@ const OrderManagement = () => {
 
   const handleAction = async (orderId, action, data = {}) => {
     try {
+      const actionLabels = {
+        authorize: 'Authorize this order? Credits will be deducted.',
+        process: 'Process this order and generate QR codes?',
+        dispatching: 'Mark this order as preparing for dispatch?',
+        dispatch: 'Dispatch this order with the provided details?',
+      };
+      if (actionLabels[action]) {
+        const ok = await confirm({ title: action.charAt(0).toUpperCase() + action.slice(1), description: actionLabels[action], confirmText: 'Yes, Proceed', cancelText: 'Cancel' });
+        if (!ok) return;
+      }
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       await updateOrderStatus(orderId, action, data, token);
       fetchOrders();
@@ -268,17 +282,23 @@ const OrderManagement = () => {
     setGlobalLoading(true);
     try {
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-      const data = await downloadOrderPdf(orderId, token);
-      if (data.pdfBase64) {
-        const link = document.createElement('a');
-        link.href = 'data:application/pdf;base64,' + data.pdfBase64;
-        link.download = 'order_' + orderId + '.pdf';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } else { alert('No PDF data found'); }
-    } catch (e) { alert(e.message); }
-    finally { setGlobalLoading(false); }
+      const blob = await downloadOrderPdf(orderId, token);
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `order_${orderId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (e) { 
+      alert(e.message); 
+    } finally { 
+      setGlobalLoading(false); 
+    }
   };
 
   const handleOpenDispatchModal = (order) => {
@@ -462,11 +482,15 @@ const OrderManagement = () => {
                   </div>
                 </td></tr>
               ) : paginatedOrders.map(order => (
-                <tr key={order._id} className="hover:bg-slate-50/50 transition-colors">
+                <React.Fragment key={order._id}>
+                <tr className={`hover:bg-slate-50/50 transition-colors cursor-pointer ${expandedOrder === order._id ? 'bg-blue-50/30' : ''}`} onClick={() => setExpandedOrder(expandedOrder === order._id ? null : order._id)}>
                   <td className="px-6 py-4">
-                    <span className="font-mono text-xs bg-slate-100 text-slate-600 px-2.5 py-1.5 rounded-lg border border-slate-200">
-                      <Hash size={10} className="inline mr-1 -mt-0.5" />{order.orderId || order._id?.slice(-6)}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <ChevronDown size={14} className={`text-slate-400 transition-transform duration-200 ${expandedOrder === order._id ? 'rotate-180' : ''}`} />
+                      <span className="font-mono text-xs bg-slate-100 text-slate-600 px-2.5 py-1.5 rounded-lg border border-slate-200">
+                        <Hash size={10} className="inline mr-1 -mt-0.5" />{order.orderId || order._id?.slice(-6)}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="font-bold text-slate-800 text-sm truncate max-w-[200px]">{order.productName || 'Unknown'}</div>
@@ -483,7 +507,7 @@ const OrderManagement = () => {
                       <Calendar size={12} /> {fmt(order.createdAt)}
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4" onClick={e => e.stopPropagation()}>
                     <div className="flex gap-2 flex-wrap">
                       {/* Authorize */}
                       {order.status === 'Pending Authorization' && (role === 'company' || role === 'authorizer') && (
@@ -506,13 +530,103 @@ const OrderManagement = () => {
                         <ActionBtn onClick={() => handleMarkReceived(order._id)}
                           icon={CheckCircle2} label="Mark Received" color="emerald" />
                       )}
-                      {/* PDF */}
+                      {/* PDF — visible only for superadmin */}
                       {order.qrCodesGenerated && role === 'superadmin' && (
                         <ActionBtn onClick={() => handleDownload(order._id)} icon={FileDown} label="PDF" color="slate" />
                       )}
                     </div>
                   </td>
                 </tr>
+                {/* ── Expanded Row ── */}
+                {expandedOrder === order._id && (
+                  <tr className="bg-blue-50/20">
+                    <td colSpan="6" className="px-6 py-5">
+                      <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                          {/* Creator Info */}
+                          <div className="space-y-3">
+                            <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><User size={12} /> Creator Details</h4>
+                            <div className="space-y-1.5">
+                              <div className="text-sm"><span className="font-bold text-slate-600">Name:</span> <span className="text-slate-800">{order.createdBy?.name || 'N/A'}</span></div>
+                              <div className="text-sm"><span className="font-bold text-slate-600">Email:</span> <span className="text-slate-800">{order.createdBy?.email || 'N/A'}</span></div>
+                              <div className="text-sm"><span className="font-bold text-slate-600">Role:</span> <span className="text-slate-800 capitalize">{order.createdBy?.role || 'N/A'}</span></div>
+                            </div>
+                          </div>
+
+                          {/* Order Details */}
+                          <div className="space-y-3">
+                            <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><Package size={12} /> Order Details</h4>
+                            <div className="space-y-1.5">
+                              <div className="text-sm"><span className="font-bold text-slate-600">Batch #:</span> <span className="text-slate-800">{order.batchNo || 'N/A'}</span></div>
+                              <div className="text-sm"><span className="font-bold text-slate-600">Mfd On:</span> <span className="text-slate-800">{fmtMfd(order)}</span></div>
+                              <div className="text-sm"><span className="font-bold text-slate-600">Expiry:</span> <span className="text-slate-800">{fmtExp(order)}</span></div>
+                              <div className="text-sm"><span className="font-bold text-slate-600">QRs Generated:</span> <span className="text-slate-800">{order.qrCodesGenerated ? `${order.qrGeneratedCount || order.quantity} ✓` : 'No'}</span></div>
+                            </div>
+                          </div>
+
+                          {/* Description & Product Info */}
+                          <div className="space-y-3">
+                            <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><Eye size={12} /> Description</h4>
+                            {order.description && (
+                              <p className="text-sm text-slate-700 whitespace-pre-wrap bg-slate-50 p-3 rounded-lg border border-slate-100">{order.description}</p>
+                            )}
+                            {order.productInfo && (
+                              <div>
+                                <span className="text-xs font-bold text-slate-500">Product Info:</span>
+                                <p className="text-sm text-slate-700 whitespace-pre-wrap bg-slate-50 p-3 rounded-lg border border-slate-100 mt-1">{order.productInfo}</p>
+                              </div>
+                            )}
+                            {!order.description && !order.productInfo && (
+                              <p className="text-sm text-slate-400 italic">No description provided</p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Variants */}
+                        {order.variants && order.variants.length > 0 && (
+                          <div className="mt-4 pt-4 border-t border-slate-100">
+                            <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Variants</h4>
+                            <div className="flex flex-wrap gap-2">
+                              {order.variants.map((v, idx) => (
+                                <span key={idx} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-xs font-bold">
+                                  {v.variantName}: {v.value}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Dynamic Fields */}
+                        {order.dynamicFields && Object.keys(order.dynamicFields).length > 0 && (
+                          <div className="mt-4 pt-4 border-t border-slate-100">
+                            <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Custom Fields</h4>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                              {Object.entries(order.dynamicFields).map(([key, val]) => (
+                                <div key={key} className="bg-slate-50 rounded-lg p-2 border border-slate-100">
+                                  <div className="text-[10px] font-bold text-slate-400 uppercase">{key}</div>
+                                  <div className="text-sm font-medium text-slate-700 truncate">{String(val)}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Dispatch Details */}
+                        {order.dispatchDetails && order.dispatchDetails.courierName && (
+                          <div className="mt-4 pt-4 border-t border-slate-100">
+                            <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5"><Truck size={12} /> Dispatch Info</h4>
+                            <div className="grid grid-cols-3 gap-3">
+                              <div className="text-sm"><span className="font-bold text-slate-600">Courier:</span> <span className="text-slate-800">{order.dispatchDetails.courierName}</span></div>
+                              <div className="text-sm"><span className="font-bold text-slate-600">Tracking:</span> <span className="text-slate-800">{order.dispatchDetails.trackingNumber || 'N/A'}</span></div>
+                              {order.dispatchDetails.notes && <div className="text-sm col-span-3"><span className="font-bold text-slate-600">Notes:</span> <span className="text-slate-800">{order.dispatchDetails.notes}</span></div>}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )}
+                </React.Fragment>
               ))}
             </tbody>
           </table>

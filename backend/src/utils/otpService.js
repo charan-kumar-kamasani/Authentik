@@ -21,9 +21,9 @@ const template_id = process.env.TEMPLATE_ID;
 const sendOTP = async (countryCode, phoneNumber) => {
   try {
     if (phoneNumber !== TEST_PHONENUMBER) {
-      const mobile = `${countryCode}${phoneNumber}`;
+      const mobileWithCode = `${countryCode}${phoneNumber}`;
 
-      const url = `${msg91_api}?mobile=+91${mobile}&authkey=${auth_key}&otp_expiry=10&template_id=${template_id}&realTimeResponse=1`;
+      const url = `${msg91_api}?mobile=${mobileWithCode}&authkey=${auth_key}&otp_expiry=10&template_id=${template_id}&realTimeResponse=1`;
       console.log("____url", url);
 
       const response = await fetch(url, {

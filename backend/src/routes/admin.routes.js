@@ -251,7 +251,8 @@ router.get("/users", protect, authorize("superadmin", "admin"), async (req, res)
     if (req.user.role === 'admin') {
         query = { createdBy: req.user._id, role: 'manager' }; 
     } else if (req.user.role === 'superadmin') {
-         query = { role: { $in: ['admin', 'manager'] } };
+         // Superadmin can see all users (system users + mobile users)
+         query = { role: { $in: ['admin', 'manager', 'user', 'company', 'authorizer', 'creator'] } };
     }
 
     const users = await User.find(query).populate('createdBy', 'email');
@@ -261,8 +262,8 @@ router.get("/users", protect, authorize("superadmin", "admin"), async (req, res)
 router.post(
   "/create-qr",
   protect,
-        // Only admin and manager should create QRs directly. Creators must create Orders instead.
-        authorize("admin", "manager"),
+        // Only superadmin should create QRs directly. Creators must create Orders instead.
+        authorize("superadmin"),
   async (req, res) => {
     let { 
       productName, 
@@ -271,6 +272,8 @@ router.post(
       manufactureDate, 
       expiryDate, 
       quantity,
+      description,
+      productInfo,
       productImage,
       // New dynamic fields
       mfdOn,
@@ -305,6 +308,8 @@ router.post(
           brand,
                     brandId: brandDoc ? brandDoc._id : null,
           batchNo,
+          description: description || null,
+          productInfo: productInfo || null,
           manufactureDate: manufactureDate || null,
           expiryDate: expiryDate || calculatedExpiryDate || null,
           quantity: 1, // Each individual unit is 1
@@ -345,8 +350,8 @@ router.post(
 router.post(
   "/bulk-upload-qrs",
   protect,
-        // Only admin and manager allowed to bulk upload QRs. Creators should use the order workflow.
-        authorize("admin", "manager"),
+        // Only superadmin allowed to bulk upload QRs. Creators should use the order workflow.
+        authorize("superadmin"),
   async (req, res) => {
     const products = req.body; // Array of product objects
     
@@ -358,7 +363,7 @@ router.post(
 
     // Process sequentially to maintain order and correct sequence numbers
     for (const item of products) {
-        const { productName, brand, batchNo, manufactureDate, expiryDate, quantity } = item;
+        const { productName, brand, batchNo, manufactureDate, expiryDate, quantity, description, productInfo } = item;
         
         // Find latest sequence for THIS item's brand
         // Note: For high concurrency real-time, this needs atomic set or transactions. 
@@ -386,6 +391,8 @@ router.post(
             batchNo,
             manufactureDate,
             expiryDate,
+            description,
+            productInfo,
             quantity,
             sequence: nextSeq,
             createdBy: req.user._id
@@ -543,22 +550,23 @@ router.post('/users/staff', protect, async (req, res) => {
 router.get('/users/staff', protect, async (req, res) => {
     try {
       console.log("Get Staff Users - Requester:", req.user.email, "Role:", req.user.role);
-            const { brandId } = req.query;
+            const { brandId, role } = req.query;
+            console.log("Filters - Brand:", brandId, "Role:", role);
 
-            // Superadmin: can view all staff across brands or filter by brandId
+            // Superadmin: can view all staff/users across categories
             if (req.user.role === 'superadmin') {
+                let query = {};
+                
+                // Construct query based on provided filters
+                const roles = role ? [role] : ['admin', 'manager', 'user', 'company', 'authorizer', 'creator'];
+                query.role = { $in: roles };
+
                 if (brandId) {
-                    // Match users who have brandId set OR have brandIds array containing the brand
-                    const staff = await User.find({
-                        $and: [
-                            { role: { $in: ['authorizer', 'creator'] } },
-                            { $or: [ { brandId }, { brandIds: brandId } ] }
-                        ]
-                    });
-                    return res.json(staff);
+                    query.$or = [{ brandId }, { brandIds: brandId }];
                 }
-                const staff = await User.find({ role: { $in: ['authorizer', 'creator'] } });
-                return res.json(staff);
+
+                const users = await User.find(query).populate('createdBy', 'email');
+                return res.json(users);
             }
 
             // Admin: return companies created by this admin (existing behaviour)

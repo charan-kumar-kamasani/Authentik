@@ -9,6 +9,7 @@ const orderSchema = new mongoose.Schema({
   expiryDate: { type: String },
   quantity: { type: Number, required: true },
   description: { type: String },
+  productInfo: { type: String },
   productImage: { type: String }, // URL of the product image
 
   

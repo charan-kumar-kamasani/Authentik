@@ -17,7 +17,7 @@ import {
   getBrandsForCompany,
 } from "../../config/api";
 import API_BASE_URL from "../../config/api";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { debounce } from "../../utils/helper";
 import TablePagination from "../../components/TablePagination";
 
@@ -41,12 +41,17 @@ const UserManagement = () => {
   const [brandFilter, setBrandFilter] = useState("");
   const [companyFilter, setCompanyFilter] = useState("");
   const [levelFilter, setLevelFilter] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState("list"); // 'list', 'create', 'createBrand', 'createStaff'
+  const [roleTab, setRoleTab] = useState(searchParams.get("tab") || "staff"); // 'staff', 'company', 'authorizer', 'creator', 'user'
   const [loadingStaff, setLoadingStaff] = useState(false);
   const [, setLoadingBrands] = useState(false);
   const [query, setQuery] = useState("");
   const [userPage, setUserPage] = useState(1);
   const [userRowsPerPage, setUserRowsPerPage] = useState(10);
+
+
+
   // Form State
   const [formData, setFormData] = useState({
     name: "",
@@ -112,6 +117,11 @@ const UserManagement = () => {
           brandId: opts.brandId !== undefined ? opts.brandId : brandFilter,
           role: opts.level !== undefined ? opts.level : levelFilter,
         };
+        // If no explicit level filter, but on the 'user' tab, fetch only 'user' role
+        if (!params.role && roleTab === 'user') {
+          params.role = 'user';
+        }
+        
         const companyId = opts.companyId !== undefined ? opts.companyId : companyFilter;
         // Remove empty values
         Object.keys(params).forEach((k) => {
@@ -131,7 +141,7 @@ const UserManagement = () => {
               if (!u) return false;
               try {
                 if (u.companyId && String(u.companyId) === String(companyId)) return true;
-              } catch (e) {}
+              } catch (e) { }
               if (u.brandId && brandIds.includes(String(u.brandId))) return true;
               return false;
             });
@@ -204,6 +214,50 @@ const UserManagement = () => {
     }
   };
 
+  // helper to map brandId to name
+  const getBrandName = (id) => {
+    const b = brands.find((brand) => String(brand._id) === String(id));
+    return b ? b.brandName : "N/A";
+  };
+
+  // helper to map companyId to name
+  const getCompanyName = (id) => {
+    if (!id) return "-";
+    // if populated object
+    if (typeof id === "object" && id.companyName) return id.companyName;
+    const c = companies.find((x) => String(x._id) === String(id));
+    return c ? c.companyName || "-" : "-";
+  };
+
+  // --- Effects (placed after definitions to avoid initialization errors) ---
+
+  // Sync roleTab with searchParams
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab && tab !== roleTab) {
+      setRoleTab(tab);
+      // Clear filters when switching contexts to avoid stuck results
+      setBrandFilter("");
+      setLevelFilter("");
+      setCompanyFilter("");
+      setUserPage(1);
+    } else if (!tab && roleTab !== "staff") {
+      // Handle the case where the user clicks the main "User Management" link
+      setRoleTab("staff");
+      setBrandFilter("");
+      setLevelFilter("");
+      setCompanyFilter("");
+      setUserPage(1);
+    }
+  }, [searchParams, roleTab]);
+
+  // Load staff when roleTab changes
+  useEffect(() => {
+    if (role) {
+      loadStaff();
+    }
+  }, [roleTab, role, loadStaff]);
+
   // Load brands and staff once based on already-initialized `role`.
   useEffect(() => {
     if (!role) return;
@@ -212,9 +266,6 @@ const UserManagement = () => {
       loadBrands();
       // Load companies for superadmin/admin
       if (["admin", "superadmin"].includes(role)) loadCompanies();
-    }
-    if (["company", "authorizer", "admin", "superadmin"].includes(role)) {
-      loadStaff();
     }
   }, [role]);
 
@@ -235,28 +286,19 @@ const UserManagement = () => {
     }
   }, [activeTab, role, companies.length]);
 
-  // helper to map brandId to name
-  const getBrandName = (id) => {
-    if (!id) return "-";
-    const b = brands.find((x) => String(x._id) === String(id));
-    return b ? b.brandName || "-" : "-";
-  };
 
-  // helper to map companyId to name
-  const getCompanyName = (id) => {
-    if (!id) return "-";
-    // if populated object
-    if (typeof id === "object" && id.companyName) return id.companyName;
-    const c = companies.find((x) => String(x._id) === String(id));
-    return c ? c.companyName || "-" : "-";
-  };
 
-  // Read `tab` query param to initialize activeTab when landing from sidebar submenu
-  const location = useLocation();
+  // Read `tab` query param to initialize view (legacy support or direct links)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const tab = params.get("tab");
-    if (tab) setActiveTab(tab);
+    // Only set activeTab if it's a structural tab (not a role filter)
+    if (tab && ["create", "createBrand", "createStaff", "list"].includes(tab)) {
+      setActiveTab(tab);
+    } else if (tab) {
+      // If it's a role filter (staff, company, user, etc), ensure we are in the list view
+      setActiveTab("list");
+    }
   }, [location.search]);
 
   const handleSubmit = async (e) => {
@@ -488,6 +530,8 @@ const UserManagement = () => {
         return "bg-amber-500 text-white";
       case "creator":
         return "bg-gray-400 text-white";
+      case "user":
+        return "bg-emerald-600 text-white font-bold tracking-tight";
       default:
         return "bg-gray-200 text-gray-800";
     }
@@ -505,13 +549,13 @@ const UserManagement = () => {
           <form onSubmit={handleCompanySubmit} className="grid grid-cols-1 gap-4">
             {/* Row 1 */}
             <div className="grid grid-cols-2 gap-4">
-              <InputGroup label="Company Name *" placeholder="Acme Holdings" value={companyForm.companyName} onChange={(v)=>setCompanyForm({...companyForm, companyName: v})} />
-              <InputGroup label="Category" placeholder="FMCG, Pharma..." value={companyForm.category} onChange={(v)=>setCompanyForm({...companyForm, category: v})} required={false} />
+              <InputGroup label="Company Name *" placeholder="Acme Holdings" value={companyForm.companyName} onChange={(v) => setCompanyForm({ ...companyForm, companyName: v })} />
+              <InputGroup label="Category" placeholder="FMCG, Pharma..." value={companyForm.category} onChange={(v) => setCompanyForm({ ...companyForm, category: v })} required={false} />
             </div>
             {/* Row 2 */}
             <div className="grid grid-cols-2 gap-4">
-              <InputGroup label="GST Number" placeholder="22AAAAA0000A1Z5" value={companyForm.cinGst} onChange={(v)=>setCompanyForm({...companyForm, cinGst: v})} required={false} />
-              <InputGroup label="Website" placeholder="https://..." value={companyForm.companyWebsite} onChange={(v)=>setCompanyForm({...companyForm, companyWebsite: v})} required={false} />
+              <InputGroup label="GST Number" placeholder="22AAAAA0000A1Z5" value={companyForm.cinGst} onChange={(v) => setCompanyForm({ ...companyForm, cinGst: v })} required={false} />
+              <InputGroup label="Website" placeholder="https://..." value={companyForm.companyWebsite} onChange={(v) => setCompanyForm({ ...companyForm, companyWebsite: v })} required={false} />
             </div>
 
             {/* Official Emails */}
@@ -563,7 +607,23 @@ const UserManagement = () => {
                             className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all" />
                         ) : (
                           <input type="file" accept="image/*"
-                            onChange={e => { const f = e.target.files[0]; if (f) { const r = new FileReader(); r.onloadend = () => updateCompanyBrandRow(idx, 'brandLogo', r.result); r.readAsDataURL(f); } }}
+                            onChange={e => {
+                              const f = e.target.files[0];
+                              if (f) {
+                                const img = new Image();
+                                img.onload = () => {
+                                  if (img.width !== img.height) {
+                                    alert("Please upload a square image (1:1 aspect ratio).");
+                                    e.target.value = "";
+                                    return;
+                                  }
+                                  const r = new FileReader();
+                                  r.onloadend = () => updateCompanyBrandRow(idx, 'brandLogo', r.result);
+                                  r.readAsDataURL(f);
+                                };
+                                img.src = URL.createObjectURL(f);
+                              }
+                            }}
                             className="flex-1 text-sm text-gray-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-gray-200 file:text-xs file:font-medium file:bg-gray-50 hover:file:bg-gray-100" />
                         )}
                         {b.brandLogo && <img src={b.brandLogo} alt="" className="w-9 h-9 object-contain border rounded-lg" onError={e => { e.target.style.display = 'none'; }} />}
@@ -614,18 +674,18 @@ const UserManagement = () => {
 
             {/* Address row */}
             <div className="grid grid-cols-2 gap-4">
-              <InputGroup label="Address *" placeholder="Registered office address" value={companyForm.registerOfficeAddress} onChange={(v)=>setCompanyForm({...companyForm, registerOfficeAddress: v})} />
-              <InputGroup label="Courier Address *" placeholder="Courier / dispatch address" value={companyForm.courierAddress} onChange={(v)=>setCompanyForm({...companyForm, courierAddress: v})} />
+              <InputGroup label="Address *" placeholder="Registered office address" value={companyForm.registerOfficeAddress} onChange={(v) => setCompanyForm({ ...companyForm, registerOfficeAddress: v })} />
+              <InputGroup label="Courier Address *" placeholder="Courier / dispatch address" value={companyForm.courierAddress} onChange={(v) => setCompanyForm({ ...companyForm, courierAddress: v })} />
             </div>
             {/* Phone row */}
             <div className="grid grid-cols-2 gap-4">
-              <InputGroup label="Contact Number *" placeholder="+91 98765 43210" value={companyForm.phoneNumber} onChange={(v)=>setCompanyForm({...companyForm, phoneNumber: v})} />
-              <InputGroup label="Support Number *" placeholder="+91 1800 XXX XXX" value={companyForm.supportNumber} onChange={(v)=>setCompanyForm({...companyForm, supportNumber: v})} />
+              <InputGroup label="Contact Number *" placeholder="+91 98765 43210" value={companyForm.phoneNumber} onChange={(v) => setCompanyForm({ ...companyForm, phoneNumber: v })} />
+              <InputGroup label="Support Number *" placeholder="+91 1800 XXX XXX" value={companyForm.supportNumber} onChange={(v) => setCompanyForm({ ...companyForm, supportNumber: v })} />
             </div>
             {/* Email + person row */}
             <div className="grid grid-cols-2 gap-4">
-              <InputGroup label="Support Mail ID *" type="email" placeholder="support@company.com" value={companyForm.email} onChange={(v)=>setCompanyForm({...companyForm, email: v})} />
-              <InputGroup label="Contact Person" placeholder="Name" value={companyForm.contactPersonName} onChange={(v)=>setCompanyForm({...companyForm, contactPersonName: v})} required={false} />
+              <InputGroup label="Support Mail ID *" type="email" placeholder="support@company.com" value={companyForm.email} onChange={(v) => setCompanyForm({ ...companyForm, email: v })} />
+              <InputGroup label="Contact Person" placeholder="Name" value={companyForm.contactPersonName} onChange={(v) => setCompanyForm({ ...companyForm, contactPersonName: v })} required={false} />
             </div>
 
             <div>
@@ -644,19 +704,19 @@ const UserManagement = () => {
           Create Staff
         </h2>
         <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
-          <InputGroup label="Name" placeholder="Full name" value={formData.name} onChange={(v)=>setFormData({...formData, name: v})} />
-          <InputGroup label="Email" type="email" placeholder="user@company.com" value={formData.email} onChange={(v)=>setFormData({...formData, email: v})} />
-          <InputGroup label="Password" type="password" placeholder="••••••••" value={formData.password} onChange={(v)=>setFormData({...formData, password: v})} />
+          <InputGroup label="Name" placeholder="Full name" value={formData.name} onChange={(v) => setFormData({ ...formData, name: v })} />
+          <InputGroup label="Email" type="email" placeholder="user@company.com" value={formData.email} onChange={(v) => setFormData({ ...formData, email: v })} />
+          <InputGroup label="Password" type="password" placeholder="••••••••" value={formData.password} onChange={(v) => setFormData({ ...formData, password: v })} />
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Level</label>
-            <select className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl" value={formData.userRole} onChange={(e)=>setFormData({...formData, userRole: e.target.value})} required>
+            <select className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl" value={formData.userRole} onChange={(e) => setFormData({ ...formData, userRole: e.target.value })} required>
               {role === 'company' && <option value="authorizer">Authorizer</option>}
               {role === 'authorizer' && <option value="creator">Creator</option>}
               {(role === 'admin' || role === 'superadmin') && (<>
                 <option value="authorizer">Authorizer</option>
                 <option value="creator">Creator</option>
-              </>) }
+              </>)}
             </select>
           </div>
 
@@ -727,10 +787,12 @@ const UserManagement = () => {
               <header className="mb-6">
                 <div>
                   <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
-                    User Management
+                    {roleTab === 'user' ? 'Mobile Consumers' : 'User Management'}
                   </h2>
                   <p className="text-gray-500 mt-2">
-                    Create and manage users, brands and staff access.
+                    {roleTab === 'user' 
+                      ? 'View and manage consumers registered via the mobile application.' 
+                      : 'Create and manage users, brands and staff access.'}
                   </p>
                 </div>
               </header>
@@ -840,6 +902,7 @@ const UserManagement = () => {
                           <option value="">All Levels</option>
                           <option value="authorizer">Authorizer</option>
                           <option value="creator">Creator</option>
+                          {role === 'superadmin' && <option value="user">User (Mobile)</option>}
                         </select>
                         <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-gray-400">
                           ▾
@@ -848,7 +911,7 @@ const UserManagement = () => {
                     </div>
                   </div>
 
-                    <div className="flex items-center gap-3 justify-end">
+                  <div className="flex items-center gap-3 justify-end">
                     {(brandFilter || levelFilter || companyFilter) && (
                       <div className="hidden md:flex items-center gap-2">
                         {brandFilter && (
@@ -921,43 +984,43 @@ const UserManagement = () => {
                       onSubmit={handleBrandSubmit}
                       className="grid grid-cols-2 gap-6"
                     >
-                        {/* Admin brand creation: show company selector then brand details in a compact grid */}
-                        <div className="col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Company</label>
-                          <select
-                            className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl"
-                            value={selectedCompany}
-                            onChange={(e) => {
-                              const cid = e.target.value;
-                              setSelectedCompany(cid);
-                              // load brands for this company so other brand selectors update
-                              if (cid) loadBrandsForCompany(cid);
-                              // link company to brandForm for single-brand creation
-                              setBrandForm({ ...brandForm, companyId: cid });
-                            }}
-                          >
-                            <option value="">Select Company</option>
-                            {companies.map((c) => (
-                              <option key={c._id} value={c._id}>
-                                {c.companyName}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
+                      {/* Admin brand creation: show company selector then brand details in a compact grid */}
+                      <div className="col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Company</label>
+                        <select
+                          className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl"
+                          value={selectedCompany}
+                          onChange={(e) => {
+                            const cid = e.target.value;
+                            setSelectedCompany(cid);
+                            // load brands for this company so other brand selectors update
+                            if (cid) loadBrandsForCompany(cid);
+                            // link company to brandForm for single-brand creation
+                            setBrandForm({ ...brandForm, companyId: cid });
+                          }}
+                        >
+                          <option value="">Select Company</option>
+                          {companies.map((c) => (
+                            <option key={c._id} value={c._id}>
+                              {c.companyName}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
-                        <InputGroup
-                          label="Brand Name"
-                          placeholder="Acme Corp"
-                          value={brandForm.brandName}
-                          onChange={(v) => setBrandForm({ ...brandForm, brandName: v })}
-                        />
+                      <InputGroup
+                        label="Brand Name"
+                        placeholder="Acme Corp"
+                        value={brandForm.brandName}
+                        onChange={(v) => setBrandForm({ ...brandForm, brandName: v })}
+                      />
 
-                        <InputGroup
-                          label="Brand Logo (URL)"
-                          placeholder="https://..."
-                          value={brandForm.brandLogo}
-                          onChange={(v) => setBrandForm({ ...brandForm, brandLogo: v })}
-                        />
+                      <InputGroup
+                        label="Brand Logo (URL)"
+                        placeholder="https://..."
+                        value={brandForm.brandLogo}
+                        onChange={(v) => setBrandForm({ ...brandForm, brandLogo: v })}
+                      />
 
                       <div className="col-span-2">
                         <h4 className="font-medium mb-2">Brands (optional)</h4>
@@ -1044,7 +1107,7 @@ const UserManagement = () => {
                 )
               )}
 
-                    {activeTab === 'create' && renderCreateSection()}
+              {activeTab === 'create' && renderCreateSection()}
 
               {activeTab === "createStaff" && (
                 <div className="bg-white rounded-2xl p-8 shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-gray-100 ">
@@ -1166,11 +1229,25 @@ const UserManagement = () => {
 
               {activeTab === "list" && (
                 <div className="bg-white rounded-2xl shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden">
-                  <div className="px-8 py-6 border-b border-gray-100 flex justify-between items-center">
-                    <h3 className="font-semibold text-gray-900">User List</h3>
-                    <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full">
-                      {staff.length} users
-                    </span>
+                  <div className="px-8 py-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4 overflow-x-auto no-scrollbar pb-1 md:pb-0">
+                      <h3 className="font-semibold text-gray-900 whitespace-nowrap mr-2">
+                        {roleTab === 'user' ? 'Mobile Consumers' : 'User Management'}
+                      </h3>
+                      {/* Sub-tabs removed as they are now in the sidebar */}
+                    </div>
+                    {(() => {
+                      const filtered = staff.filter(u => {
+                        if (roleTab === 'user') return u.role === 'user';
+                        // Default list shows all EXCEPT mobile consumers
+                        return u.role !== 'user';
+                      });
+                      return (
+                        <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full w-fit shrink-0 font-bold">
+                          {filtered.length} {roleTab === 'user' ? 'mobile users' : 'platform users'}
+                        </span>
+                      );
+                    })()}
                   </div>
                   <div className="overflow-x-auto">
                     <table className="w-full text-left">
@@ -1185,14 +1262,19 @@ const UserManagement = () => {
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {(() => {
+                          const listByCategory = staff.filter(u => {
+                            if (roleTab === 'user') return u.role === 'user';
+                            return u.role !== 'user';
+                          });
                           const q = query.trim().toLowerCase();
                           const displayed = q
-                            ? staff.filter(
-                                (u) =>
-                                  (u.name || "").toLowerCase().includes(q) ||
-                                  (u.email || "").toLowerCase().includes(q),
-                              )
-                            : staff;
+                            ? listByCategory.filter(
+                              (u) =>
+                                (u.name || "").toLowerCase().includes(q) ||
+                                (u.email || "").toLowerCase().includes(q) ||
+                                (u.mobile || "").includes(q),
+                            )
+                            : listByCategory;
                           if (loadingStaff) {
                             return (
                               <tr>
@@ -1222,45 +1304,45 @@ const UserManagement = () => {
                           return (
                             <>
                               {paginated.map((u) => (
-                            <tr
-                              key={u._id}
-                              className="hover:bg-gray-50/50 transition-colors"
-                            >
-                              <td className="px-8 py-4">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
-                                    {(u.name ||
-                                      u.email ||
-                                      "?")[0]?.toUpperCase()}
-                                  </div>
-                                  <div>
-                                    <div className="font-medium text-gray-900">
-                                      {u.name}
-                                    </div>
-                                    <div className="text-xs text-gray-500">
-                                      {u.email}
-                                    </div>
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 text-sm text-gray-700">
-                                {u.email}
-                              </td>
-                              <td className="px-6 py-4 text-sm text-gray-700">
-                                {getCompanyName(u.companyId || u.company)}
-                              </td>
-                              <td className="px-6 py-4 text-sm text-gray-700">
-                                {getBrandName(u.brandId)}
-                              </td>
-                              <td className="px-6 py-4">
-                                <span
-                                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold capitalize tracking-wide shadow-sm ${getRoleClass(u.role)}`}
+                                <tr
+                                  key={u._id}
+                                  className="hover:bg-gray-50/50 transition-colors"
                                 >
-                                  {u.role}
-                                </span>
-                              </td>
-                            </tr>
-                          ))}
+                                  <td className="px-8 py-4">
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
+                                        {(u.name ||
+                                          u.email ||
+                                          "?")[0]?.toUpperCase()}
+                                      </div>
+                                      <div>
+                                        <div className="font-medium text-gray-900">
+                                          {u.name}
+                                        </div>
+                                        <div className="text-xs text-gray-500">
+                                          {u.email}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="px-6 py-4 text-sm text-gray-700">
+                                    {u.email}
+                                  </td>
+                                  <td className="px-6 py-4 text-sm text-gray-700">
+                                    {getCompanyName(u.companyId || u.company)}
+                                  </td>
+                                  <td className="px-6 py-4 text-sm text-gray-700">
+                                    {getBrandName(u.brandId)}
+                                  </td>
+                                  <td className="px-6 py-4">
+                                    <span
+                                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold capitalize tracking-wide shadow-sm ${getRoleClass(u.role)}`}
+                                    >
+                                      {u.role}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
                             </>
                           );
                         })()}
@@ -1268,23 +1350,28 @@ const UserManagement = () => {
                     </table>
                   </div>
                   {(() => {
+                    const listByCategory = staff.filter(u => {
+                      if (roleTab === 'user') return u.role === 'user';
+                      return u.role !== 'user';
+                    });
                     const q = query.trim().toLowerCase();
                     const displayed = q
-                      ? staff.filter(
-                          (u) =>
-                            (u.name || "").toLowerCase().includes(q) ||
-                            (u.email || "").toLowerCase().includes(q),
-                        )
-                      : staff;
+                      ? listByCategory.filter(
+                        (u) =>
+                          (u.name || "").toLowerCase().includes(q) ||
+                          (u.email || "").toLowerCase().includes(q) ||
+                          (u.mobile || "").includes(q),
+                      )
+                      : listByCategory;
                     return (
                       <TablePagination
-                        totalItems={staff.length}
+                        totalItems={listByCategory.length}
                         filteredCount={displayed.length}
                         currentPage={userPage}
                         rowsPerPage={userRowsPerPage}
                         onPageChange={setUserPage}
                         onRowsPerPageChange={(n) => { setUserRowsPerPage(n); setUserPage(1); }}
-                        itemLabel="users"
+                        itemLabel={roleTab === 'user' ? "mobile users" : "platform users"}
                       />
                     );
                   })()}
@@ -1301,7 +1388,7 @@ export default UserManagement;
 
 function EmailRow({ entry, idx, emails, setEmails, showOtp, showPassword, onSendOtp, onVerifyOtp }) {
   const [showPwd, setShowPwd] = useState(false);
-  
+
   return (
     <div className="flex flex-wrap items-center gap-2">
       <input type="email" placeholder="email@company.com" value={entry.value}
@@ -1363,7 +1450,7 @@ function EmailRow({ entry, idx, emails, setEmails, showOtp, showPassword, onSend
 function InputGroup({ label, placeholder, value, onChange, type = "text", required = true }) {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === "password";
-  
+
   return (
     <div className="flex flex-col gap-1.5">
       <label className="text-sm font-medium text-gray-700 ml-1">{label}</label>
@@ -1391,7 +1478,7 @@ function InputGroup({ label, placeholder, value, onChange, type = "text", requir
   );
 }
 
-function MultiBrandSelect({ brands = [], value = [], onChange, allBrands = false, setAllBrands = () => {}, placeholder = 'Select' }) {
+function MultiBrandSelect({ brands = [], value = [], onChange, allBrands = false, setAllBrands = () => { }, placeholder = 'Select' }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const [query, setQuery] = useState('');

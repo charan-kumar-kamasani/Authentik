@@ -11,6 +11,8 @@ module.exports = mongoose.model(
       batchNo: String,
       manufactureDate: String,
       expiryDate: String,
+      description: String,
+      productInfo: String,
       quantity: Number,
       productImage: String,
       sequence: { type: Number, default: 0 },

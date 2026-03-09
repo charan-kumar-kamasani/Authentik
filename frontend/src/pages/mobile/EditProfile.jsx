@@ -43,34 +43,44 @@ export default function EditProfile() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setUploadingImage(true);
-    try {
-      const formDataUpload = new FormData();
-      formDataUpload.append("file", file);
-      formDataUpload.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
-
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
-        {
-          method: "POST",
-          body: formDataUpload,
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Image upload failed");
+    const img = new Image();
+    img.onload = async () => {
+      if (img.width !== img.height) {
+        alert("Please upload a square image (1:1 aspect ratio).");
+        e.target.value = "";
+        return;
       }
 
-      const data = await response.json();
-      // Store the Cloudinary URL in formData
-      setFormData({ ...formData, profileImage: data.secure_url });
-      alert("Image uploaded successfully!");
-    } catch (error) {
-      console.error("Image upload error:", error);
-      alert("Failed to upload image. Please try again.");
-    } finally {
-      setUploadingImage(false);
-    }
+      setUploadingImage(true);
+      try {
+        const formDataUpload = new FormData();
+        formDataUpload.append("file", file);
+        formDataUpload.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+        const response = await fetch(
+          `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+          {
+            method: "POST",
+            body: formDataUpload,
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Image upload failed");
+        }
+
+        const data = await response.json();
+        // Store the Cloudinary URL in formData
+        setFormData((prev) => ({ ...prev, profileImage: data.secure_url }));
+        alert("Image uploaded successfully!");
+      } catch (error) {
+        console.error("Image upload error:", error);
+        alert("Failed to upload image. Please try again.");
+      } finally {
+        setUploadingImage(false);
+      }
+    };
+    img.src = URL.createObjectURL(file);
   };
 
   const handleChange = (e) => {
@@ -91,20 +101,20 @@ export default function EditProfile() {
         ageGroup: formData.ageGroup,
         gender: formData.gender,
       };
-      
+
       // Include profileImage only if it was updated
       if (formData.profileImage) {
         dataToSave.profileImage = formData.profileImage;
       }
 
       await updateProfile(dataToSave, token);
-      
+
       // Reset profile prompt tracking since user completed their profile
       if (formData.name) {
         localStorage.removeItem("profilePromptLastDismissed");
         localStorage.removeItem("profilePromptDismissCount");
       }
-      
+
       alert("Profile updated successfully!");
       navigate(-1);
     } catch (error) {
@@ -183,7 +193,7 @@ export default function EditProfile() {
               type="text"
               name="name"
               placeholder="Enter your name"
-              className="w-full outline-none text-[#1e3a5f] font-semibold placeholder:text-[#BBB]" 
+              className="w-full outline-none text-[#1e3a5f] font-semibold placeholder:text-[#BBB]"
               value={formData.name}
               onChange={handleChange}
             />

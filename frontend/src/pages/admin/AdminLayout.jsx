@@ -324,14 +324,22 @@ export default function AdminLayout({ children }) {
                   <p className="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
                     Team & Access
                   </p>
-                  <div>
+                  <div className="space-y-1.5">
+                    {role === "superadmin" && (
+                      <SidebarItem
+                        label="Mobile Users"
+                        onClick={() => navigate("/users?tab=user")}
+                        icon={Users}
+                        isActive={activePath === "/users" && location.search.includes("tab=user")}
+                      />
+                    )}
                     <SidebarItem
                       label="User Management"
                       onClick={() => navigate("/users")}
                       icon={Users}
                       isActive={
-                        activePath === "/users" ||
-                        activePath.startsWith("/users")
+                        activePath === "/users" &&
+                        (!location.search || !location.search.includes("tab=user"))
                       }
                       hasSubmenu={true}
                     />

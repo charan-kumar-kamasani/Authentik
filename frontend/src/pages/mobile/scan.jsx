@@ -33,13 +33,25 @@ export default function Scan() {
     }
   };
 
-  // Request location permission first when component mounts
-  useEffect(() => {
+  const requestLocation = useCallback((isFallback = false) => {
+    // Bypass location requirement if VITE_REQUIRE_LOCATION is false
+    if (import.meta.env.VITE_REQUIRE_LOCATION === 'false') {
+      console.log("Location requirement bypassed via .env");
+      const defaultCoords = { latitude: 0, longitude: 0 };
+      coordsRef.current = defaultCoords;
+      setLocationCoords(defaultCoords);
+      setLocationPermission('granted');
+      return;
+    }
+
     if (!navigator.geolocation) {
       console.warn("Geolocation not supported");
       setLocationPermission('denied');
       return;
     }
+
+    setLocationPermission('pending');
+    console.log(`Requesting location (High accuracy: ${!isFallback})...`);
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -47,17 +59,34 @@ export default function Scan() {
           latitude: pos.coords.latitude,
           longitude: pos.coords.longitude,
         };
+        console.log("Location granted:", coords);
         coordsRef.current = coords;
         setLocationCoords(coords);
         setLocationPermission('granted');
       },
       (error) => {
-        console.warn("Location access needed for scanning:", error);
-        setLocationPermission('denied');
+        console.warn("Location error:", error.code, error.message);
+        
+        // Error codes: 1=PERMISSION_DENIED, 2=POSITION_UNAVAILABLE, 3=TIMEOUT
+        if (!isFallback && (error.code === 2 || error.code === 3)) {
+          console.log("High accuracy failed, retrying with standard accuracy...");
+          requestLocation(true);
+        } else {
+          setLocationPermission('denied');
+        }
       },
-      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+      { 
+        enableHighAccuracy: !isFallback, 
+        timeout: isFallback ? 20000 : 15000, 
+        maximumAge: isFallback ? 300000 : 0 
+      }
     );
   }, []);
+
+  // Request location permission first when component mounts
+  useEffect(() => {
+    requestLocation();
+  }, [requestLocation]);
 
   const stopCamera = useCallback(() => {
     cancelAnimationFrame(animationId.current);
@@ -323,7 +352,7 @@ export default function Scan() {
             Scanning is disabled without location data.
           </p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={requestLocation}
             className="w-full bg-[#2CA4D6] text-white font-bold py-4 rounded-[20px] shadow-lg"
           >
             Allow Location & Retry

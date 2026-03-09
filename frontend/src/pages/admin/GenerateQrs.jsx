@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import API_BASE_URL, { createOrder } from '../../config/api';
 import { Calendar, Package, Plus, X } from 'lucide-react';
+import { useConfirm } from '../../components/ConfirmModal';
 
 export default function GenerateQrs() {
   const [newQr, setNewQr] = useState({
     productName: '',
     brand: '',
     batchNo: '',
+    description: '',
+    productInfo: '',
     quantity: ''
   });
 
@@ -30,6 +33,7 @@ export default function GenerateQrs() {
   const [currentUser, setCurrentUser] = useState(null);
 
   const [submitting, setSubmitting] = useState(false);
+  const confirm = useConfirm();
 
   // Calculate expiry date when mfdOn or bestBefore changes
   useEffect(() => {
@@ -68,14 +72,24 @@ export default function GenerateQrs() {
 
   const handleImageChange = (e) => {
     const f = e.target.files?.[0] ?? null;
-    setImageFile(f);
-    if (f) {
+    if (!f) {
+      setImageFile(null);
+      setImagePreview(null);
+      return;
+    }
+    const img = new Image();
+    img.onload = () => {
+      if (img.width !== img.height) {
+        alert("Please upload a square image (1:1 aspect ratio).");
+        e.target.value = "";
+        return;
+      }
+      setImageFile(f);
       const reader = new FileReader();
       reader.onload = (ev) => setImagePreview(ev.target.result);
       reader.readAsDataURL(f);
-    } else {
-      setImagePreview(null);
-    }
+    };
+    img.src = URL.createObjectURL(f);
   };
 
   const handleDynamicFieldChange = (fieldName, value) => {
@@ -126,6 +140,10 @@ export default function GenerateQrs() {
   const handleCreateQr = async (e) => {
     e.preventDefault();
     if (submitting) return;
+
+    const ok = await confirm({ title: 'Create Product & QR', description: 'Are you sure you want to create this product record and generate QR codes?', confirmText: 'Yes, Create', cancelText: 'Cancel' });
+    if (!ok) return;
+
     setSubmitting(true);
     const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
 
@@ -212,6 +230,8 @@ export default function GenerateQrs() {
         batchNo,
         quantity,
         productImage,
+        description: newQr.description,
+        productInfo: newQr.productInfo,
         // Static date fields
         mfdOn,
         bestBefore,
@@ -242,8 +262,12 @@ export default function GenerateQrs() {
 
         if (res.ok) {
           const result = await res.json();
-          alert(`Successfully created ${result.count || 1} QRs!`);
-          if (result.pdfBase64) downloadPdf(result.pdfBase64, 'products_qr_codes.pdf');
+          if (result.pdfBase64) {
+            alert(`Successfully created ${result.count || 1} QRs! Your PDF download will start now.`);
+            downloadPdf(result.pdfBase64, 'products_qr_codes.pdf');
+          } else {
+            alert(`Successfully created ${result.count || 1} QRs! (Note: PDF was too large for instant download; please use the streaming 'PDF' button in Order Management for this batch).`);
+          }
           resetForm();
         } else {
           const d = await res.json().catch(() => ({}));
@@ -259,7 +283,7 @@ export default function GenerateQrs() {
   };
 
   const resetForm = () => {
-    setNewQr({ productName: '', brand: '', batchNo: '', quantity: '' });
+    setNewQr({ productName: '', brand: '', batchNo: '', description: '', productInfo: '', quantity: '' });
     setMfdOn({ month: '', year: '' });
     setBestBefore({ value: '', unit: 'months' });
     setCalculatedExpiry('');
@@ -420,7 +444,23 @@ export default function GenerateQrs() {
                 <input
                   type="file"
                   accept={field.fieldType === 'image' ? 'image/*' : '*/*'}
-                  onChange={(e) => handleDynamicFieldChange(field.fieldName, e.target.files?.[0] || null)}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    if (file && field.fieldType === 'image') {
+                      const img = new Image();
+                      img.onload = () => {
+                        if (img.width !== img.height) {
+                          alert('Please upload a square image (1:1 aspect ratio).');
+                          e.target.value = '';
+                          return;
+                        }
+                        handleDynamicFieldChange(field.fieldName, file);
+                      };
+                      img.src = URL.createObjectURL(file);
+                    } else {
+                      handleDynamicFieldChange(field.fieldName, file);
+                    }
+                  }}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   required={field.isMandatory}
                 />
@@ -518,6 +558,34 @@ export default function GenerateQrs() {
               <span className="text-xs text-slate-500 truncate max-w-[100px]">{imageFile.name}</span>
             )}
           </div>
+        </div>
+
+        {/* Product Description */}
+        <div className="flex flex-col gap-1.5 col-span-2">
+          <label className="text-sm font-medium text-slate-700 ml-1">
+            Product Description (Additional Info)
+          </label>
+          <textarea
+            value={newQr.description}
+            onChange={(e) => setNewQr({ ...newQr, description: e.target.value })}
+            placeholder="Enter product details, key benefits, or other additional info..."
+            rows={4}
+            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium resize-none"
+          />
+        </div>
+
+        {/* Product Info (Paragraph for scan results) */}
+        <div className="flex flex-col gap-1.5 col-span-2">
+          <label className="text-sm font-medium text-slate-700 ml-1">
+            Product Info (Shown on scan result page)
+          </label>
+          <textarea
+            value={newQr.productInfo}
+            onChange={(e) => setNewQr({ ...newQr, productInfo: e.target.value })}
+            placeholder="Enter detailed product info paragraph that customers will see after scanning..."
+            rows={5}
+            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium resize-none"
+          />
         </div>
 
 

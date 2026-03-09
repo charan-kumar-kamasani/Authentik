@@ -234,10 +234,11 @@ export const downloadOrderPdf = async (orderId, token) => {
              headers: { Authorization: `Bearer ${token}` }
         });
         if(!response.ok) {
-             const err = await response.json();
+             const err = await response.json().catch(() => ({ message: 'Failed to download PDF' }));
              throw new Error(err.message || 'Failed to download PDF');
         }
-        return await response.json();
+        // Return blob instead of JSON
+        return await response.blob();
     } catch(error) {
         console.error("PDF Download Error:", error);
         throw error;

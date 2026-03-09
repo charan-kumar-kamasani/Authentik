@@ -7,7 +7,7 @@ const Product = require('../models/Product');
 const Brand = require('../models/Brand');
 const Company = require('../models/Company');
 const CreditTransaction = require('../models/CreditTransaction');
-const { generateQrPdf } = require('../utils/pdfGenerator');
+const { generateQrPdf, generateQrPdfStream } = require('../utils/pdfGenerator');
 const { sendOrderStatusEmail } = require('../utils/emailService');
 
 // Helper function to get all relevant users for email notifications
@@ -60,6 +60,7 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       expiryDate, 
       quantity, 
       description,
+      productInfo,
       mfdOn,
       bestBefore,
       calculatedExpiryDate,
@@ -109,6 +110,7 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       expiryDate,
       quantity,
       description,
+      productInfo,
       createdBy: req.user._id,
       brandId,
       status: 'Pending Authorization',
@@ -384,6 +386,8 @@ router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req
         calculatedExpiryDate: order.calculatedExpiryDate,
         dynamicFields: order.dynamicFields,
         variants: order.variants,
+        description: order.description,
+        productInfo: order.productInfo,
         quantity: 1,
         sequence: currentSeq,
         orderId: order._id,
@@ -623,15 +627,23 @@ router.put('/:id/reject', protect, async (req, res) => {
 });
 
 // 10. DOWNLOAD PDF
-router.get('/:id/download', protect, authorize('admin', 'superadmin'), async (req, res) => {
+router.get('/:id/download', protect, async (req, res) => {
   try {
-    const order = await Order.findById(req.params.id).populate('brandId').populate('company');
+    const order = await Order.findById(req.params.id)
+      .populate({
+        path: 'brandId',
+        populate: { path: 'companyId' }
+      })
+      .populate('company');
     
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
     }
     
-    // Only Super Admin/Admin can download. Already handled by middleware authorize
+    // Authorization: Only Super Admins can download QR PDFs
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({ message: 'Only Super Admins are authorized to download QR PDFs' });
+    }
     
     if (!order.qrCodesGenerated) {
       return res.status(400).json({ message: 'QR codes not generated yet' });
@@ -644,25 +656,31 @@ router.get('/:id/download', protect, authorize('admin', 'superadmin'), async (re
       return res.status(404).json({ message: 'No QR codes found for this order' });
     }
     
-    // Fetch the Brand document to get the logo URL
-    const brandDoc = order.brandId ? await Brand.findById(order.brandId._id || order.brandId) : null;
+    // Fetch the Brand document to get the logo URL (if not already populated/accessible)
+    const brandDoc = order.brandId;
+    const companyDoc = brandDoc?.companyId;
 
     // Prepare options with order, brand, and company information
     const pdfOptions = {
-      orderId: order.orderNumber || order._id.toString(),
-      brand: order.brandName || brandDoc?.brandName || 'N/A',
-      brandId: order.brandId || '',
+      orderId: order.orderId || order._id.toString(),
+      brand: order.brand || brandDoc?.brandName || 'N/A',
+      brandId: order.brandId?._id || order.brandId || '',
       brandLogo: brandDoc?.brandLogo || '',
-      company: order.companyName || 'N/A',
-      companyName: order.companyName || 'N/A'
+      company: companyDoc?.companyName || 'N/A',
+      companyName: companyDoc?.companyName || 'N/A'
     };
     
-    const pdfBase64 = await generateQrPdf(products, req.user.email || 'user', pdfOptions);
-    res.json({ pdfBase64 });
+    // Stream the PDF directly to the response
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=order_${pdfOptions.orderId}.pdf`);
+    
+    await generateQrPdfStream(products, res, pdfOptions);
 
   } catch (error) {
     console.error('Download PDF error:', error);
-    res.status(500).json({ message: 'Server Error', error: error.message });
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Server Error', error: error.message });
+    }
   }
 });
 

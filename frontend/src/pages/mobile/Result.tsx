@@ -82,6 +82,7 @@ function Header({ title = "Authentiks", showBell = true }) {
 function ResultAuthentic({ data }: { data: any }) {
   const navigate = useNavigate();
   const [showAll, setShowAll] = useState(false);
+  const [showMore, setShowMore] = useState(false);
 
   // Determine colors
   const productName = data.productName || "Product Info";
@@ -102,7 +103,7 @@ function ResultAuthentic({ data }: { data: any }) {
 
   const knownKeys = new Set([
     "productName", "brand", "category", "batchNo", "scannedAt", "manufactureDate", "expiryDate",
-    "description", "images", "productImage", "productStats", "_id", "productId", "brandId",
+    "description", "productInfo", "images", "productImage", "productStats", "_id", "productId", "brandId",
     "originalScan", "qrCode", "status", "companyName", "company", "manufacturer", "dynamicFields", "variants"
   ]);
 
@@ -222,14 +223,14 @@ function ResultAuthentic({ data }: { data: any }) {
               ))}
             </div>
 
-            {/* Show More Button */}
+            {/* Show More/Less Button for Grid */}
             {hasMore && (
               <div className="w-full flex justify-center mt-4 mb-2">
                 <button
                   onClick={() => setShowAll(!showAll)}
                   className="bg-[#F0F7FF] text-[#0D4E96] px-6 py-2 rounded-full font-bold text-[14px] border border-[#0D4E96]/20 shadow-sm flex items-center gap-2"
                 >
-                  {showAll ? "Show Less Info" : "Show More Info"}
+                  {showAll ? "Less Technical Info" : "More Technical Info"}
                   <svg
                     width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
                     className={`transition-transform duration-300 ${showAll ? 'rotate-180' : ''}`}
@@ -240,30 +241,61 @@ function ResultAuthentic({ data }: { data: any }) {
               </div>
             )}
 
-            <div className="">
-              <h4 className="font-bold text-[#333] text-[18px] mb-2 mt-4">
-                Additional Info:
-              </h4>
-              <div className="bg-[#F8F8F8] p-4 rounded-[16px] shadow-[2px_2px_1px_1px_rgba(1,1,1,0.1)] space-y-4">
-                {data.description && (
-                  <p className="text-[#666] text-[16px]">
-                    {data.description}
-                  </p>
-                )}
+            {/* More Info Anchor/Button for Additional Details */}
+            <div className="w-full flex justify-center mt-6">
+              <button
+                onClick={() => setShowMore(!showMore)}
+                className="text-[#0D4E96] font-bold text-[16px] underline decoration-2 underline-offset-4 flex items-center gap-1 hover:text-[#2CA4D6] transition-colors"
+              >
+                {showMore ? "Hide Additional Info" : "More Product Information"}
+                <svg
+                    width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                    className={`transition-transform duration-300 ${showMore ? 'rotate-180' : ''}`}
+                  >
+                    <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+            </div>
 
-                {dynamicFieldList.map((field, idx) => (
-                  <div key={idx} className="pb-2 border-b border-gray-100 last:border-0 last:pb-0">
-                    <p className="text-[#333] text-[12px] font-bold uppercase tracking-wider opacity-60 mb-0.5">{field.label}</p>
-                    <p className="text-[#666] text-[15px] font-medium whitespace-pre-wrap">{field.value}</p>
+            {showMore && (
+              <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                <h4 className="font-bold text-[#333] text-[18px] mb-2">
+                  Additional Info:
+                </h4>
+                <div className="bg-[#F2F2F2] p-5 rounded-[20px] shadow-sm space-y-5 border border-gray-200/50">
+                  {/* Priority: Product Info */}
+                  {data.productInfo && (
+                    <div className="pb-3 border-b border-gray-300/30 last:border-0 last:pb-0">
+                      <p className="text-[#333] text-[12px] font-bold uppercase tracking-wider opacity-60 mb-1">About Product</p>
+                      <p className="text-[#444] text-[16px] font-medium whitespace-pre-wrap leading-relaxed">
+                        {data.productInfo}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Description */}
+                  {data.description && (
+                    <div className="pb-3 border-b border-gray-300/30 last:border-0 last:pb-0">
+                      <p className="text-[#333] text-[12px] font-bold uppercase tracking-wider opacity-60 mb-1">Description</p>
+                      <p className="text-[#444] text-[15px] font-medium whitespace-pre-wrap leading-relaxed">{data.description}</p>
+                    </div>
+                  )}
+
+                  {/* Dynamic Fields */}
+                  {dynamicFieldList.map((field, idx) => (
+                    <div key={idx} className="pb-3 border-b border-gray-300/30 last:border-0 last:pb-0">
+                      <p className="text-[#333] text-[12px] font-bold uppercase tracking-wider opacity-60 mb-1">{field.label}</p>
+                      <p className="text-[#444] text-[15px] font-medium whitespace-pre-wrap">{field.value}</p>
+                    </div>
+                  ))}
+
+                  <div className="pt-1">
+                    <p className="text-[#333] text-[12px] font-bold uppercase tracking-wider opacity-60 mb-1">Company</p>
+                    <p className="text-[#444] text-[15px] font-bold text-[#0D4E96]">{companyName}</p>
                   </div>
-                ))}
-
-                <div className="pt-1">
-                  <p className="text-[#333] text-[12px] font-bold uppercase tracking-wider opacity-60 mb-0.5">Company</p>
-                  <p className="text-[#666] text-[15px] font-medium">{companyName}</p>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
