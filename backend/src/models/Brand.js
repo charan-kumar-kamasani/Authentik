@@ -6,6 +6,7 @@ const brandSchema = new mongoose.Schema(
     brandName: { type: String, required: true },
     brandLogo: { type: String }, // URL or path to logo
     companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company', required: true },
+    status: { type: String, enum: ['active', 'blocked'], default: 'active' },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

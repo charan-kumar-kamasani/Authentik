@@ -10,6 +10,12 @@ const userSchema = new mongoose.Schema(
       enum: ["superadmin", "admin", "manager", "user", "company", "authorizer", "creator"],
       default: "user",
     },
+    status: {
+      type: String,
+      enum: ["active", "blocked"],
+      default: "active",
+    },
+
     brandId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Brand'

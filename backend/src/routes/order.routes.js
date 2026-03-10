@@ -598,12 +598,13 @@ router.put('/:id/reject', protect, async (req, res) => {
       return res.status(400).json({ message: 'Cannot reject a completed order' });
     }
 
-    order.status = 'Rejected';
+    // When rejected, move back to step 1 so it can be edited/fixed
+    order.status = 'Pending Authorization';
     order.history.push({
-      status: 'Rejected',
+      status: 'Rejected', // Logging 'Rejected' in history, but status moves back
       changedBy: req.user._id,
       role: req.user.role,
-      comment: reason || 'Order rejected'
+      comment: reason || 'Order rejected for corrections'
     });
 
     await order.save();
@@ -628,6 +629,7 @@ router.put('/:id/reject', protect, async (req, res) => {
 
 // 10. DOWNLOAD PDF
 router.get('/:id/download', protect, async (req, res) => {
+  console.log(`📄 PDF Download requested for Order ID: ${req.params.id}`);
   try {
     const order = await Order.findById(req.params.id)
       .populate({
@@ -637,30 +639,36 @@ router.get('/:id/download', protect, async (req, res) => {
       .populate('company');
     
     if (!order) {
+      console.log(`❌ Order not found: ${req.params.id}`);
       return res.status(404).json({ message: 'Order not found' });
     }
     
-    // Authorization: Only Super Admins can download QR PDFs
-    if (req.user.role !== 'superadmin') {
-      return res.status(403).json({ message: 'Only Super Admins are authorized to download QR PDFs' });
+    console.log(`👤 User Role: ${req.user.role}`);
+    // Authorization: Super Admins and Admins can download QR PDFs
+    if (!['superadmin', 'admin'].includes(req.user.role)) {
+      console.log(`🚫 Forbidden: User role is ${req.user.role}, not authorized`);
+      return res.status(403).json({ message: 'You are not authorized to download QR PDFs' });
     }
+
     
     if (!order.qrCodesGenerated) {
+      console.log(`⚠️ QR codes not generated for order: ${order.orderId}`);
       return res.status(400).json({ message: 'QR codes not generated yet' });
     }
     
     // Find products for this order
     const products = await Product.find({ orderId: order._id }).sort({ sequence: 1 });
+    console.log(`📦 Found ${products.length} products for PDF generation`);
     
     if (products.length === 0) {
+      console.log(`❌ No products found in DB for order: ${order._id}`);
       return res.status(404).json({ message: 'No QR codes found for this order' });
     }
-    
-    // Fetch the Brand document to get the logo URL (if not already populated/accessible)
+
+    // Fetch the documents to build the options
     const brandDoc = order.brandId;
     const companyDoc = brandDoc?.companyId;
 
-    // Prepare options with order, brand, and company information
     const pdfOptions = {
       orderId: order.orderId || order._id.toString(),
       brand: order.brand || brandDoc?.brandName || 'N/A',
@@ -670,18 +678,25 @@ router.get('/:id/download', protect, async (req, res) => {
       companyName: companyDoc?.companyName || 'N/A'
     };
     
+    console.log(`📐 PDF Options: ${JSON.stringify(pdfOptions, null, 2)}`);
+    
     // Stream the PDF directly to the response
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=order_${pdfOptions.orderId}.pdf`);
     
+    console.log('🏁 Starting PDF Stream...');
     await generateQrPdfStream(products, res, pdfOptions);
+    console.log(`✅ PDF Streamed successfully for order: ${pdfOptions.orderId}`);
+
+
 
   } catch (error) {
-    console.error('Download PDF error:', error);
+    console.error('❌ Download PDF error:', error);
     if (!res.headersSent) {
       res.status(500).json({ message: 'Server Error', error: error.message });
     }
   }
+
 });
 
 // 11. GET ORDER STATISTICS

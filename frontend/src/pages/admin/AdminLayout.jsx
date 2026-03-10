@@ -326,12 +326,20 @@ export default function AdminLayout({ children }) {
                   </p>
                   <div className="space-y-1.5">
                     {role === "superadmin" && (
-                      <SidebarItem
-                        label="Mobile Users"
-                        onClick={() => navigate("/users?tab=user")}
-                        icon={Users}
-                        isActive={activePath === "/users" && location.search.includes("tab=user")}
-                      />
+                      <>
+                        <SidebarItem
+                          label="Mobile Users"
+                          onClick={() => navigate("/users?tab=user")}
+                          icon={Users}
+                          isActive={activePath === "/users" && location.search.includes("tab=user")}
+                        />
+                        <SidebarItem
+                          label="Brands"
+                          onClick={() => navigate("/users?tab=brand")}
+                          icon={Building}
+                          isActive={activePath === "/users" && location.search.includes("tab=brand")}
+                        />
+                      </>
                     )}
                     <SidebarItem
                       label="User Management"

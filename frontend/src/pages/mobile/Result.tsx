@@ -139,22 +139,26 @@ function ResultAuthentic({ data }: { data: any }) {
     });
   }
 
-  // 3. Dynamic Fields
-  const dynamicFieldList: { label: string; value: string }[] = [];
+  // 3. Description (Moved to blue boxes as requested)
+  if (data.description) {
+    allFields.push({ label: "Description", value: data.description });
+  }
+
+  // 4. Dynamic Fields (Moved to blue boxes as requested)
   if (data.dynamicFields) {
     Object.entries(data.dynamicFields).forEach(([k, v]) => {
-      dynamicFieldList.push({ label: k, value: String(v) });
+      allFields.push({ label: k, value: String(v) });
     });
   }
 
-  // 4. Any other top-level fields not already covered
+  // 5. Any other top-level fields not already covered
   Object.entries(data).forEach(([k, v]) => {
     if (knownKeys.has(k)) return;
     if (coreFieldsMap[k]) return;
     if (v === null || v === undefined || typeof v === "object") return;
 
     const label = k.charAt(0).toUpperCase() + k.slice(1).replace(/([A-Z])/g, ' $1').trim();
-    dynamicFieldList.push({ label, value: String(v) });
+    allFields.push({ label, value: String(v) });
   });
 
   const displayedFields = showAll ? allFields : allFields.slice(0, 6);
@@ -259,35 +263,16 @@ function ResultAuthentic({ data }: { data: any }) {
 
             {showMore && (
               <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
-                <h4 className="font-bold text-[#333] text-[18px] mb-2">
-                  Additional Info:
-                </h4>
-                <div className="bg-[#F2F2F2] p-5 rounded-[20px] shadow-sm space-y-5 border border-gray-200/50">
-                  {/* Priority: Product Info */}
+                <div className="bg-[#F2F2F2] p-5 rounded-[20px] shadow-sm space-y-4 border border-gray-200/50">
+                  {/* Priority: Product Info / About */}
                   {data.productInfo && (
-                    <div className="pb-3 border-b border-gray-300/30 last:border-0 last:pb-0">
+                    <div className="">
                       <p className="text-[#333] text-[12px] font-bold uppercase tracking-wider opacity-60 mb-1">About Product</p>
-                      <p className="text-[#444] text-[16px] font-medium whitespace-pre-wrap leading-relaxed">
+                      <p className="text-[#444] text-[15px] font-medium whitespace-pre-wrap leading-relaxed">
                         {data.productInfo}
                       </p>
                     </div>
                   )}
-
-                  {/* Description */}
-                  {data.description && (
-                    <div className="pb-3 border-b border-gray-300/30 last:border-0 last:pb-0">
-                      <p className="text-[#333] text-[12px] font-bold uppercase tracking-wider opacity-60 mb-1">Description</p>
-                      <p className="text-[#444] text-[15px] font-medium whitespace-pre-wrap leading-relaxed">{data.description}</p>
-                    </div>
-                  )}
-
-                  {/* Dynamic Fields */}
-                  {dynamicFieldList.map((field, idx) => (
-                    <div key={idx} className="pb-3 border-b border-gray-300/30 last:border-0 last:pb-0">
-                      <p className="text-[#333] text-[12px] font-bold uppercase tracking-wider opacity-60 mb-1">{field.label}</p>
-                      <p className="text-[#444] text-[15px] font-medium whitespace-pre-wrap">{field.value}</p>
-                    </div>
-                  ))}
 
                   <div className="pt-1">
                     <p className="text-[#333] text-[12px] font-bold uppercase tracking-wider opacity-60 mb-1">Company</p>

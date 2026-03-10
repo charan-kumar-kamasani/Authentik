@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import API_BASE_URL from "../../config/api";
+import API_BASE_URL, { downloadOrderPdf } from "../../config/api";
+
 import { useLoading } from '../../context/LoadingContext';
 import TablePagination from '../../components/TablePagination';
 import {
@@ -146,24 +147,24 @@ export default function AdminDashboard() {
     setGlobalLoading(true);
     try {
       const token = getAuthToken();
-      const res = await fetch(API_BASE_URL + "/orders/" + orderId + "/download", {
-        headers: { Authorization: "Bearer " + token }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const link = document.createElement("a");
-        link.href = "data:application/pdf;base64," + data.pdfBase64;
-        link.download = "order_" + orderId + "_qrs.pdf";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } else {
-        const err = await res.json();
-        alert("Download failed: " + (err.message || JSON.stringify(err)));
-      }
-    } catch (e) { alert('Failed to download PDF'); }
-    finally { setGlobalLoading(false); }
+      const blob = await downloadOrderPdf(orderId, token);
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "order_" + orderId + "_qrs.pdf";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (e) { 
+      console.error("Download Error:", e);
+      alert(e.message || 'Failed to download PDF'); 
+    } finally { 
+      setGlobalLoading(false); 
+    }
   };
+
 
   // ── Filters & helpers ──
   const statuses = ['All', 'Pending Authorization', 'Authorized', 'Order Processing', 'Dispatching', 'Dispatched', 'Received', 'Rejected'];
@@ -382,9 +383,10 @@ export default function AdminDashboard() {
                               {order.status === 'Dispatching' && (
                                 <ActionBtn onClick={() => setShowDispatchModal(order._id)} icon={Truck} label="Dispatch" color="sky" />
                               )}
-                              {order.qrCodesGenerated && role === 'superadmin' && (
+                              {order.qrCodesGenerated && ['superadmin', 'admin'].includes(role) && (
                                 <ActionBtn onClick={() => downloadPdf(order._id)} icon={FileDown} label="PDF" color="slate" />
                               )}
+
                             </>
                           )}
 

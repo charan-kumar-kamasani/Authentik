@@ -80,6 +80,8 @@ export default function ScanHistory() {
               longitude: item.longitude,
               place: item.place,
               originalScan: item.originalScan,
+              fullData: item,
+              status: item.status
             };
           });
           setHistoryItems(mappedData);
@@ -95,7 +97,8 @@ export default function ScanHistory() {
   const Card = ({ item, index }) => {
     return (
       <div 
-        className="w-full mb-5 bg-white rounded-[20px] shadow-[0_4px_20px_rgba(13,78,150,0.12)] overflow-hidden border border-white hover:shadow-[0_8px_30px_rgba(13,78,150,0.2)] transition-all duration-300 hover:scale-[1.02]"
+        onClick={() => navigate(`/result/${item.status || 'ORIGINAL'}`, { state: item.fullData })}
+        className="w-full mb-5 bg-white rounded-[20px] shadow-[0_4px_20px_rgba(13,78,150,0.12)] overflow-hidden border border-white hover:shadow-[0_8px_30px_rgba(13,78,150,0.2)] transition-all duration-300 hover:scale-[1.02] cursor-pointer"
         style={{
           animation: `fadeSlideUp 0.5s ease-out forwards`,
           animationDelay: `${index * 0.1}s`,

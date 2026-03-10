@@ -22,6 +22,7 @@ const companySchema = new mongoose.Schema(
     authorizerEmails: [{ type: String }], // authorizer email IDs
     creatorEmails: [{ type: String }], // creator email IDs
     qrCredits: { type: Number, default: 0 }, // available QR credits balance
+    status: { type: String, enum: ['active', 'blocked'], default: 'active' },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

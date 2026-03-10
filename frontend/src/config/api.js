@@ -5,11 +5,13 @@ let API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://authentik-8p39.
 // If the API URL is a local IP or localhost and we are on HTTPS, 
 // but the backend is on HTTP, we use the /api proxy defined in vite.config.js
 // to avoid Mixed Content warnings and connection issues.
-if (typeof window !== 'undefined' && window.location.protocol === 'https:' && 
+if (typeof window !== 'undefined' && 
+    (window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && 
     API_BASE_URL.startsWith('http://') &&
     (API_BASE_URL.includes('192.168.') || API_BASE_URL.includes('localhost') || API_BASE_URL.includes('127.0.0.1'))) {
     API_BASE_URL = '/api';
 }
+
 
 // Monkey-patch window.fetch to automatically increment/decrement the global
 // loading counter and dedupe identical in-flight requests (url+method+body).
@@ -234,9 +236,11 @@ export const downloadOrderPdf = async (orderId, token) => {
              headers: { Authorization: `Bearer ${token}` }
         });
         if(!response.ok) {
-             const err = await response.json().catch(() => ({ message: 'Failed to download PDF' }));
-             throw new Error(err.message || 'Failed to download PDF');
+             console.error(`PDF Download Error Status: ${response.status} ${response.statusText}`);
+             const err = await response.json().catch(() => ({ message: `Server returned ${response.status} ${response.statusText}` }));
+             throw new Error(err.message || err.error || 'Failed to download PDF');
         }
+
         // Return blob instead of JSON
         return await response.blob();
     } catch(error) {
@@ -697,5 +701,90 @@ export const checkIsTestAccount = async () => {
 
 // Alias for convenience
 export const getAllCompanies = getCompanies;
+
+export const updateBrand = async (brandId, data, token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/brands/${brandId}`, {
+            method: 'PATCH',
+            headers: { 
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}` 
+            },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error('Failed to update brand');
+        return await response.json();
+    } catch (error) {
+        console.error("Update Brand Error:", error);
+        throw error;
+    }
+};
+
+export const updateCompany = async (companyId, data, token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/companies/${companyId}`, {
+            method: 'PATCH',
+            headers: { 
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}` 
+            },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error('Failed to update company');
+        return await response.json();
+    } catch (error) {
+        console.error("Update Company Error:", error);
+        throw error;
+    }
+};
+
+export const getProductTemplates = async (params = {}) => {
+    try {
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+        const query = new URLSearchParams(params).toString();
+        const response = await fetch(`${API_BASE_URL}/product-templates?${query}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch product templates');
+        return await response.json();
+    } catch (error) {
+        console.error("Get Product Templates Error:", error);
+        throw error;
+    }
+};
+
+export const createProductTemplate = async (data) => {
+    try {
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/product-templates`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}` 
+            },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error('Failed to create product template');
+        return await response.json();
+    } catch (error) {
+        console.error("Create Product Template Error:", error);
+        throw error;
+    }
+};
+
+export const deleteProductTemplate = async (templateId) => {
+    try {
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/product-templates/${templateId}`, {
+            method: 'DELETE',
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to delete product template');
+        return await response.json();
+    } catch (error) {
+        console.error("Delete Product Template Error:", error);
+        throw error;
+    }
+};
 
 

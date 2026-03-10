@@ -174,6 +174,27 @@ const OrderManagement = () => {
     }
   };
 
+  const handleRejectOrder = async (orderId) => {
+    const reason = window.prompt('Please enter a rejection reason (this will be seen by the creator/authorizer):');
+    if (reason === null) return;
+    if (!reason.trim()) {
+      alert('Rejection reason is required.');
+      return;
+    }
+
+    try {
+      setGlobalLoading(true);
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      await updateOrderStatus(orderId, 'reject', { reason: reason.trim() }, token);
+      alert('Order rejected and moved back to Pending Authorization.');
+      fetchOrders();
+    } catch (e) {
+      alert('Failed: ' + e.message);
+    } finally {
+      setGlobalLoading(false);
+    }
+  };
+
   const handleBuyPlan = async (plan) => {
     setSelectedCreditPlan(plan);
     setCreditView('checkout');
@@ -530,10 +551,15 @@ const OrderManagement = () => {
                         <ActionBtn onClick={() => handleMarkReceived(order._id)}
                           icon={CheckCircle2} label="Mark Received" color="emerald" />
                       )}
-                      {/* PDF — visible only for superadmin */}
-                      {order.qrCodesGenerated && role === 'superadmin' && (
+                      {/* Reject — allowed for superadmin/admin at most stages */}
+                      {['Authorized', 'Order Processing', 'Dispatching'].includes(order.status) && (role === 'admin' || role === 'superadmin') && (
+                        <ActionBtn onClick={() => handleRejectOrder(order._id)} icon={XCircle} label="Reject" color="red" />
+                      )}
+                      {/* PDF — visible only for superadmin and admin */}
+                      {order.qrCodesGenerated && (role === 'superadmin' || role === 'admin') && (
                         <ActionBtn onClick={() => handleDownload(order._id)} icon={FileDown} label="PDF" color="slate" />
                       )}
+
                     </div>
                   </td>
                 </tr>

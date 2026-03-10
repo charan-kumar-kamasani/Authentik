@@ -63,27 +63,9 @@ export default function Home() {
         if (profileData && !profileData.name) {
           setIsProfileIncomplete(true);
           
-          // Smart interval logic - don't force, show at increasing intervals
-          const lastDismissed = localStorage.getItem("profilePromptLastDismissed");
-          const dismissCount = parseInt(localStorage.getItem("profilePromptDismissCount") || "0");
-          
-          if (!lastDismissed) {
-            // First time - show the prompt
+          const promptShown = localStorage.getItem("profilePromptShown");
+          if (!promptShown) {
             setShowProfilePrompt(true);
-          } else {
-            const lastDismissedTime = parseInt(lastDismissed);
-            const now = Date.now();
-            const daysSinceDismissed = (now - lastDismissedTime) / (1000 * 60 * 60 * 24);
-            
-            // Progressive intervals: 1 day, 2 days, 3 days, then 7 days
-            let intervalDays = 1;
-            if (dismissCount === 1) intervalDays = 2;
-            else if (dismissCount === 2) intervalDays = 3;
-            else if (dismissCount >= 3) intervalDays = 7;
-            
-            if (daysSinceDismissed >= intervalDays) {
-              setShowProfilePrompt(true);
-            }
           }
         }
 
@@ -142,6 +124,7 @@ export default function Home() {
               time: timeStr,
               icon,
               statusColor,
+              fullData: item
             };
           });
 
@@ -158,14 +141,16 @@ export default function Home() {
   console.log("Home stats:", recentScans);
 
   const handleSkipProfile = () => {
-    // Save timestamp when dismissed
-    localStorage.setItem("profilePromptLastDismissed", Date.now().toString());
-    
-    // Increment dismiss count for progressive intervals
-    const currentCount = parseInt(localStorage.getItem("profilePromptDismissCount") || "0");
-    localStorage.setItem("profilePromptDismissCount", (currentCount + 1).toString());
-    
+    localStorage.setItem("profilePromptShown", "true");
     setShowProfilePrompt(false);
+  };
+
+  const handleRecentScanClick = (scan) => {
+    // Determine the path based on the scan status
+    let status = scan.fullData.status || "ORIGINAL";
+    // Map status to what Result.tsx expects if needed
+    // Assuming status in DB matches validStatuses in Result.tsx
+    navigate(`/result/${status}`, { state: scan.fullData });
   };
 
   const handleScanClick = () => {
@@ -298,7 +283,8 @@ export default function Home() {
                   recentScans.slice(0, 5).map((scan, index) => (
                     <div
                       key={scan.id}
-                      className="relative group"
+                      onClick={() => handleRecentScanClick(scan)}
+                      className="relative group cursor-pointer"
                       style={{
                         animation: `fadeSlideUp 0.5s ease-out forwards`,
                         animationDelay: `${index * 0.1}s`,
@@ -619,9 +605,7 @@ export default function Home() {
             {/* Update Profile Button */}
             <button
               onClick={() => {
-                // Reset prompt tracking when user chooses to update profile
-                localStorage.removeItem("profilePromptLastDismissed");
-                localStorage.removeItem("profilePromptDismissCount");
+                localStorage.setItem("profilePromptShown", "true");
                 setShowProfilePrompt(false);
                 navigate("/edit-profile");
               }}

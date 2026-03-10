@@ -13,19 +13,37 @@ const protect = async (req, res, next) => {
   const secret = process.env.JWT_SECRET || 'SECRET';
   const decoded = jwt.verify(token, secret);
 
-      req.user = await User.findById(decoded.userId).select("-password");
+      req.user = await User.findById(decoded.userId)
+        .select("-password")
+        .populate('brandId');
 
       if (!req.user) {
-        return res.status(401).json({ error: "Not authorized, user not found" });
+        return res.status(401).json({ error: "Not authorized, user not found", message: "Not authorized, user not found" });
+
       }
+
+      // Check if user is blocked
+      if (req.user.status === 'blocked') {
+        return res.status(403).json({ error: "Your account is blocked. Please contact support.", message: "Your account is blocked. Please contact support." });
+
+      }
+
+      // Check if user's brand is blocked (for authorizers/creators)
+      if (['authorizer', 'creator', 'company'].includes(req.user.role) && req.user.brandId && req.user.brandId.status === 'blocked') {
+        return res.status(403).json({ error: "The associated brand is blocked. Please contact support.", message: "The associated brand is blocked. Please contact support." });
+
+      }
+
 
       next();
     } catch (error) {
       console.error(error);
-      res.status(401).json({ error: "Not authorized, token failed" });
+      res.status(401).json({ error: "Not authorized, token failed", message: "Not authorized, token failed" });
+
     }
   } else {
-    res.status(401).json({ error: "Not authorized, no token" });
+    res.status(401).json({ error: "Not authorized, no token", message: "Not authorized, no token" });
+
   }
 };
 

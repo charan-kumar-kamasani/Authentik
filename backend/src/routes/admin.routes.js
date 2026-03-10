@@ -169,6 +169,19 @@ router.post("/login", async (req, res) => {
   const user = await User.findOne({ email });
 
   if (user && (await bcrypt.compare(password, user.password))) {
+        // Check if user is blocked
+        if (user.status === 'blocked') {
+          return res.status(403).json({ error: "Your account is blocked. Please contact support." });
+        }
+
+        // Check if brand is blocked (if user is linked to one)
+        if (['authorizer', 'creator', 'company'].includes(user.role) && user.brandId) {
+          const brand = await Brand.findById(user.brandId);
+          if (brand && brand.status === 'blocked') {
+             return res.status(403).json({ error: "The associated brand is blocked. Please contact support." });
+          }
+        }
+
         res.json({
             _id: user._id,
             email: user.email,
@@ -178,6 +191,7 @@ router.post("/login", async (req, res) => {
   } else {
     res.status(401).json({ error: "Invalid email or password" });
   }
+
 });
 
 // Get Companies
@@ -618,8 +632,45 @@ router.get('/brands', protect, authorize('admin', 'superadmin', 'company', 'auth
         const { companyId } = req.query;
         const query = {};
         if (companyId) query.companyId = companyId;
-        const brands = await Brand.find(query).populate('companyId', 'companyName');
+        const brands = await Brand.find(query).populate('companyId', 'companyName qrCredits legalEntity status');
         res.json(brands);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Update Brand (status, name, logo)
+router.patch('/brands/:id', protect, authorize('superadmin', 'admin'), async (req, res) => {
+    try {
+        const { brandName, brandLogo, status } = req.body;
+        const brand = await Brand.findById(req.params.id);
+        if (!brand) return res.status(404).json({ message: 'Brand not found' });
+
+        if (brandName) brand.brandName = brandName;
+        if (brandLogo) brand.brandLogo = brandLogo;
+        if (status) brand.status = status;
+
+        await brand.save();
+        res.json(brand);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Update Company (credits, status, details)
+router.patch('/companies/:id', protect, authorize('superadmin', 'admin'), async (req, res) => {
+    try {
+        const updates = req.body;
+        const company = await Company.findById(req.params.id);
+        if (!company) return res.status(404).json({ message: 'Company not found' });
+
+        // Apply updates
+        Object.keys(updates).forEach(key => {
+            if (updates[key] !== undefined) company[key] = updates[key];
+        });
+
+        await company.save();
+        res.json(company);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

@@ -134,7 +134,7 @@ const buildQrPdf = async (products, options = {}) => {
       });
 
       // QR image is exactly 10mm × 10mm, centred in the QR area
-      const qrSide = 10 * MM;
+      const qrSide = 12 * MM;
       const qrX = x + (cellWidth - qrSide) / 2;
       const qrImgY = qrY + (qrAreaHeight - qrSide) / 2;
 
