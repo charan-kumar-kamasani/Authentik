@@ -453,9 +453,12 @@ router.get('/qrs', protect, authorize('admin', 'manager', 'superadmin', 'creator
 
         // Creators, authorizers and company users should see inventory scoped to their brand
         if (['creator', 'authorizer', 'company'].includes(req.user.role)) {
-            const brandId = req.user.brandId || req.user._id;
-            if (brandId) {
-                query = { brandId };
+            const brandIds = req.user.brandIds && req.user.brandIds.length > 0 
+                ? req.user.brandIds 
+                : (req.user.brandId ? [req.user.brandId] : (req.user.role === 'company' ? [req.user._id] : []));
+            
+            if (brandIds.length > 0) {
+                query = { brandId: { $in: brandIds } };
             } else {
                 // If no brand linkage, fall back to createdBy to avoid exposing everything
                 query = { createdBy: req.user._id };

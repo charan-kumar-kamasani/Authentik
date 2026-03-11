@@ -106,6 +106,10 @@ export default function Home() {
               title = "Fake or Counterfeit";
               icon = statusFake;
               statusColor = "text-red-600";
+            } else if (item.status === "INACTIVE") {
+              title = "Inactive QR Code";
+              icon = statusFake;
+              statusColor = "text-red-600";
             } else if (
               item.status === "ALREADY_USED" ||
               item.status === "DUPLICATE"

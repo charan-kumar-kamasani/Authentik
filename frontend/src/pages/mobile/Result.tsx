@@ -348,16 +348,16 @@ function ResultRepeat({ data }: { data: any }) {
                   : "20/Oct/2025  08:30 PM (IST)"}
               </p>
             </div>
-            <div>
-              <p className="text-[#6E6D6B] text-[12px] font-bold">
-                Scanned Account No:
-              </p>
-              <p className="text-[#6E6D6B] text-[14px] font-bold">
-                {data.originalScan?.scannedBy
-                  ? maskPhone(data.originalScan.scannedBy)
-                  : "988XXXX144"}
-              </p>
-            </div>
+            {data.originalScan?.scannedBy && data.originalScan.scannedBy !== 'Unknown' && (
+              <div>
+                <p className="text-[#6E6D6B] text-[12px] font-bold">
+                  Scanned Account No:
+                </p>
+                <p className="text-[#6E6D6B] text-[14px] font-bold">
+                  {maskPhone(data.originalScan.scannedBy)}
+                </p>
+              </div>
+            )}
             <div>
               <p className="text-[#6E6D6B] text-[12px] font-bold">
                 Product Verification ID:

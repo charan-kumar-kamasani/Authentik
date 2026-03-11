@@ -78,11 +78,16 @@ router.get("/history", protect, async (req, res) => {
         const obj = s.toObject ? s.toObject() : s;
         if (obj.status === 'ALREADY_USED' && obj.productId) {
           try {
-            // populate mobile (we don't require email for regular users)
             const original = await Scan.findOne({ productId: obj.productId._id, status: 'ORIGINAL' }).populate('userId', 'mobile');
             if (original) {
+              // Mask mobile
+              let masked = 'Unknown';
+              if (original.userId && original.userId.mobile) {
+                const m = original.userId.mobile.toString();
+                masked = m.length > 5 ? m.slice(0, 3) + '*'.repeat(m.length - 5) + m.slice(-2) : m;
+              }
               obj.originalScan = {
-                scannedBy: original.userId ? original.userId.mobile : 'Unknown',
+                scannedBy: masked,
                 scannedAt: original.createdAt,
                 place: original.place,
               };
@@ -334,6 +339,13 @@ console.log("______product", product)
         longitude,
       });
 
+      // Mask mobile
+      let masked = 'Unknown';
+      if (alreadyUsed.userId && alreadyUsed.userId.mobile) {
+        const m = alreadyUsed.userId.mobile.toString();
+        masked = m.length > 5 ? m.slice(0, 3) + '*'.repeat(m.length - 5) + m.slice(-2) : m;
+      }
+
       return res.json({
         status: "ALREADY_USED",
         data: {
@@ -355,7 +367,11 @@ console.log("______product", product)
           variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
           place,
           scannedAt: scan.createdAt,
-          originalScannerMobile: alreadyUsed.userId?.mobile,
+          originalScan: {
+            scannedBy: masked,
+            scannedAt: alreadyUsed.createdAt,
+            place: alreadyUsed.place,
+          }
         },
       });
     }

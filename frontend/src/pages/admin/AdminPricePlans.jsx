@@ -91,7 +91,11 @@ export default function AdminPricePlans() {
         fetch(`${API_BASE_URL}/plans/features`, { headers: h }),
         fetch(`${API_BASE_URL}/plans/billing-config`, { headers: h }),
       ]);
-      if (pRes.ok) setPlans(await pRes.json());
+      if (pRes.ok) {
+        const allPlans = await pRes.json();
+        // Only show plans with pricePerQr 0, 3, or 5
+        setPlans(allPlans.filter(p => [0, 3, 5].includes(p.pricePerQr)));
+      }
       if (fRes.ok) setFeatures(await fRes.json());
       if (cRes.ok) {
         const cfg = await cRes.json();

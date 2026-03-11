@@ -164,20 +164,20 @@ router.get('/', protect, async (req, res) => {
     if (['admin', 'superadmin'].includes(req.user.role)) {
       // Super Admin sees all
     } else if (req.user.role === 'creator') {
-        // Creator sees their own orders OR orders for their company
-        // If companyId exists, use it, otherwise fall back to createdBy
-        if (req.user.brandId) {
-             query.brandId = req.user.brandId;
+        // Creator sees their own orders OR orders for their company/brands
+        const brandIds = req.user.brandIds && req.user.brandIds.length > 0 ? req.user.brandIds : (req.user.brandId ? [req.user.brandId] : []);
+        
+        if (brandIds.length > 0) {
+             query.brandId = { $in: brandIds };
         } else {
              query.createdBy = req.user._id;
         }
     } else if (['company', 'authorizer'].includes(req.user.role)) {
-      const brandId = req.user.role === 'company' ? (req.user.brandId || req.user._id) : req.user.brandId;
-      if (brandId) {
-          query.brandId = brandId;
+      const brandIds = req.user.brandIds && req.user.brandIds.length > 0 ? req.user.brandIds : (req.user.brandId ? [req.user.brandId] : (req.user.role === 'company' ? [req.user._id] : []));
+
+      if (brandIds.length > 0) {
+          query.brandId = { $in: brandIds };
       } else {
-          // Fallback: If authorizer has no companyId, they might not see anything.
-          // In a real app, we'd fix the user creation. For now, strict.
           return res.status(403).json({ message: 'User not linked to a brand' });
       }
     } else {
@@ -226,9 +226,12 @@ router.get('/:id', protect, async (req, res) => {
     }
 
     // Check authorization
-  const isAdmin = ['admin', 'superadmin'].includes(req.user.role);
-  const userBrandId = req.user.brandId || (req.user.role === 'company' ? req.user._id : null);
-  const hasAccess = isAdmin || (userBrandId && order.brandId && order.brandId._id.toString() === userBrandId.toString());
+    const isAdmin = ['admin', 'superadmin'].includes(req.user.role);
+    const userBrandIds = req.user.brandIds && req.user.brandIds.length > 0 
+      ? req.user.brandIds.map(id => id.toString()) 
+      : (req.user.brandId ? [req.user.brandId.toString()] : (req.user.role === 'company' ? [req.user._id.toString()] : []));
+    
+    const hasAccess = isAdmin || (order.brandId && userBrandIds.includes(order.brandId.toString()));
 
     if (!hasAccess) {
       return res.status(403).json({ message: 'Not authorized' });
@@ -250,9 +253,12 @@ router.put('/:id/authorize', protect, authorize('company', 'authorizer'), async 
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    // Verify ownership by brand only
-    const userBrandId = req.user.brandId || (req.user.role === 'company' ? req.user._id : null);
-    if (!order.brandId || !userBrandId || order.brandId.toString() !== userBrandId.toString()) {
+    // Verify ownership by brand or company id
+    const userBrandIds = req.user.brandIds && req.user.brandIds.length > 0 
+      ? req.user.brandIds.map(id => id.toString()) 
+      : (req.user.brandId ? [req.user.brandId.toString()] : (req.user.role === 'company' ? [req.user._id.toString()] : []));
+
+    if (!order.brandId || !userBrandIds.includes(order.brandId.toString())) {
       return res.status(403).json({ message: 'Not authorized for this order' });
     }
 
@@ -525,8 +531,11 @@ router.put('/:id/received', protect, authorize('company', 'authorizer'), async (
     }
 
     // Verify ownership by brand only
-    const userBrandId = req.user.brandId || (req.user.role === 'company' ? req.user._id : null);
-    if (!order.brandId || !userBrandId || order.brandId.toString() !== userBrandId.toString()) {
+    const userBrandIds = req.user.brandIds && req.user.brandIds.length > 0 
+      ? req.user.brandIds.map(id => id.toString()) 
+      : (req.user.brandId ? [req.user.brandId.toString()] : (req.user.role === 'company' ? [req.user._id.toString()] : []));
+
+    if (!order.brandId || !userBrandIds.includes(order.brandId.toString())) {
       return res.status(403).json({ message: 'Not authorized for this order' });
     }
 
@@ -584,9 +593,12 @@ router.put('/:id/reject', protect, async (req, res) => {
 
     // Permission check
   const isAdmin = ['admin', 'superadmin'].includes(req.user.role);
-  const userBrandId = req.user.brandId || (req.user.role === 'company' ? req.user._id : null);
+  const userBrandIds = req.user.brandIds && req.user.brandIds.length > 0 
+    ? req.user.brandIds.map(id => id.toString()) 
+    : (req.user.brandId ? [req.user.brandId.toString()] : (req.user.role === 'company' ? [req.user._id.toString()] : []));
+
   const isCompanyStaff = ['company', 'authorizer'].includes(req.user.role) && (
-               (userBrandId && order.brandId && order.brandId.toString() === userBrandId.toString())
+               (order.brandId && userBrandIds.includes(order.brandId.toString()))
                );
 
     if (!isAdmin && !isCompanyStaff) {

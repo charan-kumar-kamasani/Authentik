@@ -471,31 +471,10 @@ const UserManagement = () => {
     e.preventDefault();
     const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
 
-    // Validate all official emails are verified
+    // Validate all official emails
     const filledOfficials = officialEmails.filter(e => e.value.trim());
     if (filledOfficials.length === 0) {
       alert('Please add at least one official email ID');
-      return;
-    }
-    const unverifiedOfficials = filledOfficials.filter(e => !e.verified);
-    if (unverifiedOfficials.length > 0) {
-      alert('Please verify all official email IDs before creating the company');
-      return;
-    }
-
-    // Validate all authorizer emails are verified
-    const filledAuthorizers = authorizerEmails.filter(e => e.value.trim());
-    const unverifiedAuthorizers = filledAuthorizers.filter(e => !e.verified);
-    if (unverifiedAuthorizers.length > 0) {
-      alert('Please verify all authorizer email IDs before creating the company');
-      return;
-    }
-
-    // Validate all creator emails are verified
-    const filledCreators = creatorEmails.filter(e => e.value.trim());
-    const unverifiedCreators = filledCreators.filter(e => !e.verified);
-    if (unverifiedCreators.length > 0) {
-      alert('Please verify all creator email IDs before creating the company');
       return;
     }
 
@@ -656,7 +635,7 @@ const UserManagement = () => {
               </div>
               <div className="space-y-2">
                 {officialEmails.map((entry, idx) => (
-                  <EmailRow key={idx} entry={entry} idx={idx} emails={officialEmails} setEmails={setOfficialEmails} showOtp={true} onSendOtp={sendEmailOtp} onVerifyOtp={verifyEmailOtp} />
+                  <EmailRow key={idx} entry={entry} idx={idx} emails={officialEmails} setEmails={setOfficialEmails} showOtp={false} onSendOtp={sendEmailOtp} onVerifyOtp={verifyEmailOtp} />
                 ))}
               </div>
             </div>
@@ -739,7 +718,7 @@ const UserManagement = () => {
                 </div>
                 <div className="space-y-2">
                   {authorizerEmails.map((entry, idx) => (
-                    <EmailRow key={idx} entry={entry} idx={idx} emails={authorizerEmails} setEmails={setAuthorizerEmails} showOtp={true} showPassword={true} onSendOtp={sendEmailOtp} onVerifyOtp={verifyEmailOtp} />
+                    <EmailRow key={idx} entry={entry} idx={idx} emails={authorizerEmails} setEmails={setAuthorizerEmails} showOtp={false} showPassword={true} onSendOtp={sendEmailOtp} onVerifyOtp={verifyEmailOtp} />
                   ))}
                 </div>
               </div>
@@ -753,7 +732,7 @@ const UserManagement = () => {
                 </div>
                 <div className="space-y-2">
                   {creatorEmails.map((entry, idx) => (
-                    <EmailRow key={idx} entry={entry} idx={idx} emails={creatorEmails} setEmails={setCreatorEmails} showOtp={true} showPassword={true} onSendOtp={sendEmailOtp} onVerifyOtp={verifyEmailOtp} />
+                    <EmailRow key={idx} entry={entry} idx={idx} emails={creatorEmails} setEmails={setCreatorEmails} showOtp={false} showPassword={true} onSendOtp={sendEmailOtp} onVerifyOtp={verifyEmailOtp} />
                   ))}
                 </div>
               </div>

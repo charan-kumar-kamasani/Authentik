@@ -223,7 +223,9 @@ const BillingCredits = () => {
     resetCheckout();
     try {
       const fetched = await getPlans();
-      setPlans(Array.isArray(fetched) ? fetched : fetched.plans || []);
+      const allPlans = Array.isArray(fetched) ? fetched : fetched.plans || [];
+      // Only show plans with pricePerQr 0, 3, or 5
+      setPlans(allPlans.filter(p => [0, 3, 5].includes(p.pricePerQr)));
     } catch {
       setPlans([]);
     }

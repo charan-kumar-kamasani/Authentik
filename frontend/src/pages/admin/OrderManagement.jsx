@@ -139,27 +139,48 @@ const OrderManagement = () => {
   const handleAction = async (orderId, action, data = {}) => {
     try {
       const actionLabels = {
-        authorize: 'Authorize this order? Credits will be deducted.',
+        authorize: 'Authorize this order? Credits will be deducted from company balance.',
         process: 'Process this order and generate QR codes?',
         dispatching: 'Mark this order as preparing for dispatch?',
         dispatch: 'Dispatch this order with the provided details?',
       };
+
       if (actionLabels[action]) {
-        const ok = await confirm({ title: action.charAt(0).toUpperCase() + action.slice(1), description: actionLabels[action], confirmText: 'Yes, Proceed', cancelText: 'Cancel' });
+        const ok = await confirm({ 
+          title: action.charAt(0).toUpperCase() + action.slice(1), 
+          description: actionLabels[action], 
+          confirmText: 'Yes, Proceed', 
+          cancelText: 'Cancel' 
+        });
         if (!ok) return;
       }
+
+      setGlobalLoading(true);
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       await updateOrderStatus(orderId, action, data, token);
-      fetchOrders();
+      
+      const successMessages = {
+        authorize: 'Order authorized successfully!',
+        process: 'QR codes generated and order processing!',
+        dispatching: 'Order status updated to dispatching.',
+        dispatch: 'Order dispatched successfully!',
+        received: 'Order marked as received and QR codes activated!',
+        reject: 'Order rejected successfully.'
+      };
+
+      alert(successMessages[action] || 'Action completed successfully!');
+      
       if (action === 'dispatch') setShowDispatchModal(null);
+      await fetchOrders();
     } catch (e) {
-      // Intercept credit errors for authorize action
       if (action === 'authorize' && e.creditData) {
         setCreditModal({ orderId, ...e.creditData });
         setCreditView('choice');
         return;
       }
       alert('Failed: ' + e.message);
+    } finally {
+      setGlobalLoading(false);
     }
   };
 
