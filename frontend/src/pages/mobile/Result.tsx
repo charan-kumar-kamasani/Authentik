@@ -85,11 +85,13 @@ function ResultAuthentic({ data }: { data: any }) {
   const [showMore, setShowMore] = useState(false);
 
   // Determine colors
-  const productName = data.productName || "Product Info";
+  const productName = data.productName || data.productId?.productName || "Product Info";
 
-  const productImage = data.productImage || (data.images && data.images.length > 0 ? data.images[0] : null);
+  // Check for image in data, then data.productId, then data.images array
+  const productImage = data.productImage || data.productId?.productImage || (data.images && data.images.length > 0 ? data.images[0] : null);
   console.log("______product image", productImage, data)
-  const companyName = data.companyName || data.company || data.manufacturer || data.brand || "-";
+
+  const companyName = data.companyName || data.company || data.manufacturer || data.brand || data.productId?.brand || "-";
 
   const coreFieldsMap: Record<string, string> = {
     brand: "Brand",
@@ -111,42 +113,48 @@ function ResultAuthentic({ data }: { data: any }) {
   const allFields: { label: string; value: any }[] = [];
 
   Object.entries(coreFieldsMap).forEach(([key, label]) => {
-    if (data[key]) {
-      let val = data[key];
-      if (key === "scannedAt") {
-        val = new Date(val).toLocaleDateString("en-GB", {
+    const val = data[key] || data.productId?.[key];
+    if (val) {
+      let displayVal = val;
+      if (key === "scannedAt" || key === "createdAt") {
+        displayVal = new Date(val).toLocaleDateString("en-GB", {
           day: "numeric", month: "short", year: "numeric",
         });
       }
-      allFields.push({ label, value: val });
+      allFields.push({ label, value: displayVal });
     }
   });
 
   // 1a. Mfd On (Month/Year)
-  if (data.mfdOn && data.mfdOn.month && data.mfdOn.year) {
-    allFields.push({ label: "Mfd Month/Year", value: `${data.mfdOn.month}/${data.mfdOn.year}` });
+  const mfdOn = data.mfdOn || data.productId?.mfdOn;
+  if (mfdOn && mfdOn.month && mfdOn.year) {
+    allFields.push({ label: "Mfd Month/Year", value: `${mfdOn.month}/${mfdOn.year}` });
   }
 
   // 1b. Best Before
-  if (data.bestBefore && data.bestBefore.value && data.bestBefore.unit) {
-    allFields.push({ label: "Best Before", value: `${data.bestBefore.value} ${data.bestBefore.unit}` });
+  const bestBefore = data.bestBefore || data.productId?.bestBefore;
+  if (bestBefore && bestBefore.value && bestBefore.unit) {
+    allFields.push({ label: "Best Before", value: `${bestBefore.value} ${bestBefore.unit}` });
   }
 
   // 2. Variants
-  if (data.variants && Array.isArray(data.variants)) {
-    data.variants.forEach((v: any) => {
+  const variants = data.variants || data.productId?.variants;
+  if (variants && Array.isArray(variants)) {
+    variants.forEach((v: any) => {
       allFields.push({ label: v.variantName, value: v.value });
     });
   }
 
-  // 3. Description (Moved to blue boxes as requested)
-  if (data.description) {
-    allFields.push({ label: "Description", value: data.description });
+  // 3. Description
+  const description = data.description || data.productId?.description;
+  if (description) {
+    allFields.push({ label: "Description", value: description });
   }
 
-  // 4. Dynamic Fields (Moved to blue boxes as requested)
-  if (data.dynamicFields) {
-    Object.entries(data.dynamicFields).forEach(([k, v]) => {
+  // 4. Dynamic Fields
+  const dynamicFields = data.dynamicFields || data.productId?.dynamicFields;
+  if (dynamicFields) {
+    Object.entries(dynamicFields).forEach(([k, v]) => {
       allFields.push({ label: k, value: String(v) });
     });
   }
@@ -410,10 +418,10 @@ function ResultRepeat({ data }: { data: any }) {
               state: {
                 qrCode: data.qrCode,
                 reportType: "FAKE",
-                productName: data.productName,
-                brand: data.brand,
-                productId: data.productId || null,
-                brandId: data.brandId || null,
+                productName: data.productName || data.productId?.productName,
+                brand: data.brand || data.productId?.brand,
+                productId: data.productId?._id || data.productId || null,
+                brandId: data.brandId || data.productId?.brandId || null,
                 scanStatus: "FAKE"
               }
             })}
@@ -570,16 +578,16 @@ function ResultInactive({ data }: { data: any }) {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500 font-medium">Product</span>
-                <span className="text-gray-900 font-bold">{data.productName || 'N/A'}</span>
+                <span className="text-gray-900 font-bold">{data.productName || data.productId?.productName || 'N/A'}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500 font-medium">Brand</span>
-                <span className="text-gray-900 font-bold">{data.brand || 'N/A'}</span>
+                <span className="text-gray-900 font-bold">{data.brand || data.productId?.brand || 'N/A'}</span>
               </div>
-              {data.batchNo && (
+              {(data.batchNo || data.productId?.batchNo) && (
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500 font-medium">Batch #</span>
-                  <span className="text-gray-900 font-bold">{data.batchNo}</span>
+                  <span className="text-gray-900 font-bold">{data.batchNo || data.productId?.batchNo}</span>
                 </div>
               )}
             </div>

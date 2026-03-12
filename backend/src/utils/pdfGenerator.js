@@ -125,11 +125,16 @@ const buildQrPdf = async (products, options = {}) => {
 
       // Generate QR code with full URL including the code parameter
       const qrUrl = `https://authentiks.in/scan?code=${encodeURIComponent(
-        products[i].qrCode
+        products[i].qrCode || ""
       )}`;
+
+      if (!products[i].qrCode) {
+        console.warn(`[pdfGenerator] Missing qrCode for product at index ${i}`);
+      }
+
       const qrBuffer = await QRCode.toBuffer(qrUrl, {
-        errorCorrectionLevel: "H", // Use High error correction to allow logo overlay
-        scale: 8, // Increase scale for sharper output
+        errorCorrectionLevel: "H", // Restored to High to ensure scanability with logo overlay
+        scale: 8, 
         margin: 1,
       });
 
@@ -142,6 +147,7 @@ const buildQrPdf = async (products, options = {}) => {
         width: qrSide,
         height: qrSide,
       });
+
 
       /** ── COMPANY LOGO OVERLAY — centred on QR ── **/
       if (logoBuffer) {
