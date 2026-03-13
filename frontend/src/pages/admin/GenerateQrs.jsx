@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import API_BASE_URL, { createOrder, getProductTemplates, createProductTemplate, deleteProductTemplate } from '../../config/api';
+import API_BASE_URL, { createOrder, getProductTemplates, createProductTemplate, deleteProductTemplate, getBrands } from '../../config/api';
 import { Calendar, Package, Plus, X, List, LayoutGrid, Trash2, CheckCircle2, Search } from 'lucide-react';
 import { useConfirm } from '../../components/ConfirmModal';
 
@@ -29,13 +29,11 @@ export default function GenerateQrs() {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [brands, setBrands] = useState([]);
+  const [products, setProducts] = useState([]);
   const [role, setRole] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
 
   const [submitting, setSubmitting] = useState(false);
-  const [activeTab, setActiveTab] = useState('generate'); // 'generate' or 'manage'
-  const [templates, setTemplates] = useState([]);
-  const [loadingTemplates, setLoadingTemplates] = useState(false);
   const [templateSearch, setTemplateSearch] = useState('');
   const confirm = useConfirm();
 
@@ -325,24 +323,26 @@ export default function GenerateQrs() {
 
           // Load brands for the company only
           if (u?.companyId?._id) {
+            const companyId = u.companyId._id;
             try {
-              const bres = await fetch(`${API_BASE_URL}/admin/brands?companyId=${u.companyId._id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-              });
-              if (bres.ok) {
-                const bdata = await bres.json();
-                setBrands(bdata || []);
-                // If creator, pre-select brand if only one or if user has brand
-                if (u?.brandId?._id) {
-                  setNewQr((p) => ({ ...p, brand: u.brandId.brandName }));
-                }
+              const bdata = await getBrands(companyId);
+              setBrands(bdata || []);
+              if (u?.brandId?._id) {
+                setNewQr((p) => ({ ...p, brand: u.brandId.brandName }));
               }
             } catch (err) {
               console.warn('Could not load company brands', err);
             }
+
+            // Load products for the company
+            try {
+              const pData = await getProductTemplates(companyId);
+              setProducts(pData || []);
+            } catch (err) {
+              console.warn('Could not load company products', err);
+            }
           }
 
-          loadTemplates();
 
         } else {
           setLoadingConfig(false);
@@ -354,73 +354,7 @@ export default function GenerateQrs() {
     })();
   }, []);
   
-  const loadTemplates = async () => {
-    setLoadingTemplates(true);
-    try {
-      const data = await getProductTemplates();
-      setTemplates(data || []);
-    } catch (err) {
-      console.error('Failed to load templates', err);
-    } finally {
-      setLoadingTemplates(false);
-    }
-  };
 
-  const handleSaveAsTemplate = async () => {
-    if (!newQr.productName) {
-      alert("Please enter a Product Name to save as template.");
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      let finalImg = imagePreview; // Default to current preview if it's already a URL
-      
-      // If imageFile is a fresh upload, we need to upload it to Cloudinary first
-      if (imageFile) {
-        const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-        const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-        
-        if (cloudName && uploadPreset) {
-          const formData = new FormData();
-          formData.append('file', imageFile);
-          formData.append('upload_preset', uploadPreset);
-          
-          const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-            method: 'POST',
-            body: formData,
-          });
-          const data = await res.json();
-          finalImg = data.secure_url;
-        }
-      }
-
-      await createProductTemplate({
-        productName: newQr.productName,
-        brand: newQr.brand,
-        description: newQr.description,
-        productInfo: newQr.productInfo,
-        productImage: finalImg,
-        bestBefore: bestBefore.value ? { value: bestBefore.value, unit: bestBefore.unit } : null,
-        // Convert variant instances to a clean format for template
-        variants: variantInstances.map(v => ({
-           variantName: v.variantName,
-           variantLabel: v.variantLabel,
-           inputType: v.inputType,
-           options: v.options,
-           value: v.value
-        })),
-        dynamicFields: dynamicFieldValues
-      });
-
-      alert('Product saved as template successfully!');
-      loadTemplates();
-    } catch (err) {
-      alert('Failed to save template: ' + err.message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   const handleSelectTemplate = (t) => {
     setNewQr({
@@ -462,15 +396,6 @@ export default function GenerateQrs() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleDeleteTemplate = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this product template?')) return;
-    try {
-      await deleteProductTemplate(id);
-      loadTemplates();
-    } catch (err) {
-      alert('Failed to delete template');
-    }
-  };
 
 
   const downloadPdf = (base64, filename) => {
@@ -616,72 +541,54 @@ export default function GenerateQrs() {
   return (
     <div className="bg-white rounded-2xl p-0 shadow-sm border border-slate-200 relative overflow-hidden">
       {/* Tabs */}
-      <div className="flex border-b border-slate-200 bg-slate-50/50">
-        <button
-          onClick={() => setActiveTab('generate')}
-          className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-bold transition-all ${
-            activeTab === 'generate' 
-              ? 'bg-white text-indigo-600 border-b-2 border-indigo-600 shadow-sm' 
-              : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100/50'
-          }`}
-        >
-          <LayoutGrid size={18} />
-          QR Generation Form
-        </button>
-        <button
-          onClick={() => setActiveTab('manage')}
-          className={`flex-1 flex items-center justify-center gap-2 py-4 text-sm font-bold transition-all ${
-            activeTab === 'manage' 
-              ? 'bg-white text-indigo-600 border-b-2 border-indigo-600 shadow-sm' 
-              : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100/50'
-          }`}
-        >
-          <List size={18} />
-          Product Manager
-        </button>
-      </div>
 
       <div className="p-8">
-        {activeTab === 'generate' && (
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <span className="w-1 h-6 bg-indigo-600 rounded-full"></span>
-                Create New Product Record
-              </h3>
-              
-              {/* Quick Pick Section */}
-              {templates.length > 0 && (
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Quick Pick:</span>
-                  <div className="flex gap-2 max-w-[400px] overflow-x-auto pb-1 no-scrollbar">
-                    {templates.slice(0, 3).map(t => (
-                      <button
-                        key={t._id}
-                        type="button"
-                        onClick={() => handleSelectTemplate(t)}
-                        className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full whitespace-nowrap transition-all border border-indigo-100"
-                      >
-                        {t.productName}
-                      </button>
-                    ))}
-                    {templates.length > 3 && (
-                      <button 
-                        type="button"
-                        onClick={() => setActiveTab('manage')}
-                        className="px-3 py-1.5 bg-slate-100 text-slate-600 text-xs font-bold rounded-full whitespace-nowrap"
-                      >
-                        +{templates.length - 3} more
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-        )}
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+            <span className="w-1 h-6 bg-indigo-600 rounded-full"></span>
+            Create New Product Record
+          </h3>
+        </div>
 
-        {activeTab === 'generate' && (
-          <form onSubmit={handleCreateQr} className="grid grid-cols-2 gap-6">
+        <form onSubmit={handleCreateQr} className="grid grid-cols-2 gap-6">
 
+
+        {/* Product Selection from Catalog */}
+        <div className="flex flex-col gap-1.5 col-span-2 md:col-span-1">
+          <label className="text-sm font-bold text-slate-700 ml-1 flex items-center gap-2">
+            Select Product from Catalog <span className="text-indigo-600">*</span>
+            {products.length === 0 && <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-black uppercase tracking-widest">No products found</span>}
+          </label>
+          <select
+            className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-semibold shadow-sm"
+            onChange={(e) => {
+              const selectedId = e.target.value;
+              const prod = products.find(p => p._id === selectedId);
+              if (prod) {
+                setNewQr({
+                  ...newQr,
+                  productName: prod.productName,
+                  description: prod.description || '',
+                  productInfo: prod.productInfo || '',
+                  brand: prod.brand || newQr.brand
+                });
+                if (prod.productImage) {
+                  setImagePreview(prod.productImage);
+                  setImageFile(null);
+                }
+              }
+            }}
+            required
+          >
+            <option value="">-- Choose Product --</option>
+            {products.map(p => (
+              <option key={p._id} value={p._id}>{p.productName} ({p.brand})</option>
+            ))}
+          </select>
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest ml-1 mt-1">
+            Selecting a product from the catalog auto-fills image and details.
+          </p>
+        </div>
 
         {/* Brand Dropdown (Static Field) */}
         {formConfig?.staticFields?.brand?.enabled && (
@@ -932,110 +839,17 @@ export default function GenerateQrs() {
         </div>
 
         {/* Submit Button */}
-        <div className="col-span-2 pt-4 flex gap-4">
+        <div className="col-span-2 pt-4">
           <button 
             type="submit" 
             disabled={submitting} 
-            className={"flex-[2] text-white font-semibold py-3.5 rounded-xl transition-all shadow-md " + (submitting ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98]')}
+            className={"w-full text-white font-semibold py-3.5 rounded-xl transition-all shadow-md " + (submitting ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98]')}
           >
             {submitting ? 'Processing...' : (role === 'creator' ? 'Create Order & QRs' : 'Generate Product & QR')}
           </button>
-          
-          <button 
-            type="button"
-            onClick={handleSaveAsTemplate}
-            disabled={submitting || !newQr.productName}
-            className="flex-1 bg-white border-2 border-indigo-600 text-indigo-600 font-bold py-3.5 rounded-xl hover:bg-indigo-50 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Save as Template
-          </button>
         </div>
       </form>
-        )}
 
-        {activeTab === 'manage' && (
-          /* Product Manager Tab Content */
-          <div className="space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6">
-              <div>
-                <h3 className="text-xl font-bold text-slate-900">Registered Products</h3>
-                <p className="text-sm text-slate-500 font-medium">Manage and reuse your product information for quick QR generation</p>
-              </div>
-              
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <input 
-                  type="text"
-                  placeholder="Search templates..."
-                  value={templateSearch}
-                  onChange={(e) => setTemplateSearch(e.target.value)}
-                  className="pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium w-full md:w-[250px] focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                />
-              </div>
-            </div>
-
-            {loadingTemplates ? (
-              <div className="flex flex-col items-center justify-center py-20 gap-4">
-                <div className="w-10 h-10 border-4 border-slate-100 border-t-indigo-600 rounded-full animate-spin"></div>
-                <p className="text-slate-500 font-bold text-sm">Fetching your products...</p>
-              </div>
-            ) : templates.length === 0 ? (
-              <div className="text-center py-20 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
-                <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
-                  <Package className="text-slate-300" size={32} />
-                </div>
-                <h4 className="text-lg font-bold text-slate-900">No Product Templates Yet</h4>
-                <p className="text-slate-500 text-sm max-w-[300px] mx-auto mt-2">
-                  Create a product in the generation form and click <strong>"Save as Template"</strong> to reuse it later.
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {templates
-                  .filter(t => t.productName.toLowerCase().includes(templateSearch.toLowerCase()))
-                  .map(t => (
-                  <div key={t._id} className="group bg-white border border-slate-200 rounded-[24px] overflow-hidden hover:border-indigo-300 hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-300">
-                    <div className="aspect-[4/3] bg-slate-100 relative overflow-hidden">
-                      {t.productImage ? (
-                        <img src={t.productImage} alt={t.productName} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Package size={48} className="text-slate-300" />
-                        </div>
-                      )}
-                      
-                      <div className="absolute top-3 right-3 flex gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                        <button 
-                          onClick={() => handleDeleteTemplate(t._id)}
-                          className="p-2 bg-white/90 backdrop-blur-sm text-red-500 rounded-xl shadow-lg hover:bg-red-50 transition-colors"
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="p-5">
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{t.productName}</h4>
-                      </div>
-                      <p className="text-xs text-slate-500 font-medium line-clamp-2 min-h-[32px] mb-4">
-                        {t.productInfo || t.description || 'No description provided'}
-                      </p>
-                      
-                      <button 
-                        onClick={() => handleSelectTemplate(t)}
-                        className="w-full flex items-center justify-center gap-2 py-2.5 bg-slate-900 text-white rounded-xl font-bold text-xs hover:bg-indigo-600 active:scale-[0.98] transition-all"
-                      >
-                        <CheckCircle2 size={16} />
-                        Use This Product
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );

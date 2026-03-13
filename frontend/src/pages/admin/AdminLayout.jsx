@@ -102,9 +102,6 @@ export default function AdminLayout({ children }) {
   const location = useLocation();
   const role = localStorage.getItem("adminRole") || "";
   const email = localStorage.getItem("adminEmail") || "";
-  const [creatorView, setCreatorView] = useState(
-    role === "creator" ? "generate" : null,
-  );
   const [remainingCredits, setRemainingCredits] = useState(() => {
     const v =
       localStorage.getItem("availableCredits") ||
@@ -116,9 +113,6 @@ export default function AdminLayout({ children }) {
   const token =
     localStorage.getItem("adminToken") || localStorage.getItem("token");
 
-  useEffect(() => {
-    if (role === "creator") navigate("/admin/dashboard");
-  }, [role, navigate]);
 
   const activePath = location.pathname;
 
@@ -193,21 +187,15 @@ export default function AdminLayout({ children }) {
             <div className="space-y-1.5">
               <SidebarItem
                 label="Generate QRs"
-                onClick={() => {
-                  setCreatorView("generate");
-                  navigate("/admin/dashboard");
-                }}
+                onClick={() => navigate("/generate-qrs")}
                 icon={Box}
-                isActive={creatorView === "generate"}
+                isActive={activePath === "/generate-qrs"}
               />
               <SidebarItem
-                label="QR Inventory"
-                onClick={() => {
-                  setCreatorView("management");
-                  navigate("/admin/dashboard");
-                }}
+                label="Product Manager"
+                onClick={() => navigate("/product-manager")}
                 icon={Package}
-                isActive={creatorView === "management"}
+                isActive={activePath === "/product-manager"}
               />
             </div>
           ) : (
@@ -217,6 +205,12 @@ export default function AdminLayout({ children }) {
                 onClick={() => navigate("/admin/analytics")}
                 icon={LayoutDashboard}
                 isActive={activePath === "/admin/analytics"}
+              />
+              <SidebarItem
+                label="Product Manager"
+                onClick={() => navigate("/product-manager")}
+                icon={Package}
+                isActive={activePath === "/product-manager"}
               />
               <SidebarItem
                 label="Order Management"
@@ -410,15 +404,7 @@ export default function AdminLayout({ children }) {
         <div className="h-20" />
 
         <div className="w-full h-full animate-in fade-in duration-500">
-          {role === "creator" ? (
-            creatorView === "generate" ? (
-              <GenerateQrs />
-            ) : (
-              children
-            )
-          ) : (
-            children
-          )}
+          {children}
         </div>
       </main>
 

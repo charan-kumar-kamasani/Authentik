@@ -16,7 +16,8 @@ import {
   getCompanies,
   getBrandsForCompany,
   updateBrand,
-  updateCompany
+  updateCompany,
+  updateStaffUser
 } from "../../config/api";
 import API_BASE_URL from "../../config/api";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
@@ -51,6 +52,7 @@ const UserManagement = () => {
   const [query, setQuery] = useState("");
   const [userPage, setUserPage] = useState(1);
   const [userRowsPerPage, setUserRowsPerPage] = useState(10);
+  const [editingUser, setEditingUser] = useState(null);
 
 
 
@@ -269,6 +271,20 @@ const UserManagement = () => {
     setActiveTab("createBrand");
   };
 
+  const handleEditUser = (user) => {
+    setEditingUser(user);
+    setFormData({
+      name: user.name || "",
+      email: user.email || "",
+      password: "", // Keep password empty for security, only update if provided
+      userRole: user.role || "creator",
+      brandId: user.brandId?._id || user.brandId || "",
+      brandIds: Array.isArray(user.brandIds) ? user.brandIds.map(b => b._id || b) : [],
+    });
+    setSelectedCompany(user.companyId?._id || user.companyId || "");
+    setActiveTab("createStaff");
+  };
+
   const handleViewBrandUsers = (brand) => {
     setRoleTab("staff");
     setBrandFilter(brand._id);
@@ -366,16 +382,30 @@ const UserManagement = () => {
         // Admin creates company
         await createCompanyUser(formData, token);
         alert("Company Created Successfully");
+      } else if (editingUser) {
+        // Update existing user
+        const payload = {
+          name: formData.name,
+          email: formData.email,
+          role: formData.userRole,
+          brandIds: formData.brandIds,
+          companyId: selectedCompany
+        };
+        if (formData.password) payload.password = formData.password;
+        
+        await updateStaffUser(editingUser._id, payload, token);
+        alert("User Updated Successfully");
+        setEditingUser(null);
+        setActiveTab("list");
+        loadStaff();
       } else {
-        // Create staff (for createStaff tab or for other roles in create tab)
-        // include companyId when available (selectedCompany or resolved from brand)
+        // Create staff
         const payload = {
           name: formData.name,
           email: formData.email,
           password: formData.password,
           role: formData.userRole,
         };
-        // Prefer sending an array of brandIds when available (multi-select)
         if (Array.isArray(formData.brandIds) && formData.brandIds.length > 0) {
           payload.brandIds = formData.brandIds;
         } else if (formData.brandId) {
@@ -392,6 +422,8 @@ const UserManagement = () => {
         password: "",
         userRole: "creator",
         brandId: "",
+        brandIds: [],
+        allBrands: false
       });
     } catch (error) {
       alert("Error: " + error.message);
@@ -605,132 +637,93 @@ const UserManagement = () => {
 
   // Render the create panel depending on role
   const renderCreateSection = () => {
-    if (role === 'superadmin') {
+    if (role === 'superadmin' || role === 'admin') {
       return (
-        <div className="bg-white rounded-2xl p-8 shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <span className="w-1 h-6 bg-purple-500 rounded-full"></span>
-            Create Company
-          </h2>
-          <form onSubmit={handleCompanySubmit} className="grid grid-cols-1 gap-4">
-            {/* Row 1 */}
-            <div className="grid grid-cols-2 gap-4">
-              <InputGroup label="Company Name *" placeholder="Acme Holdings" value={companyForm.companyName} onChange={(v) => setCompanyForm({ ...companyForm, companyName: v })} />
-              <InputGroup label="Category" placeholder="FMCG, Pharma..." value={companyForm.category} onChange={(v) => setCompanyForm({ ...companyForm, category: v })} required={false} />
+        <div className="bg-white/70 backdrop-blur-xl rounded-[2.5rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-white/40 max-w-5xl mx-auto animate-in fade-in zoom-in duration-500">
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 text-white">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
             </div>
-            {/* Row 2 */}
-            <div className="grid grid-cols-2 gap-4">
-              <InputGroup label="GST Number" placeholder="22AAAAA0000A1Z5" value={companyForm.cinGst} onChange={(v) => setCompanyForm({ ...companyForm, cinGst: v })} required={false} />
-              <InputGroup label="Website" placeholder="https://..." value={companyForm.companyWebsite} onChange={(v) => setCompanyForm({ ...companyForm, companyWebsite: v })} required={false} />
+            <div>
+              <h2 className="text-2xl font-black text-gray-900 tracking-tight">Create Company</h2>
+              <p className="text-gray-500 font-medium text-sm">Register a new legal entity and its preliminary brands.</p>
+            </div>
+          </div>
+
+          <form onSubmit={handleCompanySubmit} className="space-y-8">
+            {/* Basic Info */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-blue-50/30 rounded-[2rem] border border-blue-100/50">
+              <InputGroup label="Entity Name *" placeholder="Company Legal Name" value={companyForm.companyName} onChange={(v) => setCompanyForm({ ...companyForm, companyName: v })} />
+              <InputGroup label="Website" placeholder="https://www.company.com" value={companyForm.brandWebsite} onChange={(v) => setCompanyForm({ ...companyForm, brandWebsite: v })} required={false} />
+              <InputGroup label="Industry" placeholder="e.g. Manufacturing, Retail" value={companyForm.industry} onChange={(v) => setCompanyForm({ ...companyForm, industry: v })} required={false} />
+              <InputGroup label="CIN / GST Number" placeholder="Registration ID" value={companyForm.cinGst} onChange={(v) => setCompanyForm({ ...companyForm, cinGst: v })} required={false} />
             </div>
 
-            {/* Official Emails */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium text-gray-700 ml-1">Official Email IDs *</label>
-                <button type="button" onClick={() => setOfficialEmails(prev => [...prev, { value: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }])}
-                  className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>Add
+            {/* Brands Section */}
+            <div className="p-8 bg-gray-50/50 rounded-[2rem] border border-gray-100">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h4 className="text-lg font-bold text-gray-800">Brands</h4>
+                  <p className="text-xs text-gray-500 font-medium">Add at least one brand for this company</p>
+                </div>
+                <button 
+                  type="button" 
+                  onClick={addCompanyBrandRow}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-bold hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                  Add Brand
                 </button>
               </div>
-              <div className="space-y-2">
-                {officialEmails.map((entry, idx) => (
-                  <EmailRow key={idx} entry={entry} idx={idx} emails={officialEmails} setEmails={setOfficialEmails} showOtp={false} onSendOtp={sendEmailOtp} onVerifyOtp={verifyEmailOtp} />
+
+              <div className="space-y-4">
+                {companyBrands.map((b, idx) => (
+                  <div key={idx} className="group flex flex-col sm:flex-row items-start gap-4 p-5 bg-white border border-gray-100 rounded-[1.5rem] shadow-sm hover:shadow-md transition-all duration-300">
+                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <InputGroup label={`Brand ${idx + 1} Name`} placeholder="Brand Name" value={b.brandName} onChange={(v) => updateCompanyBrandRow(idx, 'brandName', v)} />
+                      <InputGroup label="Logo URL" placeholder="https://..." value={b.brandLogo} onChange={(v) => updateCompanyBrandRow(idx, 'brandLogo', v)} type="url" required={false} />
+                    </div>
+                    {companyBrands.length > 1 && (
+                      <button 
+                        type="button" 
+                        onClick={() => removeCompanyBrandRow(idx)}
+                        className="sm:mt-8 p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all" 
+                        title="Remove"
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" /></svg>
+                      </button>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
 
-            {/* Brands */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium text-gray-700 ml-1">Brands *</label>
-                <button type="button" onClick={addCompanyBrandRow}
-                  className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>Add Brand
-                </button>
-              </div>
-              {companyBrands.map((b, idx) => (
-                <div key={idx} className="flex flex-col sm:flex-row sm:items-start gap-3 mb-3 p-3 border border-gray-100 rounded-xl bg-white">
-                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-sm font-medium text-gray-700 ml-1">Brand Name *</label>
-                      <input value={b.brandName} onChange={e => updateCompanyBrandRow(idx, 'brandName', e.target.value)}
-                        placeholder="Brand name" required
-                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all font-medium" />
-                    </div>
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-sm font-medium text-gray-700 ml-1">Brand Logo (URL/File) *</label>
-                      <div className="flex items-center gap-2">
-                        <div className="flex bg-gray-100 rounded-lg p-0.5 flex-shrink-0">
-                          <button type="button" onClick={() => updateCompanyBrandRow(idx, 'logoType', 'url')}
-                            className={"px-2 py-1 rounded-md text-[11px] font-bold transition-all " + ((b.logoType || "url") === "url" ? "bg-white text-gray-800 shadow-sm" : "text-gray-400")}>URL</button>
-                          <button type="button" onClick={() => updateCompanyBrandRow(idx, 'logoType', 'file')}
-                            className={"px-2 py-1 rounded-md text-[11px] font-bold transition-all " + ((b.logoType || "url") === "file" ? "bg-white text-gray-800 shadow-sm" : "text-gray-400")}>File</button>
-                        </div>
-                        {(b.logoType || "url") === "url" ? (
-                          <input value={b.brandLogo} onChange={e => updateCompanyBrandRow(idx, 'brandLogo', e.target.value)}
-                            placeholder="https://..."
-                            className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all" />
-                        ) : (
-                          <input type="file" accept="image/*"
-                            onChange={e => {
-                              const f = e.target.files[0];
-                              if (f) {
-                                const img = new Image();
-                                img.onload = () => {
-                                  if (img.width !== img.height) {
-                                    alert("Please upload a square image (1:1 aspect ratio).");
-                                    e.target.value = "";
-                                    return;
-                                  }
-                                  const r = new FileReader();
-                                  r.onloadend = () => updateCompanyBrandRow(idx, 'brandLogo', r.result);
-                                  r.readAsDataURL(f);
-                                };
-                                img.src = URL.createObjectURL(f);
-                              }
-                            }}
-                            className="flex-1 text-sm text-gray-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-gray-200 file:text-xs file:font-medium file:bg-gray-50 hover:file:bg-gray-100" />
-                        )}
-                        {b.brandLogo && <img src={b.brandLogo} alt="" className="w-9 h-9 object-contain border rounded-lg" onError={e => { e.target.style.display = 'none'; }} />}
-                      </div>
-                    </div>
-                  </div>
-                  {companyBrands.length > 1 && (
-                    <button type="button" onClick={() => removeCompanyBrandRow(idx)}
-                      className="self-end sm:self-start sm:mt-7 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Remove">
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" /></svg>
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Authorizer + Creator row */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium text-gray-700 ml-1">Authorizer Emails</label>
+            {/* Platform Users */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="p-6 bg-purple-50/30 rounded-[2rem] border border-purple-100/50">
+                <div className="flex items-center justify-between mb-4">
+                  <label className="text-sm font-bold text-gray-700 ml-1">Authorizer Emails</label>
                   <button type="button" onClick={() => setAuthorizerEmails(prev => [...prev, { value: "", password: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }])}
-                    className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>Add
+                    className="p-1.5 bg-white border border-purple-200 text-purple-600 rounded-lg hover:bg-purple-600 hover:text-white transition-all">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                   </button>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {authorizerEmails.map((entry, idx) => (
                     <EmailRow key={idx} entry={entry} idx={idx} emails={authorizerEmails} setEmails={setAuthorizerEmails} showOtp={false} showPassword={true} onSendOtp={sendEmailOtp} onVerifyOtp={verifyEmailOtp} />
                   ))}
                 </div>
               </div>
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium text-gray-700 ml-1">Creator Emails</label>
+              
+              <div className="p-6 bg-pink-50/30 rounded-[2rem] border border-pink-100/50">
+                <div className="flex items-center justify-between mb-4">
+                  <label className="text-sm font-bold text-gray-700 ml-1">Creator Emails</label>
                   <button type="button" onClick={() => setCreatorEmails(prev => [...prev, { value: "", password: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }])}
-                    className="flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors">
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>Add
+                    className="p-1.5 bg-white border border-pink-200 text-pink-600 rounded-lg hover:bg-pink-600 hover:text-white transition-all">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
                   </button>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {creatorEmails.map((entry, idx) => (
                     <EmailRow key={idx} entry={entry} idx={idx} emails={creatorEmails} setEmails={setCreatorEmails} showOtp={false} showPassword={true} onSendOtp={sendEmailOtp} onVerifyOtp={verifyEmailOtp} />
                   ))}
@@ -738,130 +731,67 @@ const UserManagement = () => {
               </div>
             </div>
 
-            {/* Address row */}
-            <div className="grid grid-cols-2 gap-4">
-              <InputGroup label="Address *" placeholder="Registered office address" value={companyForm.registerOfficeAddress} onChange={(v) => setCompanyForm({ ...companyForm, registerOfficeAddress: v })} />
-              <InputGroup label="Courier Address *" placeholder="Courier / dispatch address" value={companyForm.courierAddress} onChange={(v) => setCompanyForm({ ...companyForm, courierAddress: v })} />
-            </div>
-            {/* Phone row */}
-            <div className="grid grid-cols-2 gap-4">
-              <InputGroup label="Contact Number *" placeholder="+91 98765 43210" value={companyForm.phoneNumber} onChange={(v) => setCompanyForm({ ...companyForm, phoneNumber: v })} />
-              <InputGroup label="Support Number *" placeholder="+91 1800 XXX XXX" value={companyForm.supportNumber} onChange={(v) => setCompanyForm({ ...companyForm, supportNumber: v })} />
-            </div>
-            {/* Email + person row */}
-            <div className="grid grid-cols-2 gap-4">
-              <InputGroup label="Support Mail ID *" type="email" placeholder="support@company.com" value={companyForm.email} onChange={(v) => setCompanyForm({ ...companyForm, email: v })} />
-              <InputGroup label="Contact Person" placeholder="Name" value={companyForm.contactPersonName} onChange={(v) => setCompanyForm({ ...companyForm, contactPersonName: v })} required={false} />
+            {/* Address Info */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-orange-50/30 rounded-[2rem] border border-orange-100/50">
+              <InputGroup label="Registered Office Address *" placeholder="Full address" value={companyForm.registerOfficeAddress} onChange={(v) => setCompanyForm({ ...companyForm, registerOfficeAddress: v })} />
+              <InputGroup label="Courier Address *" placeholder="Dispatch address" value={companyForm.courierAddress} onChange={(v) => setCompanyForm({ ...companyForm, courierAddress: v })} />
+              <InputGroup label="Phone Number *" placeholder="+91 XXX XXX XXXX" value={companyForm.phoneNumber} onChange={(v) => setCompanyForm({ ...companyForm, phoneNumber: v })} />
+              <InputGroup label="Support Number" placeholder="1800-XXX-XXXX" value={companyForm.supportNumber} onChange={(v) => setCompanyForm({ ...companyForm, supportNumber: v })} required={false} />
             </div>
 
-            <div>
-              <button className="w-full bg-gray-900 text-white font-medium py-3 rounded-xl hover:bg-black transition-all shadow-lg shadow-gray-200">Create Company</button>
+            <div className="pt-4">
+              <button className="w-full bg-gradient-to-r from-gray-900 to-blue-900 text-white font-black py-4 rounded-[1.5rem] hover:shadow-2xl hover:shadow-blue-900/40 active:scale-[0.98] transition-all uppercase tracking-widest text-sm flex items-center justify-center gap-3">
+                Create Enterprise Entity
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
+              </button>
             </div>
           </form>
         </div>
       );
     }
-
-    // default: create staff/user form for admin/company roles
-    return (
-      <div className="bg-white rounded-2xl p-8 shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-gray-100 max-w-lg">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <span className="w-1 h-6 bg-purple-500 rounded-full"></span>
-          Create Staff
-        </h2>
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4">
-          <InputGroup label="Name" placeholder="Full name" value={formData.name} onChange={(v) => setFormData({ ...formData, name: v })} />
-          <InputGroup label="Email" type="email" placeholder="user@company.com" value={formData.email} onChange={(v) => setFormData({ ...formData, email: v })} />
-          <InputGroup label="Password" type="password" placeholder="••••••••" value={formData.password} onChange={(v) => setFormData({ ...formData, password: v })} />
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Level</label>
-            <select className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl" value={formData.userRole} onChange={(e) => setFormData({ ...formData, userRole: e.target.value })} required>
-              {role === 'company' && <option value="authorizer">Authorizer</option>}
-              {role === 'authorizer' && <option value="creator">Creator</option>}
-              {(role === 'admin' || role === 'superadmin') && (<>
-                <option value="authorizer">Authorizer</option>
-                <option value="creator">Creator</option>
-              </>)}
-            </select>
-          </div>
-
-          {/* If admin/superadmin creating staff: show company selector then brand selector */}
-          {(role === 'admin' || role === 'superadmin') && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Company</label>
-              <div className="flex gap-2 items-center">
-                <select
-                  className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl"
-                  value={selectedCompany}
-                  onChange={(e) => {
-                    const cid = e.target.value;
-                    setSelectedCompany(cid);
-                    loadBrandsForCompany(cid);
-                    setFormData({ ...formData, brandId: "" });
-                  }}
-                >
-                  <option value="">{companies.length === 0 ? 'No companies found' : 'Select Company'}</option>
-                  {companies.map((c) => (
-                    <option key={c._id} value={c._id}>
-                      {c.companyName}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  type="button"
-                  onClick={() => loadCompanies()}
-                  className="px-3 py-2 bg-gray-100 rounded text-sm text-gray-700"
-                >
-                  Reload
-                </button>
-              </div>
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Brand</label>
-            <MultiBrandSelect
-              brands={brands}
-              value={formData.brandIds}
-              onChange={(arr) => setFormData({ ...formData, brandIds: arr, allBrands: false })}
-              allBrands={formData.allBrands}
-              setAllBrands={(checked) => {
-                if (checked) setFormData({ ...formData, allBrands: true, brandIds: brands.map((b) => String(b._id)) });
-                else setFormData({ ...formData, allBrands: false, brandIds: [] });
-              }}
-              placeholder="Select brand(s)"
-            />
-          </div>
-
-          <div>
-            <button className="w-full bg-gray-900 text-white px-4 py-2 rounded-xl hover:bg-black transition-all shadow-lg">Create User</button>
-          </div>
-        </form>
-      </div>
-    );
   };
 
   // Add Nav
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="p-6 ">
-        <div className="flex gap-6 mb-6">
-          <main className="flex-1">
-            <div className="space-y-6">
-              {/* header like AdminDashboard */}
-              <header className="mb-6">
-                <div>
-                  <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
-                    {roleTab === 'user' ? 'Mobile Consumers' : 'User Management'}
-                  </h2>
-                  <p className="text-gray-500 mt-2">
-                    {roleTab === 'user' 
-                      ? 'View and manage consumers registered via the mobile application.' 
-                      : 'Create and manage users, brands and staff access.'}
-                  </p>
-                </div>
-              </header>
+    <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-8">
+      <div className="max-w-[1700px] mx-auto">
+        <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6 px-4">
+          <div className="animate-in slide-in-from-left duration-700">
+            <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-3">
+              {roleTab === 'user' ? (
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Mobile Consumers</span>
+              ) : (
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-blue-900 to-gray-900">User Management</span>
+              )}
+            </h2>
+            <p className="text-gray-500 font-bold text-lg max-w-2xl">
+              {roleTab === 'user' 
+                ? 'High-precision monitoring and management of consumers registered via the mobile authentication ecosystem.' 
+                : 'Centralized control center for managing enterprise users, global brands, and cross-functional staff access.'}
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-3 animate-in slide-in-from-right duration-700">
+            {activeTab !== 'list' && (
+              <button 
+                onClick={() => setActiveTab('list')}
+                className="px-6 py-3 bg-white border-2 border-gray-900 text-gray-900 rounded-[1.25rem] font-black text-sm hover:bg-gray-50 transition-all uppercase tracking-widest"
+              >
+                View All Records
+              </button>
+            )}
+            <button 
+              onClick={() => setActiveTab(role === 'superadmin' ? 'create' : 'createStaff')}
+              className="px-6 py-3 bg-gray-900 text-white rounded-[1.25rem] font-black text-sm hover:shadow-xl hover:shadow-gray-900/20 active:scale-95 transition-all uppercase tracking-widest flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+              New Entry
+            </button>
+          </div>
+        </header>
+
+        <main className="flex-1">
+          <div className="space-y-6">
               {/* small search + submenu row (improved UI) */}
               {activeTab === "list" && (
                 <div className="bg-white p-3 rounded-lg shadow-sm border flex flex-col md:flex-row md:items-center gap-3">
@@ -1209,7 +1139,7 @@ const UserManagement = () => {
               {activeTab === "createStaff" && (
                 <div className="bg-white rounded-2xl p-8 shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-gray-100 ">
                   <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                    Create Staff
+                    {editingUser ? 'Edit User' : 'Create Staff'}
                   </h2>
                   <form
                     onSubmit={handleSubmit}
@@ -1231,11 +1161,12 @@ const UserManagement = () => {
                     <InputGroup
                       label="Password"
                       type="password"
-                      placeholder="••••••••"
+                      placeholder={editingUser ? "Leave blank to keep same" : "••••••••"}
                       value={formData.password}
                       onChange={(v) =>
                         setFormData({ ...formData, password: v })
                       }
+                      required={!editingUser}
                     />
 
                     <div>
@@ -1315,10 +1246,31 @@ const UserManagement = () => {
                       />
                     </div>
 
-                    <div>
-                      <button className="w-full bg-gray-900 text-white px-4 py-2 rounded-xl hover:bg-black transition-all shadow-lg">
-                        Create User
+                    <div className="flex gap-4">
+                      <button className="flex-1 bg-gray-900 text-white px-4 py-2 rounded-xl hover:bg-black transition-all shadow-lg">
+                        {editingUser ? 'Update User' : 'Create User'}
                       </button>
+                      {editingUser && (
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            setEditingUser(null);
+                            setActiveTab("list");
+                            setFormData({
+                              name: "",
+                              email: "",
+                              password: "",
+                              userRole: "creator",
+                              brandId: "",
+                              brandIds: [],
+                              allBrands: false
+                            });
+                          }}
+                          className="px-4 py-2 bg-white text-gray-700 rounded-xl border border-gray-200 hover:bg-gray-50 transition-all font-medium"
+                        >
+                          Cancel
+                        </button>
+                      )}
                     </div>
                   </form>
                 </div>
@@ -1365,6 +1317,7 @@ const UserManagement = () => {
                               <th className="px-6 py-4">Company</th>
                               <th className="px-6 py-4">Brand</th>
                               <th className="px-6 py-4">Role</th>
+                              <th className="px-6 py-4 text-right">Actions</th>
                             </>
                           )}
                         </tr>
@@ -1529,6 +1482,16 @@ const UserManagement = () => {
                                           {item.role}
                                         </span>
                                       </td>
+                                      <td className="px-6 py-4 text-right">
+                                        <div className="flex justify-end gap-2">
+                                          <button 
+                                            onClick={() => handleEditUser(item)}
+                                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit User"
+                                          >
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" /></svg>
+                                          </button>
+                                        </div>
+                                      </td>
                                     </>
                                   )}
                                 </tr>
@@ -1571,7 +1534,6 @@ const UserManagement = () => {
           </main>
         </div>
       </div>
-    </div>
   );
 };
 export default UserManagement;
@@ -1580,57 +1542,100 @@ function EmailRow({ entry, idx, emails, setEmails, showOtp, showPassword, onSend
   const [showPwd, setShowPwd] = useState(false);
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <input type="email" placeholder="email@company.com" value={entry.value}
-        onChange={e => setEmails(prev => prev.map((x, i) => i === idx ? { ...x, value: e.target.value, otpSent: false, verified: false, otp: "" } : x))}
-        disabled={entry.verified}
-        className={"flex-1 min-w-[180px] px-4 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all font-medium " + (entry.verified ? "bg-green-50 border-green-300 text-green-700" : "bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400")}
-      />
+    <div className="flex flex-wrap items-center gap-3 p-1">
+      <div className="flex-1 min-w-[220px] relative group">
+        <input 
+          type="email" 
+          placeholder="email@company.com" 
+          value={entry.value}
+          onChange={e => setEmails(prev => prev.map((x, i) => i === idx ? { ...x, value: e.target.value, otpSent: false, verified: false, otp: "" } : x))}
+          disabled={entry.verified}
+          className={`w-full px-4 py-3 border rounded-2xl text-sm focus:outline-none transition-all font-semibold outline-none
+            ${entry.verified 
+              ? "bg-green-50/50 border-green-200 text-green-700 backdrop-blur-sm" 
+              : "bg-white/60 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 shadow-sm"}`}
+        />
+        {entry.verified && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            <div className="bg-green-500 text-white p-1 rounded-full shadow-lg shadow-green-500/20">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+            </div>
+          </div>
+        )}
+      </div>
+
       {showPassword && (
-        <div className="relative">
-          <input type={showPwd ? "text" : "password"} placeholder="Password" value={entry.password || ''}
+        <div className="relative group">
+          <input 
+            type={showPwd ? "text" : "password"} 
+            placeholder="Password" 
+            value={entry.password || ''}
             onChange={e => setEmails(prev => prev.map((x, i) => i === idx ? { ...x, password: e.target.value } : x))}
-            className="w-36 pl-3 pr-9 py-2.5 border border-gray-200 bg-gray-50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all font-medium placeholder:text-gray-400"
+            className="w-40 pl-4 pr-10 py-3 border border-gray-200 bg-white/60 backdrop-blur-sm rounded-2xl text-sm focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-semibold placeholder:text-gray-400 shadow-sm"
           />
           <button
             type="button"
             onClick={() => setShowPwd(!showPwd)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-colors"
             tabIndex={-1}
           >
-            {showPwd ? <EyeOff size={16} /> : <Eye size={16} />}
+            {showPwd ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
       )}
-      {showOtp && entry.verified && (
-        <span className="inline-flex items-center gap-1 text-green-600 text-xs font-semibold">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>Verified
-        </span>
-      )}
+
       {showOtp && !entry.otpSent && !entry.verified && (
-        <button type="button" disabled={!entry.value || entry.sending} onClick={() => onSendOtp(entry.value, setEmails, idx)}
-          className="px-3 py-2 bg-gray-900 text-white rounded-xl text-xs font-medium hover:bg-black disabled:opacity-40 disabled:cursor-not-allowed transition-all whitespace-nowrap">
-          {entry.sending ? "Sending..." : "Send OTP"}
+        <button 
+          type="button" 
+          disabled={!entry.value || entry.sending} 
+          onClick={() => onSendOtp(entry.value, setEmails, idx)}
+          className="px-5 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl text-xs font-bold hover:shadow-lg hover:shadow-blue-500/25 active:scale-95 disabled:opacity-40 disabled:scale-100 transition-all whitespace-nowrap uppercase tracking-wider"
+        >
+          {entry.sending ? (
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span>Sending</span>
+            </div>
+          ) : "Send OTP"}
         </button>
       )}
+
       {showOtp && entry.otpSent && !entry.verified && (
-        <>
-          <input type="text" maxLength={6} placeholder="OTP" value={entry.otp}
+        <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2 duration-300">
+          <input 
+            type="text" 
+            maxLength={6} 
+            placeholder="******" 
+            value={entry.otp}
             onChange={e => setEmails(prev => prev.map((x, i) => i === idx ? { ...x, otp: e.target.value.replace(/\D/g, '').slice(0, 6) } : x))}
-            className="w-24 px-3 py-2.5 border border-gray-200 bg-gray-50 rounded-xl text-sm font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-gray-900/10" />
-          <button type="button" disabled={entry.otp.length !== 6 || entry.verifying}
+            className="w-24 px-4 py-3 border border-blue-200 bg-blue-50/50 rounded-2xl text-sm font-bold text-center tracking-[0.2em] focus:outline-none focus:ring-4 focus:ring-blue-500/10 shadow-sm" 
+          />
+          <button 
+            type="button" 
+            disabled={entry.otp.length !== 6 || entry.verifying}
             onClick={() => onVerifyOtp(entry.value, entry.otp, setEmails, idx)}
-            className="px-3 py-2 bg-gray-900 text-white rounded-xl text-xs font-medium hover:bg-black disabled:opacity-40 disabled:cursor-not-allowed transition-all whitespace-nowrap">
+            className="px-5 py-3 bg-green-600 text-white rounded-2xl text-xs font-bold hover:bg-green-700 hover:shadow-lg hover:shadow-green-500/20 active:scale-95 disabled:opacity-40 transition-all uppercase tracking-wider"
+          >
             {entry.verifying ? "..." : "Verify"}
           </button>
-          <button type="button" onClick={() => onSendOtp(entry.value, setEmails, idx)}
-            className="text-xs text-gray-500 hover:text-gray-800 font-medium whitespace-nowrap">Resend</button>
-        </>
+          <button 
+            type="button" 
+            onClick={() => onSendOtp(entry.value, setEmails, idx)}
+            className="text-xs text-blue-600 hover:text-blue-800 font-bold px-2 py-1 transition-colors"
+          >
+            Resend
+          </button>
+        </div>
       )}
+
       {emails.length > 1 && !entry.verified && (
-        <button type="button" onClick={() => setEmails(prev => prev.filter((_, i) => i !== idx))}
-          className="p-1 text-gray-400 hover:text-red-500 transition-colors" title="Remove">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        <button 
+          type="button" 
+          onClick={() => setEmails(prev => prev.filter((_, i) => i !== idx))}
+          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all" 
+          title="Remove"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
       )}
     </div>
@@ -1642,25 +1647,29 @@ function InputGroup({ label, placeholder, value, onChange, type = "text", requir
   const isPassword = type === "password";
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-sm font-medium text-gray-700 ml-1">{label}</label>
+    <div className="flex flex-col gap-2 group">
+      <label className="text-sm font-bold text-gray-600 ml-1 flex items-center gap-2">
+        {label}
+        {required && <span className="w-1 h-1 bg-red-400 rounded-full" />}
+      </label>
       <div className="relative">
         <input
           type={isPassword ? (showPassword ? "text" : "password") : type}
           placeholder={placeholder}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-900 transition-all font-medium ${isPassword ? 'pr-11' : ''}`}
+          className={`w-full px-5 py-3.5 bg-white/60 backdrop-blur-sm border border-gray-200 rounded-2xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-semibold shadow-sm
+            ${isPassword ? 'pr-12' : ''}`}
           required={required}
         />
         {isPassword && (
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-500 transition-colors p-1"
             tabIndex={-1}
           >
-            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
         )}
       </div>

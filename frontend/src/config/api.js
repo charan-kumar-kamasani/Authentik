@@ -230,6 +230,27 @@ export const getStaffUsers = async (token, params = {}) => {
 
 
 
+export const updateStaffUser = async (userId, userData, token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/users/staff/${userId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(userData),
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.message || 'Failed to update staff user');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Update Staff User Error:', error);
+        throw error;
+    }
+};
+
 export const downloadOrderPdf = async (orderId, token) => {
     try {
         const response = await fetch(`${API_BASE_URL}/orders/${orderId}/download`, {
@@ -344,9 +365,11 @@ export const createCompany = async (companyData, token) => {
     }
 };
 
-export const getBrands = async (token) => {
+export const getBrands = async (companyId = null) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/admin/brands`, {
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+        const url = companyId ? `${API_BASE_URL}/admin/brands?companyId=${companyId}` : `${API_BASE_URL}/admin/brands`;
+        const response = await fetch(url, {
              headers: { Authorization: `Bearer ${token}` }
         });
         const contentType = response.headers.get('content-type') || '';
@@ -360,7 +383,6 @@ export const getBrands = async (token) => {
             }
         }
         if (contentType.includes('application/json')) return await response.json();
-        // Non-json successful response
         const txt = await response.text();
         throw new Error(txt || 'Failed to fetch brands');
     } catch(error) {
@@ -741,7 +763,7 @@ export const updateCompany = async (companyId, data, token) => {
 export const getProductTemplates = async (params = {}) => {
     try {
         const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-        const query = new URLSearchParams(params).toString();
+        const query = typeof params === 'object' ? new URLSearchParams(params).toString() : `companyId=${params}`;
         const response = await fetch(`${API_BASE_URL}/product-templates?${query}`, {
             headers: { Authorization: `Bearer ${token}` }
         });
@@ -752,6 +774,8 @@ export const getProductTemplates = async (params = {}) => {
         throw error;
     }
 };
+
+export const getProductTemplatesByCompany = (companyId) => getProductTemplates({ companyId });
 
 export const createProductTemplate = async (data) => {
     try {
@@ -783,6 +807,21 @@ export const deleteProductTemplate = async (templateId) => {
         return await response.json();
     } catch (error) {
         console.error("Delete Product Template Error:", error);
+        throw error;
+    }
+};
+
+export const authorizeProductTemplate = async (templateId) => {
+    try {
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/product-templates/${templateId}/authorize`, {
+            method: 'PATCH',
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to authorize product template');
+        return await response.json();
+    } catch (error) {
+        console.error("Authorize Product Template Error:", error);
         throw error;
     }
 };

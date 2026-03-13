@@ -41,6 +41,7 @@ import AuthDashboard from "./pages/admin/AuthDashboard";
 import ReportProduct from "./pages/mobile/ReportProduct";
 import MyReports from "./pages/mobile/MyReports";
 import Notifications from "./pages/mobile/Notifications";
+import ProductManager from "./pages/admin/ProductManager";
 
 // User private route
 function PrivateRoute({ children }) {
@@ -169,6 +170,16 @@ export default function App() {
                 </AdminRoute>
               }
             />
+            <Route
+              path="/product-manager"
+              element={
+                <AdminRoute>
+                  <AdminLayout>
+                    <ProductManager />
+                  </AdminLayout>
+                </AdminRoute>
+              }
+            />
 
             {/* Smart fallback */}
             <Route
@@ -287,6 +298,17 @@ export default function App() {
               <AdminRoute>
                 <AdminLayout>
                   <UserManagement />
+                </AdminLayout>
+              </AdminRoute>
+            }
+          />
+
+          <Route
+            path="/product-manager"
+            element={
+              <AdminRoute>
+                <AdminLayout>
+                  <ProductManager />
                 </AdminLayout>
               </AdminRoute>
             }

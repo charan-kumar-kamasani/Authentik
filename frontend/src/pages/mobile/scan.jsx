@@ -186,17 +186,59 @@ export default function Scan() {
     }
 
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    
+    // For tiny QR codes, we might want to crop to the center "scanner box" area
+    // to give the decoder a "zoomed in" view of the most likely QR location.
+    // The scanner box in UI is 280x280.
+    const displayWidth = video.clientWidth;
+    const displayHeight = video.clientHeight;
+    
+    // Scale factor between video resolution and display size
+    const scaleX = video.videoWidth / displayWidth;
+    const scaleY = video.videoHeight / displayHeight;
+    
+    // Scanner box size in video pixels
+    const boxSize = 280 * Math.min(scaleX, scaleY) * 1.2; // 20% margin
+    const sourceX = (video.videoWidth - boxSize) / 2;
+    const sourceY = (video.videoHeight - boxSize) / 2;
 
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const code = jsQR(imageData.data, canvas.width, canvas.height, {
-      inversionAttempts: "dontInvert",
+    canvas.width = boxSize;
+    canvas.height = boxSize;
+
+    ctx.drawImage(video, sourceX, sourceY, boxSize, boxSize, 0, 0, boxSize, boxSize);
+    
+    // Optional: Image preprocessing for better contrast
+    // This can significantly help with tiny/blurry codes
+    let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    
+    // Attempt standard scan
+    let code = jsQR(imageData.data, canvas.width, canvas.height, {
+      inversionAttempts: "both", // Try both normal and inverted
     });
 
     if (code) {
       console.log("QR detected:", code.data);
+      processQrCode(code.data);
+      return;
+    }
+
+    // If not found, try a higher-contrast grayscale version
+    const data = imageData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+      // Increase contrast: stretch values
+      const val = avg < 128 ? Math.max(0, avg - 20) : Math.min(255, avg + 20);
+      data[i] = val;
+      data[i+1] = val;
+      data[i+2] = val;
+    }
+    
+    code = jsQR(data, canvas.width, canvas.height, {
+      inversionAttempts: "dontInvert", 
+    });
+
+    if (code) {
+      console.log("QR detected (preprocessed):", code.data);
       processQrCode(code.data);
       return;
     }
@@ -228,9 +270,18 @@ export default function Scan() {
       }
 
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" },
-        }).catch(() => navigator.mediaDevices.getUserMedia({ video: true }));
+        const constraints = {
+          video: { 
+            facingMode: "environment",
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            frameRate: { ideal: 30 }
+          },
+        };
+        
+        const stream = await navigator.mediaDevices.getUserMedia(constraints)
+          .catch(() => navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }))
+          .catch(() => navigator.mediaDevices.getUserMedia({ video: true }));
 
         if (ignore || !videoRef.current) {
           stream.getTracks().forEach(track => track.stop());

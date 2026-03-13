@@ -605,6 +605,52 @@ router.get('/users/staff', protect, async (req, res) => {
     }
 });
 
+// Update Staff User
+router.patch('/users/staff/:id', protect, async (req, res) => {
+    try {
+        if (!['company', 'admin', 'superadmin'].includes(req.user.role)) {
+            return res.status(403).json({ message: 'Not authorized for this action' });
+        }
+
+        const { id } = req.params;
+        const { name, email, password, role, brandId, brandIds, companyId } = req.body;
+
+        const user = await User.findById(id);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        // Update fields if provided
+        if (name) user.name = name;
+        if (email) user.email = email;
+        if (role) {
+            if (!['authorizer', 'creator'].includes(role)) {
+                return res.status(400).json({ message: 'Invalid role' });
+            }
+            user.role = role;
+        }
+
+        if (password) {
+            const salt = await bcrypt.genSalt(10);
+            user.password = await bcrypt.hash(password, salt);
+        }
+
+        if (Array.isArray(brandIds)) {
+            user.brandIds = brandIds;
+            if (brandIds.length > 0) user.brandId = brandIds[0];
+        } else if (brandId) {
+            user.brandId = brandId;
+            user.brandIds = [brandId];
+        }
+
+        if (companyId) user.companyId = companyId;
+
+        await user.save();
+        res.json({ success: true, user });
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // Brand Routes
 // Create Brand
 router.post('/brands', protect, authorize('admin', 'superadmin'), async (req, res) => {

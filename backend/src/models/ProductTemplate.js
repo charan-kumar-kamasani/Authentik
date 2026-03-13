@@ -37,6 +37,15 @@ const productTemplateSchema = new mongoose.Schema({
     type: String,
     enum: ['active', 'archived'],
     default: 'active'
+  },
+  isAuthorized: {
+    type: Boolean,
+    default: false
+  },
+  authorizedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
   }
 }, { timestamps: true });
 
