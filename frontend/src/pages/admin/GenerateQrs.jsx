@@ -798,7 +798,7 @@ export default function GenerateQrs() {
         {/* Static Date Fields - Mfd On (MM/YYYY) */}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-slate-700 ml-1">
-            Mfd On (Manufacturing Date) <span className="text-indigo-600">*</span>
+            Mfd On (Manufacturing Date)
           </label>
           <div className="grid grid-cols-2 gap-2">
             <input
@@ -809,7 +809,7 @@ export default function GenerateQrs() {
               min="1"
               max="12"
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium"
-              required
+ 
             />
             <input
               type="number"
@@ -819,7 +819,7 @@ export default function GenerateQrs() {
               min="2000"
               max="2099"
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium"
-              required
+    
             />
           </div>
         </div>
@@ -827,7 +827,7 @@ export default function GenerateQrs() {
         {/* Best Before (Shelf Life) */}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-slate-700 ml-1">
-            Best Before (Shelf Life) <span className="text-indigo-600">*</span>
+            Best Before (Shelf Life)
           </label>
           <div className="grid grid-cols-2 gap-2">
             <input
@@ -837,13 +837,13 @@ export default function GenerateQrs() {
               onChange={(e) => setBestBefore({ ...bestBefore, value: e.target.value })}
               min="1"
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium"
-              required
+         
             />
             <select
               value={bestBefore.unit}
               onChange={(e) => setBestBefore({ ...bestBefore, unit: e.target.value })}
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium"
-              required
+              
             >
               <option value="months">Months</option>
               <option value="years">Years</option>
