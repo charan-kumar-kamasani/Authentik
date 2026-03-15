@@ -61,6 +61,45 @@ const InputField = ({ label, required, ...props }) => (
   </div>
 );
 
+const DispatchModal = ({ orderId, initialData, onDispatch, onClose }) => {
+  const [data, setData] = useState(initialData);
+  return (
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+        <div className="bg-gradient-to-r from-orange-500 to-amber-500 p-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm text-white"><Truck size={20} /></div>
+            <div>
+              <h3 className="text-lg font-black text-white">Dispatch Order</h3>
+              <p className="text-orange-100 text-xs font-medium">Enter shipping details</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-white/70 hover:text-white p-1"><X size={20} /></button>
+        </div>
+        <div className="p-6 space-y-4">
+          <InputField label="Courier Name" value={data.courierName} onChange={e => setData({ ...data, courierName: e.target.value })} placeholder="e.g., DHL, FedEx, BlueDart" />
+          <InputField label="Tracking Number" value={data.trackingNumber} onChange={e => setData({ ...data, trackingNumber: e.target.value })} placeholder="Enter tracking number" />
+          <div>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Notes</label>
+            <textarea value={data.notes} onChange={e => setData({ ...data, notes: e.target.value })} rows="3" placeholder="Additional dispatch info"
+              className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/30 resize-none" />
+          </div>
+          <div className="flex gap-3 pt-2">
+            <button onClick={onClose}
+              className="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors">
+              Cancel
+            </button>
+            <button onClick={() => onDispatch(orderId, data)}
+              className="flex-1 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-xl shadow-lg shadow-orange-500/20 hover:shadow-xl transition-all flex items-center justify-center gap-2">
+              <Truck size={16} /> Dispatch Order
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const OrderManagement = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
@@ -367,8 +406,13 @@ const OrderManagement = () => {
   };
 
   const handleOpenDispatchModal = (order) => {
-    const courierName = order.brandId?.companyId?.companyName || '';
-    const courierAddress = order.brandId?.companyId?.courierAddress || '';
+    // Try multiple fallback sources for company name and address since older orders may not be populated correctly
+    let courierName = order.brandId?.companyId?.companyName || '';
+    if (!courierName && order.createdBy?.role === 'company') courierName = order.createdBy.name || '';
+    if (!courierName) courierName = order.brandId?.brandName || order.brand || '';
+    
+    let courierAddress = order.brandId?.companyId?.courierAddress || order.brandId?.companyId?.registerOfficeAddress || '';
+    
     setDispatchData({
       trackingNumber: '',
       courierName: courierName,
@@ -595,12 +639,12 @@ const OrderManagement = () => {
                         <ActionBtn onClick={() => handleMarkReceived(order._id)}
                           icon={CheckCircle2} label="Mark Received" color="emerald" />
                       )}
-                      {/* Reject — allowed for superadmin/admin at most stages */}
-                      {['Pending Authorization', 'Authorized', 'Order Processing', 'Dispatching'].includes(order.status) && (role === 'admin' || role === 'superadmin' || role === 'authorizer') && (
+                      {/* Reject — allowed for superadmin/admin at most stages, authorizer ONLY if Pending */}
+                      {((['Pending Authorization', 'Authorized', 'Order Processing', 'Dispatching'].includes(order.status) && (role === 'admin' || role === 'superadmin')) || (order.status === 'Pending Authorization' && role === 'authorizer')) && (
                         <ActionBtn onClick={() => handleRejectOrder(order._id)} icon={XCircle} label="Reject" color="red" />
                       )}
-                      {/* Edit — allowed for superadmin/admin/authorizer if not processed */}
-                      {['Pending Authorization', 'Authorized'].includes(order.status) && (role === 'admin' || role === 'superadmin' || role === 'authorizer') && (
+                      {/* Edit — allowed for superadmin/admin if not processed, authorizer ONLY if Pending */}
+                      {((['Pending Authorization', 'Authorized'].includes(order.status) && (role === 'admin' || role === 'superadmin')) || (order.status === 'Pending Authorization' && role === 'authorizer')) && (
                         <ActionBtn onClick={() => setEditOrderModal({ isOpen: true, data: order })} icon={Edit} label="Edit" color="slate" />
                       )}
                       {/* PDF — visible only for superadmin and admin */}
@@ -865,39 +909,12 @@ const OrderManagement = () => {
 
       {/* ── Dispatch Modal ── */}
       {showDispatchModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setShowDispatchModal(null)}>
-          <div onClick={e => e.stopPropagation()} className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
-            <div className="bg-gradient-to-r from-orange-500 to-amber-500 p-5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm text-white"><Truck size={20} /></div>
-                <div>
-                  <h3 className="text-lg font-black text-white">Dispatch Order</h3>
-                  <p className="text-orange-100 text-xs font-medium">Enter shipping details</p>
-                </div>
-              </div>
-              <button onClick={() => setShowDispatchModal(null)} className="text-white/70 hover:text-white p-1"><X size={20} /></button>
-            </div>
-            <div className="p-6 space-y-4">
-              <InputField label="Courier Name" value={dispatchData.courierName} onChange={e => setDispatchData({ ...dispatchData, courierName: e.target.value })} placeholder="e.g., DHL, FedEx, BlueDart" />
-              <InputField label="Tracking Number" value={dispatchData.trackingNumber} onChange={e => setDispatchData({ ...dispatchData, trackingNumber: e.target.value })} placeholder="Enter tracking number" />
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Notes</label>
-                <textarea value={dispatchData.notes} onChange={e => setDispatchData({ ...dispatchData, notes: e.target.value })} rows="3" placeholder="Additional dispatch info"
-                  className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/30 resize-none" />
-              </div>
-              <div className="flex gap-3 pt-2">
-                <button onClick={() => setShowDispatchModal(null)}
-                  className="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors">
-                  Cancel
-                </button>
-                <button onClick={() => handleAction(showDispatchModal, 'dispatch', dispatchData)}
-                  className="flex-1 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-bold rounded-xl shadow-lg shadow-orange-500/20 hover:shadow-xl transition-all flex items-center justify-center gap-2">
-                  <Truck size={16} /> Dispatch Order
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <DispatchModal
+          orderId={showDispatchModal}
+          initialData={dispatchData}
+          onDispatch={(id, data) => handleAction(id, 'dispatch', data)}
+          onClose={() => setShowDispatchModal(null)}
+        />
       )}
 
       {/* ── Insufficient Credits Modal ── */}

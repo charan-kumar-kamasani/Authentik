@@ -215,7 +215,7 @@ function ResultAuthentic({ data }: { data: any }) {
               <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
               <div className="relative aspect-square rounded-[2rem] overflow-hidden bg-white shadow-2xl border-4 border-white shadow-indigo-200/50">
                 {productImage ? (
-                  <img src={productImage} alt={data.productName} className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110" />
+                  <img src={productImage} alt={data.productName} className="w-full h-[60%] object-cover transform transition-transform duration-700 group-hover:scale-110" />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
                     {/* Assuming 'Package' icon is available or needs to be imported/defined */}
