@@ -7,6 +7,7 @@ export default function GenerateQrs() {
   const [newQr, setNewQr] = useState({
     productName: '',
     brand: '',
+    brandId: '',
     batchNo: '',
     productInfo: '',
     quantity: ''
@@ -196,6 +197,8 @@ export default function GenerateQrs() {
       let productImage = null;
       if (imageFile) {
         productImage = await uploadImage(imageFile);
+      } else if (imagePreview && typeof imagePreview === 'string' && imagePreview.startsWith('http')) {
+        productImage = imagePreview;
       }
 
       // 1. Upload any images/files in dynamic fields
@@ -208,10 +211,10 @@ export default function GenerateQrs() {
       const quantityField = formConfig?.customFields?.find(f => f.isQuantity);
 
       // Resolve Product Name
-      const productName = (nameField ? uploadedDynamicFields[nameField.fieldName] : (uploadedDynamicFields['productName'] || '')) || '';
+      const productName = (nameField ? uploadedDynamicFields[nameField.fieldName] : (uploadedDynamicFields['productName'] || '')) || newQr.productName || '';
 
       // Resolve Batch No
-      const batchNo = (batchField ? uploadedDynamicFields[batchField.fieldName] : (uploadedDynamicFields['batchNo'] || '')) || '';
+      const batchNo = (batchField ? uploadedDynamicFields[batchField.fieldName] : (uploadedDynamicFields['batchNo'] || '')) || newQr.batchNo || '';
 
       // Resolve Product Image (fallback to a marked field if static one is empty)
       if (!productImage && imgField) {
@@ -225,6 +228,7 @@ export default function GenerateQrs() {
       const orderData = {
         productName,
         brand: newQr.brand,
+        brandId: newQr.brandId,
         batchNo,
         quantity,
         productImage,
@@ -328,7 +332,7 @@ export default function GenerateQrs() {
               const bdata = await getBrands(companyId);
               setBrands(bdata || []);
               if (u?.brandId?._id) {
-                setNewQr((p) => ({ ...p, brand: u.brandId.brandName }));
+                setNewQr((p) => ({ ...p, brand: u.brandId.brandName, brandId: u.brandId._id }));
               }
             } catch (err) {
               console.warn('Could not load company brands', err);
@@ -360,6 +364,7 @@ export default function GenerateQrs() {
     setNewQr({
       productName: t.productName || '',
       brand: t.brandId?.brandName || t.brand || '',
+      brandId: t.brandId?._id || t.brandId || '',
       batchNo: '', // Batch usually fresh
       productInfo: t.productInfo || '',
       quantity: ''
@@ -560,22 +565,30 @@ export default function GenerateQrs() {
             <label className="text-sm font-medium text-slate-700 ml-1">
               Brand {formConfig.staticFields.brand.isMandatory && <span className="text-indigo-600">*</span>}
             </label>
-            <select
-              value={newQr.brand}
-              onChange={(e) => {
-                setNewQr({ ...newQr, brand: e.target.value, productName: '', productInfo: '' });
-                setIsCatalogProduct(false);
-                setImagePreview(null);
-                setImageFile(null);
-              }}
-              className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-semibold shadow-sm"
-              required={formConfig.staticFields.brand.isMandatory}
-            >
-              <option value="">Select brand</option>
-              {brands.map((b) => (
-                <option key={b._id} value={b.brandName}>{b.brandName}</option>
-              ))}
-            </select>
+              <select
+                value={newQr.brandId}
+                onChange={(e) => {
+                  const selectedId = e.target.value;
+                  const selectedBrand = brands.find(b => b._id === selectedId);
+                  setNewQr({
+                    ...newQr,
+                    brandId: selectedId,
+                    brand: selectedBrand?.brandName || '',
+                    productName: '',
+                    productInfo: ''
+                  });
+                  setIsCatalogProduct(false);
+                  setImagePreview(null);
+                  setImageFile(null);
+                }}
+                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-semibold shadow-sm"
+                required={formConfig.staticFields.brand.isMandatory}
+              >
+                <option value="">Select brand</option>
+                {brands.map((b) => (
+                  <option key={b._id} value={b._id}>{b.brandName}</option>
+                ))}
+              </select>
           </div>
         )}
 
@@ -602,7 +615,8 @@ export default function GenerateQrs() {
                   ...newQr,
                   productName: prod.productName,
                   productInfo: prod.productInfo || '',
-                  brand: (prod.brandId?.brandName || prod.brand) || newQr.brand
+                  brand: (prod.brandId?.brandName || prod.brand) || newQr.brand,
+                  brandId: (prod.brandId?._id || prod.brandId) || newQr.brandId
                 });
                 setIsCatalogProduct(true);
                 if (prod.productImage) {

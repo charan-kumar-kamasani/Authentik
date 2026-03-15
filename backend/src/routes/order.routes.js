@@ -70,9 +70,9 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
     } = req.body;
     
     // Determine the brandId (preferred) or fallback to company owner
-    let brandId = req.body.brandId || req.user.brandId || null;
-    if (req.user.role === 'company') {
-      brandId = req.user.brandId || req.user._id;
+    let brandId = req.body.brandId || (req.user.brandId?._id || req.user.brandId) || null;
+    if (req.user.role === 'company' && !brandId) {
+      brandId = req.user._id;
     }
 
     if (!brandId) {
@@ -144,8 +144,12 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
     
     res.status(201).json(createdOrder);
   } catch (error) {
-    console.error('Create order error:', error);
-    res.status(500).json({ message: 'Server Error', error: error.message });
+    console.error('Create order error details:', error);
+    res.status(500).json({ 
+      message: 'Server Error', 
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined 
+    });
   }
 });
 
