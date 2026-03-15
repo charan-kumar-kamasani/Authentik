@@ -359,7 +359,7 @@ export default function GenerateQrs() {
   const handleSelectTemplate = (t) => {
     setNewQr({
       productName: t.productName || '',
-      brand: t.brand || '',
+      brand: t.brandId?.brandName || t.brand || '',
       batchNo: '', // Batch usually fresh
       productInfo: t.productInfo || '',
       quantity: ''
@@ -602,7 +602,7 @@ export default function GenerateQrs() {
                   ...newQr,
                   productName: prod.productName,
                   productInfo: prod.productInfo || '',
-                  brand: prod.brand || newQr.brand
+                  brand: (prod.brandId?.brandName || prod.brand) || newQr.brand
                 });
                 setIsCatalogProduct(true);
                 if (prod.productImage) {
@@ -618,8 +618,8 @@ export default function GenerateQrs() {
             disabled={!newQr.brand}
           >
             <option value="">-- Choose Product --</option>
-            {products.filter(p => p.brand === newQr.brand || !newQr.brand).map(p => (
-              <option key={p._id} value={p._id}>{p.productName} ({p.brand})</option>
+            {products.filter(p => !newQr.brand || (p.brandId?.brandName === newQr.brand || p.brand === newQr.brand)).map(p => (
+              <option key={p._id} value={p._id}>{p.productName} ({p.brandId?.brandName || p.brand})</option>
             ))}
           </select>
           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest ml-1 mt-1">

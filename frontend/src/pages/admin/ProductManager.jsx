@@ -14,7 +14,7 @@ const ProductManager = () => {
   
   const [formData, setFormData] = useState({
     productName: '',
-    brand: '',
+    brandId: '',
     productInfo: '',
     productImage: null,
     imagePreview: null
@@ -23,7 +23,7 @@ const ProductManager = () => {
   const resetForm = () => {
     setFormData({
       productName: '',
-      brand: brands[0]?.brandName || '',
+      brandId: brands[0]?._id || '',
       productInfo: '',
       productImage: null,
       imagePreview: null
@@ -54,7 +54,7 @@ const ProductManager = () => {
         const bData = await getBrands(me.companyId._id || me.companyId);
         setBrands(bData || []);
         if (bData?.length > 0) {
-            setFormData(prev => ({ ...prev, brand: bData[0].brandName }));
+            setFormData(prev => ({ ...prev, brandId: bData[0]._id }));
         }
       }
 
@@ -107,7 +107,7 @@ const ProductManager = () => {
         // Update existing product
         const updateData = {
           productName: formData.productName,
-          brand: formData.brand,
+          brandId: formData.brandId,
           productInfo: formData.productInfo,
           // Only update image if a fresh image was uploaded, otherwise keep existing
         };
@@ -123,7 +123,7 @@ const ProductManager = () => {
         // Create new product
         await createProductTemplate({
           productName: formData.productName,
-          brand: formData.brand,
+          brandId: formData.brandId,
           productInfo: formData.productInfo,
           productImage: finalImageUrl
         });
@@ -143,7 +143,7 @@ const ProductManager = () => {
   const handleEditClick = (product) => {
     setFormData({
       productName: product.productName || '',
-      brand: product.brand || '',
+      brandId: product.brandId?._id || product.brandId || '',
       productInfo: product.productInfo || '',
       productImage: null, // Don't hold the file object for remote images
       imagePreview: product.productImage || null,
@@ -235,13 +235,13 @@ const ProductManager = () => {
                     <label className="text-sm font-bold text-gray-600 ml-1">Brand *</label>
                     <select
                       required
-                      value={formData.brand}
-                      onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                      value={formData.brandId}
+                      onChange={(e) => setFormData({ ...formData, brandId: e.target.value })}
                       className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-semibold shadow-sm"
                     >
                       <option value="">Select Brand</option>
                       {brands.map(b => (
-                        <option key={b._id} value={b.brandName}>{b.brandName}</option>
+                        <option key={b._id} value={b._id}>{b.brandName}</option>
                       ))}
                     </select>
                   </div>
@@ -349,7 +349,7 @@ const ProductManager = () => {
                             Verified Entry
                           </span>
                         </div>
-                        <p className="text-indigo-600 text-xs font-bold uppercase tracking-widest mb-2">{product.brand}</p>
+                        <p className="text-indigo-600 text-xs font-bold uppercase tracking-widest mb-2">{product.brandId?.brandName || product.brand}</p>
                       </div>
                     </div>
 

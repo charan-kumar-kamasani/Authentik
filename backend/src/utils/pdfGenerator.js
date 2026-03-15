@@ -139,7 +139,7 @@ const buildQrPdf = async (products, options = {}) => {
       });
 
       // QR image size increased
-      const qrSide = 14 * MM;
+      const qrSide = 13 * MM;
       const qrX = x + (cellWidth - qrSide) / 2;
       const qrImgY = qrY + (qrAreaHeight - qrSide) / 2;
 
@@ -149,57 +149,57 @@ const buildQrPdf = async (products, options = {}) => {
       });
 
 
-      /** ── COMPANY LOGO OVERLAY — centred on QR ── **/
-      if (logoBuffer) {
-        const logoSize = qrSide * 0.2;
-        const bgPadding = logoSize * 0.35;
-        const bgSize = logoSize + bgPadding * 2;
-        const bgX = qrX + (qrSide - bgSize) / 2;
-        const bgY = qrImgY + (qrSide - bgSize) / 2;
-        const cornerRadius = bgSize * 0.18;
+      // /** ── COMPANY LOGO OVERLAY — centred on QR ── **/
+      // if (logoBuffer) {
+      //   const logoSize = qrSide * 0.2;
+      //   const bgPadding = logoSize * 0.35;
+      //   const bgSize = logoSize + bgPadding * 2;
+      //   const bgX = qrX + (qrSide - bgSize) / 2;
+      //   const bgY = qrImgY + (qrSide - bgSize) / 2;
+      //   const cornerRadius = bgSize * 0.18;
 
-        doc
-          .save()
-          .roundedRect(bgX, bgY, bgSize, bgSize, cornerRadius)
-          .fill("#FFFFFF");
+      //   doc
+      //     .save()
+      //     .roundedRect(bgX, bgY, bgSize, bgSize, cornerRadius)
+      //     .fill("#FFFFFF");
 
-        doc
-          .roundedRect(bgX, bgY, bgSize, bgSize, cornerRadius)
-          .lineWidth(0.6)
-          .strokeColor("#E0E0E0")
-          .stroke();
-        doc.restore();
+      //   doc
+      //     .roundedRect(bgX, bgY, bgSize, bgSize, cornerRadius)
+      //     .lineWidth(0.6)
+      //     .strokeColor("#E0E0E0")
+      //     .stroke();
+      //   doc.restore();
 
-        const logoX = bgX + bgPadding;
-        const logoY = bgY + bgPadding;
+      //   const logoX = bgX + bgPadding;
+      //   const logoY = bgY + bgPadding;
 
-        try {
-          doc.image(logoBuffer, logoX, logoY, {
-            fit: [logoSize, logoSize],
-            align: "center",
-            valign: "center",
-          });
-        } catch (imageErr) {
-          console.warn(
-            "Primary logo render failed, trying default fallback:",
-            imageErr.message
-          );
-          try {
-            const defaultLogoPath = path.join(__dirname, "../assets/logo.png");
-            const defaultLogoBuffer = fs.readFileSync(defaultLogoPath);
-            doc.image(defaultLogoBuffer, logoX, logoY, {
-              fit: [logoSize, logoSize],
-              align: "center",
-              valign: "center",
-            });
-          } catch (fallbackErr) {
-            console.error(
-              "Default logo fallback also failed:",
-              fallbackErr.message
-            );
-          }
-        }
-      }
+      //   try {
+      //     doc.image(logoBuffer, logoX, logoY, {
+      //       fit: [logoSize, logoSize],
+      //       align: "center",
+      //       valign: "center",
+      //     });
+      //   } catch (imageErr) {
+      //     console.warn(
+      //       "Primary logo render failed, trying default fallback:",
+      //       imageErr.message
+      //     );
+      //     try {
+      //       const defaultLogoPath = path.join(__dirname, "../assets/logo.png");
+      //       const defaultLogoBuffer = fs.readFileSync(defaultLogoPath);
+      //       doc.image(defaultLogoBuffer, logoX, logoY, {
+      //         fit: [logoSize, logoSize],
+      //         align: "center",
+      //         valign: "center",
+      //       });
+      //     } catch (fallbackErr) {
+      //       console.error(
+      //         "Default logo fallback also failed:",
+      //         fallbackErr.message
+      //       );
+      //     }
+      //   }
+      // }
 
       /** ── FOOTER BANNER — white band with "Authentiks.in" ── **/
       const footerY = qrY + qrAreaHeight;

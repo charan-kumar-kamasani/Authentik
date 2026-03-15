@@ -856,7 +856,7 @@ export const updateOrder = async (orderId, updates) => {
 export const updateProductTemplate = async (templateId, data) => {
   try {
     const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-    const res = await fetch(`${API_BASE_URL}/admin/product-templates/${templateId}`, {
+    const res = await fetch(`${API_BASE_URL}/product-templates/${templateId}`, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
