@@ -873,9 +873,16 @@ const QR_TOPUP_PRICE = 5; // ₹5 per QR for top-up purchases
 router.get('/credits/balance', protect, async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
+        
+        // Superadmin and Admin users do not have a companyId, return infinite or 0 for UI purposes
+        if (['superadmin', 'admin'].includes(user.role)) {
+            return res.json({ companyId: null, companyName: 'System Admin', qrCredits: null });
+        }
+
         if (!user || !user.companyId) return res.status(400).json({ message: 'User not linked to a company' });
         const company = await Company.findById(user.companyId);
         if (!company) return res.status(404).json({ message: 'Company not found' });
+        
         res.json({ companyId: company._id, companyName: company.companyName, qrCredits: company.qrCredits || 0 });
     } catch (error) {
         res.status(500).json({ message: error.message });

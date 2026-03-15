@@ -8,7 +8,6 @@ export default function GenerateQrs() {
     productName: '',
     brand: '',
     batchNo: '',
-    description: '',
     productInfo: '',
     quantity: ''
   });
@@ -22,6 +21,7 @@ export default function GenerateQrs() {
   const [dynamicFieldValues, setDynamicFieldValues] = useState({});
   const [formConfig, setFormConfig] = useState(null);
   const [loadingConfig, setLoadingConfig] = useState(true);
+  const [isCatalogProduct, setIsCatalogProduct] = useState(false);
 
   // Variants (multiple instances of each variant type)
   const [variantInstances, setVariantInstances] = useState([]);
@@ -228,7 +228,6 @@ export default function GenerateQrs() {
         batchNo,
         quantity,
         productImage,
-        description: newQr.description,
         productInfo: newQr.productInfo,
         // Static date fields
         mfdOn,
@@ -281,7 +280,7 @@ export default function GenerateQrs() {
   };
 
   const resetForm = () => {
-    setNewQr({ productName: '', brand: '', batchNo: '', description: '', productInfo: '', quantity: '' });
+    setNewQr({ productName: '', brand: '', batchNo: '', productInfo: '', quantity: '' });
     setMfdOn({ month: '', year: '' });
     setBestBefore({ value: '', unit: 'months' });
     setCalculatedExpiry('');
@@ -289,6 +288,7 @@ export default function GenerateQrs() {
     setVariantInstances([]);
     setImageFile(null);
     setImagePreview(null);
+    setIsCatalogProduct(false);
   };
 
   useEffect(() => {
@@ -361,7 +361,6 @@ export default function GenerateQrs() {
       productName: t.productName || '',
       brand: t.brand || '',
       batchNo: '', // Batch usually fresh
-      description: t.description || '',
       productInfo: t.productInfo || '',
       quantity: ''
     });
@@ -377,6 +376,8 @@ export default function GenerateQrs() {
       setImagePreview(t.productImage);
       setImageFile(null); // Clear local file if using template image
     }
+
+    setIsCatalogProduct(true);
 
     if (t.dynamicFields) {
       setDynamicFieldValues(t.dynamicFields);
@@ -553,6 +554,31 @@ export default function GenerateQrs() {
         <form onSubmit={handleCreateQr} className="grid grid-cols-2 gap-6">
 
 
+        {/* Brand Dropdown (Static Field) */}
+        {formConfig?.staticFields?.brand?.enabled && (
+          <div className="flex flex-col gap-1.5 col-span-2 md:col-span-1">
+            <label className="text-sm font-medium text-slate-700 ml-1">
+              Brand {formConfig.staticFields.brand.isMandatory && <span className="text-indigo-600">*</span>}
+            </label>
+            <select
+              value={newQr.brand}
+              onChange={(e) => {
+                setNewQr({ ...newQr, brand: e.target.value, productName: '', productInfo: '' });
+                setIsCatalogProduct(false);
+                setImagePreview(null);
+                setImageFile(null);
+              }}
+              className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-semibold shadow-sm"
+              required={formConfig.staticFields.brand.isMandatory}
+            >
+              <option value="">Select brand</option>
+              {brands.map((b) => (
+                <option key={b._id} value={b.brandName}>{b.brandName}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Product Selection from Catalog */}
         <div className="flex flex-col gap-1.5 col-span-2 md:col-span-1">
           <label className="text-sm font-bold text-slate-700 ml-1 flex items-center gap-2">
@@ -563,52 +589,45 @@ export default function GenerateQrs() {
             className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-semibold shadow-sm"
             onChange={(e) => {
               const selectedId = e.target.value;
+              if (!selectedId) {
+                setNewQr(prev => ({...prev, productName: '', productInfo: ''}));
+                setIsCatalogProduct(false);
+                setImagePreview(null);
+                setImageFile(null);
+                return;
+              }
               const prod = products.find(p => p._id === selectedId);
               if (prod) {
                 setNewQr({
                   ...newQr,
                   productName: prod.productName,
-                  description: prod.description || '',
                   productInfo: prod.productInfo || '',
                   brand: prod.brand || newQr.brand
                 });
+                setIsCatalogProduct(true);
                 if (prod.productImage) {
                   setImagePreview(prod.productImage);
+                  setImageFile(null);
+                } else {
+                  setImagePreview(null);
                   setImageFile(null);
                 }
               }
             }}
             required
+            disabled={!newQr.brand}
           >
             <option value="">-- Choose Product --</option>
-            {products.map(p => (
+            {products.filter(p => p.brand === newQr.brand || !newQr.brand).map(p => (
               <option key={p._id} value={p._id}>{p.productName} ({p.brand})</option>
             ))}
           </select>
           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest ml-1 mt-1">
-            Selecting a product from the catalog auto-fills image and details.
+            {newQr.brand ? "Selecting a product from the catalog auto-fills image and details." : "Select a brand first"}
           </p>
         </div>
 
-        {/* Brand Dropdown (Static Field) */}
-        {formConfig?.staticFields?.brand?.enabled && (
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-slate-700 ml-1">
-              Brand {formConfig.staticFields.brand.isMandatory && <span className="text-indigo-600">*</span>}
-            </label>
-            <select
-              value={newQr.brand}
-              onChange={(e) => setNewQr({ ...newQr, brand: e.target.value })}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium"
-              required={formConfig.staticFields.brand.isMandatory}
-            >
-              <option value="">Select brand</option>
-              {brands.map((b) => (
-                <option key={b._id} value={b.brandName}>{b.brandName}</option>
-              ))}
-            </select>
-          </div>
-        )}
+
 
         {/* Product Image Upload */}
         <div className="flex flex-col gap-1.5">
@@ -621,7 +640,8 @@ export default function GenerateQrs() {
                 type="file"
                 accept="image/*"
                 onChange={handleImageChange}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                disabled={isCatalogProduct}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
               />
               {imageFile ? 'Change Image' : 'Choose Image'}
             </label>
@@ -636,19 +656,7 @@ export default function GenerateQrs() {
           </div>
         </div>
 
-        {/* Product Description */}
-        <div className="flex flex-col gap-1.5 col-span-2">
-          <label className="text-sm font-medium text-slate-700 ml-1">
-            Product Description (Additional Info)
-          </label>
-          <textarea
-            value={newQr.description}
-            onChange={(e) => setNewQr({ ...newQr, description: e.target.value })}
-            placeholder="Enter product details, key benefits, or other additional info..."
-            rows={4}
-            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium resize-none"
-          />
-        </div>
+
 
         {/* Product Info (Paragraph for scan results) */}
         <div className="flex flex-col gap-1.5 col-span-2">
@@ -660,7 +668,8 @@ export default function GenerateQrs() {
             onChange={(e) => setNewQr({ ...newQr, productInfo: e.target.value })}
             placeholder="Enter detailed product info paragraph that customers will see after scanning..."
             rows={5}
-            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium resize-none"
+            disabled={isCatalogProduct}
+            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium resize-none disabled:bg-slate-100 disabled:text-slate-500"
           />
         </div>
 

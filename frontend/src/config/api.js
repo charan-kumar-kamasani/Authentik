@@ -811,6 +811,69 @@ export const deleteProductTemplate = async (templateId) => {
     }
 };
 
+export const rejectOrder = async (orderId, reason) => {
+  try {
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+    const res = await fetch(`${API_BASE_URL}/admin/orders/${orderId}/reject`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ reason })
+    });
+    if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        throw new Error(e.message || 'Failed to reject order');
+    }
+    return await res.json();
+  } catch (err) {
+    throw err;
+  }
+};
+
+export const updateOrder = async (orderId, updates) => {
+  try {
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+    const res = await fetch(`${API_BASE_URL}/admin/orders/${orderId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(updates)
+    });
+    if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        throw new Error(e.message || 'Failed to edit order');
+    }
+    return await res.json();
+  } catch (err) {
+    throw err;
+  }
+};
+
+export const updateProductTemplate = async (templateId, data) => {
+  try {
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+    const res = await fetch(`${API_BASE_URL}/admin/product-templates/${templateId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.error || 'Failed to update template');
+    }
+    return await res.json();
+  } catch (err) {
+    throw err;
+  }
+};
+
 export const authorizeProductTemplate = async (templateId) => {
     try {
         const token = localStorage.getItem('adminToken') || localStorage.getItem('token');

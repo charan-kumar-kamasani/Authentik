@@ -639,6 +639,67 @@ router.put('/:id/reject', protect, async (req, res) => {
   }
 });
 
+// 9b. EDIT ORDER (Can be done by Authorizer or Company when Pending)
+router.put('/:id', protect, authorize('company', 'authorizer'), async (req, res) => {
+  try {
+    const { 
+      productName, 
+      brand, 
+      batchNo, 
+      quantity, 
+      description,
+      productInfo,
+      dynamicFields,
+      variants,
+      productImage
+    } = req.body;
+    
+    const order = await Order.findById(req.params.id);
+    
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // Permission check
+    const userBrandIds = req.user.brandIds && req.user.brandIds.length > 0 
+      ? req.user.brandIds.map(id => id.toString()) 
+      : (req.user.brandId ? [req.user.brandId.toString()] : (req.user.role === 'company' ? [req.user._id.toString()] : []));
+
+    if (!order.brandId || !userBrandIds.includes(order.brandId.toString())) {
+      return res.status(403).json({ message: 'Not authorized for this order' });
+    }
+
+    if (order.status !== 'Pending Authorization') {
+      return res.status(400).json({ message: 'Can only edit orders in Pending Authorization state' });
+    }
+
+    // Update fields
+    if (productName !== undefined) order.productName = productName;
+    if (brand !== undefined) order.brand = brand;
+    if (batchNo !== undefined) order.batchNo = batchNo;
+    if (quantity !== undefined) order.quantity = quantity;
+    if (description !== undefined) order.description = description;
+    if (productInfo !== undefined) order.productInfo = productInfo;
+    if (dynamicFields !== undefined) order.dynamicFields = dynamicFields;
+    if (variants !== undefined) order.variants = variants;
+    if (productImage !== undefined) order.productImage = productImage;
+
+    order.history.push({
+      status: 'Pending Authorization',
+      changedBy: req.user._id,
+      role: req.user.role,
+      comment: 'Order details modified by authorizer'
+    });
+
+    await order.save();
+    
+    res.json(order);
+  } catch (error) {
+    console.error('Edit order error:', error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
+
 // 10. DOWNLOAD PDF
 router.get('/:id/download', protect, async (req, res) => {
   console.log(`📄 PDF Download requested for Order ID: ${req.params.id}`);

@@ -44,7 +44,7 @@ const buildQrPdf = async (products, options = {}) => {
   const marginTop = (heightPts - gridHeight) / 2;
 
   /** ─── STICKER INTERNAL ZONES ─── **/
-  const brandColor = options.bannerColor || "#283890";
+  const brandColor = "#FFFFFF";
   const headerHeight = cellHeight * 0.2; // ~20% for "Scratch & Scan"
   const footerBannerH = cellHeight * 0.2; // ~20% for "Authentiks.in"
   const qrAreaHeight = cellHeight - headerHeight - footerBannerH; // ~60% QR
@@ -106,11 +106,11 @@ const buildQrPdf = async (products, options = {}) => {
       const x = marginLeft + col * cellWidth;
       const y = marginTop + row * cellHeight;
 
-      /** ── HEADER — dark blue band with "Scratch & Scan" ── **/
+      /** ── HEADER — white band with "Scratch & Scan" ── **/
       doc.rect(x, y, cellWidth, headerHeight).fill(brandColor);
 
       doc
-        .fillColor("#FFF")
+        .fillColor("#000")
         .font("Helvetica-Bold")
         .fontSize(6.5)
         .text("Scratch & Scan", x, y + headerHeight / 2 - 3, {
@@ -138,8 +138,8 @@ const buildQrPdf = async (products, options = {}) => {
         margin: 1,
       });
 
-      // QR image is exactly 10mm × 10mm, centred in the QR area
-      const qrSide = 12 * MM;
+      // QR image size increased
+      const qrSide = 14 * MM;
       const qrX = x + (cellWidth - qrSide) / 2;
       const qrImgY = qrY + (qrAreaHeight - qrSide) / 2;
 
@@ -201,12 +201,12 @@ const buildQrPdf = async (products, options = {}) => {
         }
       }
 
-      /** ── FOOTER BANNER — dark blue band with "Authentiks.in" ── **/
+      /** ── FOOTER BANNER — white band with "Authentiks.in" ── **/
       const footerY = qrY + qrAreaHeight;
       doc.rect(x, footerY, cellWidth, footerBannerH).fill(brandColor);
 
       doc
-        .fillColor("#FFF")
+        .fillColor("#000")
         .font("Helvetica-Bold")
         .fontSize(6.5)
         .text("Authentiks.in", x, footerY + footerBannerH / 2 - 3, {

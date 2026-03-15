@@ -197,6 +197,12 @@ export default function AdminLayout({ children }) {
                 icon={Package}
                 isActive={activePath === "/product-manager"}
               />
+              <SidebarItem
+                label="Order History"
+                onClick={() => navigate("/orders")}
+                icon={FileText}
+                isActive={activePath === "/orders"}
+              />
             </div>
           ) : (
             <>
@@ -341,7 +347,7 @@ export default function AdminLayout({ children }) {
                       icon={Users}
                       isActive={
                         activePath === "/users" &&
-                        (!location.search || !location.search.includes("tab=user"))
+                        (!location.search || (!location.search.includes("tab=user") && !location.search.includes("tab=brand")))
                       }
                       hasSubmenu={true}
                     />

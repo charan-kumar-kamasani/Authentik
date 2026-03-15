@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import API_BASE_URL, { getProductTemplates, createProductTemplate, authorizeProductTemplate, deleteProductTemplate, getBrands } from '../../config/api';
-import { Package, Plus, CheckCircle, Clock, Trash2, Search, Filter, ShieldCheck, Info, Image as ImageIcon } from 'lucide-react';
+import API_BASE_URL, { getProductTemplates, createProductTemplate, authorizeProductTemplate, deleteProductTemplate, getBrands, updateProductTemplate } from '../../config/api';
+import { Package, Plus, CheckCircle, Clock, Trash2, Search, Filter, ShieldCheck, Info, Image as ImageIcon, Edit } from 'lucide-react';
 import { useConfirm } from '../../components/ConfirmModal';
 
 const ProductManager = () => {
@@ -10,6 +10,7 @@ const ProductManager = () => {
   const [submitting, setSubmitting] = useState(false);
   const [user, setUser] = useState(null);
   const [brands, setBrands] = useState([]);
+  const [editProductId, setEditProductId] = useState(null);
   
   const [formData, setFormData] = useState({
     productName: '',
@@ -18,6 +19,17 @@ const ProductManager = () => {
     productImage: null,
     imagePreview: null
   });
+
+  const resetForm = () => {
+    setFormData({
+      productName: '',
+      brand: brands[0]?.brandName || '',
+      productInfo: '',
+      productImage: null,
+      imagePreview: null
+    });
+    setEditProductId(null);
+  };
 
   const confirm = useConfirm();
   const role = localStorage.getItem('adminRole');
@@ -91,28 +103,53 @@ const ProductManager = () => {
         finalImageUrl = data.secure_url;
       }
 
-      await createProductTemplate({
-        productName: formData.productName,
-        brand: formData.brand,
-        productInfo: formData.productInfo,
-        productImage: finalImageUrl
-      });
+      if (editProductId) {
+        // Update existing product
+        const updateData = {
+          productName: formData.productName,
+          brand: formData.brand,
+          productInfo: formData.productInfo,
+          // Only update image if a fresh image was uploaded, otherwise keep existing
+        };
+        if (finalImageUrl) {
+          updateData.productImage = finalImageUrl;
+        } else if (!formData.imagePreview && !formData.productImage) {
+          // They explicitly cleared the image
+          updateData.productImage = '';
+        }
+        await updateProductTemplate(editProductId, updateData);
+        alert('Product updated successfully!');
+      } else {
+        // Create new product
+        await createProductTemplate({
+          productName: formData.productName,
+          brand: formData.brand,
+          productInfo: formData.productInfo,
+          productImage: finalImageUrl
+        });
+        alert('Product created successfully!');
+      }
 
-      alert('Product created successfully!');
-      setFormData({
-        productName: '',
-        brand: brands[0]?.brandName || '',
-        productInfo: '',
-        productImage: null,
-        imagePreview: null
-      });
+      resetForm();
       setActiveTab('list');
       fetchInitialData();
     } catch (err) {
-      alert('Failed to create product: ' + err.message);
+      alert('Failed to save product: ' + err.message);
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleEditClick = (product) => {
+    setFormData({
+      productName: product.productName || '',
+      brand: product.brand || '',
+      productInfo: product.productInfo || '',
+      productImage: null, // Don't hold the file object for remote images
+      imagePreview: product.productImage || null,
+    });
+    setEditProductId(product._id);
+    setActiveTab('create');
   };
 
 
@@ -150,14 +187,14 @@ const ProductManager = () => {
           
           <div className="flex items-center gap-3 animate-in slide-in-from-right duration-700">
             <button 
-              onClick={() => setActiveTab('list')}
+              onClick={() => { resetForm(); setActiveTab('list'); }}
               className={`px-6 py-3 rounded-[1.25rem] font-black text-sm transition-all uppercase tracking-widest ${activeTab === 'list' ? 'bg-gray-900 text-white' : 'bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50'}`}
             >
               Catalog List
             </button>
             {canCreate && (
               <button 
-                onClick={() => setActiveTab('create')}
+                onClick={() => { resetForm(); setActiveTab('create'); }}
                 className={`px-6 py-3 rounded-[1.25rem] font-black text-sm transition-all uppercase tracking-widest flex items-center gap-2 ${activeTab === 'create' ? 'bg-indigo-600 text-white shadow-xl shadow-indigo-200' : 'bg-white border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50'}`}
               >
                 <Plus size={18} />
@@ -175,8 +212,8 @@ const ProductManager = () => {
                   <Package className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-black text-gray-900 tracking-tight">Add New Product</h2>
-                  <p className="text-gray-500 font-medium text-sm">Create a reusable product profile for the catalog.</p>
+                  <h2 className="text-2xl font-black text-gray-900 tracking-tight">{editProductId ? 'Edit Product' : 'Add New Product'}</h2>
+                  <p className="text-gray-500 font-medium text-sm">{editProductId ? 'Update the details for this catalog entry.' : 'Create a reusable product profile for the catalog.'}</p>
                 </div>
               </div>
 
@@ -264,7 +301,7 @@ const ProductManager = () => {
                     disabled={submitting}
                     className="w-full bg-gradient-to-r from-gray-900 to-indigo-900 text-white font-black py-4 rounded-[1.5rem] hover:shadow-2xl hover:shadow-indigo-900/40 active:scale-[0.98] transition-all uppercase tracking-widest text-sm flex items-center justify-center gap-3 disabled:opacity-50"
                   >
-                    {submitting ? 'Creating Product...' : 'Add to Catalog'}
+                    {submitting ? (editProductId ? 'Updating...' : 'Creating Product...') : (editProductId ? 'Update Product' : 'Add to Catalog')}
                     <Package className="w-5 h-5" />
                   </button>
                 </div>
@@ -329,13 +366,20 @@ const ProductManager = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
+                        <button 
+                            onClick={() => handleEditClick(product)}
+                            className="p-2.5 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                            title="Edit"
+                        >
+                          <Edit size={16} />
+                        </button>
                         <button 
                             onClick={() => handleDelete(product._id)}
                             className="p-2.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm"
                             title="Delete"
                         >
-                          <Trash2 size={18} />
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </div>

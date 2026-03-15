@@ -186,7 +186,7 @@ const UserManagement = () => {
     try {
       const token =
         localStorage.getItem("adminToken") || localStorage.getItem("token");
-      const data = await getBrands(token);
+      const data = await getBrands();
       setBrands(data || []);
     } catch (e) {
       console.error(e);

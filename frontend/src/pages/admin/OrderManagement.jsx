@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { getOrders, createOrder, updateOrderStatus, downloadOrderPdf, checkOrderCredits, getPlans, calculatePrice, validateCoupon, initiatePayment } from '../../config/api';
+import { getOrders, createOrder, updateOrderStatus, downloadOrderPdf, checkOrderCredits, getPlans, calculatePrice, validateCoupon, initiatePayment, updateOrder } from '../../config/api';
 import { useNavigate } from 'react-router-dom';
 import { useLoading } from '../../context/LoadingContext';
 import { useConfirm } from '../../components/ConfirmModal';
@@ -7,7 +7,7 @@ import TablePagination from '../../components/TablePagination';
 import {
   Package, Search, Filter, X, Plus, Truck, CheckCircle2, Clock, Settings, ShieldCheck,
   FileDown, PackageCheck, AlertTriangle, ArrowRight, Hash, Calendar, ChevronRight, XCircle, Send,
-  CreditCard, Zap, Coins, ShoppingCart, Loader2, Percent, IndianRupee, Gift, Receipt, AlertCircle, Tag, Eye, ChevronDown, User
+  CreditCard, Zap, Coins, ShoppingCart, Loader2, Percent, IndianRupee, Gift, Receipt, AlertCircle, Tag, Eye, ChevronDown, User, Edit
 } from 'lucide-react';
 
 
@@ -89,6 +89,10 @@ const OrderManagement = () => {
   const [creditCouponError, setCreditCouponError] = useState('');
   const [creditPriceBreakdown, setCreditPriceBreakdown] = useState(null);
   const [creditLoadingPrice, setCreditLoadingPrice] = useState(false);
+
+  // Edit Order State
+  const [editOrderModal, setEditOrderModal] = useState({ isOpen: false, data: null });
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     fetchOrders();
@@ -213,6 +217,25 @@ const OrderManagement = () => {
       alert('Failed: ' + e.message);
     } finally {
       setGlobalLoading(false);
+    }
+  };
+
+  const handleEditOrderSubmit = async (e) => {
+    e.preventDefault();
+    if (!editOrderModal.data) return;
+    setEditing(true);
+    try {
+      // Create a payload of changing fields
+      const { _id, productName, brand, batchNo, quantity, productInfo } = editOrderModal.data;
+      const updates = { productName, brand, batchNo, quantity, productInfo };
+      
+      await updateOrder(_id, updates);
+      await fetchOrders();
+      setEditOrderModal({ isOpen: false, data: null });
+    } catch (err) {
+      alert(err.message || 'Failed to edit order');
+    } finally {
+      setEditing(false);
     }
   };
 
@@ -573,8 +596,12 @@ const OrderManagement = () => {
                           icon={CheckCircle2} label="Mark Received" color="emerald" />
                       )}
                       {/* Reject — allowed for superadmin/admin at most stages */}
-                      {['Authorized', 'Order Processing', 'Dispatching'].includes(order.status) && (role === 'admin' || role === 'superadmin') && (
+                      {['Pending Authorization', 'Authorized', 'Order Processing', 'Dispatching'].includes(order.status) && (role === 'admin' || role === 'superadmin' || role === 'authorizer') && (
                         <ActionBtn onClick={() => handleRejectOrder(order._id)} icon={XCircle} label="Reject" color="red" />
+                      )}
+                      {/* Edit — allowed for superadmin/admin/authorizer if not processed */}
+                      {['Pending Authorization', 'Authorized'].includes(order.status) && (role === 'admin' || role === 'superadmin' || role === 'authorizer') && (
+                        <ActionBtn onClick={() => setEditOrderModal({ isOpen: true, data: order })} icon={Edit} label="Edit" color="slate" />
                       )}
                       {/* PDF — visible only for superadmin and admin */}
                       {order.qrCodesGenerated && (role === 'superadmin' || role === 'admin') && (
@@ -732,6 +759,106 @@ const OrderManagement = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Order Modal */}
+      {editOrderModal.isOpen && editOrderModal.data && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={() => !editing && setEditOrderModal({isOpen: false, data: null})} />
+          <div className="bg-white rounded-[2rem] w-full max-w-2xl relative z-10 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between flex-shrink-0 bg-slate-50/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
+                  <Edit size={20} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-slate-900">Edit Order</h3>
+                  <p className="text-slate-500 text-sm font-medium">{editOrderModal.data.orderId}</p>
+                </div>
+              </div>
+              <button type="button" onClick={() => !editing && setEditOrderModal({isOpen: false, data: null})} className="p-2 text-slate-400 hover:text-slate-600 bg-white rounded-xl shadow-sm border border-slate-100 transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-8 overflow-y-auto custom-scrollbar flex-1">
+              <form id="editOrderForm" onSubmit={handleEditOrderSubmit} className="space-y-6">
+                <div className="grid grid-cols-2 gap-6">
+                  {/* Basic Input Field Simulation */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-bold text-slate-700 ml-1">Product Name</label>
+                    <input 
+                      type="text"
+                      value={editOrderModal.data.productName} 
+                      onChange={e => setEditOrderModal(prev => ({...prev, data: {...prev.data, productName: e.target.value}}))}
+                      required
+                      className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-bold text-slate-700 ml-1">Brand Name</label>
+                    <input 
+                      type="text"
+                      value={editOrderModal.data.brand} 
+                      onChange={e => setEditOrderModal(prev => ({...prev, data: {...prev.data, brand: e.target.value}}))}
+                      required
+                      className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-bold text-slate-700 ml-1">Batch Number</label>
+                    <input 
+                      type="text"
+                      value={editOrderModal.data.batchNo} 
+                      onChange={e => setEditOrderModal(prev => ({...prev, data: {...prev.data, batchNo: e.target.value}}))}
+                      required
+                      className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-bold text-slate-700 ml-1">Quantity</label>
+                    <input 
+                      type="number"
+                      value={editOrderModal.data.quantity} 
+                      onChange={e => setEditOrderModal(prev => ({...prev, data: {...prev.data, quantity: e.target.value}}))}
+                      required
+                      className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium"
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-bold text-slate-700 ml-1">Product Information</label>
+                  <textarea
+                    value={editOrderModal.data.productInfo || ''}
+                    onChange={e => setEditOrderModal(prev => ({...prev, data: {...prev.data, productInfo: e.target.value}}))}
+                    rows={4}
+                    placeholder="E.g., ingredients, storage instructions..."
+                    className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium resize-none"
+                  />
+                </div>
+              </form>
+            </div>
+
+            <div className="px-8 py-5 border-t border-slate-100 flex justify-end gap-3 flex-shrink-0 bg-slate-50/50">
+              <button 
+                type="button"
+                onClick={() => setEditOrderModal({isOpen: false, data: null})}
+                className="px-6 py-2.5 rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-100 transition-colors"
+                disabled={editing}
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit"
+                form="editOrderForm"
+                disabled={editing}
+                className="px-6 py-2.5 rounded-xl font-bold text-sm bg-blue-600 text-white hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-500/25 transition-all disabled:opacity-50 flex items-center gap-2"
+              >
+                {editing ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
           </div>
         </div>
       )}
