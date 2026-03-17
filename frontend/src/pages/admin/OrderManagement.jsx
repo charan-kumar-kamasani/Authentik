@@ -639,12 +639,14 @@ const OrderManagement = () => {
                         <ActionBtn onClick={() => handleMarkReceived(order._id)}
                           icon={CheckCircle2} label="Mark Received" color="emerald" />
                       )}
-                      {/* Reject — allowed for superadmin/admin at most stages, authorizer ONLY if Pending */}
-                      {((['Pending Authorization', 'Authorized', 'Order Processing', 'Dispatching'].includes(order.status) && (role === 'admin' || role === 'superadmin')) || (order.status === 'Pending Authorization' && role === 'authorizer')) && (
+                      {/* Reject — allowed for superadmin/admin at most stages, authorizer/company ONLY if Pending */}
+                      {((['Pending Authorization', 'Authorized', 'Order Processing', 'Dispatching'].includes(order.status) && ['admin', 'superadmin'].includes(role)) || 
+                        (order.status === 'Pending Authorization' && ['authorizer', 'company'].includes(role))) && (
                         <ActionBtn onClick={() => handleRejectOrder(order._id)} icon={XCircle} label="Reject" color="red" />
                       )}
-                      {/* Edit — allowed for superadmin/admin if not processed, authorizer ONLY if Pending */}
-                      {((['Pending Authorization', 'Authorized'].includes(order.status) && (role === 'admin' || role === 'superadmin')) || (order.status === 'Pending Authorization' && role === 'authorizer')) && (
+                      {/* Edit — allowed for superadmin/admin if not processed, authorizer/company ONLY if Pending */}
+                      {((['Pending Authorization', 'Authorized'].includes(order.status) && ['admin', 'superadmin'].includes(role)) || 
+                        (order.status === 'Pending Authorization' && ['authorizer', 'company'].includes(role))) && (
                         <ActionBtn onClick={() => setEditOrderModal({ isOpen: true, data: order })} icon={Edit} label="Edit" color="slate" />
                       )}
                       {/* PDF — visible only for superadmin and admin */}

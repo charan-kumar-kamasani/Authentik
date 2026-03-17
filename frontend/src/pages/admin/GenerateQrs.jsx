@@ -225,6 +225,15 @@ export default function GenerateQrs() {
       const qtyValue = (quantityField ? uploadedDynamicFields[quantityField.fieldName] : (uploadedDynamicFields['quantity'] || '')) || 1;
       const quantity = Number(qtyValue) || 1;
 
+      // Minimum quantity check (Requirement 6)
+      if (quantityField && quantityField.validation?.min) {
+        if (quantity < quantityField.validation.min) {
+          alert(`Minimum quantity allowed is ${quantityField.validation.min} units.`);
+          setSubmitting(false);
+          return;
+        }
+      }
+
       const orderData = {
         productName,
         brand: newQr.brand,

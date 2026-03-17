@@ -133,7 +133,7 @@ const buildQrPdf = async (products, options = {}) => {
       }
 
       const qrBuffer = await QRCode.toBuffer(qrUrl, {
-        errorCorrectionLevel: "H", // Restored to High to ensure scanability with logo overlay
+        errorCorrectionLevel: "M", // Reduced from H to M to make QR less dense/simpler (Req 8)
         scale: 8, 
         margin: 1,
       });

@@ -374,13 +374,15 @@ const ProductManager = () => {
                         >
                           <Edit size={16} />
                         </button>
-                        <button 
-                            onClick={() => handleDelete(product._id)}
-                            className="p-2.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm"
-                            title="Delete"
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        {(role !== 'authorizer' && role !== 'creator') && (
+                          <button 
+                              onClick={() => handleDelete(product._id)}
+                              className="p-2.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                              title="Delete"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
