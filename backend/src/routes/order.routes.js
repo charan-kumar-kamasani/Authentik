@@ -68,6 +68,22 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       variants,
       productImage
     } = req.body;
+
+    let quantityFinal = req.body.quantity;
+
+    // Fallback: if quantity is missing at top level, search in dynamicFields
+    if ((quantityFinal === undefined || quantityFinal === null || quantityFinal === 0) && dynamicFields) {
+      // 1. Look for common names
+      quantityFinal = dynamicFields.quantity || dynamicFields.qrQuantity || dynamicFields.QRQuantity;
+      
+      // 2. If still missing, look for any field containing "quantity" in its key
+      if (!quantityFinal) {
+        const qtyKey = Object.keys(dynamicFields).find(k => k.toLowerCase().includes('quantity'));
+        if (qtyKey) quantityFinal = dynamicFields[qtyKey];
+      }
+    }
+
+    const quantityNumber = Number(quantityFinal) || 0;
     
     // Determine the brandId (preferred) or fallback to company owner
     let brandId = req.body.brandId || (req.user.brandId?._id || req.user.brandId) || null;
@@ -83,16 +99,31 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
     const count = await Order.countDocuments();
     const orderId = `ORD-${Date.now()}-${count + 1}`;
 
-    // Server-side: enforce plan minimum if a planId is provided
-    if (req.body.planId) {
+    // Server-side: enforce plan minimum if a planId is provided or if company has an active plan
+    let effectivePlanId = req.body.planId;
+    if (!effectivePlanId && req.user.companyId) {
+      try {
+        const company = await Company.findById(req.user.companyId);
+        if (company && company.planId) {
+          effectivePlanId = company.planId;
+        }
+      } catch (e) {
+        console.warn('Failed to fetch company plan for validation:', e.message);
+      }
+    }
+
+    if (effectivePlanId) {
       try {
         const PricePlan = require('../models/PricePlan');
-        const plan = await PricePlan.findById(req.body.planId);
+        const plan = await PricePlan.findById(effectivePlanId);
         if (plan) {
           const minStr = plan.minQrPerOrder || plan.minQr || '';
-          const min = Number(minStr || 0);
-          if (min > 0 && (Number(quantity) || 0) < min) {
-            return res.status(400).json({ message: `Minimum quantity for the selected plan (${plan.name}) is ${min}`, minRequired: min });
+          const min = Number(String(minStr).replace(/[^\d]/g, '') || 0);
+          if (min > 0 && quantityNumber < min) {
+            return res.status(400).json({ 
+              message: `Minimum quantity for the active plan (${plan.name}) is ${min}`, 
+              minRequired: min 
+            });
           }
         }
       } catch (e) {
@@ -108,7 +139,7 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       batchNo: batchNo || `BATCH-${orderId}`,
       manufactureDate,
       expiryDate,
-      quantity,
+      quantity: quantityNumber,
       description,
       productInfo,
       createdBy: req.user._id,
@@ -195,7 +226,7 @@ router.get('/', protect, async (req, res) => {
         select: 'brandName companyId',
         populate: {
           path: 'companyId',
-          select: 'companyName courierAddress'
+          select: 'companyName courierAddress registerOfficeAddress dispatchAddress'
         }
       })
       .sort({ createdAt: -1 });
@@ -217,7 +248,7 @@ router.get('/:id', protect, async (req, res) => {
         select: 'brandName companyId',
         populate: {
           path: 'companyId',
-          select: 'companyName courierAddress'
+          select: 'companyName courierAddress registerOfficeAddress dispatchAddress'
         }
       })
       .populate({

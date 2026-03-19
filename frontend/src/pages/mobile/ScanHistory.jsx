@@ -183,7 +183,7 @@ export default function ScanHistory() {
               </span>
             </div>
             
-            {item.latitude && item.longitude && (
+            {/* {item.latitude && item.longitude && (
               <div className="text-center text-[10px] font-medium border-t border-white/20 pt-2 mt-2 opacity-90">
                 <div className="flex items-center justify-center gap-1">
                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -193,7 +193,7 @@ export default function ScanHistory() {
                 </div>
                 {item.place && <div className="text-[9px] mt-1">{item.place}</div>}
               </div>
-            )}
+            )} */}
             
             {item.originalScan && (
               <div className="text-center text-[10px] font-medium border-t border-white/20 pt-2 mt-2 italic opacity-80">

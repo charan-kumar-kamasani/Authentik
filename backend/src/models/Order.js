@@ -23,6 +23,19 @@ const orderSchema = new mongoose.Schema({
   // Prefer linking orders to a Brand
   brandId: { type: mongoose.Schema.Types.ObjectId, ref: 'Brand' },
 
+  // Detailed fields (matching ProductTemplate)
+  category: String,
+  mrp: Number,
+  keyBenefits: String,
+  manufacturedBy: String,
+  marketedBy: String,
+  importMarketedBy: String,
+  importerRegNo: String,
+  countryOfOrigin: String,
+  website: String,
+  supportEmail: String,
+  customerCare: String,
+
   // Dynamic form fields (new)
   mfdOn: {
     month: String, // MM format (01-12)
@@ -37,7 +50,10 @@ const orderSchema = new mongoose.Schema({
   // Store variants (repeatable fields like Color, Size, Model)
   variants: [{
     variantName: String,  // e.g., "Color", "Size", "Model"
+    variantLabel: String,
+    inputType: { type: String, enum: ['color', 'text', 'dropdown'], default: 'text' },
     value: String,        // e.g., "Red", "Large", "Pro Series"
+    options: [String]
   }],
   // Store all dynamic field values as key-value pairs
   dynamicFields: {

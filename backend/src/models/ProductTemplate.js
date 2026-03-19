@@ -46,6 +46,35 @@ const productTemplateSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     default: null
+  },
+  // Detailed fields
+  category: String,
+  mrp: Number,
+  keyBenefits: String, // Mark downs or newline separated
+  manufacturedBy: String,
+  marketedBy: String,
+  importMarketedBy: String,
+  importerRegNo: String,
+  countryOfOrigin: String,
+  website: String,
+  supportEmail: String,
+  customerCare: String,
+  
+  // Dynamic features
+  variants: [{
+    variantName: String,
+    variantLabel: String,
+    inputType: { type: String, enum: ['color', 'text', 'dropdown'], default: 'text' },
+    options: [String]
+  }],
+  dynamicFields: {
+    type: Map,
+    of: mongoose.Schema.Types.Mixed,
+    default: {}
+  },
+  bestBefore: {
+    value: Number,
+    unit: { type: String, enum: ['months', 'years'] }
   }
 }, { timestamps: true });
 

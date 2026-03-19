@@ -7,6 +7,7 @@ import warningIcon from "../../assets/v2/home/header/warning.svg"; // Triangle
 import fakeIcon from "../../assets/v2/home/header/dangerous.svg"; // Red X
 
 import MobileHeader from "../../components/MobileHeader";
+import { maskPhoneNumber } from "../../utils/helper";
 
 export default function Result() {
   const { status } = useParams();
@@ -83,6 +84,12 @@ function ResultAuthentic({ data }: { data: any }) {
   const navigate = useNavigate();
   const [showAll, setShowAll] = useState(false);
   const [showMore, setShowMore] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [optIn, setOptIn] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [isReviewed, setIsReviewed] = useState(false);
 
   // Determine colors
   const productName = data.productName || data.productId?.productName || "Product Info";
@@ -93,84 +100,80 @@ function ResultAuthentic({ data }: { data: any }) {
 
   const companyName = data.companyName || data.company || data.manufacturer || data.brand || data.productId?.brand || "-";
 
-  const coreFieldsMap: Record<string, string> = {
-    brand: "Brand",
-    category: "Category",
-    batchNo: "Batch #",
-    scannedAt: "Verified On",
-    manufactureDate: "Mfd on",
-    expiryDate: "Exp on",
-    calculatedExpiryDate: "Calculated Exp",
-  };
+  // List of technical info fields to show in blue boxes
+  const technicalFields = [
+    { key: "brand", label: "Brand" },
+    { key: "category", label: "Category" },
+    { key: "batchNo", label: "Batch #" },
+    { key: "mrp", label: "MRP" },
+    { key: "manufactureDate", label: "Mfd on" },
+    { key: "expiryDate", label: "Exp on" },
+    { key: "calculatedExpiryDate", label: "Exp on" }, // Fallback for auto-calc
+    { key: "color", label: "Color" },
+    { key: "size", label: "Size" },
+    { key: "model", label: "Model / Series" },
+    { key: "weight", label: "Weight" },
+    { key: "storage", label: "Storage" },
+    { key: "flavour", label: "Flavour" },
+    { key: "capacity", label: "Capacity" },
+    { key: "material", label: "Material" },
+  ];
 
-  const knownKeys = new Set([
-    "productName", "brand", "category", "batchNo", "scannedAt", "manufactureDate", "expiryDate",
-    "description", "productInfo", "images", "productImage", "productStats", "_id", "productId", "brandId",
-    "originalScan", "qrCode", "status", "companyName", "company", "manufacturer", "dynamicFields", "variants"
-  ]);
-
-  // Combine all fields into a single list
+  // Combine all fields into a single list, only if they have a value
   const allFields: { label: string; value: any }[] = [];
 
-  Object.entries(coreFieldsMap).forEach(([key, label]) => {
-    const val = data[key] || data.productId?.[key];
-    if (val) {
-      let displayVal = val;
-      if (key === "scannedAt" || key === "createdAt") {
-        displayVal = new Date(val).toLocaleDateString("en-GB", {
-          day: "numeric", month: "short", year: "numeric",
-        });
-      }
-      allFields.push({ label, value: displayVal });
+  technicalFields.forEach(({ key, label }) => {
+    let val = data[key] || data.productId?.[key];
+    
+    // Check dynamicFields or variants if not found top-level
+    if (!val && data.dynamicFields) val = data.dynamicFields[key];
+    if (!val && data.productId?.dynamicFields) val = data.productId.dynamicFields[key];
+    
+    if (!val && (data.variants || data.productId?.variants)) {
+      const vArr = (data.variants || data.productId?.variants);
+      const variant = vArr.find((v: any) => v.variantName?.toLowerCase() === key.toLowerCase());
+      if (variant) val = variant.value;
+    }
+
+    if (val && val !== "-") {
+      allFields.push({ label, value: String(val) });
     }
   });
 
-  // 1a. Mfd On (Month/Year)
+  // Special handling for Mfd On (Month/Year) if not already added
   const mfdOn = data.mfdOn || data.productId?.mfdOn;
-  if (mfdOn && mfdOn.month && mfdOn.year) {
-    allFields.push({ label: "Mfd Month/Year", value: `${mfdOn.month}/${mfdOn.year}` });
+  if (mfdOn && mfdOn.month && mfdOn.year && !allFields.some(f => f.label === "Mfd on")) {
+    allFields.push({ label: "Mfd on", value: `${mfdOn.month}/${mfdOn.year}` });
+  }
+
+  // Special handling for scannedAt
+  const scannedAt = data.scannedAt || data.productId?.scannedAt;
+  if (scannedAt && !allFields.some(f => f.label === "Verified On")) {
+    allFields.push({ label: "Verified On", value: new Date(scannedAt).toLocaleDateString("en-GB", {
+      day: "numeric", month: "short", year: "numeric",
+    }) });
   }
 
   // 1b. Best Before
   const bestBefore = data.bestBefore || data.productId?.bestBefore;
-  if (bestBefore && bestBefore.value && bestBefore.unit) {
+  if (bestBefore && bestBefore.value && bestBefore.unit && !allFields.some(f => f.label === "Best Before")) {
     allFields.push({ label: "Best Before", value: `${bestBefore.value} ${bestBefore.unit}` });
   }
 
-  // 2. Variants
-  const variants = data.variants || data.productId?.variants;
-  if (variants && Array.isArray(variants)) {
-    variants.forEach((v: any) => {
-      allFields.push({ label: v.variantName, value: v.value });
-    });
-  }
-
-  // 3. Description
-  const description = data.description || data.productId?.description;
-  if (description) {
-    allFields.push({ label: "Description", value: description });
-  }
-
-  // 4. Dynamic Fields
-  const dynamicFields = data.dynamicFields || data.productId?.dynamicFields;
-  if (dynamicFields) {
-    Object.entries(dynamicFields).forEach(([k, v]) => {
-      allFields.push({ label: k, value: String(v) });
-    });
-  }
-
-  // 5. Any other top-level fields not already covered
-  Object.entries(data).forEach(([k, v]) => {
-    if (knownKeys.has(k)) return;
-    if (coreFieldsMap[k]) return;
-    if (v === null || v === undefined || typeof v === "object") return;
-
-    const label = k.charAt(0).toUpperCase() + k.slice(1).replace(/([A-Z])/g, ' $1').trim();
-    allFields.push({ label, value: String(v) });
-  });
-
   const displayedFields = showAll ? allFields : allFields.slice(0, 6);
   const hasMore = allFields.length > 6;
+
+  // Additional Info fields
+  const additionalInfoFields = [
+    { key: "manufacturedBy", label: "Manufactured By" },
+    { key: "marketedBy", label: "Marketed By" },
+    { key: "importMarketedBy", label: "Import & Marketed By" },
+    { key: "importerRegNo", label: "Importer Reg. No" },
+    { key: "countryOfOrigin", label: "Country of Origin" },
+    { key: "website", label: "Website" },
+    { key: "supportEmail", label: "Support E-mail" },
+    { key: "customerCare", label: "Customer Care" },
+  ];
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] font-sans flex flex-col items-center">
@@ -272,20 +275,46 @@ function ResultAuthentic({ data }: { data: any }) {
             {showMore && (
               <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-300">
                 <div className="bg-[#F2F2F2] p-5 rounded-[20px] shadow-sm space-y-4 border border-gray-200/50">
-                  {/* Priority: Product Info / About */}
-                  {data.productInfo && (
+                  {/* Priority: Product Info / Description */}
+                  {(data.description || data.productId?.description) && (
                     <div className="">
                       <p className="text-[#333] text-[12px] font-bold uppercase tracking-wider opacity-60 mb-1">About Product</p>
                       <p className="text-[#444] text-[15px] font-medium whitespace-pre-wrap leading-relaxed">
-                        {data.productInfo}
+                        {data.description || data.productId?.description}
                       </p>
                     </div>
                   )}
 
-                  <div className="pt-1">
-                    <p className="text-[#333] text-[12px] font-bold uppercase tracking-wider opacity-60 mb-1">Company</p>
-                    <p className="text-[#444] text-[15px] font-bold text-[#0D4E96]">{companyName}</p>
-                  </div>
+                  {/* Key Benefits */}
+                  {(data.keyBenefits || data.productId?.keyBenefits) && (
+                    <div className="">
+                      <p className="text-[#333] text-[12px] font-bold uppercase tracking-wider opacity-60 mb-1">Key Benefits</p>
+                      <ul className="list-disc pl-5 text-[#444] text-[15px] font-medium space-y-1">
+                        {(data.keyBenefits || data.productId?.keyBenefits).split('\n').filter(Boolean).map((benefit: string, i: number) => (
+                          <li key={i}>{benefit.trim()}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Company Details */}
+                  {additionalInfoFields.map(({ key, label }) => {
+                    const val = data[key] || data.productId?.[key];
+                    if (!val || val === "-") return null;
+                    return (
+                      <div key={key} className="pt-1">
+                        <p className="text-[#333] text-[12px] font-bold uppercase tracking-wider opacity-60 mb-1">{label}</p>
+                        <p className="text-[#444] text-[15px] font-bold text-[#0D4E96]">{val}</p>
+                      </div>
+                    );
+                  })}
+
+                  {!additionalInfoFields.some(f => data[f.key] || data.productId?.[f.key]) && (
+                    <div className="pt-1">
+                      <p className="text-[#333] text-[12px] font-bold uppercase tracking-wider opacity-60 mb-1">Company</p>
+                      <p className="text-[#444] text-[15px] font-bold text-[#0D4E96]">{companyName}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -293,9 +322,118 @@ function ResultAuthentic({ data }: { data: any }) {
         </div>
 
         {/* Review Button */}
-        <button className="w-full bg-gradient-to-r from-[#0E5CAB] to-[#1F2642] text-white font-bold text-[18px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(14,92,171,0.3)] mt-4">
-          Review Product
+        <button 
+          onClick={() => setShowReviewModal(true)}
+          disabled={isReviewed}
+          className={`w-full ${isReviewed ? 'bg-gray-400' : 'bg-gradient-to-r from-[#0E5CAB] to-[#1F2642]'} text-white font-bold text-[18px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(14,92,171,0.3)] mt-4`}
+        >
+          {isReviewed ? "Product Reviewed" : "Review Product"}
         </button>
+
+        {/* Review Modal */}
+        {showReviewModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-white w-full max-w-sm rounded-[32px] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+              <div className="bg-[#1F2642] p-6 text-center text-white relative">
+                <button 
+                  onClick={() => setShowReviewModal(false)}
+                  className="absolute right-4 top-4 text-white/60 hover:text-white transition-colors"
+                >
+                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+                <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-3 backdrop-blur-md border border-white/20">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="#FFB800"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+                <h3 className="text-[22px] font-bold">Review Product</h3>
+                <p className="text-white/70 text-[14px]">Share your experience with us</p>
+              </div>
+
+              <div className="p-6 space-y-5">
+                {/* Star Rating */}
+                <div className="flex flex-col items-center gap-2">
+                  <p className="text-[13px] font-bold text-[#1F2642]/40 uppercase tracking-widest">Your Rating</p>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        onClick={() => setRating(star)}
+                        className="transition-transform active:scale-90 duration-200"
+                      >
+                        <svg
+                          width="36" height="36" viewBox="0 0 24 24"
+                          fill={star <= rating ? "#FFB800" : "none"}
+                          stroke={star <= rating ? "#FFB800" : "#E2E8F0"}
+                          strokeWidth="1.5"
+                          className="drop-shadow-sm"
+                        >
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Comment Box */}
+                <div className="space-y-1.5">
+                  <p className="text-[13px] font-bold text-[#1F2642]/40 uppercase tracking-widest pl-1">Comment</p>
+                  <textarea
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder="Tell us what you think..."
+                    className="w-full bg-[#F8FAFC] border-2 border-[#F1F5F9] rounded-[20px] p-4 text-[15px] focus:border-[#0E5CAB] focus:bg-white transition-all outline-none min-h-[100px] resize-none"
+                  />
+                </div>
+
+                {/* Coupon Opt-in */}
+                <label className="flex items-center gap-3 p-1 cursor-pointer group">
+                  <div className="relative flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={optIn}
+                      onChange={(e) => setOptIn(e.target.checked)}
+                      className="sr-only"
+                    />
+                    <div className={`w-6 h-6 rounded-lg border-2 transition-all flex items-center justify-center ${optIn ? 'bg-[#0E5CAB] border-[#0E5CAB]' : 'bg-white border-[#E2E8F0] group-hover:border-[#0E5CAB]/50'}`}>
+                      {optIn && (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                      )}
+                    </div>
+                  </div>
+                  <span className="text-[14px] font-medium text-[#475569]">Opt-in for exclusive brand coupons & news</span>
+                </label>
+
+                {/* Submit Button */}
+                <button
+                  onClick={async () => {
+                    if (rating === 0) return alert("Please select a rating");
+                    setSubmitting(true);
+                    try {
+                      const { submitReview } = await import("../../config/api");
+                      const token = localStorage.getItem('token');
+                      await submitReview({
+                        productId: data.productId?._id || data.productId,
+                        rating,
+                        comment,
+                        optIn
+                      }, token);
+                      setIsReviewed(true);
+                      setShowReviewModal(false);
+                      alert("Thank you for your review!");
+                    } catch (error: any) {
+                      alert(error.message || "Failed to submit review");
+                    } finally {
+                      setSubmitting(false);
+                    }
+                  }}
+                  disabled={submitting}
+                  className="w-full bg-[#0E5CAB] text-white font-bold text-[18px] py-4 rounded-[24px] shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all disabled:opacity-50"
+                >
+                  {submitting ? "Submitting..." : "Submit Review"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -362,7 +500,7 @@ function ResultRepeat({ data }: { data: any }) {
                   Scanned Account No:
                 </p>
                 <p className="text-[#6E6D6B] text-[14px] font-bold">
-                  {maskPhone(data.originalScan.scannedBy)}
+                  {maskPhoneNumber(data.originalScan.scannedBy)}
                 </p>
               </div>
             )}
@@ -612,12 +750,3 @@ function ResultInactive({ data }: { data: any }) {
   );
 }
 
-const maskPhone = (phone: any) => {
-  if (!phone) return 'N/A';
-  const str = phone.toString();
-  if (str.length <= 5) return str;
-  const first3 = str.slice(0, 3);
-  const last2 = str.slice(-2);
-  const mid = '*'.repeat(str.length - 5);
-  return `${first3}${mid}${last2}`;
-};

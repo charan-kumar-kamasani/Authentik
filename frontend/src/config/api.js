@@ -137,6 +137,32 @@ export const updateOrderStatus = async (orderId, action, data, token) => {
     }
 };
 
+export const getBrandsForCompany = async (token, companyId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin/company-brands/${companyId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error('Failed to fetch company brands');
+    return await response.json();
+  } catch (error) {
+    console.error('Get Brands For Company Error:', error);
+    throw error;
+  }
+};
+
+export const getCompanyById = async (companyId, token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/companies/${companyId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch company');
+        return await response.json();
+    } catch (error) {
+        console.error('Get Company By Id Error:', error);
+        throw error;
+    }
+};
+
 export const getOrderById = async (orderId, token) => {
     try {
         const response = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
@@ -391,23 +417,6 @@ export const getBrands = async (companyId = null) => {
     }
 };
 
-// New: getBrands with optional companyId
-export const getBrandsForCompany = async (token, companyId) => {
-    try {
-        const qs = companyId ? `?companyId=${companyId}` : '';
-        const response = await fetch(`${API_BASE_URL}/admin/brands${qs}`, {
-             headers: { Authorization: `Bearer ${token}` }
-        });
-        if(!response.ok) {
-            const err = await response.json();
-            throw new Error(err.message || 'Failed to fetch brands');
-        }
-        return await response.json();
-    } catch(error) {
-        console.error('Get Brands For Company Error:', error);
-        throw error;
-    }
-};
 
 export const getCompanies = async (token) => {
     try {
@@ -885,6 +894,53 @@ export const authorizeProductTemplate = async (templateId) => {
         return await response.json();
     } catch (error) {
         console.error("Authorize Product Template Error:", error);
+        throw error;
+    }
+};
+
+export const submitReview = async (reviewData, token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/reviews`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}` 
+            },
+            body: JSON.stringify(reviewData)
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.message || 'Failed to submit review');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Submit Review Error:", error);
+        throw error;
+    }
+};
+
+export const getProductReviews = async (productId, token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/reviews/product/${productId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch product reviews');
+        return await response.json();
+    } catch (error) {
+        console.error("Get Product Reviews Error:", error);
+        throw error;
+    }
+};
+
+export const getAllReviews = async (token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/reviews/all`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch all reviews');
+        return await response.json();
+    } catch (error) {
+        console.error("Get All Reviews Error:", error);
         throw error;
     }
 };

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { getCreditTransactions, downloadInvoice } from '../../config/api';
 import TablePagination from '../../components/TablePagination';
+import { maskPhoneNumber } from '../../utils/helper';
 
 export default function AdminTransactions() {
   const [transactions, setTransactions] = useState([]);
@@ -609,7 +610,7 @@ export default function AdminTransactions() {
                                     <Phone size={13} className="text-slate-400" />
                                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Phone</span>
                                   </div>
-                                  <p className="text-sm font-semibold text-slate-700">{t.companyId.phoneNumber || t.companyId.supportNumber || 'N/A'}</p>
+                                  <p className="text-sm font-semibold text-slate-700">{maskPhoneNumber(t.companyId.phoneNumber || t.companyId.supportNumber) || 'N/A'}</p>
                                 </div>
 
                                 {/* Location */}

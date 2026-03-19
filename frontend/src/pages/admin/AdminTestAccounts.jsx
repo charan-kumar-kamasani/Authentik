@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Beaker, Plus, Trash2, Edit2, Search, Check, X, Building2, IndianRupee } from 'lucide-react';
 import { getTestAccounts, createTestAccount, updateTestAccount, deleteTestAccount, getAllCompanies } from '../../config/api';
 import { useConfirm } from '../../components/ConfirmModal';
+import { maskPhoneNumber } from '../../utils/helper';
 
 export default function AdminTestAccounts() {
   const confirm = useConfirm();
@@ -202,7 +203,7 @@ export default function AdminTestAccounts() {
                   <td className="px-4 py-3.5">
                     <div className="text-sm">
                       <p className="text-slate-700 font-semibold">{account.companyId?.email || 'N/A'}</p>
-                      <p className="text-slate-500 text-xs">{account.companyId?.phoneNumber || 'N/A'}</p>
+                      <p className="text-slate-500 text-xs">{maskPhoneNumber(account.companyId?.phoneNumber) || 'N/A'}</p>
                     </div>
                   </td>
                   <td className="px-4 py-3.5 text-center">

@@ -63,7 +63,15 @@
 }
 
 
-export {getCurrentPlace}
+function maskPhoneNumber(phone) {
+  if (!phone) return "N/A";
+  const str = phone.toString();
+  if (str.length < 10) return str;
+  // Format: 988****9144
+  const first3 = str.slice(0, 3);
+  const last4 = str.slice(-4);
+  return `${first3}****${last4}`;
+}
 
 // Simple debounce helper
 function debounce(fn, wait = 250) {
@@ -74,4 +82,4 @@ function debounce(fn, wait = 250) {
   };
 }
 
-export { debounce };
+export { getCurrentPlace, debounce, maskPhoneNumber };

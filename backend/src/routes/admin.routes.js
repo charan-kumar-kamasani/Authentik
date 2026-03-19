@@ -209,6 +209,17 @@ router.get('/companies', protect, authorize('admin', 'superadmin'), async (req, 
     }
 });
 
+// Get Single Company
+router.get('/companies/:id', protect, authorize('admin', 'superadmin'), async (req, res) => {
+    try {
+        const company = await Company.findById(req.params.id);
+        if (!company) return res.status(404).json({ message: 'Company not found' });
+        res.json(company);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // Create User (Admin creates Manager, Super Admin creates Admin)
 router.post(
   "/create-user",
@@ -655,8 +666,22 @@ router.patch('/users/staff/:id', protect, async (req, res) => {
 // Create Brand
 router.post('/brands', protect, authorize('admin', 'superadmin'), async (req, res) => {
     try {
-        // Brand payload now only contains brandName, brandLogo and companyId
-        const { brandName, brandLogo, companyId } = req.body;
+        const { 
+            brandName, 
+            brandLogo, 
+            companyId,
+            legalEntity,
+            brandWebsite,
+            industry,
+            country,
+            city,
+            cinGst,
+            registerOfficeAddress,
+            dispatchAddress,
+            email,
+            phoneNumber,
+            contactPersonName
+        } = req.body;
 
         if (!brandName || !companyId) {
             return res.status(400).json({ message: 'brandName and companyId are required' });
@@ -666,6 +691,17 @@ router.post('/brands', protect, authorize('admin', 'superadmin'), async (req, re
             brandName,
             brandLogo,
             companyId,
+            legalEntity,
+            brandWebsite,
+            industry,
+            country,
+            city,
+            cinGst,
+            registerOfficeAddress,
+            dispatchAddress,
+            email,
+            phoneNumber,
+            contactPersonName,
             createdBy: req.user._id
         });
 
@@ -691,13 +727,14 @@ router.get('/brands', protect, authorize('admin', 'superadmin', 'company', 'auth
 // Update Brand (status, name, logo)
 router.patch('/brands/:id', protect, authorize('superadmin', 'admin'), async (req, res) => {
     try {
-        const { brandName, brandLogo, status } = req.body;
+        const updates = req.body;
         const brand = await Brand.findById(req.params.id);
         if (!brand) return res.status(404).json({ message: 'Brand not found' });
 
-        if (brandName) brand.brandName = brandName;
-        if (brandLogo) brand.brandLogo = brandLogo;
-        if (status) brand.status = status;
+        // Apply updates
+        Object.keys(updates).forEach(key => {
+            if (updates[key] !== undefined) brand[key] = updates[key];
+        });
 
         await brand.save();
         res.json(brand);
@@ -709,17 +746,103 @@ router.patch('/brands/:id', protect, authorize('superadmin', 'admin'), async (re
 // Update Company (credits, status, details)
 router.patch('/companies/:id', protect, authorize('superadmin', 'admin'), async (req, res) => {
     try {
-        const updates = req.body;
+        const {
+            authorizerEmails,
+            creatorEmails,
+            brands,
+            ...updates
+        } = req.body;
+        
         const company = await Company.findById(req.params.id);
         if (!company) return res.status(404).json({ message: 'Company not found' });
 
-        // Apply updates
+        // Apply basic updates
         Object.keys(updates).forEach(key => {
             if (updates[key] !== undefined) company[key] = updates[key];
         });
+        
+        // Handle Authorizer/Creator email strings in Company model
+        if (authorizerEmails) {
+            company.authorizerEmails = authorizerEmails.map(e => typeof e === 'string' ? e : e.email);
+        }
+        if (creatorEmails) {
+            company.creatorEmails = creatorEmails.map(e => typeof e === 'string' ? e : e.email);
+        }
 
         await company.save();
-        res.json(company);
+
+        // Handle User creation for any new authorizer/creator emails
+        const allBrands = await Brand.find({ companyId: company._id });
+        const allBrandIds = allBrands.map(b => b._id);
+        const firstBrandId = allBrandIds.length > 0 ? allBrandIds[0] : null;
+
+        const processEmails = async (emailList, role) => {
+            const created = [];
+            for (const entry of emailList) {
+                const email = typeof entry === 'string' ? entry : entry.email;
+                const password = typeof entry === 'object' ? entry.password : '';
+                
+                if (!email) continue;
+                const exists = await User.findOne({ email });
+                if (exists) {
+                    if (!exists.companyId) {
+                        exists.companyId = company._id;
+                        exists.brandIds = allBrandIds;
+                        exists.brandId = firstBrandId;
+                        await exists.save();
+                    }
+                    continue;
+                }
+                
+                if (!password) continue; // Need password to create NEW user
+
+                const salt = await bcrypt.genSalt(10);
+                const hashed = await bcrypt.hash(password, salt);
+                const user = await User.create({
+                    email,
+                    password: hashed,
+                    role,
+                    brandId: firstBrandId,
+                    brandIds: allBrandIds,
+                    companyId: company._id,
+                    createdBy: req.user._id
+                });
+                created.push(user);
+            }
+            return created;
+        };
+
+        let newUsers = [];
+        if (authorizerEmails) newUsers = newUsers.concat(await processEmails(authorizerEmails, 'authorizer'));
+        if (creatorEmails) newUsers = newUsers.concat(await processEmails(creatorEmails, 'creator'));
+
+        // Handle Brands
+        const newBrands = [];
+        if (Array.isArray(brands) && brands.length > 0) {
+            for (const b of brands) {
+                if (!b.brandName) continue;
+                // Check if brand already exists (by name for this company)
+                const exists = await Brand.findOne({ brandName: b.brandName, companyId: company._id });
+                if (exists) {
+                    // Update logo if different
+                    if (b.brandLogo && b.brandLogo !== exists.brandLogo) {
+                        exists.brandLogo = b.brandLogo;
+                        await exists.save();
+                    }
+                    continue;
+                }
+
+                const created = await Brand.create({
+                    brandName: b.brandName,
+                    brandLogo: b.brandLogo || null,
+                    companyId: company._id,
+                    createdBy: req.user._id
+                });
+                newBrands.push(created);
+            }
+        }
+
+        res.json({ company, newUsers, newBrands });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -854,7 +977,11 @@ router.get('/me', protect, async (req, res) => {
         const user = await User.findById(req.user._id)
             .select('-password')
             .populate('brandId', 'brandName')
-            .populate('companyId', 'companyName qrCredits');
+            .populate({
+              path: 'companyId',
+              select: 'companyName qrCredits planId',
+              populate: { path: 'planId' }
+            });
         if (!user) return res.status(404).json({ message: 'User not found' });
         res.json(user);
     } catch (error) {
@@ -959,6 +1086,7 @@ router.post('/credits/buy-plan', protect, authorize('company', 'authorizer'), as
 
         const newBalance = (company.qrCredits || 0) + creditsToAdd;
         company.qrCredits = newBalance;
+        company.planId = planId; // Set active plan
         await company.save({ validateModifiedOnly: true });
 
         await CreditTransaction.create({

@@ -208,7 +208,6 @@ export default function GenerateQrs() {
       const nameField = formConfig?.customFields?.find(f => f.isProductName);
       const batchField = formConfig?.customFields?.find(f => f.isBatchNo);
       const imgField = formConfig?.customFields?.find(f => f.isProductImage);
-      const quantityField = formConfig?.customFields?.find(f => f.isQuantity);
 
       // Resolve Product Name
       const productName = (nameField ? uploadedDynamicFields[nameField.fieldName] : (uploadedDynamicFields['productName'] || '')) || newQr.productName || '';
@@ -220,12 +219,33 @@ export default function GenerateQrs() {
       if (!productImage && imgField) {
         productImage = uploadedDynamicFields[imgField.fieldName];
       }
+      // Resolve Quantity (Improved detection)
+      let quantityField = formConfig?.customFields?.find(f => f.isQuantity);
+      
+      // Fallback: search for field with "quantity" in label or name if no explicit marker
+      if (!quantityField && formConfig?.customFields) {
+        quantityField = formConfig.customFields.find(f => 
+          (f.fieldLabel?.toLowerCase().includes('quantity')) || 
+          (f.fieldName?.toLowerCase().includes('quantity'))
+        );
+      }
 
-      // Resolve Quantity
-      const qtyValue = (quantityField ? uploadedDynamicFields[quantityField.fieldName] : (uploadedDynamicFields['quantity'] || '')) || 1;
+      const qtyValue = (quantityField ? uploadedDynamicFields[quantityField.fieldName] : (uploadedDynamicFields['quantity'] || uploadedDynamicFields['qrQuantity'] || '')) || 1;
       const quantity = Number(qtyValue) || 1;
 
-      // Minimum quantity check (Requirement 6)
+      // Minimum quantity check (Requirement 6 - Plan based)
+      const activePlan = currentUser?.companyId?.planId;
+      if (activePlan) {
+        const minStr = activePlan.minQrPerOrder || activePlan.minQr || '';
+        const planMin = Number(String(minStr).replace(/[^\d]/g, '') || 0);
+        if (planMin > 0 && quantity < planMin) {
+          alert(`Minimum quantity for your plan (${activePlan.name}) is ${planMin} units.`);
+          setSubmitting(false);
+          return;
+        }
+      }
+
+      // Minimum quantity check (Requirement 6 - Field based)
       if (quantityField && quantityField.validation?.min) {
         if (quantity < quantityField.validation.min) {
           alert(`Minimum quantity allowed is ${quantityField.validation.min} units.`);

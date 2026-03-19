@@ -15,13 +15,14 @@ import {
   createCompany,
   getCompanies,
   getBrandsForCompany,
+  getCompanyById,
   updateBrand,
   updateCompany,
   updateStaffUser
 } from "../../config/api";
 import API_BASE_URL from "../../config/api";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
-import { debounce } from "../../utils/helper";
+import { maskPhoneNumber, debounce } from "../../utils/helper";
 import TablePagination from "../../components/TablePagination";
 
 const UserManagement = () => {
@@ -53,6 +54,7 @@ const UserManagement = () => {
   const [userPage, setUserPage] = useState(1);
   const [userRowsPerPage, setUserRowsPerPage] = useState(10);
   const [editingUser, setEditingUser] = useState(null);
+  const [editingCompany, setEditingCompany] = useState(null);
 
 
 
@@ -111,6 +113,41 @@ const UserManagement = () => {
     contactPersonName: "",
   });
   const [editingBrand, setEditingBrand] = useState(null); // { id, data }
+
+  const resetData = {
+    companyName: "",
+    legalEntity: "",
+    companyWebsite: "",
+    industry: "",
+    category: "",
+    country: "",
+    city: "",
+    cinGst: "",
+    registerOfficeAddress: "",
+    courierAddress: "",
+    dispatchAddress: "",
+    email: "",
+    supportNumber: "",
+    phoneNumber: "",
+    contactPersonName: "",
+  };
+
+  const resetBrandData = {
+    brandName: "",
+    legalEntity: "",
+    brandLogo: "",
+    brandLogoFile: null,
+    brandWebsite: "",
+    industry: "",
+    country: "",
+    city: "",
+    cinGst: "",
+    registerOfficeAddress: "",
+    dispatchAddress: "",
+    email: "",
+    phoneNumber: "",
+    contactPersonName: "",
+  };
 
   const uploadToCloudinary = async (file) => {
     try {
@@ -273,7 +310,9 @@ const UserManagement = () => {
     }
   };
 
-  const handleEditBrand = (brand) => {
+  const handleEditBrand = async (brand) => {
+    setEditingUser(null);
+    setEditingCompany(null);
     setEditingBrand({ id: brand._id, data: brand });
     setBrandForm({
       brandName: brand.brandName || "",
@@ -288,11 +327,41 @@ const UserManagement = () => {
       dispatchAddress: brand.dispatchAddress || "",
       email: brand.email || "",
       phoneNumber: brand.phoneNumber || "",
+      supportNumber: brand.supportNumber || "",
       contactPersonName: brand.contactPersonName || "",
       brandLogoFile: null,
     });
-    setSelectedCompany(brand.companyId?._id || brand.companyId || "");
-    setActiveTab("createBrand");
+    const companyId = brand.companyId?._id || brand.companyId || "";
+    setSelectedCompany(companyId);
+
+    // Prefill Company context for "exact UI"
+    if (companyId) {
+      try {
+        const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
+        const company = await getCompanyById(companyId, token);
+        
+        // Prefill emails from company
+        if (company.officialEmails?.length > 0) {
+          setOfficialEmails(company.officialEmails.map(email => ({ value: email, otpSent: true, verified: true, sending: false, verifying: false })));
+        }
+        if (company.authorizerEmails?.length > 0) {
+          setAuthorizerEmails(company.authorizerEmails.map(email => ({ value: email, password: "", otpSent: true, verified: true, sending: false, verifying: false })));
+        }
+        if (company.creatorEmails?.length > 0) {
+          setCreatorEmails(company.creatorEmails.map(email => ({ value: email, password: "", otpSent: true, verified: true, sending: false, verifying: false })));
+        }
+
+        // Prefill multiple brands from same company
+        const bData = await getBrandsForCompany(token, companyId);
+        if (bData?.length > 0) {
+          setCompanyBrands(bData.map(b => ({ brandName: b.brandName, brandLogo: b.brandLogo || "", logoType: "url", _id: b._id })));
+        }
+      } catch (e) {
+        console.warn("Failed to load company context for brand edit", e);
+      }
+    }
+
+    setActiveTab("create");
   };
 
   const handleEditUser = (user) => {
@@ -307,6 +376,64 @@ const UserManagement = () => {
     });
     setSelectedCompany(user.companyId?._id || user.companyId || "");
     setActiveTab("createStaff");
+  };
+  
+  const handleEditCompany = async (company) => {
+    setEditingUser(null);
+    setEditingBrand(null);
+    setEditingCompany(company);
+    setCompanyForm({
+      companyName: company.companyName || "",
+      legalEntity: company.legalEntity || "",
+      companyWebsite: company.companyWebsite || company.website || "",
+      industry: company.industry || "",
+      category: company.category || "",
+      country: company.country || "",
+      city: company.city || "",
+      cinGst: company.cinGst || "",
+      registerOfficeAddress: company.registerOfficeAddress || "",
+      courierAddress: company.courierAddress || "",
+      dispatchAddress: company.dispatchAddress || "",
+      email: company.email || "",
+      supportNumber: company.supportNumber || "",
+      phoneNumber: company.phoneNumber || "",
+      contactPersonName: company.contactPersonName || "",
+    });
+
+    // Prefill emails
+    if (company.officialEmails?.length > 0) {
+      setOfficialEmails(company.officialEmails.map(email => ({ value: email, otpSent: true, verified: true, sending: false, verifying: false })));
+    } else {
+      setOfficialEmails([{ value: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }]);
+    }
+
+    if (company.authorizerEmails?.length > 0) {
+      setAuthorizerEmails(company.authorizerEmails.map(email => ({ value: email, password: "", otpSent: true, verified: true, sending: false, verifying: false })));
+    } else {
+      setAuthorizerEmails([{ value: "", password: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }]);
+    }
+
+    if (company.creatorEmails?.length > 0) {
+      setCreatorEmails(company.creatorEmails.map(email => ({ value: email, password: "", otpSent: true, verified: true, sending: false, verifying: false })));
+    } else {
+      setCreatorEmails([{ value: "", password: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }]);
+    }
+
+    // Prefill brands
+    try {
+      const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
+      const bData = await getBrandsForCompany(token, company._id);
+      if (bData?.length > 0) {
+        setCompanyBrands(bData.map(b => ({ brandName: b.brandName, brandLogo: b.brandLogo || "", logoType: "url", _id: b._id })));
+      } else {
+        setCompanyBrands([{ brandName: "", brandLogo: "", logoType: "url" }]);
+      }
+    } catch (e) {
+      console.warn("Failed to load brands for company edit", e);
+      setCompanyBrands([{ brandName: "", brandLogo: "", logoType: "url" }]);
+    }
+
+    setActiveTab("create");
   };
 
   const handleViewBrandUsers = (brand) => {
@@ -468,6 +595,8 @@ const UserManagement = () => {
       if (editingBrand) {
         const payload = { ...brandForm, brandLogo: finalBrandLogo };
         delete payload.brandLogoFile;
+        // Ensure supportNumber is included
+        payload.supportNumber = brandForm.supportNumber || "";
         if (selectedCompany) payload.companyId = selectedCompany;
         await updateBrand(editingBrand.id, payload, token);
         alert("Brand Updated Successfully");
@@ -509,6 +638,7 @@ const UserManagement = () => {
         // fallback: single brand form
         const payload = { ...brandForm, brandLogo: finalBrandLogo };
         delete payload.brandLogoFile;
+        payload.supportNumber = brandForm.supportNumber || "";
         if (selectedCompany) payload.companyId = selectedCompany;
         await createBrand(payload, token);
         alert("Brand Created Successfully");
@@ -526,6 +656,7 @@ const UserManagement = () => {
           dispatchAddress: "",
           email: "",
           phoneNumber: "",
+          supportNumber: "",
           contactPersonName: "",
         });
         setActiveTab("list");
@@ -561,28 +692,22 @@ const UserManagement = () => {
         officialEmails: filledOfficials.map(e => e.value.trim()),
         authorizerEmails: authorizerEmails.filter(e => e.value.trim()).map(e => ({ email: e.value.trim(), password: e.password || '' })),
         creatorEmails: creatorEmails.filter(e => e.value.trim()).map(e => ({ email: e.value.trim(), password: e.password || '' })),
-        brands: validBrands.map(b => ({ brandName: b.brandName, brandLogo: b.brandLogo })),
-      };
-      const res = await createCompany(payload, token);
-      alert('Company created successfully');
-      // reset form
-      setCompanyForm({
-        companyName: "",
-        legalEntity: "",
-        companyWebsite: "",
-        industry: "",
-        category: "",
-        country: "",
-        city: "",
-        cinGst: "",
-        registerOfficeAddress: "",
-        courierAddress: "",
-        dispatchAddress: "",
-        email: "",
-        supportNumber: "",
-        phoneNumber: "",
+        brands: companyBrands.filter(b => b.brandName && b.brandName.trim()).map(b => ({ brandName: b.brandName, brandLogo: b.brandLogo })),
         contactPersonName: "",
-      });
+      };
+      
+      if (editingCompany) {
+        await updateCompany(editingCompany._id, payload, token);
+        alert('Company updated successfully');
+        setEditingCompany(null);
+        setActiveTab("list");
+      } else {
+        await createCompany(payload, token);
+        alert('Company created successfully');
+      }
+      
+      // reset form
+      setCompanyForm(resetData);
       setOfficialEmails([{ value: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }]);
       setAuthorizerEmails([{ value: "", password: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }]);
       setCreatorEmails([{ value: "", password: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }]);
@@ -682,104 +807,208 @@ const UserManagement = () => {
             <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 text-white">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
             </div>
-            <div>
-              <h2 className="text-2xl font-black text-gray-900 tracking-tight">Create Company</h2>
-              <p className="text-gray-500 font-medium text-sm">Register a new legal entity and its preliminary brands.</p>
+            <div className="flex-1">
+              <h2 className="text-2xl font-black text-gray-900 tracking-tight">
+                {editingCompany ? `Edit Company: ${editingCompany.companyName}` : 
+                 editingBrand ? `Edit Brand: ${editingBrand.data.brandName}` : 
+                 'Create Company'}
+              </h2>
+              <p className="text-gray-500 font-medium text-sm">
+                {editingCompany ? 'Update existing enterprise details.' : 
+                 editingBrand ? 'Update brand identity and information.' : 
+                 'Establish a new enterprise identity and brand ecosystem.'}
+              </p>
             </div>
+            {(editingCompany || editingBrand) && (
+              <button 
+                onClick={() => {
+                  setEditingCompany(null);
+                  setEditingBrand(null);
+                  setCompanyForm({
+                    companyName: "", legalEntity: "", companyWebsite: "", industry: "", category: "",
+                    country: "", city: "", cinGst: "", registerOfficeAddress: "", courierAddress: "",
+                    dispatchAddress: "", email: "", supportNumber: "", phoneNumber: "", contactPersonName: ""
+                  });
+                  setBrandForm({
+                    brandName: "", legalEntity: "", brandLogo: "", brandWebsite: "", industry: "",
+                    country: "", city: "", cinGst: "", registerOfficeAddress: "", dispatchAddress: "",
+                    email: "", phoneNumber: "", supportNumber: "", contactPersonName: "", brandLogoFile: null
+                  });
+                  setOfficialEmails([{ value: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }]);
+                  setAuthorizerEmails([{ value: "", password: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }]);
+                  setCreatorEmails([{ value: "", password: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }]);
+                  setCompanyBrands([{ brandName: "", brandLogo: "", logoType: "url" }]);
+                  setActiveTab("list");
+                }}
+                className="px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-xl transition-all"
+              >
+                Cancel Edit
+              </button>
+            )}
           </div>
 
-          <form onSubmit={handleCompanySubmit} className="space-y-8">
+          <form onSubmit={editingBrand ? handleBrandSubmit : handleCompanySubmit} className="space-y-8">
+            {/* Admin context: Select Company if not editing */}
+            {role === 'admin' && !editingBrand && !editingCompany && (
+              <div className="p-6 bg-gray-50 border border-gray-100 rounded-[2rem]">
+                <label className="block text-sm font-bold text-gray-700 mb-2 ml-1">Assigned Company</label>
+                <select
+                  className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-gray-900"
+                  value={selectedCompany}
+                  onChange={(e) => {
+                    const cid = e.target.value;
+                    setSelectedCompany(cid);
+                    setBrandForm({ ...brandForm, companyId: cid });
+                  }}
+                  required
+                >
+                  <option value="">Select Company Context</option>
+                  {companies.map((c) => (
+                    <option key={c._id} value={c._id}>{c.companyName}</option>
+                  ))}
+                </select>
+              </div>
+            )}
             {/* Basic Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-blue-50/30 rounded-[2rem] border border-blue-100/50">
-              <InputGroup label="Entity Name *" placeholder="Company Legal Name" value={companyForm.companyName} onChange={(v) => setCompanyForm({ ...companyForm, companyName: v })} />
-              <InputGroup label="Website" placeholder="https://www.company.com" value={companyForm.brandWebsite} onChange={(v) => setCompanyForm({ ...companyForm, brandWebsite: v })} required={false} />
-              <InputGroup label="Industry" placeholder="e.g. Manufacturing, Retail" value={companyForm.industry} onChange={(v) => setCompanyForm({ ...companyForm, industry: v })} required={false} />
-              <InputGroup label="CIN / GST Number" placeholder="Registration ID" value={companyForm.cinGst} onChange={(v) => setCompanyForm({ ...companyForm, cinGst: v })} required={false} />
+              <InputGroup 
+                label={editingBrand ? "Brand Name *" : "Entity Name *"} 
+                placeholder={editingBrand ? "Brand Name" : "Company Legal Name"} 
+                value={editingBrand ? brandForm.brandName : companyForm.companyName} 
+                onChange={(v) => editingBrand ? setBrandForm({ ...brandForm, brandName: v }) : setCompanyForm({ ...companyForm, companyName: v })} 
+              />
+              <InputGroup 
+                label="Website" 
+                placeholder="https://www.company.com" 
+                value={editingBrand ? brandForm.brandWebsite : companyForm.brandWebsite} 
+                onChange={(v) => editingBrand ? setBrandForm({ ...brandForm, brandWebsite: v }) : setCompanyForm({ ...companyForm, brandWebsite: v })} 
+                required={false} 
+              />
+              <InputGroup 
+                label="Industry" 
+                placeholder="e.g. Manufacturing, Retail" 
+                value={editingBrand ? brandForm.industry : companyForm.industry} 
+                onChange={(v) => editingBrand ? setBrandForm({ ...brandForm, industry: v }) : setCompanyForm({ ...companyForm, industry: v })} 
+                required={false} 
+              />
+              <InputGroup 
+                label="CIN / GST Number" 
+                placeholder="Registration ID" 
+                value={editingBrand ? brandForm.cinGst : companyForm.cinGst} 
+                onChange={(v) => editingBrand ? setBrandForm({ ...brandForm, cinGst: v }) : setCompanyForm({ ...companyForm, cinGst: v })} 
+                required={false} 
+              />
             </div>
 
-            {/* Brands Section */}
-            <div className="p-8 bg-gray-50/50 rounded-[2rem] border border-gray-100">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h4 className="text-lg font-bold text-gray-800">Brands</h4>
-                  <p className="text-xs text-gray-500 font-medium">Add at least one brand for this company</p>
-                </div>
-                <button 
-                  type="button" 
-                  onClick={addCompanyBrandRow}
-                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-bold hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                  Add Brand
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                {companyBrands.map((b, idx) => (
-                  <div key={idx} className="group flex flex-col sm:flex-row items-start gap-4 p-5 bg-white border border-gray-100 rounded-[1.5rem] shadow-sm hover:shadow-md transition-all duration-300">
-                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <InputGroup label={`Brand ${idx + 1} Name`} placeholder="Brand Name" value={b.brandName} onChange={(v) => updateCompanyBrandRow(idx, 'brandName', v)} />
-                      <InputGroup label="Logo URL" placeholder="https://..." value={b.brandLogo} onChange={(v) => updateCompanyBrandRow(idx, 'brandLogo', v)} type="url" required={false} />
-                    </div>
-                    {companyBrands.length > 1 && (
-                      <button 
-                        type="button" 
-                        onClick={() => removeCompanyBrandRow(idx)}
-                        className="sm:mt-8 p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all" 
-                        title="Remove"
-                      >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" /></svg>
-                      </button>
-                    )}
+            {/* Brands Section (Enabled for creating and editing company/brand) */}
+            {!editingBrand && (
+              <div className="p-8 bg-gray-50/50 rounded-[2rem] border border-gray-100">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h4 className="text-lg font-bold text-gray-800">Brands</h4>
+                    <p className="text-xs text-gray-500 font-medium">{editingCompany ? 'Brands associated with this company' : 'Add at least one brand for this company'}</p>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <button 
+                    type="button" 
+                    onClick={addCompanyBrandRow}
+                    className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-bold hover:border-blue-500 hover:text-blue-600 transition-all shadow-sm"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                    Add Brand
+                  </button>
+                </div>
 
-            {/* Platform Users */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="p-6 bg-purple-50/30 rounded-[2rem] border border-purple-100/50">
-                <div className="flex items-center justify-between mb-4">
-                  <label className="text-sm font-bold text-gray-700 ml-1">Authorizer Emails</label>
-                  <button type="button" onClick={() => setAuthorizerEmails(prev => [...prev, { value: "", password: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }])}
-                    className="p-1.5 bg-white border border-purple-200 text-purple-600 rounded-lg hover:bg-purple-600 hover:text-white transition-all">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                  </button>
-                </div>
-                <div className="space-y-3">
-                  {authorizerEmails.map((entry, idx) => (
-                    <EmailRow key={idx} entry={entry} idx={idx} emails={authorizerEmails} setEmails={setAuthorizerEmails} showOtp={false} showPassword={true} onSendOtp={sendEmailOtp} onVerifyOtp={verifyEmailOtp} />
+                <div className="space-y-4">
+                  {companyBrands.map((b, idx) => (
+                    <div key={idx} className="group flex flex-col sm:flex-row items-start gap-4 p-5 bg-white border border-gray-100 rounded-[1.5rem] shadow-sm hover:shadow-md transition-all duration-300">
+                      <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <InputGroup label={`Brand ${idx + 1} Name`} placeholder="Brand Name" value={b.brandName} onChange={(v) => updateCompanyBrandRow(idx, 'brandName', v)} />
+                        <InputGroup label="Logo URL" placeholder="https://..." value={b.brandLogo} onChange={(v) => updateCompanyBrandRow(idx, 'brandLogo', v)} type="url" required={false} />
+                      </div>
+                      {companyBrands.length > 1 && (
+                        <button 
+                          type="button" 
+                          onClick={() => removeCompanyBrandRow(idx)}
+                          className="sm:mt-8 p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all" 
+                          title="Remove"
+                        >
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" /></svg>
+                        </button>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
-              
-              <div className="p-6 bg-pink-50/30 rounded-[2rem] border border-pink-100/50">
-                <div className="flex items-center justify-between mb-4">
-                  <label className="text-sm font-bold text-gray-700 ml-1">Creator Emails</label>
-                  <button type="button" onClick={() => setCreatorEmails(prev => [...prev, { value: "", password: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }])}
-                    className="p-1.5 bg-white border border-pink-200 text-pink-600 rounded-lg hover:bg-pink-600 hover:text-white transition-all">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                  </button>
+            )}
+
+            {/* Platform Users (Only for creating company) */}
+            {/* Platform Users (Enabled for creating and editing company/brand) */}
+            {!editingBrand && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="p-6 bg-purple-50/30 rounded-[2rem] border border-purple-100/50">
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="text-sm font-bold text-gray-700 ml-1">Authorizer Emails</label>
+                    <button type="button" onClick={() => setAuthorizerEmails(prev => [...prev, { value: "", password: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }])}
+                      className="p-1.5 bg-white border border-purple-200 text-purple-600 rounded-lg hover:bg-purple-600 hover:text-white transition-all">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    {authorizerEmails.map((entry, idx) => (
+                      <EmailRow key={idx} entry={entry} idx={idx} emails={authorizerEmails} setEmails={setAuthorizerEmails} showOtp={false} showPassword={true} onSendOtp={sendEmailOtp} onVerifyOtp={verifyEmailOtp} />
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-3">
-                  {creatorEmails.map((entry, idx) => (
-                    <EmailRow key={idx} entry={entry} idx={idx} emails={creatorEmails} setEmails={setCreatorEmails} showOtp={false} showPassword={true} onSendOtp={sendEmailOtp} onVerifyOtp={verifyEmailOtp} />
-                  ))}
+                
+                <div className="p-6 bg-pink-50/30 rounded-[2rem] border border-pink-100/50">
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="text-sm font-bold text-gray-700 ml-1">Creator Emails</label>
+                    <button type="button" onClick={() => setCreatorEmails(prev => [...prev, { value: "", password: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }])}
+                      className="p-1.5 bg-white border border-pink-200 text-pink-600 rounded-lg hover:bg-pink-600 hover:text-white transition-all">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                    </button>
+                  </div>
+                  <div className="space-y-3">
+                    {creatorEmails.map((entry, idx) => (
+                      <EmailRow key={idx} entry={entry} idx={idx} emails={creatorEmails} setEmails={setCreatorEmails} showOtp={false} showPassword={true} onSendOtp={sendEmailOtp} onVerifyOtp={verifyEmailOtp} />
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Address Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-orange-50/30 rounded-[2rem] border border-orange-100/50">
-              <InputGroup label="Registered Office Address *" placeholder="Full address" value={companyForm.registerOfficeAddress} onChange={(v) => setCompanyForm({ ...companyForm, registerOfficeAddress: v })} />
-              <InputGroup label="Courier Address *" placeholder="Dispatch address" value={companyForm.courierAddress} onChange={(v) => setCompanyForm({ ...companyForm, courierAddress: v })} />
-              <InputGroup label="Phone Number *" placeholder="+91 XXX XXX XXXX" value={companyForm.phoneNumber} onChange={(v) => setCompanyForm({ ...companyForm, phoneNumber: v })} />
-              <InputGroup label="Support Number" placeholder="1800-XXX-XXXX" value={companyForm.supportNumber} onChange={(v) => setCompanyForm({ ...companyForm, supportNumber: v })} required={false} />
+              <InputGroup 
+                label="Registered Office Address *" 
+                placeholder="Full address" 
+                value={editingBrand ? brandForm.registerOfficeAddress : companyForm.registerOfficeAddress} 
+                onChange={(v) => editingBrand ? setBrandForm({ ...brandForm, registerOfficeAddress: v }) : setCompanyForm({ ...companyForm, registerOfficeAddress: v })} 
+              />
+              <InputGroup 
+                label={editingBrand ? "Dispatch Address *" : "Courier Address *"} 
+                placeholder={editingBrand ? "Shipping origin" : "Dispatch address"} 
+                value={editingBrand ? brandForm.dispatchAddress : companyForm.courierAddress} 
+                onChange={(v) => editingBrand ? setBrandForm({ ...brandForm, dispatchAddress: v }) : setCompanyForm({ ...companyForm, courierAddress: v })} 
+              />
+              <InputGroup 
+                label="Phone Number *" 
+                placeholder="+91 XXX XXX XXXX" 
+                value={editingBrand ? brandForm.phoneNumber : companyForm.phoneNumber} 
+                onChange={(v) => editingBrand ? setBrandForm({ ...brandForm, phoneNumber: v }) : setCompanyForm({ ...companyForm, phoneNumber: v })} 
+              />
+              <InputGroup 
+                label="Support Number" 
+                placeholder="1800-XXX-XXXX" 
+                value={editingBrand ? brandForm.supportNumber : companyForm.supportNumber} 
+                onChange={(v) => editingBrand ? setBrandForm({ ...brandForm, supportNumber: v }) : setCompanyForm({ ...companyForm, supportNumber: v })} 
+                required={false} 
+              />
             </div>
 
             <div className="pt-4">
               <button className="w-full bg-gradient-to-r from-gray-900 to-blue-900 text-white font-black py-4 rounded-[1.5rem] hover:shadow-2xl hover:shadow-blue-900/40 active:scale-[0.98] transition-all uppercase tracking-widest text-sm flex items-center justify-center gap-3">
-                Create Enterprise Entity
+                {editingBrand ? 'Update Brand' : editingCompany ? 'Update Company Entry' : 'Create Enterprise Entity'}
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
               </button>
             </div>
@@ -1004,254 +1233,7 @@ const UserManagement = () => {
               )}
 
               {(role === "admin" || role === "superadmin") && activeTab === "createBrand" && (
-                (role === 'superadmin' && !editingBrand) ? (
-                  // For superadmin, show the full Create Company form (allows adding multiple brands)
-                  renderCreateSection()
-                ) : (
-
-                  // For admin, keep the single-brand create form
-                  <div className="bg-white rounded-2xl p-8 shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-gray-100 max-w-3xl">
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                        <span className="w-1 h-6 bg-blue-500 rounded-full"></span>
-                        {editingBrand ? `Edit Brand: ${editingBrand.data.brandName}` : 'Create Brand'}
-                      </h2>
-                      {editingBrand && (
-                        <button 
-                          onClick={() => {
-                            setEditingBrand(null);
-                            setBrandForm({
-                              brandName: "",
-                              legalEntity: "",
-                              brandLogo: "",
-                              brandWebsite: "",
-                              industry: "",
-                              country: "",
-                              city: "",
-                              cinGst: "",
-                              registerOfficeAddress: "",
-                              dispatchAddress: "",
-                              email: "",
-                              phoneNumber: "",
-                              contactPersonName: "",
-                            });
-                            setActiveTab("list");
-                          }}
-                          className="text-sm text-red-600 hover:text-red-800 font-medium"
-                        >
-                          Cancel Edit
-                        </button>
-                      )}
-                    </div>
-
-                    <form
-                      onSubmit={handleBrandSubmit}
-                      className="grid grid-cols-2 gap-6"
-                    >
-                      {/* Admin brand creation: show company selector then brand details in a grid */}
-                      <div className="col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Company</label>
-                        <select
-                          className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl"
-                          value={selectedCompany}
-                          onChange={(e) => {
-                            const cid = e.target.value;
-                            setSelectedCompany(cid);
-                            // load brands for this company so other brand selectors update
-                            if (cid) loadBrandsForCompany(cid);
-                            // link company to brandForm for single-brand creation
-                            setBrandForm({ ...brandForm, companyId: cid });
-                          }}
-                        >
-                          <option value="">Select Company</option>
-                          {companies.map((c) => (
-                            <option key={c._id} value={c._id}>
-                              {c.companyName}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <InputGroup
-                        label="Brand Name"
-                        placeholder="Acme Corp"
-                        value={brandForm.brandName}
-                        onChange={(v) => setBrandForm({ ...brandForm, brandName: v })}
-                      />
-
-                      <div className="flex flex-col gap-2">
-                        <label className="text-sm font-bold text-gray-600 ml-1">Brand Logo</label>
-                        <div className="flex items-center gap-4">
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => setBrandForm({ ...brandForm, brandLogoFile: e.target.files[0] })}
-                            className="text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                          />
-                          <div className="text-gray-400 text-xs font-bold uppercase tracking-widest px-2">OR</div>
-                          <input
-                            type="text"
-                            placeholder="Logo URL (https://...)"
-                            value={brandForm.brandLogo}
-                            onChange={(e) => setBrandForm({ ...brandForm, brandLogo: e.target.value })}
-                            className="flex-1 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm"
-                          />
-                        </div>
-                        {(brandForm.brandLogo || brandForm.brandLogoFile) && (
-                          <div className="mt-1 flex items-center gap-2">
-                            <img 
-                              src={brandForm.brandLogoFile ? URL.createObjectURL(brandForm.brandLogoFile) : brandForm.brandLogo} 
-                              alt="preview" 
-                              className="w-10 h-10 object-contain border rounded bg-white" 
-                            />
-                            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Preview</span>
-                          </div>
-                        )}
-                      </div>
-
-                      <InputGroup
-                        label="Legal Entity"
-                        placeholder="Legal name"
-                        value={brandForm.legalEntity}
-                        onChange={(v) => setBrandForm({ ...brandForm, legalEntity: v })}
-                        required={false}
-                      />
-
-                      <InputGroup
-                        label="Website"
-                        placeholder="https://..."
-                        value={brandForm.brandWebsite}
-                        onChange={(v) => setBrandForm({ ...brandForm, brandWebsite: v })}
-                        required={false}
-                      />
-
-                      <InputGroup
-                        label="Industry"
-                        placeholder="e.g. Fashion, Electronics"
-                        value={brandForm.industry}
-                        onChange={(v) => setBrandForm({ ...brandForm, industry: v })}
-                        required={false}
-                      />
-
-                      <InputGroup
-                        label="CIN / GST"
-                        placeholder="Registration ID"
-                        value={brandForm.cinGst}
-                        onChange={(v) => setBrandForm({ ...brandForm, cinGst: v })}
-                        required={false}
-                      />
-
-                      <InputGroup
-                        label="Email"
-                        type="email"
-                        placeholder="support@brand.com"
-                        value={brandForm.email}
-                        onChange={(v) => setBrandForm({ ...brandForm, email: v })}
-                        required={false}
-                      />
-
-                      <InputGroup
-                        label="Phone Number"
-                        placeholder="+91..."
-                        value={brandForm.phoneNumber}
-                        onChange={(v) => setBrandForm({ ...brandForm, phoneNumber: v })}
-                        required={false}
-                      />
-
-                      <div className="col-span-2 space-y-4">
-                        <InputGroup
-                          label="Register Office Address"
-                          placeholder="Full address..."
-                          value={brandForm.registerOfficeAddress}
-                          onChange={(v) => setBrandForm({ ...brandForm, registerOfficeAddress: v })}
-                        />
-                        <InputGroup
-                          label="Dispatch Address"
-                          placeholder="Shipping origin..."
-                          value={brandForm.dispatchAddress}
-                          onChange={(v) => setBrandForm({ ...brandForm, dispatchAddress: v })}
-                        />
-                      </div>
-
-                      {!editingBrand && (
-                        <div className="col-span-2 border-t pt-6 mt-4">
-                          <h4 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-                            <svg className="w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
-                            Bulk Add Brands (optional)
-                          </h4>
-                          {companyBrands.map((b, idx) => (
-                            <div
-                              key={idx}
-                              className="flex flex-col sm:flex-row sm:items-start gap-4 mb-3 p-4 border border-gray-100 rounded-[1.5rem] bg-gray-50/50 shadow-sm"
-                            >
-                              <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="flex flex-col gap-1">
-                                  <label className="text-xs font-bold text-gray-500 ml-1">Brand Name</label>
-                                  <input
-                                    value={b.brandName}
-                                    onChange={(e) => updateCompanyBrandRow(idx, 'brandName', e.target.value)}
-                                    className="w-full px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold"
-                                    placeholder="Brand name"
-                                  />
-                                </div>
-
-                                <div className="flex flex-col gap-1">
-                                  <label className="text-xs font-bold text-gray-500 ml-1">Logo (Local or URL)</label>
-                                  <div className="flex items-center gap-2">
-                                     <input
-                                      type="file"
-                                      accept="image/*"
-                                      onChange={(e) => updateCompanyBrandRow(idx, 'logoFile', e.target.files[0])}
-                                      className="text-[10px] w-32"
-                                    />
-                                    <input
-                                      value={b.brandLogo}
-                                      onChange={(e) => updateCompanyBrandRow(idx, 'brandLogo', e.target.value)}
-                                      className="flex-1 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm"
-                                      placeholder="https://..."
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="flex sm:mt-6 gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => removeCompanyBrandRow(idx)}
-                                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
-                                  title="Remove brand"
-                                >
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" />
-                                  </svg>
-                                </button>
-                                {idx === companyBrands.length - 1 && (
-                                  <button
-                                    type="button"
-                                    onClick={addCompanyBrandRow}
-                                    className="p-2 bg-gray-900 text-white rounded-xl hover:shadow-lg transition-all"
-                                    title="Add brand"
-                                  >
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M12 4v16m8-8H4" />
-                                    </svg>
-                                  </button>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      <div className="col-span-2 pt-4">
-                        <button className="w-full bg-gradient-to-r from-gray-900 to-indigo-900 text-white font-black py-4 rounded-[1.5rem] hover:shadow-2xl hover:shadow-indigo-900/40 active:scale-[0.98] transition-all uppercase tracking-widest text-sm">
-                          {editingBrand ? 'Update Brand' : 'Create Brand(s)'}
-                        </button>
-                      </div>
-
-                    </form>
-                  </div>
-                )
+                renderCreateSection()
               )}
 
               {activeTab === 'create' && renderCreateSection()}
@@ -1434,9 +1416,9 @@ const UserManagement = () => {
                             <>
                               <th className="px-8 py-4">Name</th>
                               <th className="px-6 py-4">Email</th>
-                              <th className="px-6 py-4">Company</th>
-                              <th className="px-6 py-4">Brand</th>
-                              <th className="px-6 py-4">Role</th>
+                              <th className="px-6 py-4">{roleTab === 'company' ? 'Legal Entity' : 'Company'}</th>
+                              {roleTab !== 'company' && <th className="px-6 py-4">Brand</th>}
+                              <th className="px-6 py-4">Role / Status</th>
                               <th className="px-6 py-4 text-right">Actions</th>
                             </>
                           )}
@@ -1444,7 +1426,7 @@ const UserManagement = () => {
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {(() => {
-                          const listByCategory = roleTab === 'brand' ? brands : staff.filter(u => {
+                          const listByCategory = roleTab === 'brand' ? brands : (roleTab === 'company' && (role === 'superadmin' || role === 'admin')) ? companies : staff.filter(u => {
                             if (roleTab === 'user') return u.role === 'user';
                             if (roleTab === 'authorizer') return u.role === 'authorizer';
                             if (roleTab === 'creator') return u.role === 'creator';
@@ -1457,7 +1439,9 @@ const UserManagement = () => {
                               if (q) {
                                 const matchesSearch = roleTab === 'brand' 
                                   ? (item.brandName || "").toLowerCase().includes(q) || (item.companyId?.companyName || "").toLowerCase().includes(q)
-                                  : (item.name || "").toLowerCase().includes(q) || (item.email || "").toLowerCase().includes(q) || (item.mobile || "").includes(q);
+                                  : roleTab === 'company' && companies.includes(item)
+                                    ? (item.companyName || "").toLowerCase().includes(q) || (item.email || "").toLowerCase().includes(q)
+                                    : (item.name || "").toLowerCase().includes(q) || (item.email || "").toLowerCase().includes(q) || (item.mobile || "").includes(q);
                                 if (!matchesSearch) return false;
                               }
                               
@@ -1574,17 +1558,22 @@ const UserManagement = () => {
                                       <td className="px-8 py-4">
                                         <div className="flex items-center gap-3">
                                           <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
-                                            {(item.name ||
+                                            {(item.name || item.companyName ||
                                               item.email ||
                                               "?")[0]?.toUpperCase()}
                                           </div>
                                           <div>
                                             <div className="font-medium text-gray-900">
-                                              {item.name}
+                                              {item.name || item.companyName}
                                             </div>
                                             <div className="text-xs text-gray-500">
                                               {item.email}
                                             </div>
+                                            {item.phoneNumber && (
+                                              <div className="text-[10px] text-gray-400 font-bold">
+                                                {maskPhoneNumber(item.phoneNumber)}
+                                              </div>
+                                            )}
                                           </div>
                                         </div>
                                       </td>
@@ -1592,23 +1581,25 @@ const UserManagement = () => {
                                         {item.email}
                                       </td>
                                       <td className="px-6 py-4 text-sm text-gray-700">
-                                        {getCompanyName(item.companyId || item.company)}
+                                        {roleTab === 'company' ? item.legalEntity : getCompanyName(item.companyId || item.company)}
                                       </td>
-                                      <td className="px-6 py-4 text-sm text-gray-700">
-                                        {getBrandName(item.brandId)}
-                                      </td>
+                                      {roleTab !== 'company' && (
+                                        <td className="px-6 py-4 text-sm text-gray-700">
+                                          {getBrandName(item.brandId)}
+                                        </td>
+                                      )}
                                       <td className="px-6 py-4">
                                         <span
-                                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold capitalize tracking-wide shadow-sm ${getRoleClass(item.role)}`}
+                                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold capitalize tracking-wide shadow-sm ${item.role ? getRoleClass(item.role) : (item.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800')}`}
                                         >
-                                          {item.role}
+                                          {item.role || item.status}
                                         </span>
                                       </td>
                                       <td className="px-6 py-4 text-right">
                                         <div className="flex justify-end gap-2">
                                           <button 
-                                            onClick={() => handleEditUser(item)}
-                                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit User"
+                                            onClick={() => roleTab === 'company' ? handleEditCompany(item) : handleEditUser(item)}
+                                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit"
                                           >
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" /></svg>
                                           </button>
@@ -1625,19 +1616,21 @@ const UserManagement = () => {
                     </table>
                   </div>
                   {(() => {
-                    const listByCategory = staff.filter(u => {
+                    const listByCategory = roleTab === 'brand' ? brands : (roleTab === 'company' && (role === 'superadmin' || role === 'admin')) ? companies : staff.filter(u => {
                       if (roleTab === 'user') return u.role === 'user';
+                      if (roleTab === 'authorizer') return u.role === 'authorizer';
+                      if (roleTab === 'creator') return u.role === 'creator';
                       return u.role !== 'user';
                     });
                     const q = query.trim().toLowerCase();
-                    const displayed = q
-                      ? listByCategory.filter(
-                        (u) =>
-                          (u.name || "").toLowerCase().includes(q) ||
-                          (u.email || "").toLowerCase().includes(q) ||
-                          (u.mobile || "").includes(q),
-                      )
-                      : listByCategory;
+                    const displayed = listByCategory.filter(
+                      (item) => {
+                        if (!q) return true;
+                        if (roleTab === 'brand') return (item.brandName || "").toLowerCase().includes(q) || (item.companyId?.companyName || "").toLowerCase().includes(q);
+                        if (roleTab === 'company') return (item.companyName || "").toLowerCase().includes(q) || (item.email || "").toLowerCase().includes(q);
+                        return (item.name || "").toLowerCase().includes(q) || (item.email || "").toLowerCase().includes(q) || (item.mobile || "").includes(q);
+                      }
+                    );
                     return (
                       <TablePagination
                         totalItems={listByCategory.length}
@@ -1646,7 +1639,7 @@ const UserManagement = () => {
                         rowsPerPage={userRowsPerPage}
                         onPageChange={setUserPage}
                         onRowsPerPageChange={(n) => { setUserRowsPerPage(n); setUserPage(1); }}
-                        itemLabel={roleTab === 'user' ? "mobile users" : "platform users"}
+                        itemLabel={roleTab === 'brand' ? "brands" : roleTab === 'company' ? "companies" : roleTab === 'user' ? "mobile users" : "platform users"}
                       />
                     );
                   })()}
@@ -1764,25 +1757,26 @@ function EmailRow({ entry, idx, emails, setEmails, showOtp, showPassword, onSend
   );
 }
 
-function InputGroup({ label, placeholder, value, onChange, type = "text", required = true }) {
+function InputGroup({ label, placeholder, value, onChange, type = "text", required = true, readOnly = false }) {
   const [showPassword, setShowPassword] = useState(false);
   const isPassword = type === "password";
 
   return (
-    <div className="flex flex-col gap-2 group">
-      <label className="text-sm font-bold text-gray-600 ml-1 flex items-center gap-2">
+    <div className="space-y-2">
+      <label className="text-sm font-bold text-gray-700 ml-1 block">
         {label}
         {required && <span className="w-1 h-1 bg-red-400 rounded-full" />}
       </label>
-      <div className="relative">
+      <div className="relative group">
         <input
-          type={isPassword ? (showPassword ? "text" : "password") : type}
+          type={isPassword && !showPassword ? "password" : "text"}
           placeholder={placeholder}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => !readOnly && onChange(e.target.value)}
+          readOnly={readOnly}
           className={`w-full px-5 py-3.5 bg-white/60 backdrop-blur-sm border border-gray-200 rounded-2xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-semibold shadow-sm
-            ${isPassword ? 'pr-12' : ''}`}
-          required={required}
+            ${isPassword ? 'pr-12' : ''} ${readOnly ? 'cursor-not-allowed opacity-80' : ''}`}
+          required={required && !readOnly}
         />
         {isPassword && (
           <button

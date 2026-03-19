@@ -116,6 +116,7 @@ const OrderManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [creatorSubmitting, setCreatorSubmitting] = useState(false);
+  const [userPlan, setUserPlan] = useState(null);
 
   // Credit modal state
   const [creditModal, setCreditModal] = useState(null); // { orderId, required, available, shortfall, topupCostPerQr, topupTotalCost }
@@ -138,9 +139,32 @@ const OrderManagement = () => {
     const adminRole = localStorage.getItem('adminRole');
     if (adminRole) { setRole(adminRole); return; }
     const userStr = localStorage.getItem('userInfo');
-    if (userStr) { try { setRole(JSON.parse(userStr).role); } catch { setRole(localStorage.getItem('role') || ''); } }
+    if (userStr) { 
+      try { 
+        const info = JSON.parse(userStr);
+        setRole(info.role); 
+        if (info.role === 'creator') fetchUserProfile();
+      } catch { 
+        setRole(localStorage.getItem('role') || ''); 
+      } 
+    }
     else { setRole(localStorage.getItem('role') || ''); }
   }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      const profile = await fetch(API_BASE_URL + '/auth/profile', {
+        headers: { Authorization: `Bearer ${token}` }
+      }).then(res => res.json());
+      if (profile && profile.user && profile.user.planId) {
+        setUserPlan(profile.user.planId); // Assuming populated planId or object
+      }
+    } catch (e) {
+      console.error("Failed to fetch profile/plan:", e);
+    }
+  };
 
   const fetchOrders = async () => {
     try {
@@ -171,6 +195,15 @@ const OrderManagement = () => {
       if (!ok) return;
       setCreatorSubmitting(true);
       const token = localStorage.getItem('token');
+      
+      // Check for minimum quantity if plan allows it
+      const minQty = userPlan?.minQuantity || 1;
+      if (newQr.quantity < minQty) {
+        alert(`Minimum quantity for your plan is ${minQty}. Please increase the quantity.`);
+        setCreatorSubmitting(false);
+        return;
+      }
+
       await createOrder({ ...newQr, quantity: Number(newQr.quantity) || 1 }, token);
       alert('Order created! Admin will process it to generate QR codes.');
       setNewQr({ productName: '', brand: '', batchNo: '', manufactureDate: '', expiryDate: '', quantity: 1, description: '' });
@@ -411,12 +444,15 @@ const OrderManagement = () => {
     if (!courierName && order.createdBy?.role === 'company') courierName = order.createdBy.name || '';
     if (!courierName) courierName = order.brandId?.brandName || order.brand || '';
     
-    let courierAddress = order.brandId?.companyId?.courierAddress || order.brandId?.companyId?.registerOfficeAddress || '';
+    let courierAddress = order.brandId?.companyId?.courierAddress || 
+                         order.brandId?.companyId?.dispatchAddress || 
+                         order.brandId?.companyId?.registerOfficeAddress || 
+                         order.brandId?.dispatchAddress || '';
     
     setDispatchData({
       trackingNumber: '',
       courierName: courierName,
-      notes: courierAddress ? `Deliver to: ${courierAddress}` : ''
+      notes: courierAddress
     });
     setShowDispatchModal(order._id);
   };

@@ -11,13 +11,27 @@ const ProductManager = () => {
   const [user, setUser] = useState(null);
   const [brands, setBrands] = useState([]);
   const [editProductId, setEditProductId] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
   
   const [formData, setFormData] = useState({
     productName: '',
     brandId: '',
     productInfo: '',
     productImage: null,
-    imagePreview: null
+    imagePreview: null,
+    // Detailed Profile Fields
+    category: '',
+    mrp: '',
+    keyBenefits: '',
+    manufacturedBy: '',
+    marketedBy: '',
+    importMarketedBy: '',
+    importerRegNo: '',
+    countryOfOrigin: '',
+    website: '',
+    supportEmail: '',
+    customerCare: '',
   });
 
   const resetForm = () => {
@@ -26,7 +40,18 @@ const ProductManager = () => {
       brandId: brands[0]?._id || '',
       productInfo: '',
       productImage: null,
-      imagePreview: null
+      imagePreview: null,
+      category: '',
+      mrp: '',
+      keyBenefits: '',
+      manufacturedBy: '',
+      marketedBy: '',
+      importMarketedBy: '',
+      importerRegNo: '',
+      countryOfOrigin: '',
+      website: '',
+      supportEmail: '',
+      customerCare: '',
     });
     setEditProductId(null);
   };
@@ -103,30 +128,35 @@ const ProductManager = () => {
         finalImageUrl = data.secure_url;
       }
 
+      const productPayload = {
+        productName: formData.productName,
+        brandId: formData.brandId,
+        productInfo: formData.productInfo,
+        category: formData.category,
+        mrp: formData.mrp ? Number(formData.mrp) : undefined,
+        keyBenefits: formData.keyBenefits,
+        manufacturedBy: formData.manufacturedBy,
+        marketedBy: formData.marketedBy,
+        importMarketedBy: formData.importMarketedBy,
+        importerRegNo: formData.importerRegNo,
+        countryOfOrigin: formData.countryOfOrigin,
+        website: formData.website,
+        supportEmail: formData.supportEmail,
+        customerCare: formData.customerCare,
+      };
+
+      if (finalImageUrl) {
+        productPayload.productImage = finalImageUrl;
+      }
+
       if (editProductId) {
-        // Update existing product
-        const updateData = {
-          productName: formData.productName,
-          brandId: formData.brandId,
-          productInfo: formData.productInfo,
-          // Only update image if a fresh image was uploaded, otherwise keep existing
-        };
-        if (finalImageUrl) {
-          updateData.productImage = finalImageUrl;
-        } else if (!formData.imagePreview && !formData.productImage) {
-          // They explicitly cleared the image
-          updateData.productImage = '';
+        if (!formData.imagePreview && !formData.productImage) {
+          productPayload.productImage = '';
         }
-        await updateProductTemplate(editProductId, updateData);
+        await updateProductTemplate(editProductId, productPayload);
         alert('Product updated successfully!');
       } else {
-        // Create new product
-        await createProductTemplate({
-          productName: formData.productName,
-          brandId: formData.brandId,
-          productInfo: formData.productInfo,
-          productImage: finalImageUrl
-        });
+        await createProductTemplate(productPayload);
         alert('Product created successfully!');
       }
 
@@ -145,8 +175,19 @@ const ProductManager = () => {
       productName: product.productName || '',
       brandId: product.brandId?._id || product.brandId || '',
       productInfo: product.productInfo || '',
-      productImage: null, // Don't hold the file object for remote images
+      productImage: null,
       imagePreview: product.productImage || null,
+      category: product.category || '',
+      mrp: product.mrp || '',
+      keyBenefits: product.keyBenefits || '',
+      manufacturedBy: product.manufacturedBy || '',
+      marketedBy: product.marketedBy || '',
+      importMarketedBy: product.importMarketedBy || '',
+      importerRegNo: product.importerRegNo || '',
+      countryOfOrigin: product.countryOfOrigin || '',
+      website: product.website || '',
+      supportEmail: product.supportEmail || '',
+      customerCare: product.customerCare || '',
     });
     setEditProductId(product._id);
     setActiveTab('create');
@@ -191,6 +232,26 @@ const ProductManager = () => {
               className={`px-6 py-3 rounded-[1.25rem] font-black text-sm transition-all uppercase tracking-widest ${activeTab === 'list' ? 'bg-gray-900 text-white' : 'bg-white border-2 border-gray-900 text-gray-900 hover:bg-gray-50'}`}
             >
               Catalog List
+            </button>
+            <button 
+              onClick={async () => { 
+                setActiveTab('reviews');
+                if (reviews.length === 0) {
+                  setLoadingReviews(true);
+                  try {
+                    const { getAllReviews } = await import('../../config/api');
+                    const rData = await getAllReviews(token);
+                    setReviews(rData || []);
+                  } catch (err) {
+                    console.error("Failed to fetch reviews", err);
+                  } finally {
+                    setLoadingReviews(false);
+                  }
+                }
+              }}
+              className={`px-6 py-3 rounded-[1.25rem] font-black text-sm transition-all uppercase tracking-widest ${activeTab === 'reviews' ? 'bg-amber-500 text-white shadow-lg' : 'bg-white border-2 border-amber-500 text-amber-500 hover:bg-amber-50'}`}
+            >
+              Reviews
             </button>
             {canCreate && (
               <button 
@@ -246,6 +307,27 @@ const ProductManager = () => {
                     </select>
                   </div>
 
+                  <div className="flex flex-col gap-2 group">
+                    <label className="text-sm font-bold text-gray-600 ml-1">Category</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Skin Care, Electronics"
+                      value={formData.category}
+                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                      className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-gray-900 font-semibold shadow-sm focus:border-blue-500 outline-none"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2 group">
+                    <label className="text-sm font-bold text-gray-600 ml-1">MRP (₹)</label>
+                    <input
+                      type="number"
+                      placeholder="999"
+                      value={formData.mrp}
+                      onChange={(e) => setFormData({ ...formData, mrp: e.target.value })}
+                      className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-gray-900 font-semibold shadow-sm focus:border-blue-500 outline-none"
+                    />
+                  </div>
                 </div>
 
                 <div className="p-8 bg-gray-50/50 rounded-[2rem] border border-gray-100">
@@ -262,9 +344,43 @@ const ProductManager = () => {
                         placeholder="Comprehensive details for scan result page..."
                         value={formData.productInfo}
                         onChange={(e) => setFormData({ ...formData, productInfo: e.target.value })}
-                        rows={6}
+                        rows={3}
                         className="w-full px-6 py-4 bg-white border border-gray-100 rounded-[1.5rem] text-gray-900 resize-none focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium shadow-sm"
                         />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-bold text-gray-600 ml-1">Key Benefits (One per line)</label>
+                        <textarea
+                        placeholder="• High Quality&#10;• Long Lasting&#10;• Durable"
+                        value={formData.keyBenefits}
+                        onChange={(e) => setFormData({ ...formData, keyBenefits: e.target.value })}
+                        rows={3}
+                        className="w-full px-6 py-4 bg-white border border-gray-100 rounded-[1.5rem] text-gray-900 resize-none focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium shadow-sm"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {[
+                        { key: 'manufacturedBy', label: 'Manufactured By' },
+                        { key: 'marketedBy', label: 'Marketed By' },
+                        { key: 'countryOfOrigin', label: 'Country of Origin' },
+                        { key: 'website', label: 'Website' },
+                        { key: 'supportEmail', label: 'Support E-mail' },
+                        { key: 'customerCare', label: 'Customer Care' },
+                        { key: 'importMarketedBy', label: 'Importer & Marketed By' },
+                        { key: 'importerRegNo', label: 'Importer Reg. No' },
+                      ].map(field => (
+                        <div key={field.key} className="flex flex-col gap-1.5">
+                          <label className="text-xs font-bold text-gray-500 ml-1">{field.label}</label>
+                          <input
+                            type="text"
+                            value={formData[field.key]}
+                            onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
+                            className="bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-semibold focus:border-blue-500 outline-none transition-all"
+                          />
+                        </div>
+                      ))}
                     </div>
 
                     <div className="flex flex-col gap-2">

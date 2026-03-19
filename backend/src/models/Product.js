@@ -31,6 +31,19 @@ module.exports = mongoose.model(
         ref: "User",
         required: true,
       },
+      // Detailed fields (matching ProductTemplate/Order)
+      category: String,
+      mrp: Number,
+      keyBenefits: String,
+      manufacturedBy: String,
+      marketedBy: String,
+      importMarketedBy: String,
+      importerRegNo: String,
+      countryOfOrigin: String,
+      website: String,
+      supportEmail: String,
+      customerCare: String,
+
       // Dynamic form fields
       mfdOn: {
         month: String, // MM format (01-12)
@@ -45,7 +58,10 @@ module.exports = mongoose.model(
       // Store variants (repeatable fields like Color, Size, Model)
       variants: [{
         variantName: String,  // e.g., "Color", "Size", "Model"
+        variantLabel: String,
+        inputType: { type: String, enum: ['color', 'text', 'dropdown'], default: 'text' },
         value: String,        // e.g., "Red", "Large", "Pro Series"
+        options: [String]
       }],
       // Store all dynamic field values as key-value pairs
       dynamicFields: {
