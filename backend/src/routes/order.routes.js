@@ -397,8 +397,12 @@ router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req
 
     // GENERATE QR CODES
     const productsToCreate = [];
-    const qty = order.quantity;
+    const bonusQty = parseInt(req.body.bonusQuantity) || 0;
+    const totalQty = order.quantity + bonusQty;
     const brandName = order.brand;
+    
+    // Track bonus in order
+    order.bonusQuantity = bonusQty;
     
     // Find last sequence number for this brand
     const lastProduct = await Product.findOne({ brand: brandName }).sort({ sequence: -1 });
@@ -407,7 +411,7 @@ router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req
     // Try to resolve Brand record for this order if available
     const brandDoc = await Brand.findOne({ brandName: brandName });
 
-    for (let i = 0; i < qty; i++) {
+    for (let i = 0; i < totalQty; i++) {
       const currentSeq = startSeq + i;
       const seqString = currentSeq.toString().padStart(6, '0');
       const uniqueSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -439,9 +443,27 @@ router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req
     
     await Product.insertMany(productsToCreate);
     
+    // Record bonus transaction if needed (admin grant)
+    if (bonusQty > 0 && order.company) {
+      const company = await Company.findById(order.company._id || order.company);
+      if (company) {
+        // Technically this doesn't deduct from balance, but it's a grant record
+        // We track it as admin_grant
+        await CreditTransaction.create({
+          companyId: company._id,
+          type: 'admin_grant',
+          amount: bonusQty,
+          balanceAfter: company.qrCredits, // Balance remains same as it was a free grant for this specific batch
+          performedBy: req.user._id,
+          orderId: order._id,
+          note: `Bonus QR grant by ${req.user.role}: ${bonusQty} for Order ${order.orderId}`
+        });
+      }
+    }
+
     // Update order
     order.qrCodesGenerated = true;
-    order.qrGeneratedCount = qty;
+    order.qrGeneratedCount = totalQty;
     await order.save();
 
     // Send email notifications
@@ -450,15 +472,16 @@ router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req
       orderId: order.orderId,
       productName: order.productName,
       brand: order.brand,
-      quantity: order.quantity,
+      quantity: totalQty, // Use totalQty in email
       status: order.status,
       changedBy: req.user.name || req.user.email
-    }, `${qty} QR codes generated successfully.`);
+    }, `${totalQty} QR codes generated successfully (including ${bonusQty} bonus).`);
     
     res.json({ 
       message: 'QR codes generated successfully', 
       order,
-      qrCount: qty 
+      qrCount: totalQty,
+      bonusAdded: bonusQty
     });
   } catch (error) {
     console.error('Process order error:', error);

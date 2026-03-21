@@ -97,6 +97,7 @@ const orderSchema = new mongoose.Schema({
   // Track QR generation
   qrCodesGenerated: { type: Boolean, default: false },
   qrGeneratedCount: { type: Number, default: 0 },
+  bonusQuantity: { type: Number, default: 0 },
 
 }, { timestamps: true });
 

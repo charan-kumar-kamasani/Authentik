@@ -133,6 +133,7 @@ const OrderManagement = () => {
   // Edit Order State
   const [editOrderModal, setEditOrderModal] = useState({ isOpen: false, data: null });
   const [editing, setEditing] = useState(false);
+  const [processModal, setProcessModal] = useState({ isOpen: false, order: null, bonusQuantity: 0 });
 
   useEffect(() => {
     fetchOrders();
@@ -222,6 +223,12 @@ const OrderManagement = () => {
       };
 
       if (actionLabels[action]) {
+        if (action === 'process' && (role === 'superadmin' || role === 'admin')) {
+          const order = orders.find(o => o._id === orderId);
+          setProcessModal({ isOpen: true, order, bonusQuantity: 0 });
+          return;
+        }
+
         const ok = await confirm({ 
           title: action.charAt(0).toUpperCase() + action.slice(1), 
           description: actionLabels[action], 
@@ -247,6 +254,7 @@ const OrderManagement = () => {
       alert(successMessages[action] || 'Action completed successfully!');
       
       if (action === 'dispatch') setShowDispatchModal(null);
+      if (action === 'process') setProcessModal({ isOpen: false, order: null, bonusQuantity: 0 });
       await fetchOrders();
     } catch (e) {
       if (action === 'authorize' && e.creditData) {
@@ -1212,6 +1220,91 @@ const OrderManagement = () => {
                   Cancel
                 </button>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Process Order Modal (SuperAdmin Override) */}
+      {processModal.isOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-200">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
+                  <Settings size={20} className="animate-spin-slow" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-slate-800">Process Order</h3>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest leading-none mt-1">Order #{processModal.order?.orderId}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setProcessModal({ ...processModal, isOpen: false })}
+                className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-400"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="p-8 space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-center">
+                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Requested QRs</div>
+                  <div className="text-2xl font-black text-slate-800">{processModal.order?.quantity}</div>
+                </div>
+                <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100 text-center">
+                  <div className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Total to Generate</div>
+                  <div className="text-2xl font-black text-blue-600">
+                    {(processModal.order?.quantity || 0) + (parseInt(processModal.bonusQuantity) || 0)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="p-5 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl border border-blue-100">
+                  <label className="flex items-center gap-2 text-sm font-black text-blue-900 mb-3">
+                    <Gift size={16} className="text-blue-600" />
+                    Manually Grant Bonus QRs
+                  </label>
+                  <p className="text-xs text-blue-700/70 font-bold mb-4 leading-relaxed">
+                    As SuperAdmin, you can generate additional QR codes for this order without charge. These will be tracked as "Bonus Grant".
+                  </p>
+                  <div className="relative">
+                    <input 
+                      type="number" 
+                      min="0"
+                      value={processModal.bonusQuantity}
+                      onChange={(e) => setProcessModal({ ...processModal, bonusQuantity: e.target.value })}
+                      className="w-full pl-5 pr-12 py-3.5 bg-white border-2 border-blue-200 rounded-xl font-black text-lg text-blue-900 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all"
+                      placeholder="0"
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black text-blue-400 bg-blue-50 px-2.5 py-1 rounded-lg">QRs</div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-2xl border border-amber-100 text-amber-800">
+                  <AlertTriangle size={18} className="shrink-0 mt-0.5" />
+                  <p className="text-xs font-bold leading-relaxed">
+                    This action will immediately generate QR codes and transition the order to 'Order Processing' status.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
+              <button 
+                onClick={() => setProcessModal({ ...processModal, isOpen: false })}
+                className="flex-1 py-3.5 rounded-xl border-2 border-slate-200 text-slate-600 font-bold hover:bg-slate-100 active:scale-95 transition-all text-sm"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => handleAction(processModal.order?._id, 'process', { bonusQuantity: processModal.bonusQuantity })}
+                className="flex-[2] py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black shadow-lg shadow-blue-500/25 hover:shadow-xl active:scale-95 transition-all text-sm uppercase tracking-widest flex items-center justify-center gap-2"
+              >
+                Generate & Start Processing
+                <ArrowRight size={18} />
+              </button>
             </div>
           </div>
         </div>

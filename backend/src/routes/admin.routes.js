@@ -220,6 +220,16 @@ router.get('/companies/:id', protect, authorize('admin', 'superadmin'), async (r
     }
 });
 
+// Get all brands associated with a specific company
+router.get('/company-brands/:companyId', protect, authorize('superadmin', 'admin'), async (req, res) => {
+  try {
+    const brands = await Brand.find({ companyId: req.params.companyId });
+    res.json(brands);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Create User (Admin creates Manager, Super Admin creates Admin)
 router.post(
   "/create-user",

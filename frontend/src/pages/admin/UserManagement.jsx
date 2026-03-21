@@ -137,6 +137,7 @@ const UserManagement = () => {
     legalEntity: "",
     brandLogo: "",
     brandLogoFile: null,
+    logoType: "url",
     brandWebsite: "",
     industry: "",
     country: "",
@@ -312,8 +313,9 @@ const UserManagement = () => {
 
   const handleEditBrand = async (brand) => {
     setEditingUser(null);
-    setEditingCompany(null);
     setEditingBrand({ id: brand._id, data: brand });
+    
+    // Set basic brand form for backward compatibility/non-admin view
     setBrandForm({
       brandName: brand.brandName || "",
       legalEntity: brand.legalEntity || "",
@@ -330,16 +332,40 @@ const UserManagement = () => {
       supportNumber: brand.supportNumber || "",
       contactPersonName: brand.contactPersonName || "",
       brandLogoFile: null,
+      logoType: "url",
     });
+
     const companyId = brand.companyId?._id || brand.companyId || "";
     setSelectedCompany(companyId);
 
-    // Prefill Company context for "exact UI"
-    if (companyId) {
+    // If admin/superadmin, we want the full Enterprise Edit UI
+    if (companyId && (role === 'admin' || role === 'superadmin')) {
       try {
         const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
         const company = await getCompanyById(companyId, token);
         
+        // Set editingCompany to trigger the full Enterprise UI (Request #2 from user)
+        setEditingCompany(company);
+        setEditingBrand(null); // Switch to company mode for full UI
+        
+        setCompanyForm({
+          companyName: company.companyName || "",
+          legalEntity: company.legalEntity || "",
+          companyWebsite: company.companyWebsite || company.website || "",
+          industry: company.industry || "",
+          category: company.category || "",
+          country: company.country || "",
+          city: company.city || "",
+          cinGst: company.cinGst || "",
+          registerOfficeAddress: company.registerOfficeAddress || "",
+          courierAddress: company.courierAddress || company.dispatchAddress || "",
+          dispatchAddress: company.dispatchAddress || "",
+          email: company.email || "",
+          supportNumber: company.supportNumber || "",
+          phoneNumber: company.phoneNumber || "",
+          contactPersonName: company.contactPersonName || "",
+        });
+
         // Prefill emails from company
         if (company.officialEmails?.length > 0) {
           setOfficialEmails(company.officialEmails.map(email => ({ value: email, otpSent: true, verified: true, sending: false, verifying: false })));
@@ -352,12 +378,35 @@ const UserManagement = () => {
         }
 
         // Prefill multiple brands from same company
-        const bData = await getBrandsForCompany(token, companyId);
-        if (bData?.length > 0) {
-          setCompanyBrands(bData.map(b => ({ brandName: b.brandName, brandLogo: b.brandLogo || "", logoType: "url", _id: b._id })));
+        try {
+          const bData = await getBrandsForCompany(token, companyId);
+          if (bData && Array.isArray(bData) && bData.length > 0) {
+            setCompanyBrands(bData.map(b => ({ 
+              brandName: b.brandName || "", 
+              brandLogo: b.brandLogo || "", 
+              logoType: "url", 
+              _id: b._id 
+            })));
+          } else {
+            // Fallback to current brand if API returns nothing but we are in admin mode
+            setCompanyBrands([{ 
+              brandName: brand.brandName || "", 
+              brandLogo: brand.brandLogo || "", 
+              logoType: "url", 
+              _id: brand._id 
+            }]);
+          }
+        } catch (err) {
+          console.warn("Failed to fetch all company brands, using current brand only", err);
+          setCompanyBrands([{ 
+            brandName: brand.brandName || "", 
+            brandLogo: brand.brandLogo || "", 
+            logoType: "url", 
+            _id: brand._id 
+          }]);
         }
       } catch (e) {
-        console.warn("Failed to load company context for brand edit", e);
+        console.warn("Failed to load company context for unified edit UI", e);
       }
     }
 
@@ -423,8 +472,13 @@ const UserManagement = () => {
     try {
       const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
       const bData = await getBrandsForCompany(token, company._id);
-      if (bData?.length > 0) {
-        setCompanyBrands(bData.map(b => ({ brandName: b.brandName, brandLogo: b.brandLogo || "", logoType: "url", _id: b._id })));
+      if (bData && Array.isArray(bData) && bData.length > 0) {
+        setCompanyBrands(bData.map(b => ({ 
+          brandName: b.brandName || "", 
+          brandLogo: b.brandLogo || "", 
+          logoType: "url", 
+          _id: b._id 
+        })));
       } else {
         setCompanyBrands([{ brandName: "", brandLogo: "", logoType: "url" }]);
       }
@@ -617,7 +671,7 @@ const UserManagement = () => {
         const created = [];
         for (const r of rows) {
           let rowLogo = r.brandLogo;
-          if (r.logoFile) {
+          if (r.logoType === 'upload' && r.logoFile) {
             const uploaded = await uploadToCloudinary(r.logoFile);
             if (uploaded) rowLogo = uploaded;
           }
@@ -687,12 +741,28 @@ const UserManagement = () => {
     }
 
     try {
+      // Handle Logo Uploads for each Brand Row
+      const updatedBrands = [];
+      for (const b of companyBrands) {
+        if (!b.brandName?.trim()) continue;
+        let finalLogo = b.brandLogo || "";
+        if (b.logoType === 'upload' && b.logoFile) {
+          const uploadedUrl = await uploadToCloudinary(b.logoFile);
+          if (uploadedUrl) finalLogo = uploadedUrl;
+        }
+        updatedBrands.push({ 
+          _id: b._id,
+          brandName: b.brandName.trim(), 
+          brandLogo: finalLogo 
+        });
+      }
+
       const payload = {
         ...companyForm,
         officialEmails: filledOfficials.map(e => e.value.trim()),
         authorizerEmails: authorizerEmails.filter(e => e.value.trim()).map(e => ({ email: e.value.trim(), password: e.password || '' })),
         creatorEmails: creatorEmails.filter(e => e.value.trim()).map(e => ({ email: e.value.trim(), password: e.password || '' })),
-        brands: companyBrands.filter(b => b.brandName && b.brandName.trim()).map(b => ({ brandName: b.brandName, brandLogo: b.brandLogo })),
+        brands: updatedBrands,
         contactPersonName: "",
       };
       
@@ -765,7 +835,7 @@ const UserManagement = () => {
   };
 
   const addCompanyBrandRow = () => {
-    setCompanyBrands((s) => [...s, { brandName: "", brandLogo: "", logoType: "url" }]);
+    setCompanyBrands((s) => [...s, { brandName: "", brandLogo: "", logoType: "url", logoFile: null }]);
   };
 
   const updateCompanyBrandRow = (index, key, value) => {
@@ -809,12 +879,12 @@ const UserManagement = () => {
             </div>
             <div className="flex-1">
               <h2 className="text-2xl font-black text-gray-900 tracking-tight">
-                {editingCompany ? `Edit Company: ${editingCompany.companyName}` : 
+                {editingCompany ? `Edit Enterprise Entity: ${editingCompany.companyName}` : 
                  editingBrand ? `Edit Brand: ${editingBrand.data.brandName}` : 
                  'Create Company'}
               </h2>
               <p className="text-gray-500 font-medium text-sm">
-                {editingCompany ? 'Update existing enterprise details.' : 
+                {editingCompany ? 'Modify global settings, associated brands, and authorized access for this enterprise.' : 
                  editingBrand ? 'Update brand identity and information.' : 
                  'Establish a new enterprise identity and brand ecosystem.'}
               </p>
@@ -822,6 +892,7 @@ const UserManagement = () => {
             {(editingCompany || editingBrand) && (
               <button 
                 onClick={() => {
+                  setEditingUser(null);
                   setEditingCompany(null);
                   setEditingBrand(null);
                   setCompanyForm({
@@ -837,7 +908,7 @@ const UserManagement = () => {
                   setOfficialEmails([{ value: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }]);
                   setAuthorizerEmails([{ value: "", password: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }]);
                   setCreatorEmails([{ value: "", password: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }]);
-                  setCompanyBrands([{ brandName: "", brandLogo: "", logoType: "url" }]);
+                  setCompanyBrands([{ brandName: "", brandLogo: "", logoType: "url", logoFile: null }]);
                   setActiveTab("list");
                 }}
                 className="px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-50 rounded-xl transition-all"
@@ -898,6 +969,53 @@ const UserManagement = () => {
                 onChange={(v) => editingBrand ? setBrandForm({ ...brandForm, cinGst: v }) : setCompanyForm({ ...companyForm, cinGst: v })} 
                 required={false} 
               />
+              
+              {editingBrand && (
+                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-blue-100/50">
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-gray-700 ml-1 block">Logo Option</label>
+                    <div className="flex p-1 bg-gray-100 rounded-xl">
+                      <button type="button" onClick={() => setBrandForm({ ...brandForm, logoType: 'url' })} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${brandForm.logoType === 'url' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>URL</button>
+                      <button type="button" onClick={() => setBrandForm({ ...brandForm, logoType: 'upload' })} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${brandForm.logoType === 'upload' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Upload</button>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    {brandForm.logoType === 'url' ? (
+                      <InputGroup label="Logo URL" placeholder="https://..." value={brandForm.brandLogo} onChange={(v) => setBrandForm({ ...brandForm, brandLogo: v })} type="url" required={false} />
+                    ) : (
+                      <div className="space-y-2">
+                        <label className="text-sm font-bold text-gray-700 ml-1 block">Upload Logo</label>
+                        <input 
+                          type="file" 
+                          accept="image/*"
+                          onChange={(e) => setBrandForm({ ...brandForm, brandLogoFile: e.target.files?.[0] })}
+                          className="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-all border border-gray-200 rounded-2xl p-1 bg-white"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  
+                  {(brandForm.brandLogo || brandForm.brandLogoFile) && (
+                    <div className="md:col-span-2 flex items-center gap-3 p-3 bg-white/50 rounded-2xl border border-blue-100">
+                      <div className="w-12 h-12 rounded-lg overflow-hidden border border-white bg-white shadow-sm shrink-0">
+                        <img 
+                          src={brandForm.brandLogoFile ? URL.createObjectURL(brandForm.brandLogoFile) : brandForm.brandLogo} 
+                          alt="Preview" 
+                          className="w-full h-full object-contain"
+                          onError={(e) => { e.currentTarget.src = "/placeholder-logo.png"; }}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[10px] font-black text-blue-600 uppercase tracking-wider mb-0.5">Logo Preview</p>
+                        <p className="text-xs font-bold text-gray-600 truncate">
+                          {brandForm.brandLogoFile ? brandForm.brandLogoFile.name : brandForm.brandLogo}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Brands Section (Enabled for creating and editing company/brand) */}
@@ -920,20 +1038,62 @@ const UserManagement = () => {
 
                 <div className="space-y-4">
                   {companyBrands.map((b, idx) => (
-                    <div key={idx} className="group flex flex-col sm:flex-row items-start gap-4 p-5 bg-white border border-gray-100 rounded-[1.5rem] shadow-sm hover:shadow-md transition-all duration-300">
-                      <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <InputGroup label={`Brand ${idx + 1} Name`} placeholder="Brand Name" value={b.brandName} onChange={(v) => updateCompanyBrandRow(idx, 'brandName', v)} />
-                        <InputGroup label="Logo URL" placeholder="https://..." value={b.brandLogo} onChange={(v) => updateCompanyBrandRow(idx, 'brandLogo', v)} type="url" required={false} />
+                    <div key={idx} className="group flex flex-col items-start gap-4 p-5 bg-white border border-gray-100 rounded-[1.5rem] shadow-sm hover:shadow-md transition-all duration-300">
+                      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <InputGroup label={`Brand ${idx + 1} Name *`} placeholder="Brand Name" value={b.brandName} onChange={(v) => updateCompanyBrandRow(idx, 'brandName', v)} />
+                        
+                        <div className="space-y-2">
+                          <label className="text-sm font-bold text-gray-700 ml-1 block">Logo Option</label>
+                          <div className="flex p-1 bg-gray-100 rounded-xl">
+                            <button type="button" onClick={() => updateCompanyBrandRow(idx, 'logoType', 'url')} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${b.logoType === 'url' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>URL</button>
+                            <button type="button" onClick={() => updateCompanyBrandRow(idx, 'logoType', 'upload')} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${b.logoType === 'upload' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>Upload</button>
+                          </div>
+                        </div>
+
+                        <div className="flex items-end gap-2">
+                          <div className="flex-1">
+                            {b.logoType === 'url' ? (
+                              <InputGroup label="Logo URL" placeholder="https://..." value={b.brandLogo} onChange={(v) => updateCompanyBrandRow(idx, 'brandLogo', v)} type="url" required={false} />
+                            ) : (
+                              <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-700 ml-1 block">Upload Logo</label>
+                                <input 
+                                  type="file" 
+                                  accept="image/*"
+                                  onChange={(e) => updateCompanyBrandRow(idx, 'logoFile', e.target.files?.[0])}
+                                  className="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-all border border-gray-200 rounded-2xl p-1 bg-white"
+                                />
+                              </div>
+                            )}
+                          </div>
+                          {companyBrands.length > 1 && (
+                            <button 
+                              type="button" 
+                              onClick={() => removeCompanyBrandRow(idx)}
+                              className="mb-1 p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all" 
+                              title="Remove"
+                            >
+                              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" /></svg>
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      {companyBrands.length > 1 && (
-                        <button 
-                          type="button" 
-                          onClick={() => removeCompanyBrandRow(idx)}
-                          className="sm:mt-8 p-3 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all" 
-                          title="Remove"
-                        >
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3" /></svg>
-                        </button>
+                      
+                      {/* Logo Preview */}
+                      {(b.brandLogo || b.logoFile) && (
+                        <div className="mt-2 flex items-center gap-3 p-2 bg-gray-50 rounded-2xl border border-gray-100">
+                          <div className="w-10 h-10 rounded-lg overflow-hidden border border-white bg-white shadow-sm shrink-0">
+                            <img 
+                              src={b.logoFile ? URL.createObjectURL(b.logoFile) : b.brandLogo} 
+                              alt="Logo" 
+                              className="w-full h-full object-contain"
+                              onError={(e) => { e.currentTarget.src = "/placeholder-logo.png"; }}
+                            />
+                          </div>
+                          <span className="text-[10px] font-bold text-gray-500 truncate max-w-[150px]">
+                            {b.logoFile ? b.logoFile.name : b.brandLogo.split('/').pop()}
+                          </span>
+                        </div>
                       )}
                     </div>
                   ))}
