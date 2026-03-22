@@ -581,7 +581,7 @@ export default function GenerateQrs() {
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
             <span className="w-1 h-6 bg-indigo-600 rounded-full"></span>
-            Create New Product Record
+            Create New Product Recordww
           </h3>
         </div>
 

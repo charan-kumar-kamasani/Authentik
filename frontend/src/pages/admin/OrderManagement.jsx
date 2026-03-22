@@ -553,28 +553,7 @@ const OrderManagement = () => {
         </div>
       </div>
 
-      {/* Creator form */}
-      {role === 'creator' && (
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/60">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-1.5 h-6 bg-blue-500 rounded-full" />
-            <h3 className="text-lg font-black text-slate-800 tracking-tight">Create New Product Record</h3>
-          </div>
-          <form onSubmit={handleCreatorOrder} className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <InputField label="Product Name" required value={newQr.productName} onChange={e => setNewQr({ ...newQr, productName: e.target.value })} />
-            <InputField label="Brand" required value={newQr.brand} onChange={e => setNewQr({ ...newQr, brand: e.target.value })} />
-            <InputField label="Batch Number" required value={newQr.batchNo} onChange={e => setNewQr({ ...newQr, batchNo: e.target.value })} />
-            <InputField label="Quantity" type="number" min="1" value={newQr.quantity} onChange={e => setNewQr({ ...newQr, quantity: e.target.value })} />
-            <InputField label="Manufacture Date" type="date" value={newQr.manufactureDate} onChange={e => setNewQr({ ...newQr, manufactureDate: e.target.value })} />
-            <InputField label="Expiry Date" type="date" value={newQr.expiryDate} onChange={e => setNewQr({ ...newQr, expiryDate: e.target.value })} />
-            <div className="md:col-span-2">
-              <button type="submit" disabled={creatorSubmitting} className={"w-full py-3 text-white font-bold rounded-xl shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-all " + (creatorSubmitting ? 'bg-blue-300 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:shadow-xl')}>
-                {creatorSubmitting ? 'Creating...' : 'Generate Product & QR'}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+      
 
       {/* Filters */}
       <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/60 flex flex-wrap gap-3 items-center">

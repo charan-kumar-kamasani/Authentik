@@ -20,18 +20,6 @@ const ProductManager = () => {
     productInfo: '',
     productImage: null,
     imagePreview: null,
-    // Detailed Profile Fields
-    category: '',
-    mrp: '',
-    keyBenefits: '',
-    manufacturedBy: '',
-    marketedBy: '',
-    importMarketedBy: '',
-    importerRegNo: '',
-    countryOfOrigin: '',
-    website: '',
-    supportEmail: '',
-    customerCare: '',
   });
 
   const resetForm = () => {
@@ -41,17 +29,6 @@ const ProductManager = () => {
       productInfo: '',
       productImage: null,
       imagePreview: null,
-      category: '',
-      mrp: '',
-      keyBenefits: '',
-      manufacturedBy: '',
-      marketedBy: '',
-      importMarketedBy: '',
-      importerRegNo: '',
-      countryOfOrigin: '',
-      website: '',
-      supportEmail: '',
-      customerCare: '',
     });
     setEditProductId(null);
   };
@@ -132,17 +109,6 @@ const ProductManager = () => {
         productName: formData.productName,
         brandId: formData.brandId,
         productInfo: formData.productInfo,
-        category: formData.category,
-        mrp: formData.mrp ? Number(formData.mrp) : undefined,
-        keyBenefits: formData.keyBenefits,
-        manufacturedBy: formData.manufacturedBy,
-        marketedBy: formData.marketedBy,
-        importMarketedBy: formData.importMarketedBy,
-        importerRegNo: formData.importerRegNo,
-        countryOfOrigin: formData.countryOfOrigin,
-        website: formData.website,
-        supportEmail: formData.supportEmail,
-        customerCare: formData.customerCare,
       };
 
       if (finalImageUrl) {
@@ -177,17 +143,6 @@ const ProductManager = () => {
       productInfo: product.productInfo || '',
       productImage: null,
       imagePreview: product.productImage || null,
-      category: product.category || '',
-      mrp: product.mrp || '',
-      keyBenefits: product.keyBenefits || '',
-      manufacturedBy: product.manufacturedBy || '',
-      marketedBy: product.marketedBy || '',
-      importMarketedBy: product.importMarketedBy || '',
-      importerRegNo: product.importerRegNo || '',
-      countryOfOrigin: product.countryOfOrigin || '',
-      website: product.website || '',
-      supportEmail: product.supportEmail || '',
-      customerCare: product.customerCare || '',
     });
     setEditProductId(product._id);
     setActiveTab('create');
@@ -279,7 +234,7 @@ const ProductManager = () => {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-blue-50/30 rounded-[2rem] border border-blue-100/50">
+                <div className="grid grid-cols-1 gap-6 p-6 bg-blue-50/30 rounded-[2rem] border border-blue-100/50">
                   <div className="flex flex-col gap-2 group">
                     <label className="text-sm font-bold text-gray-600 ml-1">Product Name *</label>
                     <input
@@ -291,45 +246,7 @@ const ProductManager = () => {
                       className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-semibold shadow-sm"
                     />
                   </div>
-
-                  <div className="flex flex-col gap-2 group">
-                    <label className="text-sm font-bold text-gray-600 ml-1">Brand *</label>
-                    <select
-                      required
-                      value={formData.brandId}
-                      onChange={(e) => setFormData({ ...formData, brandId: e.target.value })}
-                      className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-semibold shadow-sm"
-                    >
-                      <option value="">Select Brand</option>
-                      {brands.map(b => (
-                        <option key={b._id} value={b._id}>{b.brandName}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="flex flex-col gap-2 group">
-                    <label className="text-sm font-bold text-gray-600 ml-1">Category</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Skin Care, Electronics"
-                      value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                      className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-gray-900 font-semibold shadow-sm focus:border-blue-500 outline-none"
-                    />
-                  </div>
-
-                  <div className="flex flex-col gap-2 group">
-                    <label className="text-sm font-bold text-gray-600 ml-1">MRP (₹)</label>
-                    <input
-                      type="number"
-                      placeholder="999"
-                      value={formData.mrp}
-                      onChange={(e) => setFormData({ ...formData, mrp: e.target.value })}
-                      className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-gray-900 font-semibold shadow-sm focus:border-blue-500 outline-none"
-                    />
-                  </div>
                 </div>
-
                 <div className="p-8 bg-gray-50/50 rounded-[2rem] border border-gray-100">
                   <div className="flex items-center gap-2 mb-4">
                     <Info size={18} className="text-blue-600" />
@@ -339,7 +256,7 @@ const ProductManager = () => {
                   
                   <div className="space-y-6">
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm font-bold text-gray-600 ml-1">Detailed Product Information</label>
+                        <label className="text-sm font-bold text-gray-600 ml-1">Image Description</label>
                         <textarea
                         placeholder="Comprehensive details for scan result page..."
                         value={formData.productInfo}
@@ -348,41 +265,7 @@ const ProductManager = () => {
                         className="w-full px-6 py-4 bg-white border border-gray-100 rounded-[1.5rem] text-gray-900 resize-none focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium shadow-sm"
                         />
                     </div>
-
-                    <div className="flex flex-col gap-2">
-                        <label className="text-sm font-bold text-gray-600 ml-1">Key Benefits (One per line)</label>
-                        <textarea
-                        placeholder="• High Quality&#10;• Long Lasting&#10;• Durable"
-                        value={formData.keyBenefits}
-                        onChange={(e) => setFormData({ ...formData, keyBenefits: e.target.value })}
-                        rows={3}
-                        className="w-full px-6 py-4 bg-white border border-gray-100 rounded-[1.5rem] text-gray-900 resize-none focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium shadow-sm"
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {[
-                        { key: 'manufacturedBy', label: 'Manufactured By' },
-                        { key: 'marketedBy', label: 'Marketed By' },
-                        { key: 'countryOfOrigin', label: 'Country of Origin' },
-                        { key: 'website', label: 'Website' },
-                        { key: 'supportEmail', label: 'Support E-mail' },
-                        { key: 'customerCare', label: 'Customer Care' },
-                        { key: 'importMarketedBy', label: 'Importer & Marketed By' },
-                        { key: 'importerRegNo', label: 'Importer Reg. No' },
-                      ].map(field => (
-                        <div key={field.key} className="flex flex-col gap-1.5">
-                          <label className="text-xs font-bold text-gray-500 ml-1">{field.label}</label>
-                          <input
-                            type="text"
-                            value={formData[field.key]}
-                            onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
-                            className="bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-semibold focus:border-blue-500 outline-none transition-all"
-                          />
-                        </div>
-                      ))}
-                    </div>
-
+ 
                     <div className="flex flex-col gap-2">
                         <label className="text-sm font-bold text-gray-600 ml-1">Product Image</label>
                         <div className="flex items-center gap-6 p-4 bg-white border border-gray-100 rounded-[1.5rem] shadow-sm">

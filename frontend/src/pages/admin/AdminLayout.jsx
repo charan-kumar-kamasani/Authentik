@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Box,
   ShieldCheck,
+  Star,
   Ticket,
   LayoutDashboard,
   Receipt,
@@ -235,6 +236,12 @@ export default function AdminLayout({ children }) {
                 onClick={() => navigate("/admin/reports")}
                 icon={BarChart2}
                 isActive={activePath === "/admin/reports"}
+              />
+              <SidebarItem
+                label="Product Reviews"
+                onClick={() => navigate("/admin/reviews")}
+                icon={Star}
+                isActive={activePath === "/admin/reviews"}
               />
               <SidebarItem
                 label="QR Inventory"

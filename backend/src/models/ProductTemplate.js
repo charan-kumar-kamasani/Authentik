@@ -21,12 +21,12 @@ const productTemplateSchema = new mongoose.Schema({
   brandId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Brand',
-    required: true
+    required: false
   },
   companyId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Company',
-    required: true
+    required: false
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,

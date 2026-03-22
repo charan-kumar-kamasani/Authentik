@@ -590,13 +590,18 @@ export default function AuthDashboard({ role: propRole }) {
             <StatCard icon={RotateCcw} label="Repeat Users"     value={consumerInsights.repeatUsers}    color="green" />
             <StatCard icon={Zap}       label="Engagement Rate"  color="orange"
               renderValue={c => <p className={`text-3xl font-black ${c.text} tracking-tight`}>{consumerInsights.engagementRate || 0}%</p>} />
-            <StatCard icon={Star} label="Avg. Rating" color="yellow"
-              renderValue={() => (
-                <div className="flex items-center gap-2">
-                  <div className="flex">{[1,2,3,4,5].map(s => <Star key={s} size={18} fill={s<=4?'#f59e0b':'none'} className={s<=4?'text-amber-400':'text-slate-300'} />)}</div>
-                  <span className="text-2xl font-black text-amber-600">4.5</span>
-                </div>
-              )} />
+            <div 
+              onClick={() => navigate("/admin/reviews")}
+              className="cursor-pointer transition-transform hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <StatCard icon={Star} label="Avg. Rating" color="yellow"
+                renderValue={() => (
+                  <div className="flex items-center gap-2">
+                    <div className="flex">{[1,2,3,4,5].map(s => <Star key={s} size={18} fill={s<=4?'#f59e0b':'none'} className={s<=4?'text-amber-400':'text-slate-300'} />)}</div>
+                    <span className="text-2xl font-black text-amber-600">4.5</span>
+                  </div>
+                )} />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">

@@ -42,6 +42,7 @@ import ReportProduct from "./pages/mobile/ReportProduct";
 import MyReports from "./pages/mobile/MyReports";
 import Notifications from "./pages/mobile/Notifications";
 import ProductManager from "./pages/admin/ProductManager";
+import AdminReviews from "./pages/admin/AdminReviews";
 
 // User private route
 function PrivateRoute({ children }) {
@@ -160,6 +161,7 @@ export default function App() {
             <Route path="/admin/test-accounts" element={<AdminRoute><AdminLayout><AdminTestAccounts /></AdminLayout></AdminRoute>} />
             <Route path="/admin/form-config" element={<AdminRoute><AdminLayout><QrFormConfig /></AdminLayout></AdminRoute>} />
             <Route path="/admin/analytics" element={<AdminRoute><AdminLayout><AuthDashboard /></AdminLayout></AdminRoute>} />
+            <Route path="/admin/reviews" element={<AdminRoute><AdminLayout><AdminReviews /></AdminLayout></AdminRoute>} />
             <Route
               path="/users"
               element={
@@ -291,6 +293,7 @@ export default function App() {
           <Route path="/admin/price-plans" element={<AdminRoute><AdminLayout><AdminPricePlans /></AdminLayout></AdminRoute>} />
           <Route path="/admin/billing" element={<AdminRoute><AdminLayout><BillingCredits /></AdminLayout></AdminRoute>} />
           <Route path="/admin/analytics" element={<AdminRoute><AdminLayout><AuthDashboard /></AdminLayout></AdminRoute>} />
+          <Route path="/admin/reviews" element={<AdminRoute><AdminLayout><AdminReviews /></AdminLayout></AdminRoute>} />
 
           <Route
             path="/users"
