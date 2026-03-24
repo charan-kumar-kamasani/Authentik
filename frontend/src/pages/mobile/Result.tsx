@@ -89,7 +89,7 @@ function ResultAuthentic({ data }: { data: any }) {
   const [comment, setComment] = useState("");
   const [optIn, setOptIn] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [isReviewed, setIsReviewed] = useState(false);
+  const [isReviewed, setIsReviewed] = useState(data.alreadyReviewed || false);
 
   // Determine colors
   const productName = data.productName || data.productId?.productName || "Product Info";
@@ -100,7 +100,6 @@ function ResultAuthentic({ data }: { data: any }) {
 
   const companyName = data.companyName || data.company || data.manufacturer || data.brand || data.productId?.brand || "-";
 
-  // List of technical info fields to show in blue boxes
   const technicalFields = [
     { key: "brand", label: "Brand" },
     { key: "category", label: "Category" },
@@ -118,8 +117,15 @@ function ResultAuthentic({ data }: { data: any }) {
     { key: "expiryDate", label: "Exp by" },
   ];
 
-  // Combine all fields into a single list, only if they have a value
-  const allFields: { label: string; value: any }[] = [];
+  // Helper to format labels from camelCase
+  const formatLabel = (key: string) => {
+    const result = key.replace(/([A-Z])/g, " $1");
+    return result.charAt(0).toUpperCase() + result.slice(1).trim();
+  };
+
+  // Combine blue fields
+  const blueFields: { label: string; value: any }[] = [];
+  const handledKeys = new Set<string>();
 
   technicalFields.forEach(({ key, label }) => {
     let val = data[key] || data.productId?.[key];
@@ -134,7 +140,6 @@ function ResultAuthentic({ data }: { data: any }) {
       if (variant) val = variant.value;
     }
 
-    // Better handling for date objects to avoid [object Object]
     const isDateObject = (v: any) => v && typeof v === 'object' && v.month && v.year;
 
     if (key === "mfdOn") {
@@ -156,15 +161,15 @@ function ResultAuthentic({ data }: { data: any }) {
       }
     }
 
-    if (val && val !== "-" && allFields.length < 14) {
-      allFields.push({ label, value: String(val) });
+    if (val && val !== "-") {
+      blueFields.push({ label, value: String(val) });
+      handledKeys.add(key);
     }
   });
 
-  const displayedFields = allFields;
-  const hasMore = false; // No longer need "More Info" for the grid as per user request to show "those only"
+  const fieldLabels = data.fieldLabels || data.productId?.fieldLabels || {};
 
-  // Additional Info fields
+  // Additional Info fields (hardcoded list)
   const additionalInfoFields = [
     { key: "manufacturedBy", label: "Manufactured By" },
     { key: "marketedBy", label: "Marketed By" },
@@ -175,6 +180,46 @@ function ResultAuthentic({ data }: { data: any }) {
     { key: "supportEmail", label: "Support E-mail" },
     { key: "customerCare", label: "Customer Care" },
   ];
+
+  // Dynamic fields to be shown in gray section
+  const grayFields: { label: string; value: any }[] = [];
+  
+  // 1. Add fields from hardcoded additionalInfoFields
+  additionalInfoFields.forEach(({ key, label }) => {
+    let val = data[key] || data.productId?.[key];
+    if (!val && data.dynamicFields) val = data.dynamicFields[key];
+    if (!val && data.productId?.dynamicFields) val = data.productId?.dynamicFields[key];
+
+    if (val && val !== "-" && !handledKeys.has(key)) {
+      grayFields.push({ label, value: String(val) });
+      handledKeys.add(key);
+    }
+  });
+
+  // 2. Add all other dynamic fields that haven't been handled yet
+  const combinedDynamicFields = { ...(data.productId?.dynamicFields || {}), ...(data.dynamicFields || {}) };
+  Object.keys(combinedDynamicFields).forEach(key => {
+    if (!handledKeys.has(key)) {
+      // Skip quantity-related fields from display as per user request
+      const lowerKey = key.toLowerCase();
+      if (lowerKey === 'product quantity' || lowerKey === 'quantity' || lowerKey === 'productquantity' || lowerKey === 'qr quantity' || lowerKey === 'qrquantity') {
+        return;
+      }
+
+      let val = combinedDynamicFields[key];
+      if (val && val !== "-") {
+        if (typeof val === 'object' && val.month && val.year) {
+           val = `${val.month} ${val.year}`;
+        }
+        
+        if (typeof val !== 'object') {
+          const label = fieldLabels[key] || formatLabel(key);
+          grayFields.push({ label, value: String(val) });
+          handledKeys.add(key);
+        }
+      }
+    }
+  });
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] font-sans flex flex-col items-center">
@@ -232,22 +277,22 @@ function ResultAuthentic({ data }: { data: any }) {
           </div>
 
           <div className="p-2 space-y-4">
-            {/* Grid Details */}
+            {/* Grid Details (Blue Cards) */}
             <div className="grid grid-cols-2 gap-3">
-              {displayedFields.map((field, idx) => (
+              {blueFields.map((field, idx) => (
                 <DetailBox key={idx} label={field.label} value={field.value} />
               ))}
             </div>
 
-            {/* Additional Info Section */}
+            {/* Additional Info Section (Gray Box) */}
             <div className="mt-6 border-t border-gray-100 pt-4">
               <h4 className="text-[#333] font-bold text-[14px] mb-3 ml-1 uppercase tracking-tight">Additional Info:</h4>
               <div className="bg-[#F2F2F2] p-5 rounded-[20px] shadow-sm space-y-4 border border-gray-200/50">
                 {/* Product Info / Description */}
-                {(data.description || data.productId?.description) && (
+                {(data.description || data.productId?.description || data.productInfo || data.productId?.productInfo) && (
                   <div className="mb-4">
                     <p className="text-[#444] text-[15px] font-medium whitespace-pre-wrap leading-relaxed">
-                      {data.description || data.productId?.description}
+                      {data.description || data.productId?.description || data.productInfo || data.productId?.productInfo}
                     </p>
                   </div>
                 )}
@@ -264,18 +309,14 @@ function ResultAuthentic({ data }: { data: any }) {
                   </div>
                 )}
 
-                {/* Meta Details List */}
+                {/* All Collected Gray Fields */}
                 <div className="space-y-4">
-                  {additionalInfoFields.map(({ key, label }) => {
-                    const val = data[key] || data.productId?.[key];
-                    if (!val || val === "-") return null;
-                    return (
-                      <div key={key} className="border-b border-gray-300/30 pb-3 last:border-0 last:pb-0">
-                        <p className="text-[#333] text-[11px] font-bold uppercase tracking-wider opacity-60 mb-1">{label}</p>
-                        <p className="text-[#0D4E96] text-[14px] font-bold">{val}</p>
-                      </div>
-                    );
-                  })}
+                  {grayFields.map(({ label, value }, idx) => (
+                    <div key={idx} className="border-b border-gray-300/30 pb-3 last:border-0 last:pb-0">
+                      <p className="text-[#333] text-[11px] font-bold uppercase tracking-wider opacity-60 mb-1">{label}</p>
+                      <p className="text-[#0D4E96] text-[14px] font-bold">{value}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

@@ -1,242 +1,196 @@
 import React, { useEffect, useState } from "react";
+import { Check, Shield, Zap, TrendingUp, Globe, AlertCircle, Info, Star } from "lucide-react";
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import techBg from "../../assets/web/hero_image.png";
 
-// Assets for "What's Included"
-import verifiedIcon from "../../assets/web/pricing/verified.svg";
-import recheckIcon from "../../assets/web/pricing/recheck.svg";
-import counterfeitIcon from "../../assets/web/pricing/countefeit.svg";
-import couponIcon from "../../assets/web/pricing/coupon.svg";
-
-// Badge Assets
-import scale6 from "../../assets/web/pricing/scale_6.png"; // Most Popular
-import scale4 from "../../assets/web/pricing/scale_4.png"; // Save 50k
-import scal3 from "../../assets/web/pricing/scal_3.png"; // Save 3L
-
-// import pricing from '../../assets/web/pricing/price.png';
-// import trial from '../../assets/web/pricing/trial.png';
-// import starter from '../../assets/web/pricing/starter.png';
-// import growth from '../../assets/web/pricing/growth.png';
-// import scale from '../../assets/web/pricing/scale.png';
-// import shield from '../../assets/web/pricing/shield.png';
-
-import india from '../../assets/web/pricing/india.png';
-import global from '../../assets/web/pricing/us.png';
-
-const SectionSeparator = () => (
-    <div className="h-[3px] bg-gray-200 flex-grow"></div>
+const Glow = ({ color, className }) => (
+  <div className={`glow-bg h-64 w-64 ${color} ${className}`} />
 );
 
+const PricingCard = ({ title, price, description, features, highlighted, badge }) => (
+  <div className={`glass-effect p-8 rounded-[2.5rem] flex flex-col relative overflow-hidden transition-all duration-500 hover:scale-[1.02] border border-white/5 ${highlighted ? 'border-indigo-500/50 ring-1 ring-indigo-500/20' : ''}`}>
+    {highlighted && <div className="absolute top-0 right-0 bg-indigo-500 text-white text-[10px] font-black uppercase px-4 py-1 rounded-bl-xl tracking-widest">{badge || "Most Popular"}</div>}
+    <div className="mb-8">
+      <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-2">{title}</h3>
+      <div className="flex items-baseline gap-1">
+        <span className="text-4xl font-black text-white tracking-tighter">{price}</span>
+        {price !== "Custom" && <span className="text-gray-500 font-bold">/unit</span>}
+      </div>
+      <p className="text-sm text-gray-400 font-bold mt-2">{description}</p>
+    </div>
+    <ul className="space-y-4 mb-8 flex-grow">
+      {features.map((feature, i) => (
+        <li key={i} className="flex items-start gap-3 text-sm font-bold text-gray-300">
+          <Check size={18} className="text-indigo-400 shrink-0" />
+          <span>{feature}</span>
+        </li>
+      ))}
+    </ul>
+    <button className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-sm transition-all ${highlighted ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-lg shadow-indigo-500/20' : 'bg-white/5 text-white hover:bg-white/10 border border-white/10'}`}>
+      Choose Plan
+    </button>
+  </div>
+);
 
+const FeatureItem = ({ icon: Icon, title, description }) => (
+  <div className="glass-effect p-6 rounded-3xl border border-white/5 hover:border-indigo-500/20 transition-all group">
+    <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:bg-indigo-500/20 transition-all">
+      <Icon size={24} />
+    </div>
+    <h4 className="text-white font-black uppercase tracking-tight mb-2 text-sm">{title}</h4>
+    <p className="text-xs text-gray-400 font-bold leading-relaxed">{description}</p>
+  </div>
+);
 
 export default function WebPricing() {
     const [isIndia, setIsIndia] = useState(false);
+    
     useEffect(() => {
         fetch("https://ipapi.co/json/")
             .then(res => res.json())
             .then(data => {
-                console.log("User country:", data.country_name);
-
-                if (data.country_code == "IN") {
-                    setIsIndia(true)
-                    console.log("User is from India 🇮🇳");
-                } else {
-                    setIsIndia(false)
-                    console.log("User is outside India 🌍");
+                if (data.country_code === "IN") {
+                    setIsIndia(true);
                 }
-            });
-
+            })
+            .catch(() => setIsIndia(false));
     }, []);
 
     return (
-        <div className="font-sans min-h-screen bg-white w-full overflow-x-hidden">
+        <div className="min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden flex flex-col">
             <WebHeader />
 
-            {/* Hero Banner */}
-            <div
-                className="w-full h-[200px] flex items-center relative overflow-hidden bg-cover bg-center"
-                style={{ backgroundImage: `url(${techBg})` }}
-            >
-                <div className="absolute inset-0 bg-black/40"></div>
-                <div className="container mx-auto px-6 md:px-12 relative z-10 text-white">
-                    <h1 className="text-4xl font-bold mb-2">Pricing</h1>
-                    <p className="text-xl text-blue-200">
-                        Turn every scan into trust today and repeat purchases tomorrow.
+            {/* Hero Section */}
+            <section className="relative pt-32 pb-20 px-6 overflow-hidden">
+                <Glow color="bg-indigo-600" className="-top-24 -left-24 opacity-20" />
+                <div className="container mx-auto text-center relative z-10">
+                    <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-white mb-6 uppercase">
+                        Transparent <span className="gradient-text">Pricing</span>
+                    </h1>
+                    <p className="text-xl text-gray-400 font-bold max-w-2xl mx-auto mb-4">
+                        Enterprise-grade product authentication. Zero platform fees. Pay only for the protection you use.
                     </p>
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-sm font-black italic">
+                        "Don't Just Sell Products. Own the Data Behind Them."
+                    </div>
                 </div>
-            </div>
+            </section>
 
             {/* Pricing Plans */}
-            <section className="py-12 bg-white w-full px-8 md:px-16">
-                <div className="flex items-center justify-center mb-4 relative w-full px-4 gap-4">
-                    <SectionSeparator />
-                    <h2 className="text-2xl md:text-4xl font-bold text-[#214B80] text-center whitespace-nowrap">Pricing Plans</h2>
-                    <SectionSeparator />
+            <section className="py-20 px-6">
+                <div className="container mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                        <PricingCard 
+                            title="Starter"
+                            price={isIndia ? "₹0" : "$0.00"}
+                            description="Perfect for emerging brands testing the market."
+                            features={[
+                                "Unique QR Code Generation",
+                                "Basic Scan Verification",
+                                "Standard Tamper-Proof Labels",
+                                "Email Support",
+                                "Up to 10k Products/mo"
+                            ]}
+                        />
+                        <PricingCard 
+                            title="Growth"
+                            price={isIndia ? "₹2" : "$0.03"}
+                            description="Optimized for scaling production lines."
+                            highlighted={true}
+                            badge="Best Value"
+                            features={[
+                                "Everything in Starter",
+                                "Advanced Scan Intelligence",
+                                "Priority QR Activation",
+                                "Geo-Location Insights",
+                                "Up to 100k Products/mo"
+                            ]}
+                        />
+                        <PricingCard 
+                            title="Enterprise"
+                            price={isIndia ? "₹3" : "Custom"}
+                            description="For global supply chains requiring deep security."
+                            features={[
+                                "Custom Security Features",
+                                "API Integration Access",
+                                "Dedicated Account Manager",
+                                "Anti-Grey Market Alerts",
+                                "Unlimited Volume"
+                            ]}
+                        />
+                    </div>
+                    
+                    <p className="text-center mt-12 text-gray-500 font-bold italic">
+                        {isIndia ? "Just 1 prevented counterfeit case can save ₹10-50 lakhs." : "Preventing just one counterfeit batch can save $50k - $200k in brand equity."}
+                    </p>
                 </div>
-                <p className="text-center text-[#214B80] font-semibold text-base md:text-lg mb-4">
-                    Enterprise-grade product authentication. Zero platform fee.
-                </p>
-                <p className="text-center text-[#214B80] font-bold italic text-base md:text-lg mb-14">
-                    "Don't Just Sell Products. Own the Data Behind Them, Subscribe Now."
-                </p>
-
-                {/* Overlapping Cards Layout - Desktop */}
-                <div className="hidden md:flex items-end justify-center relative w-[800px] mx-auto gap-6" style={{ minHeight: '520px' }}>
-                    {/* Starter Plan - Left */}
-                    <div className="relative z-15 -mr-8 mb-14 self-end">
-                        <img
-                            src={isIndia ? india : global}
-                            alt="Starter Plan"
-                            className="w-[100%] h-auto object-contain drop-shadow-lg mb-4"
-                        />
-                    </div>
-
-
-
-                </div>
-
-                {/* Mobile Cards Layout - Stacked */}
-                <div className="flex md:hidden flex-col items-center gap-8">
-                    {/* Starter */}
-                    <div>
-                        <img
-                            src={scale6}
-                            alt="Starter Plan"
-                            className="w-[300px] h-auto object-contain drop-shadow-lg rounded-2xl"
-                        />
-                    </div>
-
-                    {/* Growth - with badge */}
-                    <div className="flex flex-col items-center">
-                        <div className="bg-[#214B80] text-white font-bold text-lg px-8 py-2 rounded-full mb-3 shadow-md">
-                            Most Popular
-                        </div>
-                        <img
-                            src={scale4}
-                            alt="Growth Plan"
-                            className="w-[320px] h-auto object-contain drop-shadow-xl rounded-2xl"
-                        />
-                    </div>
-
-                    {/* Scale */}
-                    <div>
-                        <img
-                            src={scal3}
-                            alt="Scale Plan"
-                            className="w-[300px] h-auto object-contain drop-shadow-lg rounded-2xl"
-                        />
-                    </div>
-                </div>
-
-
-
-                <p className="text-center mt-10 text-lg md:text-xl font-bold italic text-[#333]">
-                    "Just 1 prevented counterfeit case can save ₹10-50 lakhs."
-                </p>
             </section>
 
             {/* What's Included */}
-            <section className="py-12 bg-white w-full px-8 md:px-16">
-                <div className="flex items-center justify-center mb-10 relative w-full px-4 gap-4">
-                    <SectionSeparator />
-                    <h2 className="text-2xl md:text-4xl font-bold text-[#214B80] text-center whitespace-nowrap">What's Included</h2>
-                    <SectionSeparator />
-                </div>
-
-                <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
-                    <FeatureCard icon={verifiedIcon} title="Unique QR Generation & Printing" />
-                    <FeatureCard icon={recheckIcon} title="Scan Verification & Analysis" />
-                    <FeatureCard icon={counterfeitIcon} title="Track Down Fake & Counterfeit Goods" />
-                    <FeatureCard icon={couponIcon} title="Optional Coupons & Engagement" />
+            <section className="py-24 px-6 border-y border-white/5 bg-white/[0.01]">
+                <div className="container mx-auto">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl md:text-4xl font-black text-white uppercase tracking-tighter mb-4">Full Suite of Features</h2>
+                        <p className="text-gray-400 font-bold">Every plan comes with our core protection engine.</p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+                        <FeatureItem 
+                            icon={Zap} 
+                            title="Unique QR Generation" 
+                            description="Advanced cryptographic generation ensuring every label is one-of-a-kind."
+                        />
+                        <FeatureItem 
+                            icon={TrendingUp} 
+                            title="Scan Analysis" 
+                            description="Real-time verification patterns to detect high-risk counterfeit activity."
+                        />
+                        <FeatureItem 
+                            icon={Shield} 
+                            title="Anti-Counterfeit" 
+                            description="Instant alerts when duplicate or unauthorized scans are detected."
+                        />
+                        <FeatureItem 
+                            icon={Star} 
+                            title="Brand Engagement" 
+                            description="Optional coupons and direct-to-consumer digital touchpoints."
+                        />
+                    </div>
                 </div>
             </section>
 
-            {/* Why Brands Trust Authentiks */}
-            <section className="py-12 bg-white w-full px-8 md:px-16">
-                <div className="flex items-center justify-center mb-10 relative w-full px-4 gap-4">
-                    <SectionSeparator />
-                    <h2 className="text-2xl md:text-4xl font-bold text-[#214B80] text-center whitespace-nowrap">Why Brands Trust Authentiks</h2>
-                    <SectionSeparator />
-                </div>
+            {/* Why Brands Trust */}
+            <section className="py-24 px-6">
+                <div className="container mx-auto max-w-6xl">
+                    <div className="flex flex-col md:flex-row items-end justify-between mb-16 gap-6 text-center md:text-left">
+                        <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter leading-none">
+                            Protection that <br /><span className="gradient-text">Scales</span> with You.
+                        </h2>
+                        <div className="flex items-center gap-2 text-indigo-400 font-black uppercase tracking-widest text-xs">
+                          TRUSTED BY GLOBAL LEADERS <Globe size={16} />
+                        </div>
+                    </div>
 
-                <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <TrustCard
-                        title="Protection Against Counterfeits"
-                        items={["Verify every product in real time", "Detect fake or duplicate products instantly", "Identify grey-market and parallel sales"]}
-                    />
-                    <TrustCard
-                        title="Visibility After the Sale"
-                        items={["Know where your products are scanned", "Know when and how often they are scanned", "Spot unusual scan patterns early"]}
-                    />
-                    <TrustCard
-                        title="Actionable Market Intelligence"
-                        items={["City-wise and region-wise demand signals", "Identify high-risk counterfeit zones", "Track genuine customer interactions"]}
-                    />
-                    <TrustCard
-                        title="Increased Repeat Purchases"
-                        items={["Offer coupons or discounts after genuine scan", "Encourage customers to buy again", "Convert one-time buyers into loyal customers"]}
-                    />
-                    <TrustCard
-                        title="Stronger Customer Trust"
-                        items={["Customers can instantly verify authenticity", "Builds confidence in buying genuine products", "Reduces customer complaints & disputes"]}
-                    />
-                    <TrustCard
-                        title="Easy to Adopt & Scale"
-                        items={["No subscription during trial", "Pay only for QR codes", "Works for small and large brands alike"]}
-                    />
-                    <TrustCard
-                        title="Simple Product-Level Authentication"
-                        items={["One QR per product unit", "Unique identity for every item", "No complex hardware or changes to production"]}
-                    />
-                    <TrustCard
-                        title="Warning System for Brand Abuse"
-                        items={["Duplicate scan alerts", "Unusual scanning behaviour detection", "Region-based counterfeit signals"]}
-                    />
-                    <TrustCard
-                        title="Cost-Effective Brand Security"
-                        items={["Much cheaper than legal action", "Scales with production volume", "ROI visible within weeks"]}
-                    />
-                    <TrustCard
-                        title="Works Across Channels"
-                        items={["Online marketplaces", "Retail stores", "Distributors & resellers"]}
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {[
+                            { t: "Real-Time Verification", d: "Confirm every product unit as genuine at the point of scan." },
+                            { t: "Grey Market Detection", d: "Identify parallel sales and unauthorized distribution channels." },
+                            { t: "Market Intelligence", d: "Track region-wise demand signals and consumer behavior." },
+                            { t: "Enhanced Loyalty", d: "Convert authentication into a secure marketing channel." }
+                        ].map((item, i) => (
+                            <div key={i} className="glass-effect p-8 rounded-[2rem] border border-white/5 flex items-start gap-6 group hover:border-indigo-500/20 transition-all">
+                                <div className="w-2 h-2 rounded-full bg-indigo-500 mt-2.5 group-hover:scale-150 transition-all shadow-[0_0_10px_rgba(99,102,241,0.5)]"></div>
+                                <div>
+                                    <h4 className="text-white font-black uppercase tracking-tight mb-2">{item.t}</h4>
+                                    <p className="text-gray-400 font-bold text-sm leading-relaxed">{item.d}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </section>
 
             <WebFooter />
-        </div>
-    );
-}
-
-function FeatureCard({ icon, title }) {
-    return (
-        <div className="border-2 border-gray-200 rounded-xl p-4 flex flex-col items-center text-center hover:shadow-md transition-shadow">
-            <div className="w-16 h-16 mb-3 flex items-center justify-center">
-                <img src={icon} alt={title} className="w-full h-full object-contain" />
-            </div>
-            <p className="text-[#214B80] font-bold text-sm leading-tight">{title}</p>
-        </div>
-    );
-}
-
-function TrustCard({ title, items }) {
-    return (
-        <div className="border-2 border-gray-200 rounded-xl overflow-hidden">
-            <div className="bg-gradient-to-r from-[#214B80] via-[#10233f] to-[#070F1A]
- text-white text-center py-2.5 px-4">
-                <h4 className="text-base font-bold italic">{title}</h4>
-            </div>
-            <div className="p-4">
-                <ul className="">
-                    {items.map((item, idx) => (
-                        <li key={idx} className="flex items-start text-[#214B80] font-semibold text-[16px]">
-                            <span className="text-[#214B80] font-bold">•</span>
-                            {item}
-                        </li>
-                    ))}
-                </ul>
-            </div>
         </div>
     );
 }

@@ -3,6 +3,9 @@ const Product = require("../models/Product");
 const Scan = require("../models/Scan");
 const Report = require("../models/Report");
 const User = require("../models/User");
+const FormConfig = require("../models/FormConfig");
+const Review = require("../models/Review");
+const jwt = require("jsonwebtoken");
 const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -118,6 +121,29 @@ console.log(qrCode)
 
     const product = await Product.findOne({ qrCode }).populate('orderId');
  
+    // Fetch field labels from global config
+    const config = await FormConfig.getGlobalFormConfig();
+    const fieldLabels = {};
+    if (config && config.customFields) {
+      config.customFields.forEach(f => {
+        fieldLabels[f.fieldName] = f.fieldLabel;
+      });
+    }
+
+    // Check if user has already reviewed
+    let alreadyReviewed = false;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'SECRET');
+        const review = await Review.findOne({ productId: product._id, userId: decoded.userId });
+        if (review) alreadyReviewed = true;
+      } catch (e) {
+        // Token invalid, ignore
+      }
+    }
+
     if (!product) {
       return res.json({ status: "FAKE", isActive: false, product: null });
     }
@@ -152,6 +178,8 @@ console.log(qrCode)
           calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
           dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
           variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
+          fieldLabels,
+          alreadyReviewed,
         }
       });
     }
@@ -183,6 +211,8 @@ console.log(qrCode)
         calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
         dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
         variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
+        fieldLabels,
+        alreadyReviewed,
       },
     });
   } catch (err) {
@@ -223,6 +253,29 @@ router.post("/", protect, async (req, res) => {
 
     // 1️⃣ Check product
     const product = await Product.findOne({ qrCode }).populate('orderId');
+
+    // Fetch field labels from global config
+    const config = await FormConfig.getGlobalFormConfig();
+    const fieldLabels = {};
+    if (config && config.customFields) {
+      config.customFields.forEach(f => {
+        fieldLabels[f.fieldName] = f.fieldLabel;
+      });
+    }
+
+    // Check if user has already reviewed
+    let alreadyReviewed = false;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'SECRET');
+        const review = await Review.findOne({ productId: product._id, userId: decoded.userId });
+        if (review) alreadyReviewed = true;
+      } catch (e) {
+        // Token invalid, ignore
+      }
+    }
 
     // --- We record EVERY attempt, so we skip searching for existingScan here ---
 console.log("______product", product) 
@@ -301,6 +354,8 @@ console.log("______product", product)
           calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
           dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
           variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
+          fieldLabels,
+          alreadyReviewed,
           place,
           scannedAt: scan.createdAt
         }
@@ -348,6 +403,8 @@ console.log("______product", product)
           calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
           dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
           variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
+          fieldLabels,
+          alreadyReviewed,
           place,
           latitude,
           longitude,
@@ -420,6 +477,8 @@ console.log("______product", product)
           calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
           dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
           variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
+          fieldLabels,
+          alreadyReviewed,
           place,
           scannedAt: scan.createdAt,
           originalScan: {
@@ -467,6 +526,8 @@ console.log("______product", product)
         calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
         dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
         variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
+        fieldLabels,
+        alreadyReviewed,
         place,
         latitude,
         longitude,

@@ -772,11 +772,17 @@ router.patch('/companies/:id', protect, authorize('superadmin', 'admin'), async 
         });
         
         // Handle Authorizer/Creator email strings in Company model
-        if (authorizerEmails) {
-            company.authorizerEmails = authorizerEmails.map(e => typeof e === 'string' ? e : e.email);
+        if (Array.isArray(authorizerEmails)) {
+            company.authorizerEmails = authorizerEmails.map(e => {
+                if (typeof e === 'string') return e;
+                return e?.email || e?.value || "";
+            }).filter(email => email);
         }
-        if (creatorEmails) {
-            company.creatorEmails = creatorEmails.map(e => typeof e === 'string' ? e : e.email);
+        if (Array.isArray(creatorEmails)) {
+            company.creatorEmails = creatorEmails.map(e => {
+                if (typeof e === 'string') return e;
+                return e?.email || e?.value || "";
+            }).filter(email => email);
         }
 
         await company.save();
@@ -788,19 +794,34 @@ router.patch('/companies/:id', protect, authorize('superadmin', 'admin'), async 
 
         const processEmails = async (emailList, role) => {
             const created = [];
+            if (!Array.isArray(emailList)) return created;
+            
             for (const entry of emailList) {
-                const email = typeof entry === 'string' ? entry : entry.email;
-                const password = typeof entry === 'object' ? entry.password : '';
+                const email = typeof entry === 'string' ? entry : (entry?.email || entry?.value || "");
+                const password = typeof entry === 'object' ? (entry?.password || "") : "";
                 
                 if (!email) continue;
                 const exists = await User.findOne({ email });
                 if (exists) {
+                    // Update user fields if they are missing
+                    let userChanged = false;
                     if (!exists.companyId) {
                         exists.companyId = company._id;
-                        exists.brandIds = allBrandIds;
-                        exists.brandId = firstBrandId;
-                        await exists.save();
+                        userChanged = true;
                     }
+                    // For staff, ensure they are linked to all company brands
+                    exists.brandIds = allBrandIds;
+                    exists.brandId = firstBrandId;
+                    userChanged = true;
+
+                    // Update password if a new one is provided
+                    if (password) {
+                        const salt = await bcrypt.genSalt(10);
+                        exists.password = await bcrypt.hash(password, salt);
+                        userChanged = true;
+                    }
+
+                    if (userChanged) await exists.save();
                     continue;
                 }
                 
@@ -831,21 +852,43 @@ router.patch('/companies/:id', protect, authorize('superadmin', 'admin'), async 
         if (Array.isArray(brands) && brands.length > 0) {
             for (const b of brands) {
                 if (!b.brandName) continue;
-                // Check if brand already exists (by name for this company)
-                const exists = await Brand.findOne({ brandName: b.brandName, companyId: company._id });
-                if (exists) {
-                    // Update logo if different
-                    if (b.brandLogo && b.brandLogo !== exists.brandLogo) {
-                        exists.brandLogo = b.brandLogo;
-                        await exists.save();
+                
+                let brandToUpdate = null;
+                // 1. Try finding by ID if provided
+                if (b._id) {
+                    brandToUpdate = await Brand.findById(b._id);
+                }
+                
+                // 2. Fallback to name-based lookup for this company if no ID or not found by ID
+                if (!brandToUpdate) {
+                    brandToUpdate = await Brand.findOne({ brandName: b.brandName, companyId: company._id });
+                }
+
+                if (brandToUpdate) {
+                    // Update existing brand
+                    let changed = false;
+                    if (b.brandName !== brandToUpdate.brandName) {
+                        brandToUpdate.brandName = b.brandName;
+                        changed = true;
                     }
+                    if (b.brandLogo && b.brandLogo !== brandToUpdate.brandLogo) {
+                        brandToUpdate.brandLogo = b.brandLogo;
+                        changed = true;
+                    }
+                    if (b.status && b.status !== brandToUpdate.status) {
+                        brandToUpdate.status = b.status;
+                        changed = true;
+                    }
+                    if (changed) await brandToUpdate.save();
                     continue;
                 }
 
+                // 3. Create new brand if not found
                 const created = await Brand.create({
                     brandName: b.brandName,
                     brandLogo: b.brandLogo || null,
                     companyId: company._id,
+                    status: b.status || 'active',
                     createdBy: req.user._id
                 });
                 newBrands.push(created);
