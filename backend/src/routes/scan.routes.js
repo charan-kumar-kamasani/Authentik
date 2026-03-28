@@ -73,12 +73,19 @@ router.get("/history", protect, async (req, res) => {
   try {
     let scans = await Scan.find({ userId: req.user._id })
       .sort({ createdAt: -1 })
-      .populate("productId");
+      .populate("productId")
+      .populate({ path: "brandId", populate: { path: "companyId" } });
 
     // For any ALREADY_USED scans, include the original scan details (scannedBy, scannedAt, place)
     scans = await Promise.all(
       scans.map(async (s) => {
         const obj = s.toObject ? s.toObject() : s;
+        
+        // Inject companyName from populated brandId so frontend picks it up automatically
+        if (obj.brandId && obj.brandId.companyId) {
+          obj.companyName = obj.brandId.companyId.companyName || obj.brandId.companyId.name;
+        }
+
         if (obj.status === 'ALREADY_USED' && obj.productId) {
           try {
             const original = await Scan.findOne({ productId: obj.productId._id, status: 'ORIGINAL' }).populate('userId', 'mobile');
@@ -119,7 +126,7 @@ console.log(qrCode)
       return res.status(400).json({ error: "qrCode required" });
     }
 
-    const product = await Product.findOne({ qrCode }).populate('orderId');
+    const product = await Product.findOne({ qrCode }).populate('orderId').populate({ path: 'brandId', populate: { path: 'companyId' } });
  
     // Fetch field labels from global config
     const config = await FormConfig.getGlobalFormConfig();
@@ -157,6 +164,7 @@ console.log(qrCode)
         product: {
           productId: product._id,
           productName: product.productName || product.orderId?.productName,
+          companyName: product.brandId?.companyId?.companyName || null,
           brand: product.brand || product.orderId?.brand,
           batchNo: product.batchNo || product.orderId?.batchNo,
           productImage: product.productImage || product.orderId?.productImage,
@@ -190,6 +198,7 @@ console.log(qrCode)
       product: {
         productId: product._id,
         productName: product.productName,
+        companyName: product.brandId?.companyId?.companyName || null,
         brand: product.brand,
         batchNo: product.batchNo,
         productImage: product.productImage || product.orderId?.productImage,
@@ -252,7 +261,7 @@ router.post("/", protect, async (req, res) => {
     const scannedAt = new Date();
 
     // 1️⃣ Check product
-    const product = await Product.findOne({ qrCode }).populate('orderId');
+    const product = await Product.findOne({ qrCode }).populate('orderId').populate({ path: 'brandId', populate: { path: 'companyId' } });
 
     // Fetch field labels from global config
     const config = await FormConfig.getGlobalFormConfig();
@@ -332,6 +341,7 @@ console.log("______product", product)
           qrCode,
           productId: product._id,
           brandId: finalBrandId,
+          companyName: product.brandId?.companyId?.companyName || null,
           productName: product.productName || product.orderId?.productName,
           brand: finalBrandName,
           batchNo: product.batchNo || product.orderId?.batchNo,
@@ -379,6 +389,7 @@ console.log("______product", product)
         data: {
           qrCode,
           productId: product._id,
+          companyName: product.brandId?.companyId?.companyName || null,
           productName: product.productName || product.orderId?.productName,
           brand: product.brand || finalBrandName,
           batchNo: product.batchNo || product.orderId?.batchNo,
@@ -453,6 +464,7 @@ console.log("______product", product)
           qrCode,
           productId: product._id,
           brandId: finalBrandId,
+          companyName: product.brandId?.companyId?.companyName || null,
           productName: product.productName || product.orderId?.productName,
           brand: product.brand || finalBrandName,
           batchNo: product.batchNo || product.orderId?.batchNo,
@@ -513,6 +525,7 @@ console.log("______product", product)
         qrCode,
         productId: product._id,
         brandId: finalBrandId,
+        companyName: product.brandId?.companyId?.companyName || null,
         productName: product.productName,
         brand: product.brand || finalBrandName,
         batchNo: product.batchNo,

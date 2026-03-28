@@ -190,6 +190,14 @@ function ResultAuthentic({ data }: { data: any }) {
     if (!val && data.dynamicFields) val = data.dynamicFields[key];
     if (!val && data.productId?.dynamicFields) val = data.productId?.dynamicFields[key];
 
+    if (key === "manufacturedBy" || key === "marketedBy" || key === "importMarketedBy") {
+      if (val && companyName !== "-" && !val.toLowerCase().includes(companyName.toLowerCase())) {
+        val = `${companyName}\n${val}`;
+      } else if (!val && companyName !== "-") {
+        val = companyName;
+      }
+    }
+
     if (val && val !== "-" && !handledKeys.has(key)) {
       grayFields.push({ label, value: String(val) });
       handledKeys.add(key);
@@ -200,9 +208,9 @@ function ResultAuthentic({ data }: { data: any }) {
   const combinedDynamicFields = { ...(data.productId?.dynamicFields || {}), ...(data.dynamicFields || {}) };
   Object.keys(combinedDynamicFields).forEach(key => {
     if (!handledKeys.has(key)) {
-      // Skip quantity-related fields from display as per user request
+      // Skip quantity and SKU fields from display as per user request
       const lowerKey = key.toLowerCase();
-      if (lowerKey === 'product quantity' || lowerKey === 'quantity' || lowerKey === 'productquantity' || lowerKey === 'qr quantity' || lowerKey === 'qrquantity') {
+      if (lowerKey === 'product quantity' || lowerKey === 'quantity' || lowerKey === 'productquantity' || lowerKey === 'qr quantity' || lowerKey === 'qrquantity' || lowerKey.includes('sku')) {
         return;
       }
 
@@ -314,7 +322,7 @@ function ResultAuthentic({ data }: { data: any }) {
                   {grayFields.map(({ label, value }, idx) => (
                     <div key={idx} className="border-b border-gray-300/30 pb-3 last:border-0 last:pb-0">
                       <p className="text-[#333] text-[11px] font-bold uppercase tracking-wider opacity-60 mb-1">{label}</p>
-                      <p className="text-[#0D4E96] text-[14px] font-bold">{value}</p>
+                      <p className="text-[#0D4E96] text-[14px] font-bold whitespace-pre-wrap">{value}</p>
                     </div>
                   ))}
                 </div>

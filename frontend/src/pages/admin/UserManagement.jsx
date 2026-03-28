@@ -1323,27 +1323,6 @@ const UserManagement = () => {
                     <div className="flex items-center gap-2">
                       <div className="relative">
                         <select
-                          value={brandFilter}
-                          onChange={(e) => {
-                            setBrandFilter(e.target.value);
-                            debouncedLoadStaff({ brandId: e.target.value });
-                          }}
-                          className="appearance-none bg-white border border-gray-200 px-3 py-2 rounded-lg text-sm pr-8"
-                        >
-                          <option value="">All Brands</option>
-                          {brands.map((b) => (
-                            <option key={b._id} value={b._id}>
-                              {b.brandName}
-                            </option>
-                          ))}
-                        </select>
-                        <span className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-gray-400">
-                          ▾
-                        </span>
-                      </div>
-
-                      <div className="relative">
-                        <select
                           value={companyFilter}
                           onChange={(e) => {
                             setCompanyFilter(e.target.value);
@@ -1388,17 +1367,6 @@ const UserManagement = () => {
                   <div className="flex items-center gap-3 justify-end">
                     {(brandFilter || levelFilter || companyFilter) && (
                       <div className="hidden md:flex items-center gap-2">
-                        {brandFilter && (
-                          <button
-                            onClick={() => {
-                              setBrandFilter("");
-                              loadStaff();
-                            }}
-                            className="text-sm bg-gray-100 px-2 py-1 rounded"
-                          >
-                            Brand: {getBrandName(brandFilter)} ✕
-                          </button>
-                        )}
                         {levelFilter && (
                           <button
                             onClick={() => {
@@ -1594,7 +1562,7 @@ const UserManagement = () => {
                   <div className="px-8 py-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex items-center gap-4 overflow-x-auto no-scrollbar pb-1 md:pb-0">
                       <h3 className="font-semibold text-gray-900 whitespace-nowrap mr-2">
-                        {roleTab === 'user' ? 'Mobile Consumers' : roleTab === 'brand' ? 'Brand Management' : 'User Management'}
+                        {roleTab === 'user' ? 'Mobile Consumers' : roleTab === 'brand' ? 'Enterprise Entities' : 'User Management'}
                       </h3>
                       {/* Sub-tabs removed as they are now in the sidebar */}
                     </div>
@@ -1606,7 +1574,7 @@ const UserManagement = () => {
                       });
                       return (
                         <span className="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full w-fit shrink-0 font-bold">
-                          {roleTab === 'brand' ? brands.length : filtered.length} {roleTab === 'user' ? 'mobile users' : roleTab === 'brand' ? 'brands' : 'platform users'}
+                          {roleTab === 'brand' ? companies.length : filtered.length} {roleTab === 'user' ? 'mobile users' : roleTab === 'brand' ? 'companies' : 'platform users'}
                         </span>
                       );
                     })()}
@@ -1617,8 +1585,8 @@ const UserManagement = () => {
                         <tr className="bg-gray-50/50 text-gray-500 text-xs uppercase tracking-wider font-semibold">
                           {roleTab === 'brand' ? (
                             <>
-                              <th className="px-8 py-4">Brand Name</th>
-                              <th className="px-6 py-4">Company (Legal Entity)</th>
+                              <th className="px-8 py-4">Company Name</th>
+                              <th className="px-6 py-4">Brands (Count)</th>
                               <th className="px-6 py-4 text-center">QR Credits</th>
                               <th className="px-6 py-4">Status</th>
                               <th className="px-6 py-4 text-right">Actions</th>
@@ -1628,7 +1596,6 @@ const UserManagement = () => {
                               <th className="px-8 py-4">Name</th>
                               <th className="px-6 py-4">Email</th>
                               <th className="px-6 py-4">{roleTab === 'company' ? 'Legal Entity' : 'Company'}</th>
-                              {roleTab !== 'company' && <th className="px-6 py-4">Brand</th>}
                               <th className="px-6 py-4">Role / Status</th>
                               <th className="px-6 py-4 text-right">Actions</th>
                             </>
@@ -1637,7 +1604,7 @@ const UserManagement = () => {
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {(() => {
-                          const listByCategory = roleTab === 'brand' ? brands : (roleTab === 'company' && (role === 'superadmin' || role === 'admin')) ? companies : staff.filter(u => {
+                          const listByCategory = roleTab === 'brand' ? companies : (roleTab === 'company' && (role === 'superadmin' || role === 'admin')) ? companies : staff.filter(u => {
                             if (roleTab === 'user') return u.role === 'user';
                             if (roleTab === 'authorizer') return u.role === 'authorizer';
                             if (roleTab === 'creator') return u.role === 'creator';
@@ -1649,7 +1616,7 @@ const UserManagement = () => {
                               // Filter by search query
                               if (q) {
                                 const matchesSearch = roleTab === 'brand' 
-                                  ? (item.brandName || "").toLowerCase().includes(q) || (item.companyId?.companyName || "").toLowerCase().includes(q)
+                                  ? (item.companyName || "").toLowerCase().includes(q) || (item.legalEntity || "").toLowerCase().includes(q)
                                   : roleTab === 'company' && companies.includes(item)
                                     ? (item.companyName || "").toLowerCase().includes(q) || (item.email || "").toLowerCase().includes(q)
                                     : (item.name || "").toLowerCase().includes(q) || (item.email || "").toLowerCase().includes(q) || (item.mobile || "").includes(q);
@@ -1659,7 +1626,7 @@ const UserManagement = () => {
                               // Filter by company dropdown
                               if (companyFilter) {
                                 const itemCompanyId = roleTab === 'brand' 
-                                  ? (item.companyId?._id || item.companyId)
+                                  ? item._id
                                   : (item.companyId?._id || item.companyId || item.company);
                                 if (String(itemCompanyId) !== String(companyFilter)) return false;
                               }
@@ -1713,53 +1680,36 @@ const UserManagement = () => {
                                     <>
                                       <td className="px-8 py-4">
                                         <div className="flex items-center gap-3">
-                                          {item.brandLogo ? (
-                                            <img src={item.brandLogo} alt="" className="w-8 h-8 rounded-lg object-contain bg-gray-50 border border-gray-100" />
-                                          ) : (
-                                            <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-xs font-bold text-indigo-600">
-                                              {item.brandName?.[0]?.toUpperCase()}
-                                            </div>
-                                          )}
-                                          <div className="font-medium text-gray-900">{item.brandName}</div>
+                                          <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-xs font-bold text-indigo-600">
+                                            {item.companyName?.[0]?.toUpperCase()}
+                                          </div>
+                                          <div>
+                                            <div className="font-medium text-gray-900">{item.companyName}</div>
+                                            <div className="text-[10px] text-gray-500">{item.legalEntity || "-"}</div>
+                                          </div>
                                         </div>
                                       </td>
                                       <td className="px-6 py-4 text-sm text-gray-700">
-                                        <div className="font-semibold">{item.companyId?.companyName || "N/A"}</div>
-                                        <div className="text-[10px] text-gray-400">{item.companyId?.legalEntity || "-"}</div>
+                                        <div className="font-bold">{brands.filter(b => String(b.companyId?._id || b.companyId) === String(item._id)).length} Brands</div>
                                       </td>
                                       <td className="px-6 py-4 text-center">
                                         <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs font-black">
-                                          {item.companyId?.qrCredits?.toLocaleString() || 0}
+                                          {item.qrCredits?.toLocaleString() || 0}
                                         </div>
                                       </td>
                                       <td className="px-6 py-4">
-                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${item.status === 'blocked' || item.companyId?.status === 'blocked' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
-                                          {item.status === 'blocked' || item.companyId?.status === 'blocked' ? 'Blocked' : 'Active'}
+                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${item.status === 'blocked' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
+                                          {item.status === 'blocked' ? 'Blocked' : 'Active'}
                                         </span>
                                       </td>
                                       <td className="px-6 py-4 text-right">
                                         <div className="flex justify-end gap-2">
                                           <button 
-                                            onClick={() => handleViewBrandUsers(item)}
-                                            className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="View Users"
-                                          >
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                                          </button>
-                                          <button 
-                                            onClick={() => handleEditBrand(item)}
-                                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit Brand"
+                                            onClick={() => handleEditCompany(item)}
+                                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit Company"
                                           >
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" /></svg>
                                           </button>
-                                          {role !== 'superadmin' && (
-                                            <button 
-                                              onClick={() => handleToggleBrandStatus(item)}
-                                              className={`p-1.5 rounded-lg transition-colors ${item.status === 'blocked' ? 'text-green-600 hover:bg-green-50' : 'text-red-600 hover:bg-red-50'}`} 
-                                              title={item.status === 'blocked' ? 'Unblock' : 'Block'}
-                                            >
-                                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-                                            </button>
-                                          )}
                                         </div>
                                       </td>
 
@@ -1780,9 +1730,9 @@ const UserManagement = () => {
                                             <div className="text-xs text-gray-500">
                                               {item.email}
                                             </div>
-                                            {item.phoneNumber && (
+                                            {(item.mobile || item.phoneNumber) && (
                                               <div className="text-[10px] text-gray-400 font-bold">
-                                                {maskPhoneNumber(item.phoneNumber)}
+                                                {item.mobile || item.phoneNumber}
                                               </div>
                                             )}
                                           </div>
@@ -1794,11 +1744,6 @@ const UserManagement = () => {
                                       <td className="px-6 py-4 text-sm text-gray-700">
                                         {roleTab === 'company' ? item.legalEntity : getCompanyName(item.companyId || item.company)}
                                       </td>
-                                      {roleTab !== 'company' && (
-                                        <td className="px-6 py-4 text-sm text-gray-700">
-                                          {getBrandName(item.brandId)}
-                                        </td>
-                                      )}
                                       <td className="px-6 py-4">
                                         <span
                                           className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold capitalize tracking-wide shadow-sm ${item.role ? getRoleClass(item.role) : (item.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800')}`}
@@ -1827,7 +1772,7 @@ const UserManagement = () => {
                     </table>
                   </div>
                   {(() => {
-                    const listByCategory = roleTab === 'brand' ? brands : (roleTab === 'company' && (role === 'superadmin' || role === 'admin')) ? companies : staff.filter(u => {
+                    const listByCategory = roleTab === 'brand' ? companies : (roleTab === 'company' && (role === 'superadmin' || role === 'admin')) ? companies : staff.filter(u => {
                       if (roleTab === 'user') return u.role === 'user';
                       if (roleTab === 'authorizer') return u.role === 'authorizer';
                       if (roleTab === 'creator') return u.role === 'creator';
@@ -1837,7 +1782,7 @@ const UserManagement = () => {
                     const displayed = listByCategory.filter(
                       (item) => {
                         if (!q) return true;
-                        if (roleTab === 'brand') return (item.brandName || "").toLowerCase().includes(q) || (item.companyId?.companyName || "").toLowerCase().includes(q);
+                        if (roleTab === 'brand') return (item.companyName || "").toLowerCase().includes(q) || (item.legalEntity || "").toLowerCase().includes(q);
                         if (roleTab === 'company') return (item.companyName || "").toLowerCase().includes(q) || (item.email || "").toLowerCase().includes(q);
                         return (item.name || "").toLowerCase().includes(q) || (item.email || "").toLowerCase().includes(q) || (item.mobile || "").includes(q);
                       }
@@ -1850,7 +1795,7 @@ const UserManagement = () => {
                         rowsPerPage={userRowsPerPage}
                         onPageChange={setUserPage}
                         onRowsPerPageChange={(n) => { setUserRowsPerPage(n); setUserPage(1); }}
-                        itemLabel={roleTab === 'brand' ? "brands" : roleTab === 'company' ? "companies" : roleTab === 'user' ? "mobile users" : "platform users"}
+                        itemLabel={roleTab === 'brand' ? "companies" : roleTab === 'company' ? "companies" : roleTab === 'user' ? "mobile users" : "platform users"}
                       />
                     );
                   })()}

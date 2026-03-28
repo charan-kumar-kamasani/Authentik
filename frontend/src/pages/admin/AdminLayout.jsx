@@ -83,7 +83,7 @@ function UsersSubmenu({ activePath, locationSearch, navigateTo }) {
         className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-all ${isSearch("createBrand") ? "bg-blue-50 text-blue-700 font-bold shadow-sm ring-1 ring-blue-100/50" : "text-gray-500 hover:text-blue-600 hover:bg-gray-50"}`}
       >
         <div className="flex items-center gap-2">
-          <Building size={14} /> Create Brand
+          <Building size={14} /> Create Company
         </div>
       </button>
       <button
@@ -341,7 +341,7 @@ export default function AdminLayout({ children }) {
                           isActive={activePath === "/users" && location.search.includes("tab=user")}
                         />
                         <SidebarItem
-                          label="Brands"
+                          label="Companies"
                           onClick={() => navigate("/users?tab=brand")}
                           icon={Building}
                           isActive={activePath === "/users" && location.search.includes("tab=brand")}
