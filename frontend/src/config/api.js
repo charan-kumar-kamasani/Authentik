@@ -761,7 +761,10 @@ export const updateCompany = async (companyId, data, token) => {
             },
             body: JSON.stringify(data)
         });
-        if (!response.ok) throw new Error('Failed to update company');
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || 'Failed to update company');
+        }
         return await response.json();
     } catch (error) {
         console.error("Update Company Error:", error);

@@ -222,8 +222,8 @@ const OrderManagement = () => {
         dispatch: 'Dispatch this order with the provided details?',
       };
 
-      if (actionLabels[action]) {
-        if (action === 'process' && (role === 'superadmin' || role === 'admin')) {
+      if (actionLabels[action] && (!data || Object.keys(data).length === 0)) {
+        if (action === 'process' && (role === 'superadmin' || role === 'admin') && (!data || Object.keys(data).length === 0)) {
           const order = orders.find(o => o._id === orderId);
           setProcessModal({ isOpen: true, order, bonusQuantity: 0 });
           return;
@@ -667,13 +667,20 @@ const OrderManagement = () => {
                         (order.status === 'Pending Authorization' && ['authorizer', 'company'].includes(role))) && (
                         <ActionBtn onClick={() => handleRejectOrder(order._id)} icon={XCircle} label="Reject" color="red" />
                       )}
-                      {/* Edit — allowed for superadmin/admin if not processed, authorizer/company ONLY if Pending */}
-                      {((['Pending Authorization', 'Authorized'].includes(order.status) && ['admin', 'superadmin'].includes(role)) || 
-                        (order.status === 'Pending Authorization' && ['authorizer', 'company'].includes(role))) && (
-                        <ActionBtn onClick={() => setEditOrderModal({ isOpen: true, data: order })} icon={Edit} label="Edit" color="slate" />
+                      {/* Edit — allowed for superadmin/admin if not processed, authorizer/company ONLY if Pending, creator ONLY if Rejected */}
+                      {((['Pending Authorization', 'Authorized', 'Rejected'].includes(order.status) && ['admin', 'superadmin'].includes(role)) || 
+                        (order.status === 'Pending Authorization' && ['authorizer', 'company'].includes(role)) ||
+                        (order.status === 'Rejected' && role === 'creator')) && (
+                        <ActionBtn onClick={() => {
+                          if (role === 'creator') {
+                            navigate('/generate-qrs', { state: { editOrder: order } });
+                          } else {
+                            setEditOrderModal({ isOpen: true, data: order });
+                          }
+                        }} icon={Edit} label="Edit" color="slate" />
                       )}
-                      {/* PDF — visible only for superadmin and admin */}
-                      {order.qrCodesGenerated && (role === 'superadmin' || role === 'admin') && (
+                      {/* PDF — visible only for superadmin and admin after authorization */}
+                      {(order.qrCodesGenerated || ['Order Processing', 'Dispatching', 'Dispatched', 'Received'].includes(order.status)) && (role === 'superadmin' || role === 'admin') && (
                         <ActionBtn onClick={() => handleDownload(order._id)} icon={FileDown} label="PDF" color="slate" />
                       )}
 
@@ -736,6 +743,16 @@ const OrderManagement = () => {
                                 </span>
                               ))}
                             </div>
+                          </div>
+                        )}
+
+                        {/* Rejection Details */}
+                        {order.history?.some(h => h.status === 'Rejected') && (
+                          <div className="mt-4 pt-4 border-t border-red-100 bg-red-50 p-4 rounded-xl">
+                            <h4 className="text-xs font-black text-red-500 uppercase tracking-wider mb-2 flex items-center gap-1.5"><XCircle size={14} /> Rejection Reason</h4>
+                            <p className="text-sm text-red-800 font-medium whitespace-pre-wrap">
+                              {[...order.history].reverse().find(h => h.status === 'Rejected')?.comment || 'No reason provided.'}
+                            </p>
                           </div>
                         )}
 

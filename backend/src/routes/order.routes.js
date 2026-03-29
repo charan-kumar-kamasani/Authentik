@@ -668,8 +668,8 @@ router.put('/:id/reject', protect, async (req, res) => {
       return res.status(400).json({ message: 'Cannot reject a completed order' });
     }
 
-    // When rejected, move back to step 1 so it can be edited/fixed
-    order.status = 'Pending Authorization';
+    // When rejected, move to 'Rejected' status so it's clearly visible and can be edited/fixed
+    order.status = 'Rejected';
     order.history.push({
       status: 'Rejected', // Logging 'Rejected' in history, but status moves back
       changedBy: req.user._id,
@@ -698,7 +698,7 @@ router.put('/:id/reject', protect, async (req, res) => {
 });
 
 // 9b. EDIT ORDER (Can be done by Authorizer or Company when Pending)
-router.put('/:id', protect, authorize('company', 'authorizer'), async (req, res) => {
+router.put('/:id', protect, authorize('company', 'authorizer', 'creator'), async (req, res) => {
   try {
     const { 
       productName, 
@@ -727,8 +727,14 @@ router.put('/:id', protect, authorize('company', 'authorizer'), async (req, res)
       return res.status(403).json({ message: 'Not authorized for this order' });
     }
 
-    if (order.status !== 'Pending Authorization') {
-      return res.status(400).json({ message: 'Can only edit orders in Pending Authorization state' });
+    if (!['Pending Authorization', 'Rejected'].includes(order.status)) {
+      return res.status(400).json({ message: 'Can only edit orders in Pending Authorization or Rejected state' });
+    }
+
+    // If it was rejected, move it back to Pending Authorization when edited
+    const wasRejected = order.status === 'Rejected';
+    if (wasRejected) {
+      order.status = 'Pending Authorization';
     }
 
     // Update fields
@@ -746,7 +752,7 @@ router.put('/:id', protect, authorize('company', 'authorizer'), async (req, res)
       status: 'Pending Authorization',
       changedBy: req.user._id,
       role: req.user.role,
-      comment: 'Order details modified by authorizer'
+      comment: wasRejected ? `Order fixed & re-submitted by ${req.user.role}` : `Order details modified by ${req.user.role}`
     });
 
     await order.save();

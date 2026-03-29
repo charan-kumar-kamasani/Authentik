@@ -785,6 +785,14 @@ router.patch('/companies/:id', protect, authorize('superadmin', 'admin'), async 
             }).filter(email => email);
         }
 
+        // Manual validation for required fields before saving to prevent generic 500s
+        const requiredFields = ['companyName', 'registerOfficeAddress', 'courierAddress', 'email', 'phoneNumber'];
+        for (const field of requiredFields) {
+            if (!company[field]) {
+                return res.status(400).json({ message: `${field} is required` });
+            }
+        }
+
         await company.save();
 
         // Handle User creation for any new authorizer/creator emails
@@ -897,6 +905,7 @@ router.patch('/companies/:id', protect, authorize('superadmin', 'admin'), async 
 
         res.json({ company, newUsers, newBrands });
     } catch (error) {
+        console.error("PATCH /admin/companies/:id Error:", error);
         res.status(500).json({ message: error.message });
     }
 });

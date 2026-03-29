@@ -16,7 +16,7 @@ const companySchema = new mongoose.Schema(
     courierAddress: { type: String, required: true },
     dispatchAddress: { type: String },
     email: { type: String, required: true }, // support mail
-    supportNumber: { type: String, required: true },
+    supportNumber: { type: String },
     phoneNumber: { type: String, required: true }, // contact number
     contactPersonName: { type: String },
     authorizerEmails: [{ type: String }], // authorizer email IDs

@@ -298,13 +298,13 @@ const UserManagement = () => {
 
   const handleToggleBrandStatus = async (item) => {
     const newStatus = item.status === 'blocked' ? 'active' : 'blocked';
-    const confirmMsg = `Are you sure you want to ${newStatus === 'blocked' ? 'block' : 'unblock'} ${item.brandName}?`;
+    const confirmMsg = `Are you sure you want to ${newStatus === 'blocked' ? 'pause' : 'unpause'} ${item.brandName}?`;
     if (!window.confirm(confirmMsg)) return;
 
     try {
       const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
       await updateBrand(item._id, { status: newStatus }, token);
-      alert(`Brand ${newStatus === 'blocked' ? 'blocked' : 'unblocked'} successfully`);
+      alert(`Brand ${newStatus === 'blocked' ? 'paused' : 'unpaused'} successfully`);
       loadBrands();
     } catch (e) {
       alert("Failed to update brand status: " + e.message);
@@ -746,10 +746,13 @@ const UserManagement = () => {
     e.preventDefault();
     const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
 
-    // Validate all official emails
-    const filledOfficials = officialEmails.filter(e => e.value.trim());
-    if (filledOfficials.length === 0) {
-      alert('Please add at least one official email ID');
+    // Validate all official emails (considering Authorizers/Creators as official if none provided explicitly)
+    const filledOfficials = officialEmails.filter(e => e.value?.trim());
+    const filledAuthorizers = authorizerEmails.filter(e => e.value?.trim());
+    const filledCreators = creatorEmails.filter(e => e.value?.trim());
+
+    if (filledOfficials.length === 0 && filledAuthorizers.length === 0 && filledCreators.length === 0) {
+      alert('Please add at least one valid official, authorizer, or creator email ID');
       return;
     }
 
@@ -757,6 +760,13 @@ const UserManagement = () => {
     const validBrands = companyBrands.filter(b => b.brandName && b.brandName.trim());
     if (validBrands.length === 0) {
       alert('Please add at least one brand');
+      return;
+    }
+
+    // Mandatory Field Validation
+    const { companyName, registerOfficeAddress, courierAddress, email, phoneNumber, supportNumber } = companyForm;
+    if (!companyName?.trim() || !registerOfficeAddress?.trim() || !courierAddress?.trim() || !email?.trim() || !phoneNumber?.trim()) {
+      alert("Please fill in all required fields: Company Name, Office Address, Courier Address, Support Email, and Phone Number.");
       return;
     }
 
@@ -773,17 +783,30 @@ const UserManagement = () => {
         updatedBrands.push({ 
           _id: b._id,
           brandName: b.brandName.trim(), 
-          brandLogo: finalLogo 
+          brandLogo: finalLogo,
+          status: b.status || 'active'
         });
       }
 
       const payload = {
-        ...companyForm,
+        companyName: companyName.trim(),
+        legalEntity: companyForm.legalEntity,
+        companyWebsite: companyForm.companyWebsite,
+        industry: companyForm.industry,
+        category: companyForm.category,
+        country: companyForm.country,
+        city: companyForm.city,
+        cinGst: companyForm.cinGst,
+        registerOfficeAddress: registerOfficeAddress.trim(),
+        courierAddress: courierAddress.trim(),
+        email: email.trim(),
+        phoneNumber: phoneNumber.trim(),
+        supportNumber: supportNumber || "",
         officialEmails: filledOfficials.map(e => e.value.trim()),
-        authorizerEmails: authorizerEmails.filter(e => e.value.trim()).map(e => ({ email: e.value.trim(), password: e.password || '' })),
-        creatorEmails: creatorEmails.filter(e => e.value.trim()).map(e => ({ email: e.value.trim(), password: e.password || '' })),
+        authorizerEmails: authorizerEmails.filter(e => e.value.trim()).map(e => ({ email: e.value.trim(), password: e.password || "" })),
+        creatorEmails: creatorEmails.filter(e => e.value.trim()).map(e => ({ email: e.value.trim(), password: e.password || "" })),
         brands: updatedBrands,
-        contactPersonName: "",
+        contactPersonName: companyForm.contactPersonName || "",
       };
       
       let res;
@@ -1208,6 +1231,12 @@ const UserManagement = () => {
                 value={editingBrand ? brandForm.supportNumber : companyForm.supportNumber} 
                 onChange={(v) => editingBrand ? setBrandForm({ ...brandForm, supportNumber: v }) : setCompanyForm({ ...companyForm, supportNumber: v })} 
                 required={false} 
+              />
+              <InputGroup 
+                label="Support Email *" 
+                placeholder="support@company.com" 
+                value={editingBrand ? brandForm.email : companyForm.email} 
+                onChange={(v) => editingBrand ? setBrandForm({ ...brandForm, email: v }) : setCompanyForm({ ...companyForm, email: v })} 
               />
             </div>
 
@@ -1698,8 +1727,8 @@ const UserManagement = () => {
                                         </div>
                                       </td>
                                       <td className="px-6 py-4">
-                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${item.status === 'blocked' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
-                                          {item.status === 'blocked' ? 'Blocked' : 'Active'}
+                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${item.status === 'blocked' ? 'bg-orange-50 text-orange-600' : 'bg-green-50 text-green-600'}`}>
+                                          {item.status === 'blocked' ? 'Paused' : 'Active'}
                                         </span>
                                       </td>
                                       <td className="px-6 py-4 text-right">

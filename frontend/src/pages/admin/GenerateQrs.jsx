@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import API_BASE_URL, { createOrder, getProductTemplates, createProductTemplate, deleteProductTemplate, getBrands } from '../../config/api';
-import { Calendar, Package, Plus, X, List, LayoutGrid, Trash2, CheckCircle2, Search } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import API_BASE_URL, { createOrder, updateOrder, getProductTemplates, createProductTemplate, deleteProductTemplate, getBrands } from '../../config/api';
+import { Calendar, Package, Plus, X, List, LayoutGrid, Trash2, CheckCircle2, Search, ArrowLeft } from 'lucide-react';
 import { useConfirm } from '../../components/ConfirmModal';
 
 export default function GenerateQrs() {
@@ -36,7 +37,40 @@ export default function GenerateQrs() {
 
   const [submitting, setSubmitting] = useState(false);
   const [templateSearch, setTemplateSearch] = useState('');
+  const [editingOrder, setEditingOrder] = useState(null);
   const confirm = useConfirm();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Pre-fill form if editing existing order
+  useEffect(() => {
+    const order = location.state?.editOrder;
+    if (order) {
+      setEditingOrder(order);
+      setNewQr({
+        productName: order.productName || '',
+        brand: order.brand || '',
+        brandId: (order.brandId?._id || order.brandId) || '',
+        batchNo: order.batchNo || '',
+        productInfo: order.productInfo || '',
+        quantity: order.quantity || ''
+      });
+      if (order.mfdOn) setMfdOn(order.mfdOn);
+      if (order.bestBefore) setBestBefore(order.bestBefore);
+      if (order.calculatedExpiryDate) setCalculatedExpiry(order.calculatedExpiryDate);
+      if (order.dynamicFields) setDynamicFieldValues(order.dynamicFields);
+      if (order.productImage) setImagePreview(order.productImage);
+      if (order.variants) {
+        setVariantInstances(order.variants.map((v, i) => ({
+          id: Date.now() + i,
+          variantName: v.variantName,
+          value: v.value,
+          variantLabel: v.variantName, // fallback
+          inputType: 'text' // fallback, synced later
+        })));
+      }
+    }
+  }, [location.state]);
 
   // Calculate expiry date when mfdOn or bestBefore changes
   useEffect(() => {
@@ -140,7 +174,14 @@ export default function GenerateQrs() {
     e.preventDefault();
     if (submitting) return;
 
-    const ok = await confirm({ title: 'Create Product & QR', description: 'Are you sure you want to create this product record and generate QR codes?', confirmText: 'Yes, Create', cancelText: 'Cancel' });
+    const ok = await confirm({ 
+      title: editingOrder ? 'Update & Resubmit Order' : 'Create Product & QR', 
+      description: editingOrder 
+        ? 'Are you sure you want to update this order and resubmit for authorization?' 
+        : 'Are you sure you want to create this product record and generate QR codes?', 
+      confirmText: editingOrder ? 'Yes, Resubmit' : 'Yes, Create', 
+      cancelText: 'Cancel' 
+    });
     if (!ok) return;
 
     setSubmitting(true);
@@ -276,10 +317,16 @@ export default function GenerateQrs() {
       };
 
       if (role === 'creator') {
-        // Creators create an Order — server enforces any plan minimums
-        await createOrder(orderData, token);
-        alert('Order created. Admin will process it to generate QRs.');
-        resetForm();
+        // Creators create or Update an Order
+        if (editingOrder) {
+          await updateOrder(editingOrder._id, orderData);
+          alert('Order updated and re-submitted! Authorizer will review it again.');
+          navigate('/admin/orders');
+        } else {
+          await createOrder(orderData, token);
+          alert('Order created. Admin will process it to generate QRs.');
+          resetForm();
+        }
       } else {
         const res = await fetch(`${API_BASE_URL}/admin/create-qr`, {
           method: 'POST',
@@ -359,7 +406,8 @@ export default function GenerateQrs() {
             const companyId = u.companyId._id;
             try {
               const bdata = await getBrands(companyId);
-              setBrands(bdata || []);
+              const activeBrands = (bdata || []).filter(b => b.status !== 'blocked');
+              setBrands(activeBrands);
               if (u?.brandId?._id) {
                 setNewQr((p) => ({ ...p, brand: u.brandId.brandName, brandId: u.brandId._id }));
               }
@@ -588,38 +636,7 @@ export default function GenerateQrs() {
         <form onSubmit={handleCreateQr} className="grid grid-cols-2 gap-6">
 
 
-        {/* Brand Dropdown (Static Field) */}
-        {formConfig?.staticFields?.brand?.enabled && (
-          <div className="flex flex-col gap-1.5 col-span-2 md:col-span-1">
-            <label className="text-sm font-medium text-slate-700 ml-1">
-              Brand {formConfig.staticFields.brand.isMandatory && <span className="text-indigo-600">*</span>}
-            </label>
-              <select
-                value={newQr.brandId}
-                onChange={(e) => {
-                  const selectedId = e.target.value;
-                  const selectedBrand = brands.find(b => b._id === selectedId);
-                  setNewQr({
-                    ...newQr,
-                    brandId: selectedId,
-                    brand: selectedBrand?.brandName || '',
-                    productName: '',
-                    productInfo: ''
-                  });
-                  setIsCatalogProduct(false);
-                  setImagePreview(null);
-                  setImageFile(null);
-                }}
-                className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-semibold shadow-sm"
-                required={formConfig.staticFields.brand.isMandatory}
-              >
-                <option value="">Select brand</option>
-                {brands.map((b) => (
-                  <option key={b._id} value={b._id}>{b.brandName}</option>
-                ))}
-              </select>
-          </div>
-        )}
+        {/* Brand Dropdown (Hidden, inferred from product) */}
 
         {/* Product Selection from Catalog */}
         <div className="flex flex-col gap-1.5 col-span-2 md:col-span-1">
@@ -628,11 +645,11 @@ export default function GenerateQrs() {
             {products.length === 0 && <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-black uppercase tracking-widest">No products found</span>}
           </label>
           <select
-            className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-semibold shadow-sm"
+            className="w-full px-5 py-3.5 bg-white border border-slate-200 rounded-2xl text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-semibold shadow-sm cursor-pointer"
             onChange={(e) => {
               const selectedId = e.target.value;
               if (!selectedId) {
-                setNewQr(prev => ({...prev, productName: '', productInfo: ''}));
+                setNewQr(prev => ({...prev, productName: '', productInfo: '', brand: '', brandId: ''}));
                 setIsCatalogProduct(false);
                 setImagePreview(null);
                 setImageFile(null);
@@ -644,8 +661,8 @@ export default function GenerateQrs() {
                   ...newQr,
                   productName: prod.productName,
                   productInfo: prod.productInfo || '',
-                  brand: (prod.brandId?.brandName || prod.brand) || newQr.brand,
-                  brandId: (prod.brandId?._id || prod.brandId) || newQr.brandId
+                  brand: (prod.brandId?.brandName || prod.brand) || '',
+                  brandId: (prod.brandId?._id || prod.brandId) || ''
                 });
                 setIsCatalogProduct(true);
                 if (prod.productImage) {
@@ -658,15 +675,14 @@ export default function GenerateQrs() {
               }
             }}
             required
-            disabled={!newQr.brand}
           >
             <option value="">-- Choose Product --</option>
-            {products.filter(p => !newQr.brand || (p.brandId?.brandName === newQr.brand || p.brand === newQr.brand)).map(p => (
+            {products.map(p => (
               <option key={p._id} value={p._id}>{p.productName} ({p.brandId?.brandName || p.brand})</option>
             ))}
           </select>
           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest ml-1 mt-1">
-            {newQr.brand ? "Selecting a product from the catalog auto-fills image and details." : "Select a brand first"}
+            Selecting a product from the catalog auto-fills its brand, image and details.
           </p>
         </div>
 

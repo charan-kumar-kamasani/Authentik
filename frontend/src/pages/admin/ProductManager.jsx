@@ -54,9 +54,10 @@ const ProductManager = () => {
       // Fetch brands for dropdown
       if (me.companyId) {
         const bData = await getBrands(me.companyId._id || me.companyId);
-        setBrands(bData || []);
-        if (bData?.length > 0) {
-            setFormData(prev => ({ ...prev, brandId: bData[0]._id }));
+        const activeBrands = (bData || []).filter(b => b.status !== 'blocked');
+        setBrands(activeBrands);
+        if (activeBrands.length > 0) {
+            setFormData(prev => ({ ...prev, brandId: activeBrands[0]._id }));
         }
       }
 
@@ -245,6 +246,21 @@ const ProductManager = () => {
                       onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
                       className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-semibold shadow-sm"
                     />
+                  </div>
+
+                  <div className="flex flex-col gap-2 group">
+                    <label className="text-sm font-bold text-gray-600 ml-1">Brand *</label>
+                    <select
+                      required
+                      value={formData.brandId}
+                      onChange={(e) => setFormData({ ...formData, brandId: e.target.value })}
+                      className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-semibold shadow-sm cursor-pointer"
+                    >
+                      <option value="" disabled>Select a Brand</option>
+                      {brands.map(b => (
+                        <option key={b._id} value={b._id}>{b.brandName}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
                 <div className="p-8 bg-gray-50/50 rounded-[2rem] border border-gray-100">
