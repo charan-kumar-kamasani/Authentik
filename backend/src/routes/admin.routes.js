@@ -795,11 +795,43 @@ router.patch('/companies/:id', protect, authorize('superadmin', 'admin'), async 
 
         await company.save();
 
-        // Handle User creation for any new authorizer/creator emails
+        // 1. Handle Brands FIRST
+        const newBrands = [];
+        if (Array.isArray(brands) && brands.length > 0) {
+            for (const b of brands) {
+                if (!b.brandName) continue;
+                
+                let brandToUpdate = null;
+                if (b._id) brandToUpdate = await Brand.findById(b._id);
+                if (!brandToUpdate) {
+                    brandToUpdate = await Brand.findOne({ brandName: b.brandName, companyId: company._id });
+                }
+
+                if (brandToUpdate) {
+                    let changed = false;
+                    if (b.brandName !== brandToUpdate.brandName) { brandToUpdate.brandName = b.brandName; changed = true; }
+                    if (b.brandLogo && b.brandLogo !== brandToUpdate.brandLogo) { brandToUpdate.brandLogo = b.brandLogo; changed = true; }
+                    if (b.status && b.status !== brandToUpdate.status) { brandToUpdate.status = b.status; changed = true; }
+                    if (changed) await brandToUpdate.save();
+                } else {
+                    const created = await Brand.create({
+                        brandName: b.brandName,
+                        brandLogo: b.brandLogo || null,
+                        companyId: company._id,
+                        status: b.status || 'active',
+                        createdBy: req.user._id
+                    });
+                    newBrands.push(created);
+                }
+            }
+        }
+
+        // 2. Refresh brand list to include everything (old + new)
         const allBrands = await Brand.find({ companyId: company._id });
         const allBrandIds = allBrands.map(b => b._id);
         const firstBrandId = allBrandIds.length > 0 ? allBrandIds[0] : null;
 
+        // 3. Handle User creation/updates for staff
         const processEmails = async (emailList, role) => {
             const created = [];
             if (!Array.isArray(emailList)) return created;
@@ -811,30 +843,22 @@ router.patch('/companies/:id', protect, authorize('superadmin', 'admin'), async 
                 if (!email) continue;
                 const exists = await User.findOne({ email });
                 if (exists) {
-                    // Update user fields if they are missing
                     let userChanged = false;
-                    if (!exists.companyId) {
-                        exists.companyId = company._id;
-                        userChanged = true;
-                    }
-                    // For staff, ensure they are linked to all company brands
+                    if (!exists.companyId) { exists.companyId = company._id; userChanged = true; }
                     exists.brandIds = allBrandIds;
                     exists.brandId = firstBrandId;
                     userChanged = true;
 
-                    // Update password if a new one is provided
                     if (password) {
                         const salt = await bcrypt.genSalt(10);
                         exists.password = await bcrypt.hash(password, salt);
                         userChanged = true;
                     }
-
                     if (userChanged) await exists.save();
                     continue;
                 }
                 
-                if (!password) continue; // Need password to create NEW user
-
+                if (!password) continue;
                 const salt = await bcrypt.genSalt(10);
                 const hashed = await bcrypt.hash(password, salt);
                 const user = await User.create({
@@ -854,54 +878,6 @@ router.patch('/companies/:id', protect, authorize('superadmin', 'admin'), async 
         let newUsers = [];
         if (authorizerEmails) newUsers = newUsers.concat(await processEmails(authorizerEmails, 'authorizer'));
         if (creatorEmails) newUsers = newUsers.concat(await processEmails(creatorEmails, 'creator'));
-
-        // Handle Brands
-        const newBrands = [];
-        if (Array.isArray(brands) && brands.length > 0) {
-            for (const b of brands) {
-                if (!b.brandName) continue;
-                
-                let brandToUpdate = null;
-                // 1. Try finding by ID if provided
-                if (b._id) {
-                    brandToUpdate = await Brand.findById(b._id);
-                }
-                
-                // 2. Fallback to name-based lookup for this company if no ID or not found by ID
-                if (!brandToUpdate) {
-                    brandToUpdate = await Brand.findOne({ brandName: b.brandName, companyId: company._id });
-                }
-
-                if (brandToUpdate) {
-                    // Update existing brand
-                    let changed = false;
-                    if (b.brandName !== brandToUpdate.brandName) {
-                        brandToUpdate.brandName = b.brandName;
-                        changed = true;
-                    }
-                    if (b.brandLogo && b.brandLogo !== brandToUpdate.brandLogo) {
-                        brandToUpdate.brandLogo = b.brandLogo;
-                        changed = true;
-                    }
-                    if (b.status && b.status !== brandToUpdate.status) {
-                        brandToUpdate.status = b.status;
-                        changed = true;
-                    }
-                    if (changed) await brandToUpdate.save();
-                    continue;
-                }
-
-                // 3. Create new brand if not found
-                const created = await Brand.create({
-                    brandName: b.brandName,
-                    brandLogo: b.brandLogo || null,
-                    companyId: company._id,
-                    status: b.status || 'active',
-                    createdBy: req.user._id
-                });
-                newBrands.push(created);
-            }
-        }
 
         res.json({ company, newUsers, newBrands });
     } catch (error) {

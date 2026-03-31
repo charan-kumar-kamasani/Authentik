@@ -13,6 +13,7 @@ export default function GenerateQrs() {
     productInfo: '',
     quantity: ''
   });
+  const [filterBrandId, setFilterBrandId] = useState('');
 
   // Static date fields
   const [mfdOn, setMfdOn] = useState({ month: '', year: '' });
@@ -406,11 +407,12 @@ export default function GenerateQrs() {
             const companyId = u.companyId._id;
             try {
               const bdata = await getBrands(companyId);
-              const activeBrands = (bdata || []).filter(b => b.status !== 'blocked');
-              setBrands(activeBrands);
-              if (u?.brandId?._id) {
-                setNewQr((p) => ({ ...p, brand: u.brandId.brandName, brandId: u.brandId._id }));
-              }
+                const activeBrands = (bdata || []).filter(b => b.status !== 'blocked');
+                setBrands(activeBrands);
+                if (u?.brandId?._id) {
+                  setNewQr((p) => ({ ...p, brand: u.brandId.brandName, brandId: u.brandId._id }));
+                  setFilterBrandId(u.brandId._id);
+                }
             } catch (err) {
               console.warn('Could not load company brands', err);
             }
@@ -621,6 +623,10 @@ export default function GenerateQrs() {
     );
   }
 
+  const filteredProducts = filterBrandId 
+    ? products.filter(p => (p.brandId?._id || p.brandId) === filterBrandId)
+    : products;
+
   return (
     <div className="bg-white rounded-2xl p-0 shadow-sm border border-slate-200 relative overflow-hidden">
       {/* Tabs */}
@@ -629,14 +635,40 @@ export default function GenerateQrs() {
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
             <span className="w-1 h-6 bg-indigo-600 rounded-full"></span>
-            Create New Product Recordww
+            Create New Product Record
           </h3>
         </div>
 
         <form onSubmit={handleCreateQr} className="grid grid-cols-2 gap-6">
 
-
-        {/* Brand Dropdown (Hidden, inferred from product) */}
+        {/* Brand Filter */}
+        <div className="flex flex-col gap-1.5 col-span-2 md:col-span-1">
+          <label className="text-sm font-bold text-slate-700 ml-1 flex items-center gap-2">
+            Filter by Brand
+          </label>
+          <select
+            className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all font-semibold shadow-sm cursor-pointer"
+            value={filterBrandId}
+            onChange={(e) => {
+              setFilterBrandId(e.target.value);
+              // reset product selection if it doesn't match the new brand
+              if (e.target.value && isCatalogProduct && newQr.brandId !== e.target.value) {
+                setNewQr(prev => ({ ...prev, productName: '', productInfo: '', brand: '', brandId: '' }));
+                setIsCatalogProduct(false);
+                setImagePreview(null);
+                setImageFile(null);
+              }
+            }}
+          >
+            <option value="">-- All Brands --</option>
+            {brands.map(b => (
+              <option key={b._id} value={b._id}>{b.brandName}</option>
+            ))}
+          </select>
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest ml-1 mt-1">
+            Narrow down products by brand
+          </p>
+        </div>
 
         {/* Product Selection from Catalog */}
         <div className="flex flex-col gap-1.5 col-span-2 md:col-span-1">
@@ -677,7 +709,7 @@ export default function GenerateQrs() {
             required
           >
             <option value="">-- Choose Product --</option>
-            {products.map(p => (
+            {filteredProducts.map(p => (
               <option key={p._id} value={p._id}>{p.productName} ({p.brandId?.brandName || p.brand})</option>
             ))}
           </select>

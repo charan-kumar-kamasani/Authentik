@@ -13,7 +13,7 @@
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
   }
-  
+
   .gradient-text {
     background-clip: text;
     -webkit-background-clip: text;
@@ -37,32 +37,45 @@
 }
 
 @keyframes scan-line {
-	0% {
-		top: 12%;
-	}
-	50% {
-		top: 88%;
-	}
-	100% {
-		top: 12%;
-	}
+	0% { top: 12%; }
+	50% { top: 88%; }
+	100% { top: 12%; }
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-100%); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.1; }
+  50% { opacity: 0.3; }
 }
 
 .animate-scan {
 	animation: scan-line 2.2s ease-in-out infinite;
 }
 
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s ease-in-out infinite;
+}
+
 /* When the app is performing network requests, visually dim and block interactions */
 body[data-loading="true"] * {
-	transition: opacity 120ms ease-in-out !important;
+  transition: opacity 120ms ease-in-out !important;
 }
+
 body[data-loading="true"] button,
 body[data-loading="true"] a,
 body[data-loading="true"] input,
 body[data-loading="true"] select {
-	pointer-events: none !important;
-	opacity: 0.65 !important;
-	user-select: none !important;
+  pointer-events: none !important;
+  opacity: 0.65 !important;
+  user-select: none !important;
 }
 
 body {

@@ -132,6 +132,13 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       }
     }
 
+    // Resolve companyId: try user first, then brand lookup
+    let finalCompanyId = req.user.companyId;
+    if (!finalCompanyId && brandId) {
+      const brandDoc = await Brand.findById(brandId);
+      if (brandDoc) finalCompanyId = brandDoc.companyId;
+    }
+
     const order = new Order({
       orderId,
       productName,
@@ -144,6 +151,8 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       productInfo,
       createdBy: req.user._id,
       brandId,
+      companyId: finalCompanyId,
+      company: (req.user.role === 'company') ? req.user._id : (finalCompanyId ? null : null), // legacy
       status: 'Pending Authorization',
       // New dynamic fields (sanitize to avoid empty objects)
       mfdOn: (mfdOn && mfdOn.month && mfdOn.year) ? mfdOn : undefined,
@@ -196,24 +205,41 @@ router.get('/', protect, async (req, res) => {
     }
 
     // Role-based filtering
-    if (['admin', 'superadmin'].includes(req.user.role)) {
-      // Super Admin sees all
-    } else if (req.user.role === 'creator') {
-        // Creator sees their own orders OR orders for their company/brands
-        const brandIds = req.user.brandIds && req.user.brandIds.length > 0 ? req.user.brandIds : (req.user.brandId ? [req.user.brandId] : []);
-        
-        if (brandIds.length > 0) {
-             query.brandId = { $in: brandIds };
-        } else {
-             query.createdBy = req.user._id;
-        }
-    } else if (['company', 'authorizer'].includes(req.user.role)) {
-      const brandIds = req.user.brandIds && req.user.brandIds.length > 0 ? req.user.brandIds : (req.user.brandId ? [req.user.brandId] : (req.user.role === 'company' ? [req.user._id] : []));
+    const userId = req.user._id;
+    const userRole = req.user.role;
+    const userBrandId = req.user.brandId?._id || req.user.brandId;
+    const userBrandIds = (req.user.brandIds || []).map(id => id?._id || id);
+    
+    // Combine into a unique set of strings for the query
+    const finalBrandIds = Array.from(new Set([
+      ...(userBrandId ? [userBrandId.toString()] : []),
+      ...userBrandIds.map(id => id.toString())
+    ])).filter(id => id);
 
-      if (brandIds.length > 0) {
-          query.brandId = { $in: brandIds };
+    if (['admin', 'superadmin'].includes(userRole)) {
+      // Super Admin sees all
+    } else if (userRole === 'creator') {
+        // Creator sees their own orders OR orders for their brands OR for their company
+        const creatorQuery = [
+          { createdBy: userId },
+          ...(finalBrandIds.length > 0 ? [{ brandId: { $in: finalBrandIds } }] : []),
+          ...(req.user.companyId ? [{ companyId: req.user.companyId }] : [])
+        ];
+        query.$or = creatorQuery;
+    } else if (['company', 'authorizer'].includes(userRole)) {
+      // Company or Authorizer sees orders for their brands OR their company
+      const companyId = req.user.companyId || (userRole === 'company' ? userId : null);
+      
+      const staffQuery = [
+        ...(finalBrandIds.length > 0 ? [{ brandId: { $in: finalBrandIds } }] : []),
+        ...(companyId ? [{ companyId }] : []),
+        ...(userRole === 'company' ? [{ company: userId }] : []) // legacy fallback
+      ];
+
+      if (staffQuery.length > 0) {
+          query.$or = staffQuery;
       } else {
-          return res.status(403).json({ message: 'User not linked to a brand' });
+          return res.status(403).json({ message: 'User not linked to a brand or company' });
       }
     } else {
       return res.status(403).json({ message: 'Not authorized' });
@@ -293,7 +319,13 @@ router.put('/:id/authorize', protect, authorize('company', 'authorizer'), async 
       ? req.user.brandIds.map(id => id.toString()) 
       : (req.user.brandId ? [req.user.brandId.toString()] : (req.user.role === 'company' ? [req.user._id.toString()] : []));
 
-    if (!order.brandId || !userBrandIds.includes(order.brandId.toString())) {
+    const companyId = req.user.companyId || (req.user.role === 'company' ? req.user._id : null);
+    
+    const isBrandMatch = order.brandId && userBrandIds.includes(order.brandId.toString());
+    const isCompanyMatch = order.companyId && companyId && order.companyId.toString() === companyId.toString();
+    const isLegacyMatch = order.company && req.user.role === 'company' && order.company.toString() === req.user._id.toString();
+
+    if (!isBrandMatch && !isCompanyMatch && !isLegacyMatch) {
       return res.status(403).json({ message: 'Not authorized for this order' });
     }
 
@@ -588,12 +620,18 @@ router.put('/:id/received', protect, authorize('company', 'authorizer'), async (
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    // Verify ownership by brand only
+    // Verify ownership by brand or company
     const userBrandIds = req.user.brandIds && req.user.brandIds.length > 0 
       ? req.user.brandIds.map(id => id.toString()) 
       : (req.user.brandId ? [req.user.brandId.toString()] : (req.user.role === 'company' ? [req.user._id.toString()] : []));
 
-    if (!order.brandId || !userBrandIds.includes(order.brandId.toString())) {
+    const companyId = req.user.companyId || (req.user.role === 'company' ? req.user._id : null);
+    
+    const isBrandMatch = order.brandId && userBrandIds.includes(order.brandId.toString());
+    const isCompanyMatch = order.companyId && companyId && order.companyId.toString() === companyId.toString();
+    const isLegacyMatch = order.company && req.user.role === 'company' && order.company.toString() === req.user._id.toString();
+
+    if (!isBrandMatch && !isCompanyMatch && !isLegacyMatch) {
       return res.status(403).json({ message: 'Not authorized for this order' });
     }
 
@@ -655,9 +693,13 @@ router.put('/:id/reject', protect, async (req, res) => {
     ? req.user.brandIds.map(id => id.toString()) 
     : (req.user.brandId ? [req.user.brandId.toString()] : (req.user.role === 'company' ? [req.user._id.toString()] : []));
 
-  const isCompanyStaff = ['company', 'authorizer'].includes(req.user.role) && (
-               (order.brandId && userBrandIds.includes(order.brandId.toString()))
-               );
+  const companyId = req.user.companyId || (req.user.role === 'company' ? req.user._id : null);
+  
+  const isBrandMatch = order.brandId && userBrandIds.includes(order.brandId.toString());
+  const isCompanyMatch = order.companyId && companyId && order.companyId.toString() === companyId.toString();
+  const isLegacyMatch = order.company && req.user.role === 'company' && order.company.toString() === req.user._id.toString();
+
+  const isCompanyStaff = ['company', 'authorizer'].includes(req.user.role) && (isBrandMatch || isCompanyMatch || isLegacyMatch);
 
     if (!isAdmin && !isCompanyStaff) {
       return res.status(403).json({ message: 'Not authorized' });
@@ -723,7 +765,14 @@ router.put('/:id', protect, authorize('company', 'authorizer', 'creator'), async
       ? req.user.brandIds.map(id => id.toString()) 
       : (req.user.brandId ? [req.user.brandId.toString()] : (req.user.role === 'company' ? [req.user._id.toString()] : []));
 
-    if (!order.brandId || !userBrandIds.includes(order.brandId.toString())) {
+    const companyId = req.user.companyId || (req.user.role === 'company' ? req.user._id : null);
+    
+    const isCreator = order.createdBy.toString() === req.user._id.toString();
+    const isBrandMatch = order.brandId && userBrandIds.includes(order.brandId.toString());
+    const isCompanyMatch = order.companyId && companyId && order.companyId.toString() === companyId.toString();
+    const isLegacyMatch = order.company && req.user.role === 'company' && order.company.toString() === req.user._id.toString();
+
+    if (!isCreator && !isBrandMatch && !isCompanyMatch && !isLegacyMatch) {
       return res.status(403).json({ message: 'Not authorized for this order' });
     }
 

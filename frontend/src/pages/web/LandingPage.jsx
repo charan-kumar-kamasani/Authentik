@@ -39,27 +39,25 @@ export default function LandingPage() {
       <section className="relative pt-32 pb-20 px-6">
         <div className="container mx-auto text-center relative z-10">
           <Glow color="bg-indigo-600" className="top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-30" />
-          
+
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-black uppercase tracking-widest mb-8 animate-bounce">
             <ShieldCheck size={14} />
             World Class Brand Protection
           </div>
 
-          <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-white mb-8 leading-[0.9] max-w-5xl mx-auto">
-            Absolute <span className="gradient-text">Trust</span>.<br />
-            Zero <span className="text-slate-500">Counterfeits</span>.
+          <h1 className="text-2xl md:text-8xl font-black tracking-tighter text-white mb-8 leading-[0.9] max-w-5xl mx-auto">
+            Protect Your  <span className="gradient-text">Brand</span>.<br />
+            Turn Products Into 
+ <span className="text-slate-500"> Smart Products</span>.
           </h1>
-          
+
           <p className="max-w-2xl mx-auto text-lg md:text-xl font-medium text-gray-400 mb-12 leading-relaxed">
-            Authentiks uses advanced cryptographic QR technology to prove every product you sell is genuine. Secure your brand, protect your customers.
+           Authentiks gives every product a unique digital identity that helps brands verify authenticity, detect counterfeits and engage customers during product verification..
           </p>
 
-          <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-            <button className="px-10 py-5 bg-indigo-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-500 transition-all shadow-[0_0_40px_rgba(79,70,229,0.3)] hover:scale-105 active:scale-95 text-sm">
-              Launch Enterprise Panel
-            </button>
-            <button className="px-10 py-5 bg-white/5 border border-white/10 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-white/10 transition-all text-sm">
-              Watch Demo
+          <div className="flex justify-center mb-16 relative z-20">
+            <button className="px-12 py-5 bg-white text-black rounded-[2rem] font-black uppercase tracking-widest hover:bg-gray-200 transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 text-sm">
+              Start Free Trial
             </button>
           </div>
         </div>
@@ -67,6 +65,63 @@ export default function LandingPage() {
         {/* Hero Background Elements */}
         <div className="absolute top-0 left-0 w-full h-full -z-10 opacity-20 pointer-events-none">
           <img src={heroImage} alt="" className="w-full h-full object-cover blur-3xl" />
+        </div>
+      </section>
+
+      {/* Trust & Brand Value Section */}
+      <section className="py-24 px-6 relative z-10">
+        <div className="container mx-auto text-center">
+          <div className="mb-12">
+            <h3 className="text-sm font-bold text-gray-500 uppercase tracking-[0.2em] mb-8">Trusted by 100+ Brands</h3>
+            
+            {/* Scrolling Logo Marquee */}
+            <div className="relative w-full max-w-5xl mx-auto overflow-hidden flex items-center h-20 mask-image-linear">
+              {/* Fade filters for the edges */}
+              <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#020617] to-transparent z-10"></div>
+              <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#020617] to-transparent z-10"></div>
+              
+              <div className="flex w-[200%] animate-marquee">
+                {/* First Set */}
+                <div className="flex w-1/2 justify-around items-center px-4">
+                  {[1,2,3,4,5,6].map((i) => (
+                    <div key={`logo-1-${i}`} className="text-gray-400 opacity-50 hover:opacity-100 transition-opacity flex items-center justify-center font-black text-xl tracking-tighter uppercase px-8">
+                      Brand{i}
+                    </div>
+                  ))}
+                </div>
+                {/* Duplicate Set for smooth infinite loop */}
+                <div className="flex w-1/2 justify-around items-center px-4">
+                  {[1,2,3,4,5,6].map((i) => (
+                    <div key={`logo-2-${i}`} className="text-gray-400 opacity-50 hover:opacity-100 transition-opacity flex items-center justify-center font-black text-xl tracking-tighter uppercase px-8">
+                      Brand{i}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Bar */}
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 mt-12 mx-auto">
+            <div className="flex items-center gap-3">
+              <div className="bg-indigo-500/20 p-1.5 rounded-full text-indigo-400">
+                <CheckCircle2 size={16} />
+              </div>
+              <span className="font-bold text-gray-300 text-sm md:text-base tracking-tight italic">Trusted by 100+ dealers</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="bg-emerald-500/20 p-1.5 rounded-full text-emerald-400">
+                <CheckCircle2 size={16} />
+              </div>
+              <span className="font-bold text-gray-300 text-sm md:text-base tracking-tight italic">700+ products verified</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="bg-purple-500/20 p-1.5 rounded-full text-purple-400">
+                <CheckCircle2 size={16} />
+              </div>
+              <span className="font-bold text-gray-300 text-sm md:text-base tracking-tight italic">10,000+ scans</span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -103,19 +158,19 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            <FeatureCard 
-              icon={Layers} 
-              title="Secure Buy" 
+            <FeatureCard
+              icon={Layers}
+              title="Secure Buy"
               description="Choose products protected by Authentiks secure QR labels at point of purchase."
             />
-            <FeatureCard 
-              icon={Smartphone} 
-              title="Instant Scan" 
+            <FeatureCard
+              icon={Smartphone}
+              title="Instant Scan"
               description="Simply scan the unique code using any smartphone camera. No app required."
             />
-            <FeatureCard 
-              icon={CheckCircle2} 
-              title="Live Verify" 
+            <FeatureCard
+              icon={CheckCircle2}
+              title="Live Verify"
               description="Instantly receive cryptographic proof of the products genuine origin and details."
             />
           </div>

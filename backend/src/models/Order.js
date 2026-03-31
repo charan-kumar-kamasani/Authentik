@@ -23,6 +23,9 @@ const orderSchema = new mongoose.Schema({
   // Prefer linking orders to a Brand
   brandId: { type: mongoose.Schema.Types.ObjectId, ref: 'Brand' },
 
+  // New: Link to a Company consistently
+  companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company' },
+
   // Detailed fields (matching ProductTemplate)
   category: String,
   mrp: Number,
