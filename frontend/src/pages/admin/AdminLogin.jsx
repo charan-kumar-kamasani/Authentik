@@ -106,7 +106,7 @@ export default function AdminLogin() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-300 shadow-sm"
+                className="mt-1 block w-full px-4 py-3 text-slate-900 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-300 shadow-sm text-base"
                 placeholder="admin@yourdomain.com"
                 required
                 aria-required="true"
@@ -121,7 +121,7 @@ export default function AdminLogin() {
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="mt-1 block w-full px-4 py-3 pr-12 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-300 shadow-sm"
+                  className="mt-1 block w-full px-4 py-3 pr-12 text-slate-900 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-300 shadow-sm text-base"
                   placeholder="••••••••"
                   required
                   aria-required="true"

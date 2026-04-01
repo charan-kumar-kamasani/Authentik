@@ -679,8 +679,8 @@ const OrderManagement = () => {
                           }
                         }} icon={Edit} label="Edit" color="slate" />
                       )}
-                      {/* PDF — visible only for superadmin and admin after authorization */}
-                      {(order.qrCodesGenerated || ['Order Processing', 'Dispatching', 'Dispatched', 'Received'].includes(order.status)) && (role === 'superadmin' || role === 'admin') && (
+                      {/* PDF — visible for superadmin/admin until order is marked Received */}
+                      {order.status !== 'Received' && (role === 'superadmin' || role === 'admin') && (
                         <ActionBtn onClick={() => handleDownload(order._id)} icon={FileDown} label="PDF" color="slate" />
                       )}
 
