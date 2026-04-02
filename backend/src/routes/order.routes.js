@@ -255,7 +255,8 @@ router.get('/', protect, async (req, res) => {
           select: 'companyName courierAddress registerOfficeAddress dispatchAddress'
         }
       })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
       
     res.json(orders);
   } catch (error) {
@@ -280,7 +281,8 @@ router.get('/:id', protect, async (req, res) => {
       .populate({
         path: 'history.changedBy',
         select: 'name email role'
-      });
+      })
+      .lean();
 
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
@@ -429,7 +431,7 @@ router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req
 
     // GENERATE QR CODES
     const productsToCreate = [];
-    const bonusQty = parseInt(req.body.bonusQuantity) || 0;
+    const bonusQty = parseInt(req.body?.bonusQuantity) || 0;
     const totalQty = order.quantity + bonusQty;
     const brandName = order.brand;
     
@@ -565,7 +567,7 @@ router.put('/:id/dispatching', protect, authorize('admin', 'superadmin'), async 
 // 7. DISPATCH ORDER (Super Admin)
 router.put('/:id/dispatch', protect, authorize('admin', 'superadmin'), async (req, res) => {
   try {
-    const { trackingNumber, courierName, notes } = req.body;
+    const { trackingNumber, courierName, notes } = req.body || {};
     const order = await Order.findById(req.params.id);
 
     if (!order) {
@@ -680,7 +682,7 @@ router.put('/:id/received', protect, authorize('company', 'authorizer'), async (
 // 9. REJECT ORDER (Can be done by authorized users at various stages)
 router.put('/:id/reject', protect, async (req, res) => {
   try {
-    const { reason } = req.body;
+    const { reason } = req.body || {};
     const order = await Order.findById(req.params.id);
     
     if (!order) {
@@ -752,7 +754,7 @@ router.put('/:id', protect, authorize('company', 'authorizer', 'creator'), async
       dynamicFields,
       variants,
       productImage
-    } = req.body;
+    } = req.body || {};
     
     const order = await Order.findById(req.params.id);
     

@@ -42,8 +42,8 @@ router.post('/login', async (req, res) => {
 
 router.get("/profile", protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    res.json(user);
+    // req.user is already populated by protect middleware
+    res.json(req.user);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch profile" });
   }
@@ -52,19 +52,13 @@ router.get("/profile", protect, async (req, res) => {
 router.put("/profile", protect, async (req, res) => {
   try {
     const { name, ageGroup, dob, gender, country, state, city, profileImage } = req.body;
-    const user = await User.findById(req.user._id);
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { $set: { name, ageGroup, dob, gender, country, state, city, profileImage } },
+      { new: true, runValidators: true }
+    ).lean();
 
-    if (name) user.name = name;
-    if (ageGroup) user.ageGroup = ageGroup;
-    if (dob) user.dob = dob;
-    if (gender) user.gender = gender;
-    if (country) user.country = country;
-    if (state) user.state = state;
-    if (city) user.city = city;
-    if (profileImage) user.profileImage = profileImage;
-
-    await user.save();
-    res.json(user);
+    res.json(updatedUser);
   } catch (error) {
     res.status(500).json({ error: "Failed to update profile" });
   }

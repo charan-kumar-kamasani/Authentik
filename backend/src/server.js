@@ -3,11 +3,13 @@ require('dotenv').config();
 
 const express = require("express");
 const cors = require("cors");
+const compression = require("compression");
 const connectDb = require("./config/db");
 
 const app = express();
 
 // Middlewares
+app.use(compression()); // Compress all responses
 app.use(cors({
   origin: ["https://localhost:5173", "http://localhost:5173", "https://authentiks.in"],
   credentials: true,

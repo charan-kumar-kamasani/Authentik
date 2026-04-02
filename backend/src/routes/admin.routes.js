@@ -199,10 +199,10 @@ router.get('/companies', protect, authorize('admin', 'superadmin'), async (req, 
     try {
         // Admins see companies they created; superadmin sees all
         if (req.user.role === 'admin') {
-            const companies = await Company.find({ createdBy: req.user._id });
+            const companies = await Company.find({ createdBy: req.user._id }).lean();
             return res.json(companies);
         }
-        const companies = await Company.find({});
+        const companies = await Company.find({}).lean();
         res.json(companies);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -212,7 +212,7 @@ router.get('/companies', protect, authorize('admin', 'superadmin'), async (req, 
 // Get Single Company
 router.get('/companies/:id', protect, authorize('admin', 'superadmin'), async (req, res) => {
     try {
-        const company = await Company.findById(req.params.id);
+        const company = await Company.findById(req.params.id).lean();
         if (!company) return res.status(404).json({ message: 'Company not found' });
         res.json(company);
     } catch (error) {
@@ -223,7 +223,7 @@ router.get('/companies/:id', protect, authorize('admin', 'superadmin'), async (r
 // Get all brands associated with a specific company
 router.get('/company-brands/:companyId', protect, authorize('superadmin', 'admin'), async (req, res) => {
   try {
-    const brands = await Brand.find({ companyId: req.params.companyId });
+    const brands = await Brand.find({ companyId: req.params.companyId }).lean();
     res.json(brands);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -290,7 +290,7 @@ router.get("/users", protect, authorize("superadmin", "admin"), async (req, res)
          query = { role: { $in: ['admin', 'manager', 'user', 'company', 'authorizer', 'creator'] } };
     }
 
-    const users = await User.find(query).populate('createdBy', 'email');
+    const users = await User.find(query).populate('createdBy', 'email').lean();
     res.json(users);
 });
 
@@ -488,7 +488,7 @@ router.get('/qrs', protect, authorize('admin', 'manager', 'superadmin', 'creator
 
         // superadmin: query remains empty (see all)
 
-        const products = await Product.find(query).populate('createdBy', 'email role');
+        const products = await Product.find(query).populate('createdBy', 'email role').lean();
         res.json(products);
     } catch (error) {
         console.error('Get QRs error:', error);
@@ -727,7 +727,7 @@ router.get('/brands', protect, authorize('admin', 'superadmin', 'company', 'auth
         const { companyId } = req.query;
         const query = {};
         if (companyId) query.companyId = companyId;
-        const brands = await Brand.find(query).populate('companyId', 'companyName qrCredits legalEntity status');
+        const brands = await Brand.find(query).populate('companyId', 'companyName qrCredits legalEntity status').lean();
         res.json(brands);
     } catch (error) {
         res.status(500).json({ message: error.message });

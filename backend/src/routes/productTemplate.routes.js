@@ -33,7 +33,8 @@ router.get('/', protect, async (req, res) => {
     const templates = await ProductTemplate.find(query)
       .populate('brandId', 'brandName')
       .populate('authorizedBy', 'name email')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.json(templates);
   } catch (err) {

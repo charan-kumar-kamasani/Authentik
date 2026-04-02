@@ -70,12 +70,11 @@ async function resolveUnknownPlaces(results, keyField = '_id') {
 async function buildScopeFilter(user) {
   const filter = {};
   if (['superadmin', 'admin'].includes(user.role)) {
-    // Full access — no filter
     return filter;
   }
-  // company / authorizer / creator — scoped to their company's brands
   if (user.companyId) {
-    const brands = await Brand.find({ companyId: user.companyId }).select('_id');
+    // Scoped to company's brands
+    const brands = await Brand.find({ companyId: user.companyId }).select('_id').lean();
     filter.brandId = { $in: brands.map(b => b._id) };
   } else if (user.brandId) {
     filter.brandId = user.brandId;
@@ -86,8 +85,7 @@ async function buildScopeFilter(user) {
 // ─── GET /dashboard/stats — Main dashboard statistics ───
 router.get('/stats', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    const scope = await buildScopeFilter(user);
+    const scope = await buildScopeFilter(req.user);
 
     // Core counts
     const [totalScans, authenticScans, suspiciousScans, duplicateAlerts] = await Promise.all([
@@ -136,8 +134,7 @@ router.get('/stats', protect, async (req, res) => {
 // ─── GET /dashboard/scan-trend — Scan trend over time (bar chart) ───
 router.get('/scan-trend', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    const scope = await buildScopeFilter(user);
+    const scope = await buildScopeFilter(req.user);
     const days = parseInt(req.query.days) || 30;
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -189,8 +186,7 @@ router.get('/scan-trend', protect, async (req, res) => {
 // ─── GET /dashboard/duplicate-trend — Already-scanned alerts trend ───
 router.get('/duplicate-trend', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    const scope = await buildScopeFilter(user);
+    const scope = await buildScopeFilter(req.user);
     const days = parseInt(req.query.days) || 30;
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -229,8 +225,7 @@ router.get('/duplicate-trend', protect, async (req, res) => {
 // ─── GET /dashboard/high-risk-skus — Top SKUs by suspicious scan ratio ───
 router.get('/high-risk-skus', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    const scope = await buildScopeFilter(user);
+    const scope = await buildScopeFilter(req.user);
     const limit = parseInt(req.query.limit) || 5;
 
     const pipeline = [
@@ -266,8 +261,7 @@ router.get('/high-risk-skus', protect, async (req, res) => {
 // ─── GET /dashboard/batch-risk — Batch risk analysis ───
 router.get('/batch-risk', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    const scope = await buildScopeFilter(user);
+    const scope = await buildScopeFilter(req.user);
     const limit = parseInt(req.query.limit) || 10;
 
     // Aggregate scans by matching product's batchNo
@@ -315,8 +309,7 @@ router.get('/batch-risk', protect, async (req, res) => {
 // ─── GET /dashboard/geo-data — Scan location data for geo intelligence ───
 router.get('/geo-data', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    const scope = await buildScopeFilter(user);
+    const scope = await buildScopeFilter(req.user);
 
     const pipeline = [
       { $match: {
@@ -377,8 +370,7 @@ router.get('/geo-data', protect, async (req, res) => {
 // ─── GET /dashboard/geo-markers — Individual scan coordinates for map markers ───
 router.get('/geo-markers', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    const scope = await buildScopeFilter(user);
+    const scope = await buildScopeFilter(req.user);
     const limit = parseInt(req.query.limit) || 200;
 
     const scans = await Scan.find({
@@ -441,8 +433,7 @@ router.get('/geo-markers', protect, async (req, res) => {
 // ─── GET /dashboard/geo-anomalies — Distributor anomalies (scans far from expected) ───
 router.get('/geo-anomalies', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    const scope = await buildScopeFilter(user);
+    const scope = await buildScopeFilter(req.user);
 
     // Group by place and find places with high suspicious/duplicate ratios
     const pipeline = [
@@ -503,8 +494,7 @@ router.get('/geo-anomalies', protect, async (req, res) => {
 // ─── GET /dashboard/product-performance — Product / SKU performance data ───
 router.get('/product-performance', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    const scope = await buildScopeFilter(user);
+    const scope = await buildScopeFilter(req.user);
     const days = parseInt(req.query.days) || 30;
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
@@ -629,8 +619,7 @@ router.get('/product-performance', protect, async (req, res) => {
 // ─── GET /dashboard/recent-activity — Recent scans feed ───
 router.get('/recent-activity', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    const scope = await buildScopeFilter(user);
+    const scope = await buildScopeFilter(req.user);
     const limit = parseInt(req.query.limit) || 10;
 
     const scans = await Scan.find(scope)
@@ -658,8 +647,7 @@ router.get('/recent-activity', protect, async (req, res) => {
 // ─── GET /dashboard/consumer-insights — Demographics of scanning users ───
 router.get('/consumer-insights', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
-    const scope = await buildScopeFilter(user);
+    const scope = await buildScopeFilter(req.user);
 
     // Get unique user IDs who scanned
     const scannerIds = await Scan.distinct('userId', scope);

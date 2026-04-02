@@ -10,9 +10,14 @@ const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
+const placeCache = new Map(); // Simple in-memory cache for coordinates
+
 // helper for reverse geocoding (using native fetch — Node 18+)
 async function getPlaceFromCoords(lat, lon) {
   if (!lat || !lon) return "Unknown location";
+  
+  const key = `${lat.toFixed(3)},${lon.toFixed(3)}`;
+  if (placeCache.has(key)) return placeCache.get(key);
 
   try {
     const res = await fetch(
@@ -21,24 +26,20 @@ async function getPlaceFromCoords(lat, lon) {
         headers: {
           "User-Agent": "Authentik/1.0 (contact@authentik.com)",
         },
+        // Set a short timeout for the external API
+        signal: AbortSignal.timeout(1500)
       }
     );
 
     const data = await res.json();
-
-    const city =
-      data.address?.city ||
-      data.address?.town ||
-      data.address?.village ||
-      data.address?.county ||
-      "";
-
+    const city = data.address?.city || data.address?.town || data.address?.village || data.address?.county || "";
     const state = data.address?.state || "";
-
-    return (
-      [city, state].filter(Boolean).join(", ") ||
-      "Unknown location"
-    );
+    const result = [city, state].filter(Boolean).join(", ") || "Unknown location";
+    
+    if (result !== "Unknown location") {
+      placeCache.set(key, result);
+    }
+    return result;
   } catch {
     return "Unknown location";
   }
@@ -74,7 +75,8 @@ router.get("/history", protect, async (req, res) => {
     let scans = await Scan.find({ userId: req.user._id })
       .sort({ createdAt: -1 })
       .populate("productId")
-      .populate({ path: "brandId", populate: { path: "companyId" } });
+      .populate({ path: "brandId", populate: { path: "companyId" } })
+      .lean();
 
     // For any ALREADY_USED scans, include the original scan details (scannedBy, scannedAt, place)
     scans = await Promise.all(
@@ -126,9 +128,12 @@ console.log(qrCode)
       return res.status(400).json({ error: "qrCode required" });
     }
 
-    const product = await Product.findOne({ qrCode }).populate('orderId').populate({ path: 'brandId', populate: { path: 'companyId' } });
+    const product = await Product.findOne({ qrCode })
+      .populate('orderId')
+      .populate({ path: 'brandId', populate: { path: 'companyId' } })
+      .lean();
  
-    // Fetch field labels from global config
+    // Fetch field labels from global config (cached in model if using getGlobalFormConfig correctly)
     const config = await FormConfig.getGlobalFormConfig();
     const fieldLabels = {};
     if (config && config.customFields) {
@@ -261,39 +266,22 @@ router.post("/", protect, async (req, res) => {
     const scannedAt = new Date();
 
     // 1️⃣ Check product
-    const product = await Product.findOne({ qrCode }).populate('orderId').populate({ path: 'brandId', populate: { path: 'companyId' } });
-
-    // Fetch field labels from global config
-    const config = await FormConfig.getGlobalFormConfig();
-    const fieldLabels = {};
-    if (config && config.customFields) {
-      config.customFields.forEach(f => {
-        fieldLabels[f.fieldName] = f.fieldLabel;
-      });
-    }
+    const product = await Product.findOne({ qrCode })
+      .populate('orderId')
+      .populate({ path: 'brandId', populate: { path: 'companyId' } })
+      .lean();
 
     // Check if user has already reviewed
     let alreadyReviewed = false;
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.split(' ')[1];
-      try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'SECRET');
-        const review = await Review.findOne({ productId: product._id, userId: decoded.userId });
-        if (review) alreadyReviewed = true;
-      } catch (e) {
-        // Token invalid, ignore
-      }
-    }
+    // We already have req.user from protect middleware
+    const review = await Review.findOne({ productId: product?._id, userId: req.user._id }).lean();
+    if (review) alreadyReviewed = true;
 
     // --- We record EVERY attempt, so we skip searching for existingScan here ---
-console.log("______product", product) 
     /* =======================
        ❌ FAKE PRODUCT
     ======================= */
     if (!product) {
-      console.log("Scan detected: FAKE (not saved to DB - will save only if reported)", { userId, qrCode, brandNameFromPrefix });
-      // DON'T save to DB yet - only save when user reports it
       return res.json({
         status: "FAKE",
         data: {
@@ -306,7 +294,6 @@ console.log("______product", product)
           latitude,
           longitude,
           scannedAt: scannedAt,
-          // Include brand IDs for reporting
           brandId: brandIdFromPrefix,
         },
       });
@@ -588,10 +575,7 @@ router.get("/company/all", protect, async (req, res) => {
 // Submit a report
 router.post("/report", protect, async (req, res) => {
   try {
-    const userId = req.user._id;
-
-    // 1. Check if user profile is updated (Name and Mobile required)
-    const user = await User.findById(userId);
+    const user = req.user; // Already populated by protect
     if (!user.name || !user.mobile) {
       return res.status(400).json({ 
         error: "Profile incomplete", 

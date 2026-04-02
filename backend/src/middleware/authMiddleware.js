@@ -1,5 +1,12 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const { LRUCache } = require('lru-cache');
+
+// Cache user data for 2 minutes to reduce DB load
+const userCache = new LRUCache({
+  max: 500,
+  ttl: 1000 * 60 * 2, // 2 minutes
+});
 
 const protect = async (req, res, next) => {
   let token;
@@ -9,13 +16,25 @@ const protect = async (req, res, next) => {
     req.headers.authorization.startsWith("Bearer")
   ) {
     try {
-  token = req.headers.authorization.split(" ")[1];
-  const secret = process.env.JWT_SECRET || 'SECRET';
-  const decoded = jwt.verify(token, secret);
+      token = req.headers.authorization.split(" ")[1];
+      const secret = process.env.JWT_SECRET || 'SECRET';
+      const decoded = jwt.verify(token, secret);
 
-      req.user = await User.findById(decoded.userId)
-        .select("-password")
-        .populate('brandId');
+      // Try fetching from cache first
+      let user = userCache.get(decoded.userId);
+
+      if (!user) {
+        user = await User.findById(decoded.userId)
+          .select("-password")
+          .populate('brandId')
+          .lean(); // Use lean for performance
+        
+        if (user) {
+          userCache.set(decoded.userId, user);
+        }
+      }
+
+      req.user = user;
 
       if (!req.user) {
         return res.status(401).json({ error: "Not authorized, user not found", message: "Not authorized, user not found" });

@@ -49,4 +49,11 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Performance Indexes
+userSchema.index({ role: 1 });
+userSchema.index({ status: 1 });
+userSchema.index({ brandId: 1 });
+userSchema.index({ companyId: 1 });
+userSchema.index({ createdBy: 1 });
+
 module.exports = mongoose.model("User", userSchema);
