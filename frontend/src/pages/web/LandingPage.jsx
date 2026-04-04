@@ -1,7 +1,8 @@
-import React from 'react';
-import { ShieldCheck, ScanFace, CheckCircle2, AlertTriangle, BarChart3, Globe2, Layers, Cpu, Smartphone, Briefcase } from 'lucide-react';
+import React, { useState } from 'react';
+import { ShieldCheck, ScanFace, CheckCircle2, AlertTriangle, BarChart3, Globe2, Layers, Cpu, Smartphone, Briefcase, Star, Quote } from 'lucide-react';
 import WebHeader from '../../components/WebHeader';
 import WebFooter from '../../components/WebFooter';
+import ContactFormModal from '../../components/ContactFormModal';
 
 // Use the existing hero image as a background accent if needed, 
 // but we'll focus on a more technical, atmospheric vibe
@@ -31,6 +32,8 @@ const IndustryItem = ({ title, icon: Icon }) => (
 );
 
 export default function LandingPage() {
+  const [showContactForm, setShowContactForm] = useState(false);
+
   return (
     <div className="min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden">
       <WebHeader />
@@ -56,7 +59,7 @@ export default function LandingPage() {
           </p>
 
           <div className="flex justify-center mb-16 relative z-20">
-            <button className="px-12 py-5 bg-white text-black rounded-[2rem] font-black uppercase tracking-widest hover:bg-gray-200 transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 text-sm">
+            <button onClick={() => setShowContactForm(true)} className="px-12 py-5 bg-white text-black rounded-[2rem] font-black uppercase tracking-widest hover:bg-gray-200 transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:scale-105 active:scale-95 text-sm">
               Start Free Trial
             </button>
           </div>
@@ -82,18 +85,18 @@ export default function LandingPage() {
               
               <div className="flex w-[200%] animate-marquee">
                 {/* First Set */}
-                <div className="flex w-1/2 justify-around items-center px-4">
-                  {[1,2,3,4,5,6].map((i) => (
+              <div className="flex w-1/2 justify-around items-center px-4">
+                  {['Unilever', 'UrbanClap', 'Bosch', 'Philips', 'Mamaearth', 'Sugar'].map((name, i) => (
                     <div key={`logo-1-${i}`} className="text-gray-400 opacity-50 hover:opacity-100 transition-opacity flex items-center justify-center font-black text-xl tracking-tighter uppercase px-8">
-                      Brand{i}
+                      {name}
                     </div>
                   ))}
                 </div>
                 {/* Duplicate Set for smooth infinite loop */}
                 <div className="flex w-1/2 justify-around items-center px-4">
-                  {[1,2,3,4,5,6].map((i) => (
+                  {['Unilever', 'UrbanClap', 'Bosch', 'Philips', 'Mamaearth', 'Sugar'].map((name, i) => (
                     <div key={`logo-2-${i}`} className="text-gray-400 opacity-50 hover:opacity-100 transition-opacity flex items-center justify-center font-black text-xl tracking-tighter uppercase px-8">
-                      Brand{i}
+                      {name}
                     </div>
                   ))}
                 </div>
@@ -211,6 +214,56 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Testimonials */}
+      <section className="py-32 px-6">
+        <div className="container mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter uppercase mb-4">What Leaders Say</h2>
+            <div className="h-1 w-20 bg-indigo-500 mx-auto rounded-full" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                quote: "Authentiks reduced our counterfeit complaints by 94% within the first quarter. The ROI was immediate and the integration was seamless.",
+                name: "Rajesh Menon",
+                role: "Head of Supply Chain",
+                company: "Unilever India",
+                rating: 5
+              },
+              {
+                quote: "Our customers love scanning and verifying products instantly. It's built massive brand trust and the analytics dashboard gives us insights we never had before.",
+                name: "Priya Sharma",
+                role: "Brand Protection Director",
+                company: "Mamaearth",
+                rating: 5
+              },
+              {
+                quote: "From onboarding to going live took less than 48 hours. The coupon rewards system alone has driven a 35% increase in customer engagement.",
+                name: "Vikram Patel",
+                role: "CTO",
+                company: "Sugar Cosmetics",
+                rating: 5
+              }
+            ].map((t, i) => (
+              <div key={i} className="glass-effect p-8 rounded-[2.5rem] relative group hover:border-indigo-500/30 transition-all duration-500">
+                <Quote size={32} className="text-indigo-500/20 absolute top-6 right-6" />
+                <div className="flex gap-0.5 mb-4">
+                  {Array.from({ length: t.rating }).map((_, j) => (
+                    <Star key={j} size={14} className="text-amber-400 fill-amber-400" />
+                  ))}
+                </div>
+                <p className="text-gray-300 font-medium leading-relaxed mb-6 text-sm italic">"{t.quote}"</p>
+                <div>
+                  <div className="font-black text-white text-sm">{t.name}</div>
+                  <div className="text-xs text-gray-500 font-bold">{t.role}, {t.company}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-32 px-6">
         <div className="container mx-auto max-w-5xl">
@@ -220,7 +273,7 @@ export default function LandingPage() {
             <p className="text-gray-400 font-bold mb-10 max-w-lg mx-auto leading-relaxed">
               Join hundreds of premium brands leveraging Authentiks to build absolute customer trust.
             </p>
-            <button className="px-12 py-6 bg-white text-black rounded-[2rem] font-black uppercase tracking-widest hover:bg-gray-200 transition-all hover:scale-105 active:scale-95 text-base">
+            <button onClick={() => setShowContactForm(true)} className="px-12 py-6 bg-white text-black rounded-[2rem] font-black uppercase tracking-widest hover:bg-gray-200 transition-all hover:scale-105 active:scale-95 text-base">
               Get Started Now
             </button>
           </div>
@@ -228,6 +281,7 @@ export default function LandingPage() {
       </section>
 
       <WebFooter />
+      <ContactFormModal isOpen={showContactForm} onClose={() => setShowContactForm(false)} />
     </div>
   );
 }

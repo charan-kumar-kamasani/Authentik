@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
+import { getPlans } from '../../config/api';
 import { Check, Shield, Zap, TrendingUp, Globe, AlertCircle, Info, Star } from "lucide-react";
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
+import ContactFormModal from "../../components/ContactFormModal";
 import techBg from "../../assets/web/hero_image.png";
 
 const Glow = ({ color, className }) => (
   <div className={`glow-bg h-64 w-64 ${color} ${className}`} />
 );
 
-const PricingCard = ({ title, price, description, features, highlighted, badge }) => (
+const PricingCard = ({ title, price, description, features, highlighted, badge, onChoose }) => (
   <div className={`glass-effect p-8 rounded-[2.5rem] flex flex-col relative overflow-hidden transition-all duration-500 hover:scale-[1.02] border border-white/5 ${highlighted ? 'border-indigo-500/50 ring-1 ring-indigo-500/20' : ''}`}>
     {highlighted && <div className="absolute top-0 right-0 bg-indigo-500 text-white text-[10px] font-black uppercase px-4 py-1 rounded-bl-xl tracking-widest">{badge || "Most Popular"}</div>}
     <div className="mb-8">
@@ -27,7 +29,7 @@ const PricingCard = ({ title, price, description, features, highlighted, badge }
         </li>
       ))}
     </ul>
-    <button className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-sm transition-all ${highlighted ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-lg shadow-indigo-500/20' : 'bg-white/5 text-white hover:bg-white/10 border border-white/10'}`}>
+    <button onClick={onChoose} className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-sm transition-all ${highlighted ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-lg shadow-indigo-500/20' : 'bg-white/5 text-white hover:bg-white/10 border border-white/10'}`}>
       Choose Plan
     </button>
   </div>
@@ -45,6 +47,9 @@ const FeatureItem = ({ icon: Icon, title, description }) => (
 
 export default function WebPricing() {
     const [isIndia, setIsIndia] = useState(false);
+    const [contactOpen, setContactOpen] = useState(false);
+    const [selectedPlan, setSelectedPlan] = useState('');
+    const [plans, setPlans] = useState([]);
     
     useEffect(() => {
         fetch("https://ipapi.co/json/")
@@ -55,6 +60,8 @@ export default function WebPricing() {
                 }
             })
             .catch(() => setIsIndia(false));
+            
+        getPlans().then(data => setPlans(data.plans || data)).catch(e => console.error(e));
     }, []);
 
     return (
@@ -81,44 +88,18 @@ export default function WebPricing() {
             <section className="py-20 px-6">
                 <div className="container mx-auto">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                        <PricingCard 
-                            title="Starter"
-                            price={isIndia ? "₹0" : "$0.00"}
-                            description="Perfect for emerging brands testing the market."
-                            features={[
-                                "Unique QR Code Generation",
-                                "Basic Scan Verification",
-                                "Standard Tamper-Proof Labels",
-                                "Email Support",
-                                "Up to 10k Products/mo"
-                            ]}
-                        />
-                        <PricingCard 
-                            title="Growth"
-                            price={isIndia ? "₹2" : "$0.03"}
-                            description="Optimized for scaling production lines."
-                            highlighted={true}
-                            badge="Best Value"
-                            features={[
-                                "Everything in Starter",
-                                "Advanced Scan Intelligence",
-                                "Priority QR Activation",
-                                "Geo-Location Insights",
-                                "Up to 100k Products/mo"
-                            ]}
-                        />
-                        <PricingCard 
-                            title="Enterprise"
-                            price={isIndia ? "₹3" : "Custom"}
-                            description="For global supply chains requiring deep security."
-                            features={[
-                                "Custom Security Features",
-                                "API Integration Access",
-                                "Dedicated Account Manager",
-                                "Anti-Grey Market Alerts",
-                                "Unlimited Volume"
-                            ]}
-                        />
+                        {plans.map((p, index) => (
+                            <PricingCard 
+                                key={p._id || index}
+                                title={p.name}
+                                price={isIndia ? `₹${p.pricing?.monthly?.priceINR || p.pricePerQr || '0'}` : `$${p.pricing?.monthly?.priceUSD || '0'}`}
+                                description={p.saveText || "Enterprise-grade authentication and insights."}
+                                highlighted={p.isPopular}
+                                badge={p.isPopular ? "Best Value" : ""}
+                                features={p.features?.map(f => `${f.featureId?.name || ''} - ${f.value || ''}`) || ["Unique QR Generation", "Scan Analytics"]}
+                                onChoose={() => { setSelectedPlan(p.name); setContactOpen(true); }}
+                            />
+                        ))}
                     </div>
                     
                     <p className="text-center mt-12 text-gray-500 font-bold italic">
@@ -191,6 +172,7 @@ export default function WebPricing() {
             </section>
 
             <WebFooter />
+            <ContactFormModal isOpen={contactOpen} onClose={() => setContactOpen(false)} planName={selectedPlan} />
         </div>
     );
 }

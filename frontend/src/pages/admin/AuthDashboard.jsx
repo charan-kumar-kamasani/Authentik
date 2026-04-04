@@ -4,7 +4,7 @@ import {
   getDashboardStats, getScanTrend, getDuplicateTrend,
   getHighRiskSkus, getBatchRisk, getGeoData, getGeoMarkers, getGeoAnomalies,
   getRecentActivity, getConsumerInsights, getProductPerformance,
-  getSkuIntelligence
+  getSkuIntelligence, exportDashboardData
 } from '../../config/api';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -14,7 +14,7 @@ import {
   ShieldCheck, ShieldAlert, AlertTriangle, Copy, TrendingUp,
   Activity, MapPin, Users, Eye, BarChart2, RefreshCw, ChevronDown,
   Package, Zap, Star, RotateCcw, Globe, Search as SearchIcon,
-  Layers, Info, Search
+  Layers, Info, Search, FileDown, Lock, Shield
 } from 'lucide-react';
 
 // Leaflet
@@ -140,6 +140,10 @@ export default function AuthDashboard({ role: propRole }) {
   const [consumerInsights, setConsumerInsights] = useState({});
   const [productPerf, setProductPerf]       = useState({});
   const [skuMetrics, setSkuMetrics]         = useState([]);
+  
+  // Export State
+  const [exporting, setExporting] = useState(false);
+  const [exportMonths, setExportMonths] = useState(3);
 
   const fetchAll = useCallback(async (showLoader = true) => {
     if (!token) { navigate('/admin'); return; }
@@ -193,12 +197,36 @@ export default function AuthDashboard({ role: propRole }) {
   const validGeoData  = geoData.filter(g => g.lat && g.lng);
 
   const tabs = [
-    { key: 'authentication', label: 'Authentication', icon: ShieldCheck },
+    { key: 'authentication', label: 'Overview & Scans', icon: ShieldCheck },
     { key: 'geo',            label: 'Geo Intelligence', icon: Globe },
     { key: 'consumers',      label: 'Consumer Insights', icon: Users },
-    { key: 'products',       label: 'Product Performance', icon: Package },
-    ...(['superadmin', 'authorizer'].includes(role) ? [{ key: 'sku', label: 'SKU Intelligence', icon: Layers }] : []),
-  ];
+    { key: 'products',       label: 'Product Analytics', icon: Package },
+    ...(['superadmin', 'authorizer', 'admin'].includes(role) ? [{ key: 'sku', label: 'SKU Intelligence', icon: Layers }] : []),
+    { key: 'batch',          label: 'Batch Tracking', icon: BarChart2 },
+    { key: 'activity',       label: 'Live Activity Feed', icon: Activity },
+    { key: 'anomalies',      label: 'Anomaly Detection', icon: ShieldAlert },
+    { key: 'brand',          label: 'Brand Protection', icon: Shield },
+    { key: 'reports',        label: 'Export & Reports', icon: FileDown },
+  ].slice(0, 10); // Ensure exactly 10 or up to 10
+
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      const blob = await exportDashboardData(token, exportMonths);
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `authentiks_dashboard_${exportMonths}months.xlsx`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(err.message || 'Export failed');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   /* ─── loader ─── */
   if (loading) {
@@ -214,18 +242,39 @@ export default function AuthDashboard({ role: propRole }) {
 
   /* ════════════════ RENDER ════════════════ */
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
 
       {/* ─── Header ─── */}
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-slate-800 tracking-tight">Dashboard</h1>
-          <p className="text-sm text-slate-500 mt-1">Real-time authentication analytics &amp; intelligence</p>
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/60 flex items-center justify-between flex-wrap gap-4 relative overflow-hidden">
+        <div className="absolute right-0 top-0 w-64 h-64 bg-blue-50 rounded-full blur-3xl opacity-60 pointer-events-none translate-x-1/2 -translate-y-1/2" />
+        <div className="relative z-10 flex items-center gap-4">
+           <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+              <BarChart2 size={24} />
+           </div>
+           <div>
+             <h1 className="text-2xl font-black text-slate-800 tracking-tight">Platform Analytics</h1>
+             <p className="text-sm text-slate-500 font-medium">Real-time authentication intelligence</p>
+           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 relative z-10">
+          {/* Export Controls for Authorizer/Superadmin */}
+          {['superadmin', 'authorizer', 'admin'].includes(role) && (
+            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl p-1 pr-1.5">
+              <select value={exportMonths} onChange={e => setExportMonths(Number(e.target.value))}
+                className="appearance-none bg-transparent pl-3 pr-8 py-1.5 text-xs font-black text-slate-600 cursor-pointer focus:outline-none transition-all">
+                {[1,2,3,4,5,6].map(m => <option key={m} value={m}>{m} Month{m>1?'s':''}</option>)}
+              </select>
+              <button onClick={handleExport} disabled={exporting}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-black uppercase tracking-wider hover:bg-indigo-700 transition-all disabled:opacity-50">
+                {exporting ? <RefreshCw size={14} className="animate-spin" /> : <FileDown size={14} />}
+                Export Excel
+              </button>
+            </div>
+          )}
+          <div className="h-8 w-px bg-slate-200 mx-1 hidden sm:block"></div>
           <div className="relative">
             <select value={timeRange} onChange={e => setTimeRange(Number(e.target.value))}
-              className="appearance-none bg-white border border-slate-200 rounded-xl px-4 py-2.5 pr-9 text-sm font-semibold text-slate-600 cursor-pointer hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all">
+              className="appearance-none bg-white border border-slate-200 rounded-xl px-4 py-2 pr-9 text-sm font-semibold text-slate-700 cursor-pointer hover:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all shadow-sm">
               <option value={7}>Last 7 days</option>
               <option value={14}>Last 14 days</option>
               <option value={30}>Last 30 days</option>
@@ -234,23 +283,34 @@ export default function AuthDashboard({ role: propRole }) {
             <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
           </div>
           <button onClick={() => fetchAll(false)} disabled={refreshing}
-            className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-500 hover:text-blue-600 hover:border-blue-300 transition-all disabled:opacity-50">
-            <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
+            className="p-2 border border-slate-200 rounded-xl text-slate-500 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all disabled:opacity-50 shadow-sm bg-white">
+            <RefreshCw size={18} className={refreshing ? 'animate-spin text-blue-600' : ''} />
           </button>
         </div>
       </div>
 
-      {/* ─── Tabs ─── */}
-      <div className="flex items-center gap-1 bg-white border border-slate-200/60 rounded-2xl p-1.5 overflow-x-auto">
-        {tabs.map(t => (
-          <button key={t.key} onClick={() => setActiveTab(t.key)}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 whitespace-nowrap ${
-              activeTab === t.key ? 'bg-blue-600 text-white shadow-md shadow-blue-200' : 'text-slate-500 hover:text-blue-600 hover:bg-blue-50'
-            }`}>
-            <t.icon size={16} />{t.label}
-          </button>
-        ))}
-      </div>
+      {/* ─── Layout: Left Sidebar + Right Content ─── */}
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
+        {/* Left 10-Tab Sidebar */}
+        <div className="w-full lg:w-64 flex-shrink-0 bg-white rounded-2xl border border-slate-200/60 p-3 shadow-sm flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible sticky top-6">
+          {tabs.map(t => {
+            const isActive = activeTab === t.key;
+            return (
+              <button key={t.key} onClick={() => setActiveTab(t.key)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-black transition-all duration-300 whitespace-nowrap text-left ${
+                  isActive 
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' 
+                  : 'text-slate-500 hover:text-blue-700 hover:bg-blue-50/70'
+                }`}>
+                <t.icon size={18} className={isActive ? 'text-white' : 'text-slate-400'} strokeWidth={2.5} />
+                {t.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Right Content Area */}
+        <div className="flex-1 w-full min-w-0">
 
       {/* ════════════════════════════════════════════
                   TAB 1 — AUTHENTICATION
@@ -959,6 +1019,48 @@ export default function AuthDashboard({ role: propRole }) {
           </div>
         </div>
       )}
+      {activeTab === 'batch' && (
+        <div className="bg-white rounded-2xl p-12 border border-slate-200 text-center">
+          <BarChart2 size={48} className="mx-auto text-slate-300 mb-4" />
+          <h2 className="text-xl font-black text-slate-700">Batch Analytics</h2>
+          <p className="text-slate-500 mt-2">Correlate scans across specific production batches. Available soon.</p>
+        </div>
+      )}
+
+      {activeTab === 'activity' && (
+        <div className="bg-white rounded-2xl p-12 border border-slate-200 text-center">
+          <Activity size={48} className="mx-auto text-slate-300 mb-4" />
+          <h2 className="text-xl font-black text-slate-700">Live Activity Feed</h2>
+          <p className="text-slate-500 mt-2">Real-time stream of all system events. Available soon.</p>
+        </div>
+      )}
+
+      {activeTab === 'anomalies' && (
+        <div className="bg-white rounded-2xl p-12 border border-slate-200 text-center">
+          <ShieldAlert size={48} className="mx-auto text-slate-300 mb-4" />
+          <h2 className="text-xl font-black text-slate-700">Anomaly Detection</h2>
+          <p className="text-slate-500 mt-2">AI-driven fraud detection patterns and alerts. Available soon.</p>
+        </div>
+      )}
+
+      {activeTab === 'brand' && (
+        <div className="bg-white rounded-2xl p-12 border border-slate-200 text-center">
+          <Shield size={48} className="mx-auto text-slate-300 mb-4" />
+          <h2 className="text-xl font-black text-slate-700">Brand Protection</h2>
+          <p className="text-slate-500 mt-2">Manage grey-market tracking and IP protection alerts. Available soon.</p>
+        </div>
+      )}
+
+      {activeTab === 'reports' && (
+        <div className="bg-white rounded-2xl p-12 border border-slate-200 text-center">
+          <FileDown size={48} className="mx-auto text-slate-300 mb-4" />
+          <h2 className="text-xl font-black text-slate-700">System Reports</h2>
+          <p className="text-slate-500 mt-2">Use the Export Excel button in the top right to download dashboard data.</p>
+        </div>
+      )}
+
+        </div> {/* End Right Content Area */}
+      </div> {/* End Sidebar Layout Container */}
     </div>
   );
 }

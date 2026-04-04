@@ -34,6 +34,8 @@ app.use('/payments', require('./routes/payment.routes'));
 app.use('/dashboard', require('./routes/dashboard.routes'));
 app.use('/product-templates', require('./routes/productTemplate.routes'));
 app.use('/reviews', require('./routes/review.routes'));
+app.use('/leads', require('./routes/lead.routes'));
+app.use('/dashboard', require('./routes/dashboard-export.routes'));
 
 const PORT = process.env.PORT || 5000;
 const HOST = process.env.IP_ADDRESS || "localhost";
@@ -47,6 +49,10 @@ const HOST = process.env.IP_ADDRESS || "localhost";
     });
     // Set a very high timeout for PDF generation (10 minutes)
     server.timeout = 600000;
+
+    // Start notification cron jobs
+    const { startNotificationCron } = require('./cron/notificationCron');
+    startNotificationCron();
 
   } catch (error) {
     console.error("❌ Failed to start server:", error);

@@ -296,6 +296,22 @@ export const downloadOrderPdf = async (orderId, token) => {
     }
 };
 
+export const downloadOrderImages = async (orderId, token, format = 'png') => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/orders/${orderId}/download-images?format=${format}`, {
+             headers: { Authorization: `Bearer ${token}` }
+        });
+        if(!response.ok) {
+             const err = await response.json().catch(() => ({ message: `Server returned ${response.status}` }));
+             throw new Error(err.message || 'Failed to download images');
+        }
+        return await response.blob();
+    } catch(error) {
+        console.error("Image Download Error:", error);
+        throw error;
+    }
+};
+
 export const getProfile = async (token) => {
     try {
         const response = await fetch(`${API_BASE_URL}/auth/profile`, {
@@ -644,6 +660,22 @@ export const getRecentActivity = (token, limit = 10) => dashboardFetch(`recent-a
 export const getConsumerInsights = (token) => dashboardFetch('consumer-insights', token);
 export const getProductPerformance = (token, days = 30) => dashboardFetch(`product-performance?days=${days}`, token);
 export const getSkuIntelligence = (token) => dashboardFetch('sku-intelligence', token);
+
+export const exportDashboardData = async (token, months = 3) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/dashboard/export?months=${months}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({ message: `Export failed (${response.status})` }));
+            throw new Error(err.message || 'Export error');
+        }
+        return await response.blob();
+    } catch (error) {
+        console.error("Dashboard Export Error:", error);
+        throw error;
+    }
+};
 
 // ─── Test Accounts APIs ───
 export const getTestAccounts = async () => {
@@ -998,5 +1030,40 @@ export const getClaimedRewards = async (token) => {
     } catch (error) {
         console.error("Get Claimed Rewards Error:", error);
         throw error;
+    }
+};
+// ==========================================
+// 12. LEADS API
+// ==========================================
+
+export const getLeads = async (page = 1, limit = 50, status = '', token) => {
+    try {
+        const query = new URLSearchParams({ page, limit });
+        if (status) query.append('status', status);
+        const res = await fetch(`${API_BASE_URL}/leads?${query.toString()}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Failed to fetch leads');
+        return await res.json();
+    } catch (e) {
+        throw e;
+    }
+};
+
+export const updateLeadStatus = async (id, status, notes, token) => {
+    try {
+        const body = {};
+        if (status) body.status = status;
+        if (notes !== undefined) body.notes = notes;
+        
+        const res = await fetch(`${API_BASE_URL}/leads/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify(body)
+        });
+        if (!res.ok) throw new Error('Failed to update lead');
+        return await res.json();
+    } catch (e) {
+        throw e;
     }
 };

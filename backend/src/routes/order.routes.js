@@ -85,6 +85,27 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
     }
 
     const quantityNumber = Number(quantityFinal) || 0;
+
+    // Hard minimum: 500 units required
+    if (quantityNumber < 500) {
+      return res.status(400).json({
+        message: `Minimum order quantity is 500 units. You entered ${quantityNumber}.`,
+        minRequired: 500
+      });
+    }
+
+    // Description word limit: 200 words max
+    const descText = (req.body.description || req.body.productInfo || '').trim();
+    if (descText) {
+      const wordCount = descText.split(/\s+/).filter(Boolean).length;
+      if (wordCount > 200) {
+        return res.status(400).json({
+          message: `Product description cannot exceed 200 words. Current: ${wordCount} words.`,
+          maxWords: 200,
+          currentWords: wordCount
+        });
+      }
+    }
     
     // Determine the brandId (preferred) or fallback to company owner
     let brandId = req.body.brandId || (req.user.brandId?._id || req.user.brandId) || null;
@@ -914,6 +935,56 @@ router.get('/:id/download', protect, async (req, res) => {
     }
   }
 
+});
+
+// 10b. DOWNLOAD QR IMAGES (ZIP of individual QR images)
+router.get('/:id/download-images', protect, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+    if (!['superadmin', 'admin'].includes(req.user.role)) {
+      return res.status(403).json({ message: 'Not authorized' });
+    }
+    if (!order.qrCodesGenerated) {
+      return res.status(400).json({ message: 'QR codes not generated yet' });
+    }
+
+    const products = await Product.find({ orderId: order._id }).sort({ sequence: 1 }).lean();
+    if (products.length === 0) {
+      return res.status(404).json({ message: 'No QR codes found' });
+    }
+
+    const format = (req.query.format || 'png').toLowerCase();
+    const archiver = require('archiver');
+    const { generateQrImagePages } = require('../utils/canvasGenerator');
+
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename=order_${order.orderId}_qr_pages_${format}.zip`);
+
+    const archive = archiver('zip', { zlib: { level: 6 } });
+    archive.pipe(res);
+
+    const brandColor = order.brandId?.config?.brandColor || order.brandColor || "#000000";
+    
+    // Generate the pages (array of { buffer, filename })
+    const pages = await generateQrImagePages(products, format, {
+        orderId: order.orderId,
+        brand: order.brand,
+        brandColor: brandColor,
+        scoring: true
+    });
+
+    for (const page of pages) {
+        archive.append(page.buffer, { name: page.filename });
+    }
+
+    await archive.finalize();
+  } catch (error) {
+    console.error('Download Images error:', error);
+    if (!res.headersSent) {
+      res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+  }
 });
 
 // 11. GET ORDER STATISTICS

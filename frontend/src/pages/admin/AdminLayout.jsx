@@ -26,6 +26,7 @@ import {
   Coins,
   Gift,
   Layers,
+  Briefcase,
 } from "lucide-react";
 import GenerateQrs from "./GenerateQrs";
 import QrManagement from "./QrManagement";
@@ -263,6 +264,15 @@ export default function AdminLayout({ children }) {
                 icon={Gift}
                 isActive={activePath === "/admin/coupons"}
               />
+
+              {["superadmin", "admin"].includes(role) && (
+                <SidebarItem
+                  label="Sales Leads"
+                  onClick={() => navigate("/admin/leads")}
+                  icon={Briefcase}
+                  isActive={activePath === "/admin/leads"}
+                />
+              )}
 
               {["superadmin"].includes(role) && (
                 <div className="pt-4 pb-2">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { getOrders, createOrder, updateOrderStatus, downloadOrderPdf, checkOrderCredits, getPlans, calculatePrice, validateCoupon, initiatePayment, updateOrder } from '../../config/api';
+import { getOrders, createOrder, updateOrderStatus, downloadOrderPdf, downloadOrderImages, checkOrderCredits, getPlans, calculatePrice, validateCoupon, initiatePayment, updateOrder } from '../../config/api';
 import { useNavigate } from 'react-router-dom';
 import { useLoading } from '../../context/LoadingContext';
 import { useConfirm } from '../../components/ConfirmModal';
@@ -113,6 +113,7 @@ const OrderManagement = () => {
   const { setLoading: setGlobalLoading } = useLoading();
   const [dispatchData, setDispatchData] = useState({ trackingNumber: '', courierName: '', notes: '' });
   const [showDispatchModal, setShowDispatchModal] = useState(null);
+  const [downloadModal, setDownloadModal] = useState(null); // orderId or null
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [creatorSubmitting, setCreatorSubmitting] = useState(false);
@@ -423,16 +424,24 @@ const OrderManagement = () => {
     } catch { setPlans([]); }
   };
 
-  const handleDownload = async (orderId) => {
+  const downloadQrs = async (orderId, format) => {
+    setDownloadModal(null);
     setGlobalLoading(true);
     try {
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-      const blob = await downloadOrderPdf(orderId, token);
+      let blob, filename;
+      if (format === 'pdf') {
+        blob = await downloadOrderPdf(orderId, token);
+        filename = `order_${orderId}_qrs.pdf`;
+      } else {
+        blob = await downloadOrderImages(orderId, token, format);
+        filename = `order_${orderId}_qr_images.zip`;
+      }
       
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `order_${orderId}.pdf`;
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
       
@@ -440,7 +449,7 @@ const OrderManagement = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (e) { 
-      alert(e.message); 
+      alert(e.message || "Failed to download"); 
     } finally { 
       setGlobalLoading(false); 
     }
@@ -681,7 +690,7 @@ const OrderManagement = () => {
                       )}
                       {/* PDF — visible for superadmin/admin until order is marked Received */}
                       {order.status !== 'Received' && (role === 'superadmin' || role === 'admin') && (
-                        <ActionBtn onClick={() => handleDownload(order._id)} icon={FileDown} label="PDF" color="slate" />
+                        <ActionBtn onClick={() => setDownloadModal(order._id)} icon={FileDown} label="Download QRs" color="slate" />
                       )}
 
                     </div>
@@ -1317,6 +1326,52 @@ const OrderManagement = () => {
           </div>
         </div>
       )}
+      {/* Download Format Modal */}
+      {downloadModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 text-left">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 className="text-lg font-black text-slate-800 mb-1">Download QR Codes</h3>
+            <p className="text-sm text-slate-500 mb-5">Choose your preferred format:</p>
+            <div className="space-y-2.5">
+              <button onClick={() => downloadQrs(downloadModal, 'pdf')}
+                className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/50 transition-all group">
+                <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-500 group-hover:bg-red-100 transition-colors">
+                  <FileDown size={20} />
+                </div>
+                <div className="text-left">
+                  <div className="font-bold text-slate-800">PDF Document</div>
+                  <div className="text-xs text-slate-500">270 QR codes per page, print-ready A3+</div>
+                </div>
+              </button>
+              <button onClick={() => downloadQrs(downloadModal, 'jpg')}
+                className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/50 transition-all group">
+                <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500 group-hover:bg-amber-100 transition-colors">
+                  <FileDown size={20} />
+                </div>
+                <div className="text-left">
+                  <div className="font-bold text-slate-800">JPG Images</div>
+                  <div className="text-xs text-slate-500">Individual QR images in a ZIP file</div>
+                </div>
+              </button>
+              <button onClick={() => downloadQrs(downloadModal, 'png')}
+                className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/50 transition-all group">
+                <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 group-hover:bg-blue-100 transition-colors">
+                  <FileDown size={20} />
+                </div>
+                <div className="text-left">
+                  <div className="font-bold text-slate-800">PNG Images</div>
+                  <div className="text-xs text-slate-500">Lossless QR images in a ZIP file</div>
+                </div>
+              </button>
+            </div>
+            <button onClick={() => setDownloadModal(null)}
+              className="w-full mt-4 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors text-sm">
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

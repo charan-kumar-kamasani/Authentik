@@ -281,7 +281,25 @@ export default function GenerateQrs() {
       const qtyValue = (quantityField ? uploadedDynamicFields[quantityField.fieldName] : (uploadedDynamicFields['quantity'] || uploadedDynamicFields['qrQuantity'] || '')) || 1;
       const quantity = Number(qtyValue) || 1;
 
-      // Minimum quantity check (Requirement 6 - Plan based)
+      // Hard minimum: 500 units required
+      if (quantity < 500) {
+        alert(`Minimum order quantity is 500 units. You entered ${quantity}.`);
+        setSubmitting(false);
+        return;
+      }
+
+      // Description word limit: 200 words max
+      const descText = (newQr.productInfo || '').trim();
+      if (descText) {
+        const wordCount = descText.split(/\s+/).filter(Boolean).length;
+        if (wordCount > 200) {
+          alert(`Product description cannot exceed 200 words. Current: ${wordCount} words.`);
+          setSubmitting(false);
+          return;
+        }
+      }
+
+      // Minimum quantity check (Plan based)
       const activePlan = currentUser?.companyId?.planId;
       if (activePlan) {
         const minStr = activePlan.minQrPerOrder || activePlan.minQr || '';
@@ -293,7 +311,7 @@ export default function GenerateQrs() {
         }
       }
 
-      // Minimum quantity check (Requirement 6 - Field based)
+      // Minimum quantity check (Field based)
       if (quantityField && quantityField.validation?.min) {
         if (quantity < quantityField.validation.min) {
           alert(`Minimum quantity allowed is ${quantityField.validation.min} units.`);
@@ -778,6 +796,14 @@ export default function GenerateQrs() {
             disabled={isCatalogProduct}
             className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium resize-none disabled:bg-slate-100 disabled:text-slate-500"
           />
+          {(() => {
+            const wc = (newQr.productInfo || '').trim().split(/\s+/).filter(Boolean).length;
+            return (
+              <div className={`text-xs font-bold ml-1 mt-0.5 ${wc > 200 ? 'text-red-500' : wc > 180 ? 'text-amber-500' : 'text-slate-400'}`}>
+                {wc}/200 words {wc > 200 && '— exceeds limit'}
+              </div>
+            );
+          })()}
         </div>
 
 
@@ -1001,12 +1027,37 @@ export default function GenerateQrs() {
           <label className="text-sm font-medium text-slate-700 ml-1">
             Coupon Expiry Date
           </label>
-          <input
-            type="date"
-            value={coupon.expiryDate}
-            onChange={(e) => setCoupon({ ...coupon, expiryDate: e.target.value })}
-            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all font-medium"
-          />
+          <div className="flex gap-2">
+            <select
+              value={coupon.expiryDate ? new Date(coupon.expiryDate).getMonth() + 1 || '' : (coupon._expiryMonth || '')}
+              onChange={(e) => {
+                const mm = e.target.value;
+                const yy = coupon._expiryYear || new Date().getFullYear();
+                setCoupon({ ...coupon, _expiryMonth: mm, _expiryYear: yy, expiryDate: mm && yy ? `${yy}-${String(mm).padStart(2, '0')}-28` : '' });
+              }}
+              className="flex-1 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all font-medium"
+            >
+              <option value="">MM</option>
+              {Array.from({ length: 12 }, (_, i) => (
+                <option key={i + 1} value={i + 1}>{String(i + 1).padStart(2, '0')}</option>
+              ))}
+            </select>
+            <select
+              value={coupon._expiryYear || (coupon.expiryDate ? new Date(coupon.expiryDate).getFullYear() : '')}
+              onChange={(e) => {
+                const yy = e.target.value;
+                const mm = coupon._expiryMonth || (coupon.expiryDate ? new Date(coupon.expiryDate).getMonth() + 1 : '');
+                setCoupon({ ...coupon, _expiryYear: yy, _expiryMonth: mm, expiryDate: mm && yy ? `${yy}-${String(mm).padStart(2, '0')}-28` : '' });
+              }}
+              className="flex-1 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all font-medium"
+            >
+              <option value="">YYYY</option>
+              {Array.from({ length: 10 }, (_, i) => {
+                const yr = new Date().getFullYear() + i;
+                return <option key={yr} value={yr}>{yr}</option>;
+              })}
+            </select>
+          </div>
         </div>
 
         <div className="col-span-2 flex flex-col gap-1.5">

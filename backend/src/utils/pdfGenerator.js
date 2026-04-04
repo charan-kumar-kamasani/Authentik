@@ -35,7 +35,7 @@ const buildQrPdf = async (products, options = {}) => {
   /** ─── GRID — 15 cols × 18 rows = 270 per page ─── **/
   const cols = 15;
   const rows = 18;
-  const perPage = cols * rows - 1; // 269 — first cell left blank for paper cut
+  const perPage = cols * rows; // 270 — all cells used
 
   /** ─── MARGINS — exactly centred on the page ─── **/
   const gridWidth = cols * cellWidth;
@@ -96,8 +96,8 @@ const buildQrPdf = async (products, options = {}) => {
       doc.restore();
     }
 
-    // Start from cell index 1 (skip first cell — left blank for paper cut alignment)
-    let idx = 1;
+    // Start from cell index 0 (use all 270 cells)
+    let idx = 0;
 
     for (let i = start; i < end; i++) {
       const row = Math.floor(idx / cols);

@@ -103,8 +103,8 @@ export default function RewardDetail() {
             <div className="border-[2px] border-dashed border-[#2CA4D6]/40 rounded-[28px] p-6 bg-gradient-to-b from-[#F0F7FF] to-[#E8F4F9] text-center shadow-inner relative overflow-hidden">
               <div className="absolute top-0 right-0 w-24 h-24 bg-white/40 rounded-full blur-2xl -mr-10 -mt-10" />
               <p className="text-[11px] text-[#1a5fa8] font-black uppercase tracking-[0.25em] mb-4 relative z-10">Your Coupon Code</p>
-              <div className="flex items-center justify-center gap-4 relative z-10">
-                <span className="text-[32px] font-black text-[#0D4E96] tracking-[0.15em] drop-shadow-sm">
+              <div className="flex items-center justify-center gap-4 relative z-10 w-full px-2">
+                <span className="text-[24px] sm:text-[32px] font-black text-[#0D4E96] tracking-[0.1em] drop-shadow-sm flex-1 break-all text-center">
                   {reward.couponCode}
                 </span>
                 <button

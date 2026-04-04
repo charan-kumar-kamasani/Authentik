@@ -180,4 +180,124 @@ const getStatusMessage = (status) => {
   return messages[status] || '';
 };
 
-module.exports = { sendOrderStatusEmail };
+module.exports = { sendOrderStatusEmail, sendLeadConfirmation, sendCouponExpiryNotification, sendCreditExpiryNotification };
+
+// ── Lead Confirmation Email ──
+async function sendLeadConfirmation(leadData) {
+  try {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) return;
+    const transporter = createTransporter();
+
+    // Email to lead
+    await transporter.sendMail({
+      from: `"Authentiks" <${process.env.EMAIL_USER}>`,
+      to: leadData.email,
+      subject: 'Thank you for your interest in Authentiks!',
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+          <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:30px;text-align:center;border-radius:12px 12px 0 0;">
+            <h1 style="margin:0;">🔐 Authentiks</h1>
+            <p style="margin:8px 0 0;">World-Class Brand Protection</p>
+          </div>
+          <div style="background:#f9f9f9;padding:25px;border:1px solid #ddd;">
+            <h2>Hi ${leadData.name},</h2>
+            <p>Thank you for your interest in Authentiks! We've received your inquiry and our team will get back to you within 24 hours.</p>
+            <div style="background:white;padding:15px;margin:15px 0;border-radius:8px;border-left:4px solid #667eea;">
+              <p><strong>Plan Interest:</strong> ${leadData.planInterest || 'General Inquiry'}</p>
+              ${leadData.requirements ? `<p><strong>Your Requirements:</strong> ${leadData.requirements}</p>` : ''}
+            </div>
+            <p>In the meantime, feel free to explore our features at <a href="https://authentiks.in">authentiks.in</a></p>
+          </div>
+          <div style="background:#333;color:#fff;padding:15px;text-align:center;border-radius:0 0 8px 8px;font-size:12px;">
+            <p>© 2026 Authentiks - QR Authentication System</p>
+          </div>
+        </div>
+      `
+    });
+
+    // Email to admin
+    const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
+    if (adminEmail) {
+      await transporter.sendMail({
+        from: `"Authentiks Leads" <${process.env.EMAIL_USER}>`,
+        to: adminEmail,
+        subject: `🔔 New Lead: ${leadData.name} - ${leadData.company || 'No Company'}`,
+        html: `
+          <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+            <h2>New Lead Captured</h2>
+            <table style="width:100%;border-collapse:collapse;">
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Name</td><td style="padding:8px;border-bottom:1px solid #eee;">${leadData.name}</td></tr>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Email</td><td style="padding:8px;border-bottom:1px solid #eee;">${leadData.email}</td></tr>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Phone</td><td style="padding:8px;border-bottom:1px solid #eee;">${leadData.phone || 'N/A'}</td></tr>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Company</td><td style="padding:8px;border-bottom:1px solid #eee;">${leadData.company || 'N/A'}</td></tr>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Plan Interest</td><td style="padding:8px;border-bottom:1px solid #eee;">${leadData.planInterest || 'N/A'}</td></tr>
+              <tr><td style="padding:8px;font-weight:bold;">Requirements</td><td style="padding:8px;">${leadData.requirements || 'N/A'}</td></tr>
+            </table>
+          </div>
+        `
+      });
+    }
+  } catch (err) {
+    console.warn('Lead email error (non-blocking):', err.message);
+  }
+}
+
+// ── Coupon Expiry Notification ──
+async function sendCouponExpiryNotification(email, couponData, daysLeft) {
+  try {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) return;
+    const transporter = createTransporter();
+    await transporter.sendMail({
+      from: `"Authentiks" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: `⏰ Your coupon ${couponData.code} expires in ${daysLeft} day${daysLeft > 1 ? 's' : ''}!`,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+          <div style="background:linear-gradient(135deg,#f59e0b,#ef4444);color:white;padding:25px;text-align:center;border-radius:12px 12px 0 0;">
+            <h1 style="margin:0;">⏰ Coupon Expiring Soon!</h1>
+          </div>
+          <div style="background:#fff;padding:25px;border:1px solid #ddd;">
+            <p>Your coupon <strong style="font-size:18px;color:#7c3aed;">${couponData.code}</strong> for <strong>${couponData.productName || 'product'}</strong> will expire in <strong style="color:#ef4444;">${daysLeft} day${daysLeft > 1 ? 's' : ''}</strong>.</p>
+            <p>Don't miss out! Use it before it's gone.</p>
+          </div>
+        </div>
+      `
+    });
+  } catch (err) {
+    console.warn('Coupon expiry email error:', err.message);
+  }
+}
+
+// ── Credit Expiry Notification ──
+async function sendCreditExpiryNotification(emails, companyData) {
+  try {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) return;
+    const transporter = createTransporter();
+    const recipients = emails.filter(e => e && e.includes('@'));
+    if (recipients.length === 0) return;
+
+    await transporter.sendMail({
+      from: `"Authentiks" <${process.env.EMAIL_USER}>`,
+      to: recipients.join(','),
+      subject: `⚠️ ${companyData.companyName} — QR Credits expiring in ~30 days`,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+          <div style="background:linear-gradient(135deg,#ef4444,#f97316);color:white;padding:25px;text-align:center;border-radius:12px 12px 0 0;">
+            <h1 style="margin:0;">⚠️ Credit Expiry Warning</h1>
+          </div>
+          <div style="background:#fff;padding:25px;border:1px solid #ddd;">
+            <h2>${companyData.companyName}</h2>
+            <p>Your QR credit plan is expiring soon. Please renew to avoid service interruption.</p>
+            <div style="background:#fef2f2;padding:15px;border-radius:8px;border-left:4px solid #ef4444;margin:15px 0;">
+              <p><strong>Credits Remaining:</strong> ${companyData.qrCredits || 0}</p>
+              <p><strong>Expiry Date:</strong> ${companyData.creditExpiry ? new Date(companyData.creditExpiry).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Soon'}</p>
+            </div>
+            <p>Contact your account manager or visit your dashboard to renew.</p>
+          </div>
+        </div>
+      `
+    });
+  } catch (err) {
+    console.warn('Credit expiry email error:', err.message);
+  }
+}

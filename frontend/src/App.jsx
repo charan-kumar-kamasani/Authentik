@@ -45,7 +45,8 @@ import Notifications from "./pages/mobile/Notifications";
 import ProductManager from "./pages/admin/ProductManager";
 import AdminReviews from "./pages/admin/AdminReviews";
 import ProductCoupons from "./pages/admin/ProductCoupons";
-import SkuDashboard from "./pages/admin/SkuDashboard";
+import AdminLeads from "./pages/admin/AdminLeads";
+// Import removed (SkuDashboard)
 
 // User private route
 function PrivateRoute({ children }) {
@@ -163,6 +164,7 @@ export default function App() {
             <Route path="/admin/settings" element={<AdminRoute><AdminLayout><AdminSettings /></AdminLayout></AdminRoute>} />
             <Route path="/admin/test-accounts" element={<AdminRoute><AdminLayout><AdminTestAccounts /></AdminLayout></AdminRoute>} />
             <Route path="/admin/form-config" element={<AdminRoute><AdminLayout><QrFormConfig /></AdminLayout></AdminRoute>} />
+            <Route path="/admin/leads" element={<AdminRoute><AdminLayout><AdminLeads /></AdminLayout></AdminRoute>} />
             <Route path="/admin/analytics" element={<AdminRoute><AdminLayout><AuthDashboard /></AdminLayout></AdminRoute>} />
             <Route path="/admin/reviews" element={<AdminRoute><AdminLayout><AdminReviews /></AdminLayout></AdminRoute>} />
             <Route path="/admin/coupons" element={<AdminRoute><AdminLayout><ProductCoupons /></AdminLayout></AdminRoute>} />

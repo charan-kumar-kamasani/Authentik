@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import API_BASE_URL, { downloadOrderPdf } from "../../config/api";
+import API_BASE_URL, { downloadOrderPdf, downloadOrderImages } from "../../config/api";
 
 import { useLoading } from '../../context/LoadingContext';
 import TablePagination from '../../components/TablePagination';
@@ -143,23 +143,32 @@ export default function AdminDashboard() {
     } catch (e) { alert('Failed to update status'); }
   };
 
-  const downloadPdf = async (orderId) => {
+  const [downloadModal, setDownloadModal] = useState(null); // orderId or null
+
+  const downloadQrs = async (orderId, format) => {
+    setDownloadModal(null);
     setGlobalLoading(true);
     try {
       const token = getAuthToken();
-      const blob = await downloadOrderPdf(orderId, token);
-      
+      let blob, filename;
+      if (format === 'pdf') {
+        blob = await downloadOrderPdf(orderId, token);
+        filename = `order_${orderId}_qrs.pdf`;
+      } else {
+        blob = await downloadOrderImages(orderId, token, format);
+        filename = `order_${orderId}_qr_images.zip`;
+      }
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = "order_" + orderId + "_qrs.pdf";
+      link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (e) { 
       console.error("Download Error:", e);
-      alert(e.message || 'Failed to download PDF'); 
+      alert(e.message || 'Failed to download'); 
     } finally { 
       setGlobalLoading(false); 
     }
@@ -384,7 +393,7 @@ export default function AdminDashboard() {
                                 <ActionBtn onClick={() => setShowDispatchModal(order._id)} icon={Truck} label="Dispatch" color="sky" />
                               )}
                               {order.qrCodesGenerated && ['superadmin', 'admin'].includes(role) && (
-                                <ActionBtn onClick={() => downloadPdf(order._id)} icon={FileDown} label="PDF" color="slate" />
+                                <ActionBtn onClick={() => setDownloadModal(order._id)} icon={FileDown} label="Download" color="slate" />
                               )}
 
                             </>
@@ -491,6 +500,52 @@ export default function AdminDashboard() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Download Format Modal */}
+      {downloadModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 className="text-lg font-black text-slate-800 mb-1">Download QR Codes</h3>
+            <p className="text-sm text-slate-500 mb-5">Choose your preferred format:</p>
+            <div className="space-y-2.5">
+              <button onClick={() => downloadQrs(downloadModal, 'pdf')}
+                className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/50 transition-all group">
+                <div className="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-500 group-hover:bg-red-100 transition-colors">
+                  <FileDown size={20} />
+                </div>
+                <div className="text-left">
+                  <div className="font-bold text-slate-800">PDF Document</div>
+                  <div className="text-xs text-slate-500">270 QR codes per page, print-ready A3+</div>
+                </div>
+              </button>
+              <button onClick={() => downloadQrs(downloadModal, 'jpg')}
+                className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/50 transition-all group">
+                <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500 group-hover:bg-amber-100 transition-colors">
+                  <FileDown size={20} />
+                </div>
+                <div className="text-left">
+                  <div className="font-bold text-slate-800">JPG Images</div>
+                  <div className="text-xs text-slate-500">Individual QR images in a ZIP file</div>
+                </div>
+              </button>
+              <button onClick={() => downloadQrs(downloadModal, 'png')}
+                className="w-full flex items-center gap-3 p-4 rounded-xl border-2 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/50 transition-all group">
+                <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500 group-hover:bg-blue-100 transition-colors">
+                  <FileDown size={20} />
+                </div>
+                <div className="text-left">
+                  <div className="font-bold text-slate-800">PNG Images</div>
+                  <div className="text-xs text-slate-500">Lossless QR images in a ZIP file</div>
+                </div>
+              </button>
+            </div>
+            <button onClick={() => setDownloadModal(null)}
+              className="w-full mt-4 py-2.5 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors text-sm">
+              Cancel
+            </button>
           </div>
         </div>
       )}
