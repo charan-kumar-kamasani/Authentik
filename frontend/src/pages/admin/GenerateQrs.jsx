@@ -142,11 +142,12 @@ export default function GenerateQrs() {
     const resolved = (formConfig?.variants || []).find(v => v.variantName === variantConfig.variantName) || variantConfig;
     const newInstance = {
       id: Date.now(),
-      variantName: resolved.variantName,
-      variantLabel: resolved.variantLabel,
-      inputType: resolved.inputType,
+      variantName: resolved.variantName || 'custom_variant_' + Date.now(),
+      variantLabel: resolved.variantLabel || 'New Variant',
+      inputType: resolved.inputType || 'text',
       options: resolved.options || [],
-      value: resolved.inputType === 'color' ? '#000000' : '',
+      value: (resolved.inputType === 'color' ? '#000000' : ''),
+      isCustom: !resolved.variantName
     };
     setVariantInstances(prev => [...prev, newInstance]);
   };
@@ -792,20 +793,20 @@ export default function GenerateQrs() {
         )}
 
         {/* Product Variants Section */}
-        {formConfig?.variants && formConfig.variants.length > 0 && (
+        {((formConfig?.variants && formConfig.variants.length > 0) || variantInstances.length > 0) && (
           <>
             <div className="col-span-2 border-t border-slate-200 pt-4 mt-2">
               <div className="flex items-center gap-2 mb-4">
                 <Package size={18} className="text-blue-600" />
-                <h4 className="text-sm font-semibold text-slate-800">Product Variants (Optional)</h4>
+                <h4 className="text-sm font-semibold text-slate-800">Product Variants</h4>
               </div>
             </div>
 
             {/* Variant Selector Buttons */}
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-2">Add Variants</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Available Variant Types</label>
               <div className="flex flex-wrap gap-2">
-                {formConfig.variants.map((variant) => (
+                {(formConfig?.variants || []).map((variant) => (
                   <button
                     key={variant.variantName}
                     type="button"
@@ -816,6 +817,14 @@ export default function GenerateQrs() {
                     Add {variant.variantLabel}
                   </button>
                 ))}
+                <button
+                  type="button"
+                  onClick={() => addVariantInstance({})}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition-all flex items-center gap-2 text-sm border border-slate-200 border-dashed"
+                >
+                  <Plus size={16} />
+                  Add Custom Variant
+                </button>
               </div>
             </div>
 
@@ -825,9 +834,23 @@ export default function GenerateQrs() {
                 {variantInstances.map((instance) => (
                   <div key={instance.id} className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
                     <div className="flex-1">
-                      <label className="block text-xs font-semibold text-blue-700 mb-1">
-                        {instance.variantLabel}
-                      </label>
+                      {instance.isCustom ? (
+                        <input
+                          type="text"
+                          value={instance.variantLabel}
+                          onChange={(e) => {
+                            setVariantInstances(prev => prev.map(inst => 
+                              inst.id === instance.id ? { ...inst, variantLabel: e.target.value, variantName: e.target.value.toLowerCase().replace(/\s+/g, '_') } : inst
+                            ));
+                          }}
+                          className="block w-full text-xs font-bold text-blue-700 mb-1 bg-transparent border-b border-blue-200 focus:border-blue-400 focus:outline-none"
+                          placeholder="Variant Name (e.g. Material)"
+                        />
+                      ) : (
+                        <label className="block text-xs font-semibold text-blue-700 mb-1">
+                          {instance.variantLabel}
+                        </label>
+                      )}
                       {instance.inputType === 'color' ? (
                         <div className="flex items-center gap-2">
                           <input
