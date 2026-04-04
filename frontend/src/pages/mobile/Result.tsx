@@ -602,10 +602,10 @@ function ResultRepeat({ data }: { data: any }) {
           {/* Details Section */}
           <div className="bg-[#F8F8F8] rounded-[16px] p-5 shadow-lg text-center space-y-2 border border-gray-200">
             <div>
-              <p className="text-[#6E6D6B] text-[12px] font-bold">
+              <p className="text-[#6E6D6B] text-[14px] font-bold">
                 Already Verified On:
               </p>
-              <p className="text-[#6E6D6B] text-[14px] font-bold">
+              <p className="text-[#6E6D6B] text-[16px] font-bold">
                 {data.originalScan?.scannedAt
                   ? new Date(data.originalScan.scannedAt).toLocaleString(
                     "en-GB",
@@ -623,10 +623,10 @@ function ResultRepeat({ data }: { data: any }) {
             </div>
             {data.originalScan?.scannedBy && data.originalScan.scannedBy !== 'Unknown' && (
               <div>
-                <p className="text-[#6E6D6B] text-[12px] font-bold">
-                  Scanned Account No:
-                </p>
                 <p className="text-[#6E6D6B] text-[14px] font-bold">
+                  Scanned Mobile No:
+                </p>
+                <p className="text-[#6E6D6B] text-[16px] font-bold">
                   {maskPhoneNumber(data.originalScan.scannedBy)}
                 </p>
               </div>
