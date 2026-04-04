@@ -158,7 +158,9 @@ export default function Scan() {
       navigate(`/result/${finalStatus}`, { state: res.data });
     } catch (err) {
       console.error("Scan error:", err);
-      navigate(`/result/ERROR`, { state: { message: "Scan failed. Please try again." } });
+      alert(err.message || "Scan failed. Please try again.");
+      setScanning(true);
+      requestLocation(true); // Retry location just in case
     }
   }, [navigate, stopCamera]);
 

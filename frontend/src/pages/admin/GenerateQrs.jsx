@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import API_BASE_URL, { createOrder, updateOrder, getProductTemplates, createProductTemplate, deleteProductTemplate, getBrands } from '../../config/api';
-import { Calendar, Package, Plus, X, List, LayoutGrid, Trash2, CheckCircle2, Search, ArrowLeft } from 'lucide-react';
+import { Calendar, Package, Plus, X, List, LayoutGrid, Trash2, CheckCircle2, Search, ArrowLeft, Gift } from 'lucide-react';
 import { useConfirm } from '../../components/ConfirmModal';
 
 export default function GenerateQrs() {
@@ -19,6 +19,9 @@ export default function GenerateQrs() {
   const [mfdOn, setMfdOn] = useState({ month: '', year: '' });
   const [bestBefore, setBestBefore] = useState({ value: '', unit: 'months' });
   const [calculatedExpiry, setCalculatedExpiry] = useState('');
+
+  // Coupon fields
+  const [coupon, setCoupon] = useState({ code: '', description: '', expiryDate: '' });
 
   // Dynamic fields
   const [dynamicFieldValues, setDynamicFieldValues] = useState({});
@@ -315,6 +318,12 @@ export default function GenerateQrs() {
         })),
         // Dynamic fields (all custom field values)
         dynamicFields: uploadedDynamicFields,
+        // Coupon (if provided)
+        coupon: coupon.code ? {
+          code: coupon.code,
+          description: coupon.description,
+          expiryDate: coupon.expiryDate || null,
+        } : undefined,
       };
 
       if (role === 'creator') {
@@ -370,6 +379,7 @@ export default function GenerateQrs() {
     setImageFile(null);
     setImagePreview(null);
     setIsCatalogProduct(false);
+    setCoupon({ code: '', description: '', expiryDate: '' });
   };
 
   useEffect(() => {
@@ -936,6 +946,55 @@ export default function GenerateQrs() {
           <div className="px-4 py-2.5 bg-green-50 border border-green-200 rounded-xl text-green-800 font-semibold">
             {calculatedExpiry || 'Enter Mfd On and Best Before to calculate'}
           </div>
+        </div>
+
+        {/* Coupon Code Section */}
+        <div className="col-span-2 border-t border-slate-200 pt-4 mt-2">
+          <div className="flex items-center gap-2 mb-4">
+            <Gift size={18} className="text-purple-600" />
+            <h4 className="text-sm font-semibold text-slate-800">Coupon / Reward (Optional)</h4>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-slate-700 ml-1">
+            Coupon Code
+          </label>
+          <input
+            type="text"
+            placeholder="e.g. SAVE20"
+            value={coupon.code}
+            onChange={(e) => setCoupon({ ...coupon, code: e.target.value.toUpperCase() })}
+            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all font-medium uppercase"
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-slate-700 ml-1">
+            Coupon Expiry Date
+          </label>
+          <input
+            type="date"
+            value={coupon.expiryDate}
+            onChange={(e) => setCoupon({ ...coupon, expiryDate: e.target.value })}
+            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all font-medium"
+          />
+        </div>
+
+        <div className="col-span-2 flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-slate-700 ml-1">
+            Coupon Description
+          </label>
+          <textarea
+            placeholder="e.g. Get 20% off on your next purchase..."
+            value={coupon.description}
+            onChange={(e) => setCoupon({ ...coupon, description: e.target.value })}
+            rows={2}
+            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all font-medium resize-none"
+          />
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest ml-1 mt-1">
+            If provided, users who scan &amp; review this product will receive this coupon as a reward.
+          </p>
         </div>
 
         {/* Submit Button */}

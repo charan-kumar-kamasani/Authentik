@@ -24,6 +24,7 @@ import {
   Mail,
   User,
   Coins,
+  Gift,
 } from "lucide-react";
 import GenerateQrs from "./GenerateQrs";
 import QrManagement from "./QrManagement";
@@ -121,7 +122,7 @@ export default function AdminLayout({ children }) {
     localStorage.removeItem("adminToken");
     localStorage.removeItem("adminRole");
     localStorage.removeItem("adminEmail");
-    navigate("/admin");
+    navigate("/enterprise");
   };
 
   const roleColors = {
@@ -204,6 +205,12 @@ export default function AdminLayout({ children }) {
                 icon={FileText}
                 isActive={activePath === "/orders"}
               />
+              <SidebarItem
+                label="Coupons & Rewards"
+                onClick={() => navigate("/admin/coupons")}
+                icon={Gift}
+                isActive={activePath === "/admin/coupons"}
+              />
             </div>
           ) : (
             <>
@@ -248,6 +255,12 @@ export default function AdminLayout({ children }) {
                 onClick={() => navigate("/admin/dashboard")}
                 icon={Package}
                 isActive={activePath === "/admin/dashboard"}
+              />
+              <SidebarItem
+                label="Coupons & Rewards"
+                onClick={() => navigate("/admin/coupons")}
+                icon={Gift}
+                isActive={activePath === "/admin/coupons"}
               />
 
               {["superadmin"].includes(role) && (

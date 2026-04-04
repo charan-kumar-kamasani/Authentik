@@ -771,6 +771,18 @@ const OrderManagement = () => {
                           </div>
                         )}
 
+                        {/* Coupon / Reward Details */}
+                        {order.coupon && order.coupon.code && (
+                          <div className="mt-4 pt-4 border-t border-slate-100">
+                            <h4 className="text-xs font-black text-purple-500 uppercase tracking-wider mb-2 flex items-center gap-1.5"><Gift size={14} /> Coupon / Reward</h4>
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 bg-purple-50 p-3 rounded-xl border border-purple-100">
+                              <div className="text-sm"><span className="font-bold text-slate-600">Code:</span> <span className="font-black text-purple-700 tracking-wider bg-white px-2 py-0.5 rounded border border-purple-200">{order.coupon.code}</span></div>
+                              <div className="text-sm"><span className="font-bold text-slate-600">Expiry:</span> <span className="text-slate-800">{order.coupon.expiryDate ? fmt(order.coupon.expiryDate) : 'No expiry'}</span></div>
+                              {order.coupon.description && <div className="text-sm col-span-2 lg:col-span-2"><span className="font-bold text-slate-600">Description:</span> <span className="text-slate-800">{order.coupon.description}</span></div>}
+                            </div>
+                          </div>
+                        )}
+
                         {/* Dispatch Details */}
                         {order.dispatchDetails && order.dispatchDetails.courierName && (
                           <div className="mt-4 pt-4 border-t border-slate-100">

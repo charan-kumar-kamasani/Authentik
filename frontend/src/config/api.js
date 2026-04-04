@@ -948,4 +948,54 @@ export const getAllReviews = async (token) => {
     }
 };
 
+export const getMyRewards = async (token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/reviews/my-rewards`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch rewards');
+        return await response.json();
+    } catch (error) {
+        console.error("Get My Rewards Error:", error);
+        throw error;
+    }
+};
 
+export const getRewardDetail = async (id, token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/reviews/my-rewards/${id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch reward detail');
+        return await response.json();
+    } catch (error) {
+        console.error("Get Reward Detail Error:", error);
+        throw error;
+    }
+};
+
+export const getProductCoupons = async (token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/product-coupons`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch product coupons');
+        return await response.json();
+    } catch (error) {
+        console.error("Get Product Coupons Error:", error);
+        throw error;
+    }
+};
+
+export const getClaimedRewards = async (token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/admin/claimed-rewards`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch claimed rewards');
+        return await response.json();
+    } catch (error) {
+        console.error("Get Claimed Rewards Error:", error);
+        throw error;
+    }
+};

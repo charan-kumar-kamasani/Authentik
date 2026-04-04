@@ -44,7 +44,7 @@ export default function Profile() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/");
+    navigate("/enterprise");
   };
 
   return (
@@ -133,7 +133,8 @@ export default function Profile() {
         {[
           [
             { icon: IconScanHistory, text: "Scan History", action: () => navigate("/scan-history") },
-            { icon: IconReports, text: "Reports", action: () => navigate("/my-reports") }
+            { icon: IconReports, text: "Reports", action: () => navigate("/my-reports") },
+            { icon: IconScanHistory, text: "My Rewards", action: () => navigate("/rewards") }
           ],
           [
             { icon: IconAboutUs, text: "About Us", action: () => navigate("/about-us") },

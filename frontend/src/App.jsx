@@ -20,6 +20,7 @@ import AboutUs from "./pages/mobile/AboutUs";
 import TermsConditions from "./pages/mobile/TermsConditions";
 import Policies from "./pages/mobile/Policies";
 import Rewards from "./pages/mobile/Rewards";
+import RewardDetail from "./pages/mobile/RewardDetail";
 import MobileLayout from "./components/MobileLayout";
 
 import AdminLogin from "./pages/admin/AdminLogin";
@@ -43,6 +44,7 @@ import MyReports from "./pages/mobile/MyReports";
 import Notifications from "./pages/mobile/Notifications";
 import ProductManager from "./pages/admin/ProductManager";
 import AdminReviews from "./pages/admin/AdminReviews";
+import ProductCoupons from "./pages/admin/ProductCoupons";
 
 // User private route
 function PrivateRoute({ children }) {
@@ -162,6 +164,7 @@ export default function App() {
             <Route path="/admin/form-config" element={<AdminRoute><AdminLayout><QrFormConfig /></AdminLayout></AdminRoute>} />
             <Route path="/admin/analytics" element={<AdminRoute><AdminLayout><AuthDashboard /></AdminLayout></AdminRoute>} />
             <Route path="/admin/reviews" element={<AdminRoute><AdminLayout><AdminReviews /></AdminLayout></AdminRoute>} />
+            <Route path="/admin/coupons" element={<AdminRoute><AdminLayout><ProductCoupons /></AdminLayout></AdminRoute>} />
             <Route
               path="/users"
               element={
@@ -232,6 +235,7 @@ export default function App() {
             <Route path="/edit-profile" element={<EditProfile />} />
             <Route path="/scan-history" element={<ScanHistory />} />
             <Route path="/rewards" element={<Rewards />} />
+            <Route path="/rewards/:id" element={<RewardDetail />} />
             <Route path="/about-us" element={<AboutUs />} />
             <Route path="/terms-conditions" element={<TermsConditions />} />
             <Route path="/policies" element={<Policies />} />
@@ -294,6 +298,7 @@ export default function App() {
           <Route path="/admin/billing" element={<AdminRoute><AdminLayout><BillingCredits /></AdminLayout></AdminRoute>} />
           <Route path="/admin/analytics" element={<AdminRoute><AdminLayout><AuthDashboard /></AdminLayout></AdminRoute>} />
           <Route path="/admin/reviews" element={<AdminRoute><AdminLayout><AdminReviews /></AdminLayout></AdminRoute>} />
+          <Route path="/admin/coupons" element={<AdminRoute><AdminLayout><ProductCoupons /></AdminLayout></AdminRoute>} />
 
           <Route
             path="/users"

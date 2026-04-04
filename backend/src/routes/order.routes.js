@@ -7,6 +7,7 @@ const Product = require('../models/Product');
 const Brand = require('../models/Brand');
 const Company = require('../models/Company');
 const CreditTransaction = require('../models/CreditTransaction');
+const ProductCoupon = require('../models/ProductCoupon');
 const { generateQrPdf, generateQrPdfStream } = require('../utils/pdfGenerator');
 const { sendOrderStatusEmail } = require('../utils/emailService');
 
@@ -161,6 +162,12 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       dynamicFields: dynamicFields || {},
       variants: variants || [],
       productImage: productImage || null,
+      // Coupon data (if provided)
+      coupon: (req.body.coupon && req.body.coupon.code) ? {
+        code: req.body.coupon.code,
+        description: req.body.coupon.description || '',
+        expiryDate: req.body.coupon.expiryDate || null,
+      } : undefined,
       history: [{
         status: 'Pending Authorization',
         changedBy: req.user._id,
@@ -499,6 +506,26 @@ router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req
     order.qrCodesGenerated = true;
     order.qrGeneratedCount = totalQty;
     await order.save();
+
+    // Create ProductCoupon entries if order has coupon data
+    if (order.coupon && order.coupon.code) {
+      try {
+        const createdProducts = await Product.find({ orderId: order._id }).select('_id').lean();
+        const couponDocs = createdProducts.map(p => ({
+          code: order.coupon.code,
+          description: order.coupon.description || '',
+          expiryDate: order.coupon.expiryDate || null,
+          productId: p._id,
+          orderId: order._id,
+          brandId: brandDoc ? brandDoc._id : null,
+          companyId: brandDoc ? brandDoc.companyId : null,
+        }));
+        await ProductCoupon.insertMany(couponDocs);
+        console.log(`Created ${couponDocs.length} ProductCoupon entries for order ${order.orderId}`);
+      } catch (couponErr) {
+        console.warn('Failed to create product coupons:', couponErr.message);
+      }
+    }
 
     // Send email notifications
     const recipients = await getNotificationRecipients(order);

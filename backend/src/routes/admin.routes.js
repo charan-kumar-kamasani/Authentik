@@ -7,6 +7,8 @@ const Product = require("../models/Product");
 const Brand = require("../models/Brand");
 const Company = require("../models/Company");
 const FormConfig = require("../models/FormConfig");
+const ProductCoupon = require("../models/ProductCoupon");
+const UserReward = require("../models/UserReward");
 const { protect, authorize } = require("../middleware/authMiddleware");
 const { generateQrPdf } = require("../utils/pdfGenerator");
 
@@ -315,7 +317,8 @@ router.post(
       bestBefore,
       calculatedExpiryDate,
       dynamicFields,
-      variants // Array of {variantName, value}
+      variants, // Array of {variantName, value}
+      coupon // { code, description, expiryDate }
     } = req.body;
     
     // Ensure quantity is a number, default to 1 if invalid
@@ -360,6 +363,23 @@ router.post(
         });
         
         createdProducts.push(product);
+
+        // Create ProductCoupon if coupon data provided
+        if (coupon && coupon.code) {
+          try {
+            const brandDoc2 = brandDoc || await Brand.findOne({ brandName: brand });
+            await ProductCoupon.create({
+              code: coupon.code,
+              description: coupon.description || '',
+              expiryDate: coupon.expiryDate || null,
+              productId: product._id,
+              brandId: brandDoc2 ? brandDoc2._id : null,
+              companyId: brandDoc2 ? brandDoc2.companyId : null,
+            });
+          } catch (couponErr) {
+            console.warn('Failed to create product coupon:', couponErr.message);
+          }
+        }
     }
 
     try {
@@ -1654,6 +1674,123 @@ router.delete('/form-config/:id', protect, authorize('admin', 'superadmin'), asy
         console.error('Delete form config error:', error);
         res.status(500).json({ success: false, message: error.message });
     }
+});
+
+// --- PRODUCT COUPONS (PROMOTIONAL REWARDS) ---
+// Get all product coupons (for admin/authoriser/creator)
+router.get("/product-coupons", protect, async (req, res) => {
+  try {
+    const role = req.user.role;
+    let query = {};
+
+    if (role === 'superadmin' || role === 'admin') {
+      // see all
+    } else if (role === 'company' || role === 'authorizer') {
+      const companyId = req.user.companyId;
+      if (!companyId) return res.status(403).json({ error: "Company not linked" });
+      query = { companyId };
+    } else if (role === 'creator') {
+      const brandId = req.user.brandId;
+      if (!brandId) return res.status(403).json({ error: "Brand not linked" });
+      query = { brandId };
+    }
+
+    // We need to return an aggregated grouped list of campaigns rather than 1000s of individual ProductCoupons
+    const couponsAggregate = await ProductCoupon.aggregate([
+      { $match: query },
+      {
+         $lookup: {
+           from: "brands",
+           localField: "brandId",
+           foreignField: "_id",
+           as: "brand"
+         }
+      },
+      {
+         $lookup: {
+           from: "products",
+           localField: "productId",
+           foreignField: "_id",
+           as: "product"
+         }
+      },
+      { $unwind: { path: "$brand", preserveNullAndEmptyArrays: true } },
+      { $unwind: { path: "$product", preserveNullAndEmptyArrays: true } },
+      {
+         $group: {
+           _id: "$orderId",
+           code: { $first: "$code" },
+           description: { $first: "$description" },
+           expiryDate: { $first: "$expiryDate" },
+           isActive: { $first: "$isActive" },
+           brandId: { $first: "$brand" },
+           createdAt: { $first: "$createdAt" },
+           productName: { $first: "$product.productName" },
+           batchNo: { $first: "$product.batchNo" },
+           generatedCount: { $sum: 1 }
+         }
+      },
+      { $sort: { createdAt: -1 } }
+    ]);
+    
+    // Map the aggregated output slightly to match what frontend expects
+    const formattedCoupons = couponsAggregate.map(c => ({
+      _id: c._id || Math.random().toString(), // fallback if orderId is null
+      code: c.code,
+      description: c.description,
+      expiryDate: c.expiryDate,
+      isActive: c.isActive,
+      createdAt: c.createdAt,
+      generatedCount: c.generatedCount,
+      brandId: c.brandId ? { brandName: c.brandId.brandName } : null,
+      productId: {
+        productName: c.productName,
+        batchNo: c.batchNo
+      }
+    }));
+
+    res.json(formattedCoupons);
+  } catch (err) {
+    console.error("Error fetching product coupons:", err);
+    res.status(500).json({ error: "Failed to fetch coupons" });
+  }
+});
+
+// Get all claimed rewards (user claimed coupons)
+router.get("/claimed-rewards", protect, async (req, res) => {
+  try {
+    const role = req.user.role;
+    let query = {};
+
+    if (role === 'superadmin' || role === 'admin') {
+      // see all
+    } else if (role === 'company' || role === 'authorizer') {
+      // If company, we need to find all product coupons for this company and get their IDs
+      const companyId = req.user.companyId;
+      if (!companyId) return res.status(403).json({ error: "Company not linked" });
+      const companyCoupons = await ProductCoupon.find({ companyId }).select('_id').lean();
+      const couponIds = companyCoupons.map(c => c._id);
+      query = { productCouponId: { $in: couponIds } };
+    } else if (role === 'creator') {
+      // If creator, we need to find all product coupons for this brand and get their IDs
+      const brandId = req.user.brandId;
+      if (!brandId) return res.status(403).json({ error: "Brand not linked" });
+      const brandCoupons = await ProductCoupon.find({ brandId }).select('_id').lean();
+      const couponIds = brandCoupons.map(c => c._id);
+      query = { productCouponId: { $in: couponIds } };
+    }
+
+    const claimed = await UserReward.find(query)
+      .populate('userId', 'name mobile email')
+      .populate('productId', 'productName batchNo')
+      .populate('productCouponId', 'code expiryDate isActive')
+      .sort({ createdAt: -1 });
+
+    res.json(claimed);
+  } catch (err) {
+    console.error("Error fetching claimed rewards:", err);
+    res.status(500).json({ error: "Failed to fetch claimed rewards" });
+  }
 });
 
 module.exports = router;

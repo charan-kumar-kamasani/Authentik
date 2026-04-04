@@ -97,6 +97,13 @@ const orderSchema = new mongoose.Schema({
     notes: String
   },
   
+  // Promotional coupon attached to this order's products
+  coupon: {
+    code: { type: String, trim: true, uppercase: true },
+    description: { type: String, trim: true },
+    expiryDate: { type: Date, default: null },
+  },
+
   // Track QR generation
   qrCodesGenerated: { type: Boolean, default: false },
   qrGeneratedCount: { type: Number, default: 0 },

@@ -90,6 +90,9 @@ function ResultAuthentic({ data }: { data: any }) {
   const [optIn, setOptIn] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [isReviewed, setIsReviewed] = useState(data.alreadyReviewed || false);
+  const [awardedCoupon, setAwardedCoupon] = useState<any>(null);
+  const [showCouponReveal, setShowCouponReveal] = useState(false);
+  const [couponCopied, setCouponCopied] = useState(false);
 
   // Determine colors
   const productName = data.productName || data.productId?.productName || "Product Info";
@@ -420,7 +423,7 @@ function ResultAuthentic({ data }: { data: any }) {
                       try {
                         const { submitReview } = await import("../../config/api");
                         const token = localStorage.getItem('token');
-                        await submitReview({
+                        const result = await submitReview({
                           productId: data.productId?._id || data.productId,
                           rating,
                           comment,
@@ -428,7 +431,14 @@ function ResultAuthentic({ data }: { data: any }) {
                         }, token);
                         setIsReviewed(true);
                         setShowReviewModal(false);
-                        alert("Thank you for your review!");
+                        
+                        // Check if a coupon was awarded
+                        if (result.coupon) {
+                          setAwardedCoupon(result.coupon);
+                          setTimeout(() => setShowCouponReveal(true), 300);
+                        } else {
+                          alert("Thank you for your review!");
+                        }
                       } catch (error: any) {
                         alert(error.message || "Failed to submit review");
                       } finally {
@@ -450,6 +460,105 @@ function ResultAuthentic({ data }: { data: any }) {
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 18l-6-6 6-6" /></svg>
             </button>
+          </div>
+        )}
+
+        {/* Coupon Reveal Animation Overlay */}
+        {showCouponReveal && awardedCoupon && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70" style={{ animation: 'fadeIn 0.3s ease' }}>
+            {/* Confetti particles */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              {Array.from({ length: 30 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute w-2 h-2 rounded-full"
+                  style={{
+                    left: `${Math.random() * 100}%`,
+                    top: `-5%`,
+                    backgroundColor: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96E6A1', '#DDA0DD', '#F0E68C'][i % 7],
+                    animation: `confettiFall ${2 + Math.random() * 3}s linear ${Math.random() * 2}s infinite`,
+                  }}
+                />
+              ))}
+            </div>
+
+            <div className="bg-white/95 backdrop-blur-xl rounded-[32px] mx-6 w-full max-w-sm overflow-hidden shadow-[0_24px_60px_rgba(13,78,150,0.4)] border border-white" style={{ animation: 'scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}>
+              {/* Header */}
+              <div className="bg-gradient-to-br from-[#0D4E96] via-[#1a5fa8] to-[#2CA4D6] p-8 text-center relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
+                <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center mx-auto mb-4 border border-white/20 shadow-inner">
+                  <span className="text-4xl drop-shadow-md">🎉</span>
+                </div>
+                <h2 className="text-white text-[24px] font-black tracking-tight drop-shadow-sm">You Earned a Reward!</h2>
+                <p className="text-[#E8F4F9]/80 text-[14px] mt-2 font-bold tracking-wide uppercase">Thank you for your review</p>
+              </div>
+
+              {/* Coupon Card */}
+              <div className="p-8">
+                <div className="border-[2px] border-dashed border-[#2CA4D6]/40 rounded-[28px] p-6 bg-gradient-to-b from-[#F0F7FF] to-[#E8F4F9] text-center mb-6 shadow-inner relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-24 h-24 bg-white/40 rounded-full blur-2xl -ml-10 -mt-10" />
+                  <p className="text-[11px] text-[#1a5fa8] font-black uppercase tracking-[0.25em] mb-4 relative z-10">Your Coupon Code</p>
+                  <div className="flex items-center justify-center gap-4 relative z-10">
+                    <span className="text-[32px] font-black text-[#0D4E96] tracking-[0.15em] drop-shadow-sm">
+                      {awardedCoupon.code}
+                    </span>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(awardedCoupon.code);
+                        setCouponCopied(true);
+                        setTimeout(() => setCouponCopied(false), 2000);
+                      }}
+                      className="w-12 h-12 bg-gradient-to-br from-[#0D4E96] to-[#2CA4D6] rounded-[16px] active:scale-90 transition-transform flex items-center justify-center shadow-[0_6px_16px_rgba(13,78,150,0.3)] hover:shadow-[0_8px_20px_rgba(13,78,150,0.4)]"
+                    >
+                      {couponCopied ? (
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>
+                      ) : (
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {awardedCoupon.description && (
+                  <p className="text-[#1e3a5f]/80 text-[15px] text-center mb-4 font-medium leading-relaxed px-2">{awardedCoupon.description}</p>
+                )}
+
+                {awardedCoupon.expiryDate && (
+                  <p className="text-[#1a5fa8]/50 text-[12px] font-bold text-center mb-6">
+                    Valid until {new Date(awardedCoupon.expiryDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </p>
+                )}
+
+                <button
+                  onClick={() => navigate('/rewards')}
+                  className="w-full bg-gradient-to-r from-[#0D4E96] via-[#1a5fa8] to-[#2CA4D6] text-white font-black text-[16px] py-4 rounded-[30px] shadow-[0_8px_24px_rgba(13,78,150,0.4)] hover:shadow-[0_12px_32px_rgba(13,78,150,0.5)] active:scale-[0.96] transition-all mb-3 leading-none"
+                >
+                  View in Rewards
+                </button>
+                <button
+                  onClick={() => setShowCouponReveal(false)}
+                  className="w-full text-[#1e3a5f]/50 font-bold text-[14px] py-3 active:bg-[#F0F7FF] rounded-xl transition-colors"
+                >
+                  Maybe Later
+                </button>
+              </div>
+            </div>
+
+            {/* CSS for animations */}
+            <style>{`
+              @keyframes confettiFall {
+                0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+                100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+              }
+              @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+              }
+              @keyframes scaleIn {
+                from { transform: scale(0.8); opacity: 0; }
+                to { transform: scale(1); opacity: 1; }
+              }
+            `}</style>
           </div>
         )}
       </div>

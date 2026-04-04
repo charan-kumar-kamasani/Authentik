@@ -5,6 +5,7 @@ const Report = require("../models/Report");
 const User = require("../models/User");
 const FormConfig = require("../models/FormConfig");
 const Review = require("../models/Review");
+const ProductCoupon = require("../models/ProductCoupon");
 const jwt = require("jsonwebtoken");
 const { protect } = require("../middleware/authMiddleware");
 
@@ -277,6 +278,14 @@ router.post("/", protect, async (req, res) => {
     const review = await Review.findOne({ productId: product?._id, userId: req.user._id }).lean();
     if (review) alreadyReviewed = true;
 
+    // Field Labels for dynamic fields
+    const fieldLabels = {};
+    if (product?.brandId?.dynamicFields) {
+      product.brandId.dynamicFields.forEach(f => {
+        fieldLabels[f.fieldName] = f.fieldLabel;
+      });
+    }
+
     // --- We record EVERY attempt, so we skip searching for existingScan here ---
     /* =======================
        ❌ FAKE PRODUCT
@@ -401,12 +410,13 @@ router.post("/", protect, async (req, res) => {
           calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
           dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
           variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
-          fieldLabels,
+        fieldLabels,
           alreadyReviewed,
           place,
           latitude,
           longitude,
           scannedAt: new Date(),
+          hasCoupon: !!(await ProductCoupon.findOne({ productId: product._id, isActive: true }).lean()),
         },
       });
     }
@@ -531,7 +541,8 @@ router.post("/", protect, async (req, res) => {
         place,
         latitude,
         longitude,
-        scannedAt: scan.createdAt,
+      scannedAt: scan.createdAt,
+          hasCoupon: !!(await ProductCoupon.findOne({ productId: product._id, isActive: true }).lean()),
       },
     });
   } catch (err) {
