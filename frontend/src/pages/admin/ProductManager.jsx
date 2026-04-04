@@ -16,6 +16,7 @@ const ProductManager = () => {
   
   const [formData, setFormData] = useState({
     productName: '',
+    skuNumber: '',
     brandId: '',
     productInfo: '',
     productImage: null,
@@ -25,6 +26,7 @@ const ProductManager = () => {
   const resetForm = () => {
     setFormData({
       productName: '',
+      skuNumber: '',
       brandId: brands[0]?._id || '',
       productInfo: '',
       productImage: null,
@@ -108,6 +110,7 @@ const ProductManager = () => {
 
       const productPayload = {
         productName: formData.productName,
+        skuNumber: formData.skuNumber,
         brandId: formData.brandId,
         productInfo: formData.productInfo,
       };
@@ -140,6 +143,7 @@ const ProductManager = () => {
   const handleEditClick = (product) => {
     setFormData({
       productName: product.productName || '',
+      skuNumber: product.skuNumber || '',
       brandId: product.brandId?._id || product.brandId || '',
       productInfo: product.productInfo || '',
       productImage: null,
@@ -244,6 +248,17 @@ const ProductManager = () => {
                       placeholder="e.g. Classic T-Shirt"
                       value={formData.productName}
                       onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
+                      className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-semibold shadow-sm"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2 group">
+                    <label className="text-sm font-bold text-gray-600 ml-1">SKU Number</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. SKU-12345 (Optional)"
+                      value={formData.skuNumber}
+                      onChange={(e) => setFormData({ ...formData, skuNumber: e.target.value })}
                       className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-semibold shadow-sm"
                     />
                   </div>
@@ -364,7 +379,12 @@ const ProductManager = () => {
                             Verified Entry
                           </span>
                         </div>
-                        <p className="text-indigo-600 text-xs font-bold uppercase tracking-widest mb-2">{product.brandId?.brandName || product.brand}</p>
+                        <p className="text-indigo-600 text-xs font-bold uppercase tracking-widest mb-1">{product.brandId?.brandName || product.brand}</p>
+                        {product.skuNumber && (
+                          <div className="text-[10px] font-black text-gray-400 uppercase tracking-tighter">
+                            SKU: <span className="text-gray-600">{product.skuNumber}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 

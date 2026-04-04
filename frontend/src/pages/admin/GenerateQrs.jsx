@@ -7,6 +7,7 @@ import { useConfirm } from '../../components/ConfirmModal';
 export default function GenerateQrs() {
   const [newQr, setNewQr] = useState({
     productName: '',
+    skuNumber: '',
     brand: '',
     brandId: '',
     batchNo: '',
@@ -53,6 +54,7 @@ export default function GenerateQrs() {
       setEditingOrder(order);
       setNewQr({
         productName: order.productName || '',
+        skuNumber: order.skuNumber || '',
         brand: order.brand || '',
         brandId: (order.brandId?._id || order.brandId) || '',
         batchNo: order.batchNo || '',
@@ -301,6 +303,7 @@ export default function GenerateQrs() {
 
       const orderData = {
         productName,
+        skuNumber: newQr.skuNumber,
         brand: newQr.brand,
         brandId: newQr.brandId,
         batchNo,
@@ -370,7 +373,7 @@ export default function GenerateQrs() {
   };
 
   const resetForm = () => {
-    setNewQr({ productName: '', brand: '', batchNo: '', productInfo: '', quantity: '' });
+    setNewQr({ productName: '', skuNumber: '', brand: '', batchNo: '', productInfo: '', quantity: '' });
     setMfdOn({ month: '', year: '' });
     setBestBefore({ value: '', unit: 'months' });
     setCalculatedExpiry('');
@@ -452,6 +455,7 @@ export default function GenerateQrs() {
   const handleSelectTemplate = (t) => {
     setNewQr({
       productName: t.productName || '',
+      skuNumber: t.skuNumber || '',
       brand: t.brandId?.brandName || t.brand || '',
       brandId: t.brandId?._id || t.brandId || '',
       batchNo: '', // Batch usually fresh
@@ -663,7 +667,7 @@ export default function GenerateQrs() {
               setFilterBrandId(e.target.value);
               // reset product selection if it doesn't match the new brand
               if (e.target.value && isCatalogProduct && newQr.brandId !== e.target.value) {
-                setNewQr(prev => ({ ...prev, productName: '', productInfo: '', brand: '', brandId: '' }));
+                setNewQr(prev => ({ ...prev, productName: '', skuNumber: '', productInfo: '', brand: '', brandId: '' }));
                 setIsCatalogProduct(false);
                 setImagePreview(null);
                 setImageFile(null);
@@ -691,7 +695,7 @@ export default function GenerateQrs() {
             onChange={(e) => {
               const selectedId = e.target.value;
               if (!selectedId) {
-                setNewQr(prev => ({...prev, productName: '', productInfo: '', brand: '', brandId: ''}));
+                setNewQr(prev => ({...prev, productName: '', skuNumber: '', productInfo: '', brand: '', brandId: ''}));
                 setIsCatalogProduct(false);
                 setImagePreview(null);
                 setImageFile(null);
@@ -702,6 +706,7 @@ export default function GenerateQrs() {
                 setNewQr({
                   ...newQr,
                   productName: prod.productName,
+                  skuNumber: prod.skuNumber || '',
                   productInfo: prod.productInfo || '',
                   brand: (prod.brandId?.brandName || prod.brand) || '',
                   brandId: (prod.brandId?._id || prod.brandId) || ''

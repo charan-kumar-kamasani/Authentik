@@ -6,6 +6,7 @@ module.exports = mongoose.model(
     {
       qrCode: String,
       productName: String,
+      skuNumber: { type: String, default: null },
       brand: String,
       brandId: { type: mongoose.Schema.Types.ObjectId, ref: 'Brand', default: null },
       batchNo: String,

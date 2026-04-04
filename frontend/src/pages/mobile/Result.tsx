@@ -631,7 +631,7 @@ function ResultRepeat({ data }: { data: any }) {
                 </p>
               </div>
             )}
-            <div>
+            {/* <div>
               <p className="text-[#6E6D6B] text-[12px] font-bold">
                 Product Verification ID:
               </p>
@@ -640,7 +640,7 @@ function ResultRepeat({ data }: { data: any }) {
                   ? data._id.slice(-12).toUpperCase()
                   : "SSG45SHHSB58SBH"}
               </p>
-            </div>
+            </div> */}
           </div>
 
           {/* Info Text */}

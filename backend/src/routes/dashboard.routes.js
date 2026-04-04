@@ -616,6 +616,62 @@ router.get('/product-performance', protect, async (req, res) => {
   }
 });
 
+// ─── GET /dashboard/sku-intelligence — Dedicated SKU dashboard metrics ───
+router.get('/sku-intelligence', protect, async (req, res) => {
+  try {
+    const scope = await buildScopeFilter(req.user);
+    
+    // Group scan data by the newly introduced true skuNumber field!
+    const pipeline = [
+      { $match: scope },
+      {
+        $lookup: {
+          from: 'products',
+          localField: 'productId',
+          foreignField: '_id',
+          as: 'product',
+        },
+      },
+      { $unwind: { path: '$product', preserveNullAndEmptyArrays: true } },
+      {
+        $group: {
+          // Fallback to productName if skuNumber hasn't been set yet (legacy data support)
+          _id: { $ifNull: ['$product.skuNumber', '$product.productName'] },  
+          productName: { $first: '$product.productName' },
+          skuNumber: { $first: '$product.skuNumber' },
+          total: { $sum: 1 },
+          authentic: { $sum: { $cond: [{ $eq: ['$status', 'ORIGINAL'] }, 1, 0] } },
+          suspicious: { $sum: { $cond: [{ $eq: ['$status', 'FAKE'] }, 1, 0] } },
+          duplicate: { $sum: { $cond: [{ $eq: ['$status', 'ALREADY_USED'] }, 1, 0] } },
+          batches: { $addToSet: '$product.batchNo' },
+          places: { $addToSet: '$place' }
+        },
+      },
+      { $sort: { total: -1 } },
+      { $limit: 100 }
+    ];
+
+    const results = await Scan.aggregate(pipeline);
+    
+    res.json({
+      skuMetrics: results.map(r => ({
+        identifier: r._id || 'Unknown',
+        productName: r.productName || 'Unknown',
+        skuNumber: r.skuNumber || 'N/A', // If the database hasn't populated this yet
+        totalScans: r.total,
+        authentic: r.authentic,
+        suspicious: r.suspicious,
+        duplicate: r.duplicate,
+        associatedBatches: r.batches.filter(Boolean),
+        regionsReached: r.places.filter(Boolean).length
+      }))
+    });
+  } catch (error) {
+    console.error('SKU intelligence error:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // ─── GET /dashboard/recent-activity — Recent scans feed ───
 router.get('/recent-activity', protect, async (req, res) => {
   try {

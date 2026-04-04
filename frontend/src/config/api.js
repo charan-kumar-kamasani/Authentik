@@ -643,6 +643,7 @@ export const getGeoAnomalies = (token) => dashboardFetch('geo-anomalies', token)
 export const getRecentActivity = (token, limit = 10) => dashboardFetch(`recent-activity?limit=${limit}`, token);
 export const getConsumerInsights = (token) => dashboardFetch('consumer-insights', token);
 export const getProductPerformance = (token, days = 30) => dashboardFetch(`product-performance?days=${days}`, token);
+export const getSkuIntelligence = (token) => dashboardFetch('sku-intelligence', token);
 
 // ─── Test Accounts APIs ───
 export const getTestAccounts = async () => {

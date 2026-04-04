@@ -6,6 +6,11 @@ const productTemplateSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  skuNumber: {
+    type: String,
+    trim: true,
+    default: null
+  },
   productImage: {
     type: String, // Cloudinary URL
     default: null

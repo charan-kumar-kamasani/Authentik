@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const orderSchema = new mongoose.Schema({
   orderId: { type: String, required: true, unique: true },
   productName: { type: String, required: true },
+  skuNumber: { type: String, default: null },
   brand: { type: String, required: true },
   batchNo: { type: String },
   manufactureDate: { type: String },

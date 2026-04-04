@@ -143,6 +143,7 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
     const order = new Order({
       orderId,
       productName,
+      skuNumber: req.body.skuNumber || null,
       brand: brand || 'Unknown',
       batchNo: batchNo || `BATCH-${orderId}`,
       manufactureDate,
@@ -461,6 +462,7 @@ router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req
       productsToCreate.push({
         qrCode,
         productName: order.productName,
+        skuNumber: order.skuNumber,
         brand: brandName,
         brandId: brandDoc ? brandDoc._id : null,
         batchNo: order.batchNo,
