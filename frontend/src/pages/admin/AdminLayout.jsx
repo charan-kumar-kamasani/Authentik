@@ -25,6 +25,7 @@ import {
   User,
   Coins,
   Gift,
+  Layers,
 } from "lucide-react";
 import GenerateQrs from "./GenerateQrs";
 import QrManagement from "./QrManagement";
@@ -188,12 +189,6 @@ export default function AdminLayout({ children }) {
           {role === "creator" ? (
             <div className="space-y-1.5">
               <SidebarItem
-                label="SKU Intelligence"
-                onClick={() => navigate("/admin/sku-intelligence")}
-                icon={Layers}
-                isActive={activePath === "/admin/sku-intelligence"}
-              />
-              <SidebarItem
                 label="Generate QRs"
                 onClick={() => navigate("/generate-qrs")}
                 icon={Box}
@@ -225,12 +220,6 @@ export default function AdminLayout({ children }) {
                 onClick={() => navigate("/admin/analytics")}
                 icon={LayoutDashboard}
                 isActive={activePath === "/admin/analytics"}
-              />
-              <SidebarItem
-                label="SKU Intelligence"
-                onClick={() => navigate("/admin/sku-intelligence")}
-                icon={Layers}
-                isActive={activePath === "/admin/sku-intelligence"}
               />
               <SidebarItem
                 label="Product Manager"

@@ -134,12 +134,38 @@ console.log(qrCode)
       .populate({ path: 'brandId', populate: { path: 'companyId' } })
       .lean();
  
-    // Fetch field labels from global config (cached in model if using getGlobalFormConfig correctly)
+    // Fetch field labels from global config
     const config = await FormConfig.getGlobalFormConfig();
     const fieldLabels = {};
-    if (config && config.customFields) {
-      config.customFields.forEach(f => {
-        fieldLabels[f.fieldName] = f.fieldLabel;
+    if (config) {
+      if (config.customFields) {
+        config.customFields.forEach(f => {
+          if (f.fieldName) {
+            fieldLabels[f.fieldName] = f.fieldLabel;
+            fieldLabels[f.fieldName.toLowerCase()] = f.fieldLabel;
+            fieldLabels[f.fieldName.toUpperCase()] = f.fieldLabel;
+          }
+        });
+      }
+      if (config.variants) {
+        config.variants.forEach(v => {
+          if (v.variantName) {
+            fieldLabels[v.variantName] = v.variantLabel;
+            fieldLabels[v.variantName.toLowerCase()] = v.variantLabel;
+            fieldLabels[v.variantName.toUpperCase()] = v.variantLabel;
+          }
+        });
+      }
+    }
+    
+    // Also include labels stored directly on the product's variants (best fallback)
+    if (product?.variants) {
+      product.variants.forEach(v => {
+        if (v.variantName && !fieldLabels[v.variantName]) {
+          fieldLabels[v.variantName] = v.variantLabel || v.variantName;
+          fieldLabels[v.variantName.toLowerCase()] = v.variantLabel || v.variantName;
+          fieldLabels[v.variantName.toUpperCase()] = v.variantLabel || v.variantName;
+        }
       });
     }
 
@@ -278,11 +304,38 @@ router.post("/", protect, async (req, res) => {
     const review = await Review.findOne({ productId: product?._id, userId: req.user._id }).lean();
     if (review) alreadyReviewed = true;
 
-    // Field Labels for dynamic fields
+    // Field Labels for dynamic fields from global configuration
+    const config = await FormConfig.getGlobalFormConfig();
     const fieldLabels = {};
-    if (product?.brandId?.dynamicFields) {
-      product.brandId.dynamicFields.forEach(f => {
-        fieldLabels[f.fieldName] = f.fieldLabel;
+    if (config) {
+      if (config.customFields) {
+        config.customFields.forEach(f => {
+          if (f.fieldName) {
+            fieldLabels[f.fieldName] = f.fieldLabel;
+            fieldLabels[f.fieldName.toLowerCase()] = f.fieldLabel;
+            fieldLabels[f.fieldName.toUpperCase()] = f.fieldLabel;
+          }
+        });
+      }
+      if (config.variants) {
+        config.variants.forEach(v => {
+          if (v.variantName) {
+            fieldLabels[v.variantName] = v.variantLabel;
+            fieldLabels[v.variantName.toLowerCase()] = v.variantLabel;
+            fieldLabels[v.variantName.toUpperCase()] = v.variantLabel;
+          }
+        });
+      }
+    }
+    
+    // Also include labels stored directly on the product's variants (best fallback)
+    if (product?.variants) {
+      product.variants.forEach(v => {
+        if (v.variantName && !fieldLabels[v.variantName]) {
+          fieldLabels[v.variantName] = v.variantLabel || v.variantName;
+          fieldLabels[v.variantName.toLowerCase()] = v.variantLabel || v.variantName;
+          fieldLabels[v.variantName.toUpperCase()] = v.variantLabel || v.variantName;
+        }
       });
     }
 

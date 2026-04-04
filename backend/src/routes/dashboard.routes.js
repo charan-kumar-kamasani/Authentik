@@ -106,7 +106,7 @@ router.get('/stats', protect, async (req, res) => {
     // Companies + brands (superadmin only)
     let totalCompanies = 0;
     let totalBrands = 0;
-    if (['superadmin', 'admin'].includes(user.role)) {
+    if (['superadmin', 'admin'].includes(req.user.role)) {
       [totalCompanies, totalBrands] = await Promise.all([
         Company.countDocuments({}),
         Brand.countDocuments({}),

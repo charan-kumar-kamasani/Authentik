@@ -120,8 +120,10 @@ function ResultAuthentic({ data }: { data: any }) {
     { key: "expiryDate", label: "Exp by" },
   ];
 
-  // Helper to format labels from camelCase
+  // Helper to format labels from camelCase or field IDs
   const formatLabel = (key: string) => {
+    if (key.toLowerCase().startsWith('field_')) return "Product Detail";
+    if (key.toLowerCase().startsWith('variant_')) return "Specification";
     const result = key.replace(/([A-Z])/g, " $1");
     return result.charAt(0).toUpperCase() + result.slice(1).trim();
   };
@@ -129,6 +131,7 @@ function ResultAuthentic({ data }: { data: any }) {
   // Combine blue fields
   const blueFields: { label: string; value: any }[] = [];
   const handledKeys = new Set<string>();
+  const fieldLabels = data.fieldLabels || data.productId?.fieldLabels || {};
 
   technicalFields.forEach(({ key, label }) => {
     let val = data[key] || data.productId?.[key];
@@ -182,7 +185,6 @@ function ResultAuthentic({ data }: { data: any }) {
     }
   });
 
-  const fieldLabels = data.fieldLabels || data.productId?.fieldLabels || {};
 
   // Additional Info fields (hardcoded list)
   const additionalInfoFields = [

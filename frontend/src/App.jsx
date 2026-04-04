@@ -164,7 +164,6 @@ export default function App() {
             <Route path="/admin/test-accounts" element={<AdminRoute><AdminLayout><AdminTestAccounts /></AdminLayout></AdminRoute>} />
             <Route path="/admin/form-config" element={<AdminRoute><AdminLayout><QrFormConfig /></AdminLayout></AdminRoute>} />
             <Route path="/admin/analytics" element={<AdminRoute><AdminLayout><AuthDashboard /></AdminLayout></AdminRoute>} />
-            <Route path="/admin/sku-intelligence" element={<AdminRoute><AdminLayout><SkuDashboard /></AdminLayout></AdminRoute>} />
             <Route path="/admin/reviews" element={<AdminRoute><AdminLayout><AdminReviews /></AdminLayout></AdminRoute>} />
             <Route path="/admin/coupons" element={<AdminRoute><AdminLayout><ProductCoupons /></AdminLayout></AdminRoute>} />
             <Route

@@ -4,6 +4,7 @@ import {
   getDashboardStats, getScanTrend, getDuplicateTrend,
   getHighRiskSkus, getBatchRisk, getGeoData, getGeoMarkers, getGeoAnomalies,
   getRecentActivity, getConsumerInsights, getProductPerformance,
+  getSkuIntelligence
 } from '../../config/api';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -13,6 +14,7 @@ import {
   ShieldCheck, ShieldAlert, AlertTriangle, Copy, TrendingUp,
   Activity, MapPin, Users, Eye, BarChart2, RefreshCw, ChevronDown,
   Package, Zap, Star, RotateCcw, Globe, Search as SearchIcon,
+  Layers, Info, Search
 } from 'lucide-react';
 
 // Leaflet
@@ -137,12 +139,13 @@ export default function AuthDashboard({ role: propRole }) {
   const [recentActivity, setRecentActivity] = useState([]);
   const [consumerInsights, setConsumerInsights] = useState({});
   const [productPerf, setProductPerf]       = useState({});
+  const [skuMetrics, setSkuMetrics]         = useState([]);
 
   const fetchAll = useCallback(async (showLoader = true) => {
     if (!token) { navigate('/admin'); return; }
     if (showLoader) setLoading(true); else setRefreshing(true);
     try {
-      const [s, trend, dup, risk, batch, geo, markers, anomalies, recent, consumers, products] =
+      const [s, trend, dup, risk, batch, geo, markers, anomalies, recent, consumers, products, skuData] =
         await Promise.all([
           getDashboardStats(token),
           getScanTrend(token, timeRange),
@@ -155,12 +158,14 @@ export default function AuthDashboard({ role: propRole }) {
           getRecentActivity(token, 10),
           getConsumerInsights(token),
           getProductPerformance(token, timeRange),
+          getSkuIntelligence(token),
         ]);
       setStats(s); setScanTrend(trend); setDuplicateTrend(dup);
       setHighRiskSkus(risk); setBatchRisk(batch); setGeoData(geo);
       setGeoMarkers(markers); setGeoAnomalies(anomalies);
       setRecentActivity(recent); setConsumerInsights(consumers);
       setProductPerf(products);
+      setSkuMetrics(skuData.skuMetrics || []);
     } catch (err) { console.error('Dashboard fetch error:', err); }
     finally { setLoading(false); setRefreshing(false); }
   }, [token, timeRange, navigate]);
@@ -192,6 +197,7 @@ export default function AuthDashboard({ role: propRole }) {
     { key: 'geo',            label: 'Geo Intelligence', icon: Globe },
     { key: 'consumers',      label: 'Consumer Insights', icon: Users },
     { key: 'products',       label: 'Product Performance', icon: Package },
+    ...(['superadmin', 'authorizer'].includes(role) ? [{ key: 'sku', label: 'SKU Intelligence', icon: Layers }] : []),
   ];
 
   /* ─── loader ─── */
@@ -831,6 +837,126 @@ export default function AuthDashboard({ role: propRole }) {
               </div>
             </div>
           </ChartCard>
+        </div>
+      )}
+      {/* ════════════════════════════════════════════
+                  TAB 5 — SKU INTELLIGENCE
+         ════════════════════════════════════════════ */}
+      {activeTab === 'sku' && (
+        <div className="space-y-8 animate-in fade-in duration-500">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard icon={Package} label="Tracked SKUs" value={skuMetrics.length} color="blue" />
+            <StatCard icon={TrendingUp} label="Lifetime Scans" value={formatNum(skuMetrics.reduce((s,m) => s+m.totalScans,0))} color="purple"/>
+            <StatCard icon={ShieldCheck} label="Authentic Volume" value={formatNum(skuMetrics.reduce((s,m) => s+m.authentic,0))} color="green" />
+            <StatCard icon={ShieldAlert} label="Risk Exposure" value={formatNum(skuMetrics.reduce((s,m) => s+(m.suspicious+m.duplicate),0))} color="red" />
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200/60 overflow-hidden flex flex-col">
+              <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/30">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                    <Info size={16} className="text-slate-400" />
+                    Performance Matrix
+                  </h3>
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                      <th className="px-6 py-4">Product Identity</th>
+                      <th className="px-4 py-4 text-center">Total Scans</th>
+                      <th className="px-6 py-4 text-center">Authenticity</th>
+                      <th className="px-4 py-4 text-center">Alerts</th>
+                      <th className="px-6 py-4 text-right">Regions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {skuMetrics.map((m, i) => {
+                      const authPct = m.totalScans > 0 ? Math.round((m.authentic / m.totalScans) * 100) : 0;
+                      return (
+                        <tr key={i} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col">
+                              <span className="font-bold text-slate-800 text-sm">{m.productName}</span>
+                              <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">SKU: {m.skuNumber || 'N/A'}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4 text-center font-bold text-slate-700">{formatNum(m.totalScans)}</td>
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col items-center gap-1">
+                              <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden min-w-[80px]">
+                                <div className="h-full bg-emerald-500" style={{ width: `${authPct}%` }} />
+                              </div>
+                              <span className="text-[9px] font-bold text-emerald-600 uppercase">{authPct}% Auth</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4 text-center">
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-50 text-red-600 rounded-lg font-bold text-[10px] uppercase border border-red-100">
+                              {m.suspicious + m.duplicate}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                             <div className="flex items-center justify-end gap-1 text-xs font-bold text-slate-500">
+                              <MapPin size={12} className="text-blue-500" /> {m.regionsReached}
+                             </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <ChartCard title="Top Volume SKUs">
+                <div className="h-[250px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={[...skuMetrics].sort((a,b)=>b.totalScans-a.totalScans).slice(0,5)} layout="vertical">
+                      <XAxis type="number" hide />
+                      <YAxis dataKey="productName" type="category" tick={{ fontSize: 9, fontWeight: 700, fill: '#64748b' }} axisLine={false} tickLine={false} width={80} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="totalScans" radius={[0, 4, 4, 0]}>
+                        {[...skuMetrics].sort((a,b)=>b.totalScans-a.totalScans).slice(0,5).map((_, i) => <Cell key={i} fill={BAR_COLORS[i%BAR_COLORS.length]} />)}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </ChartCard>
+
+              <ChartCard title="Health Distribution">
+                <div className="flex items-center gap-4">
+                   <div className="w-24 h-24 relative">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={[
+                              { name:'Auth', value:skuMetrics.reduce((s,m)=>s+m.authentic,0) },
+                              { name:'Risk', value:skuMetrics.reduce((s,m)=>s+(m.suspicious+m.duplicate),0) }
+                            ]}
+                            innerRadius={30} outerRadius={45} paddingAngle={2} dataKey="value" stroke="none"
+                          >
+                            <Cell fill={COLORS.green} /><Cell fill={COLORS.red} />
+                          </Pie>
+                        </PieChart>
+                      </ResponsiveContainer>
+                   </div>
+                   <div className="flex-1 space-y-2">
+                      <div className="flex flex-col">
+                        <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-0.5"><span>AUTHENTIC</span><span>{formatNum(skuMetrics.reduce((s,m)=>s+m.authentic,0))}</span></div>
+                        <div className="h-1 bg-slate-100 rounded-full"><div className="h-full bg-emerald-500 rounded-full" style={{ width: '85%' }} /></div>
+                      </div>
+                      <div className="flex flex-col">
+                        <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-0.5"><span>RISK</span><span>{formatNum(skuMetrics.reduce((s,m)=>s+(m.suspicious+m.duplicate),0))}</span></div>
+                        <div className="h-1 bg-slate-100 rounded-full"><div className="h-full bg-red-500 rounded-full" style={{ width: '15%' }} /></div>
+                      </div>
+                   </div>
+                </div>
+              </ChartCard>
+            </div>
+          </div>
         </div>
       )}
     </div>
