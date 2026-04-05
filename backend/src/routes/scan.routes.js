@@ -109,6 +109,45 @@ router.get("/history", protect, async (req, res) => {
             console.warn('Failed to fetch original scan for history item', e);
           }
         }
+        
+        // Fetch and inject field labels for dynamic mapping in the frontend
+        try {
+          const config = await FormConfig.getGlobalFormConfig();
+          const fl = {};
+          if (config) {
+            if (config.customFields) {
+              config.customFields.forEach(f => {
+                if (f.fieldName) {
+                  fl[f.fieldName] = f.fieldLabel;
+                  fl[f.fieldName.toLowerCase()] = f.fieldLabel;
+                  fl[f.fieldName.toUpperCase()] = f.fieldLabel;
+                }
+              });
+            }
+            if (config.variants) {
+              config.variants.forEach(v => {
+                if (v.variantName) {
+                  fl[v.variantName] = v.variantLabel;
+                  fl[v.variantName.toLowerCase()] = v.variantLabel;
+                  fl[v.variantName.toUpperCase()] = v.variantLabel;
+                }
+              });
+            }
+          }
+          if (obj.productId?.variants) {
+            obj.productId.variants.forEach(v => {
+              if (v.variantName && v.variantLabel) {
+                fl[v.variantName] = v.variantLabel;
+                fl[v.variantName.toLowerCase()] = v.variantLabel;
+                fl[v.variantName.toUpperCase()] = v.variantLabel;
+              }
+            });
+          }
+          obj.fieldLabels = fl;
+        } catch (e) {
+          console.warn('Failed to resolve fieldLabels for history item', e);
+        }
+
         return obj;
       })
     );

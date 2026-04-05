@@ -1,55 +1,68 @@
-const { createCanvas, loadImage } = require('canvas');
+const { createCanvas, loadImage, registerFont } = require('canvas');
 const QRCode = require('qrcode');
+const path = require('path');
+const fs = require('fs');
 
-const MM = 2.83465;
-const A3_WIDTH = Math.floor(297 * MM);
-const A3_HEIGHT = Math.floor(420 * MM);
-
-const SCALE = 2.5; // High resolution for A3 prints
+/**
+ * Canvas-based QR image page generator.
+ * Layout is an EXACT 1:1 clone of pdfGenerator.js so PNG/JPG output
+ * looks identical to the PDF download.
+ */
 
 const generateQrImagePages = async (products, format = 'png', options = {}) => {
-  const brandColor = options.brandColor || "#020617";
+  /** ─── PAGE SIZE — A3 Plus (13 × 19 inches), same as PDF ─── **/
+  const MM = 2.83465;
+  const widthPts  = 13 * 72; // 936 pts
+  const heightPts = 19 * 72; // 1368 pts
+
+  /** ─── CELL SIZE — 20 mm × 25 mm, same as PDF ─── **/
+  const cellWidth  = 20 * MM; // ~56.69 pts
+  const cellHeight = 25 * MM; // ~70.87 pts
+
+  /** ─── GRID — 15 cols × 18 rows = 270 per page ─── **/
   const cols = 15;
   const rows = 18;
-  const perPage = cols * rows; // 270
+  const perPage = cols * rows;
   const totalPages = Math.ceil(products.length / perPage);
 
-  const cellWidth = 15 * MM;
-  const headerHeight = 3.5 * MM;
-  const qrAreaHeight = 15 * MM;
-  const footerBannerH = 2.5 * MM;
-  const cellHeight = headerHeight + qrAreaHeight + footerBannerH;
+  /** ─── STICKER INTERNAL ZONES (same ratios as PDF) ─── **/
+  const headerHeight  = cellHeight * 0.2;
+  const footerBannerH = cellHeight * 0.2;
+  const qrAreaHeight  = cellHeight - headerHeight - footerBannerH;
 
-  const gridWidth = cols * cellWidth;
+  /** ─── MARGINS — exactly centred on the page ─── **/
+  const gridWidth  = cols * cellWidth;
   const gridHeight = rows * cellHeight;
+  const marginLeft = (widthPts - gridWidth) / 2;
+  const marginTop  = (heightPts - gridHeight) / 2;
 
-  const marginLeft = (A3_WIDTH - gridWidth) / 2;
-  const marginTop = (A3_HEIGHT - gridHeight) / 2;
-
+  /** ─── QR IMAGE SIZE ─── **/
   const qrSide = 13 * MM;
+
+  /** ─── RENDER SCALE (higher = crisper output) ─── **/
+  const SCALE = 3;
 
   const pages = [];
 
   for (let page = 0; page < totalPages; page++) {
     const start = page * perPage;
-    const end = Math.min(start + perPage, products.length);
+    const end   = Math.min(start + perPage, products.length);
+    if (start >= end) break;
 
-    console.log(`Generating canvas page ${page + 1}/${totalPages}`);
+    console.log(`[canvasGenerator] Rendering page ${page + 1}/${totalPages} (${end - start} QR codes)`);
 
-    // Create a high resolution canvas
-    const canvas = createCanvas(Math.floor(A3_WIDTH * SCALE), Math.floor(A3_HEIGHT * SCALE));
+    // Create high-res canvas
+    const canvas = createCanvas(Math.round(widthPts * SCALE), Math.round(heightPts * SCALE));
     const ctx = canvas.getContext('2d');
-
-    // Scale context so we can use standard points
     ctx.scale(SCALE, SCALE);
 
-    // Set white background
-    ctx.fillStyle = "#FFFFFF";
-    ctx.fillRect(0, 0, A3_WIDTH, A3_HEIGHT);
+    // White background for entire page
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, widthPts, heightPts);
 
-    // Draw borders if scoring is enabled
+    // ─── SCORING / CUT LINES ───
     if (options.scoring !== false) {
-      ctx.strokeStyle = "#E0E0E0";
+      ctx.strokeStyle = '#E0E0E0';
       ctx.lineWidth = 0.3;
 
       for (let c = 0; c <= cols; c++) {
@@ -59,7 +72,6 @@ const generateQrImagePages = async (products, format = 'png', options = {}) => {
         ctx.lineTo(x, marginTop + gridHeight);
         ctx.stroke();
       }
-
       for (let r = 0; r <= rows; r++) {
         const y = marginTop + r * cellHeight;
         ctx.beginPath();
@@ -69,88 +81,98 @@ const generateQrImagePages = async (products, format = 'png', options = {}) => {
       }
     }
 
+    // ─── RENDER EACH QR STICKER ───
     let idx = 0;
-
     for (let i = start; i < end; i++) {
-        const row = Math.floor(idx / cols);
-        const col = idx % cols;
+      const row = Math.floor(idx / cols);
+      const col = idx % cols;
 
-        const x = marginLeft + col * cellWidth;
-        const y = marginTop + row * cellHeight;
+      const x = marginLeft + col * cellWidth;
+      const y = marginTop  + row * cellHeight;
 
-        // ── HEADER ──
-        ctx.fillStyle = brandColor;
-        ctx.fillRect(x, y, cellWidth, headerHeight);
+      // ── HEADER — white band with "Scratch & Scan" ──
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(x, y, cellWidth, headerHeight);
 
-        ctx.fillStyle = "#000000";
-        ctx.font = 'bold 6.5px Helvetica';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText("Scratch & Scan", x + cellWidth / 2, y + headerHeight / 2);
+      ctx.fillStyle = '#000000';
+      ctx.font = 'bold 6.5px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Scratch & Scan', x + cellWidth / 2, y + headerHeight / 2);
 
-        // ── QR CODE AREA ──
-        const qrY = y + headerHeight;
-        ctx.fillStyle = "#FFFFFF";
-        ctx.fillRect(x, qrY, cellWidth, qrAreaHeight);
+      // ── QR CODE — white area ──
+      const qrY = y + headerHeight;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(x, qrY, cellWidth, qrAreaHeight);
 
-        const qrUrl = `https://authentiks.in/scan?code=${encodeURIComponent(products[i].qrCode || "")}`;
-        
-        try {
-            const qrDataUrl = await QRCode.toDataURL(qrUrl, {
-                errorCorrectionLevel: 'M',
-                margin: 1,
-                width: 300 // generate at fixed size then scale down in drawImage
-            });
-            const qrImage = await loadImage(qrDataUrl);
-            
-            const qrX = x + (cellWidth - qrSide) / 2;
-            const qrImgY = qrY + (qrAreaHeight - qrSide) / 2;
-            
-            ctx.drawImage(qrImage, qrX, qrImgY, qrSide, qrSide);
-        } catch (qrErr) {
-            console.error("QR Generation err on canvas", qrErr);
-        }
+      const qrUrl = `https://authentiks.in/scan?code=${encodeURIComponent(products[i].qrCode || '')}`;
 
-        // ── FOOTER BANNER ──
-        const footerY = qrY + qrAreaHeight;
-        ctx.fillStyle = brandColor;
-        ctx.fillRect(x, footerY, cellWidth, footerBannerH);
+      try {
+        const qrDataUrl = await QRCode.toDataURL(qrUrl, {
+          errorCorrectionLevel: 'M',
+          margin: 1,
+          width: 400,
+        });
+        const qrImage = await loadImage(qrDataUrl);
 
-        ctx.fillStyle = "#000000";
-        ctx.font = 'bold 6.5px Helvetica';
-        ctx.fillText("Authentiks.in", x + cellWidth / 2, footerY + footerBannerH / 2);
+        const qrX    = x   + (cellWidth  - qrSide) / 2;
+        const qrImgY = qrY + (qrAreaHeight - qrSide) / 2;
 
-        idx++;
+        ctx.drawImage(qrImage, qrX, qrImgY, qrSide, qrSide);
+      } catch (qrErr) {
+        console.error('[canvasGenerator] QR render error:', qrErr.message);
+      }
+
+      // ── FOOTER BANNER — white band with "Authentiks.in" ──
+      const footerY = qrY + qrAreaHeight;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillRect(x, footerY, cellWidth, footerBannerH);
+
+      ctx.fillStyle = '#000000';
+      ctx.font = 'bold 6.5px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('Authentiks.in', x + cellWidth / 2, footerY + footerBannerH / 2);
+
+      // ── Cell border ──
+      if (options.scoring !== false) {
+        ctx.strokeStyle = '#E0E0E0';
+        ctx.lineWidth = 0.3;
+        ctx.strokeRect(x, y, cellWidth, cellHeight);
+      }
+
+      idx++;
     }
 
-    // PAGE FOOTER TEXT
-    const orderId = options.orderId || products[start]?.orderId || "N/A";
-    const brand = products[start]?.brand || options.brand || "N/A";
-    const pageFooterY = marginTop + gridHeight + 6;
+    // ─── PAGE FOOTER INFO ───
+    const orderId = options.orderId || products[start]?.orderId || 'N/A';
+    const brand   = products[start]?.brand || options.brand || 'N/A';
 
-    ctx.fillStyle = "#000000";
-    ctx.font = 'bold 8px Helvetica';
-    ctx.textAlign = 'left';
+    const pageFooterY = marginTop + gridHeight + 4;
+    ctx.fillStyle = '#000000';
+    ctx.font = 'bold 8px sans-serif';
     ctx.textBaseline = 'top';
+
     const colW = gridWidth / 3;
 
-    ctx.fillText(`${orderId}`, marginLeft, pageFooterY);
-    
+    ctx.textAlign = 'left';
+    ctx.fillText(orderId, marginLeft, pageFooterY);
+
     ctx.textAlign = 'center';
-    ctx.fillText(`${brand}`, marginLeft + colW * 1.5, pageFooterY);
+    ctx.fillText(brand, marginLeft + colW * 1.5, pageFooterY);
 
     ctx.textAlign = 'right';
     ctx.fillText(`Page ${page + 1} of ${totalPages}`, marginLeft + gridWidth, pageFooterY);
 
-    // Get buffer directly natively!
-    const buffer = format === 'jpeg' || format === 'jpg' 
-      ? canvas.toBuffer('image/jpeg', { quality: 1 })
-      : canvas.toBuffer('image/png');
-      
-    pages.push({
-      buffer,
-      filename: `Page_${page + 1}.${format === 'jpeg' || format === 'jpg' ? 'jpg' : 'png'}`
-    });
+    // ─── EXPORT BUFFER ───
+    const mimeType = (format === 'jpeg' || format === 'jpg') ? 'image/jpeg' : 'image/png';
+    const ext      = (format === 'jpeg' || format === 'jpg') ? 'jpg' : 'png';
+
+    const buffer = mimeType === 'image/jpeg'
+      ? canvas.toBuffer(mimeType, { quality: 1.0 })
+      : canvas.toBuffer(mimeType);
+
+    pages.push({ buffer, filename: `Page_${page + 1}.${ext}` });
   }
 
   return pages;

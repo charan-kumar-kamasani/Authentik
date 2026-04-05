@@ -107,6 +107,7 @@ function ResultAuthentic({ data }: { data: any }) {
     { key: "brand", label: "Brand" },
     { key: "category", label: "Category" },
     { key: "batchNo", label: "Batch #" },
+    { key: "sku", label: "SKU" },
     { key: "mrp", label: "MRP" },
     { key: "color", label: "Color" },
     { key: "size", label: "Size" },
@@ -173,15 +174,15 @@ function ResultAuthentic({ data }: { data: any }) {
     }
   });
 
-  // Collect variants that haven't been handled yet
-  const unhandledVariants: { label: string; value: any }[] = [];
+  // Collect variants that haven't been handled yet and add them to blue boxes
   const allVariants = data.variants || data.productId?.variants || [];
   allVariants.forEach((v: any) => {
     if (!handledKeys.has(v.variantName) && !handledKeys.has(v.variantName?.toLowerCase())) {
-      unhandledVariants.push({ 
+      blueFields.push({ 
         label: fieldLabels[v.variantName] || v.variantLabel || formatLabel(v.variantName || ""), 
-        value: v.value 
+        value: String(v.value) 
       });
+      handledKeys.add(v.variantName);
     }
   });
 
@@ -336,14 +337,6 @@ function ResultAuthentic({ data }: { data: any }) {
 
                 {/* All Collected Gray Fields */}
                 <div className="space-y-4">
-                  {/* Unhandled Variants */}
-                  {unhandledVariants.map(({ label, value }, idx) => (
-                    <div key={`variant-${idx}`} className="border-b border-gray-300/30 pb-3 last:border-0 last:pb-0">
-                      <p className="text-[#333] text-[11px] font-bold uppercase tracking-wider opacity-60 mb-1">{label}</p>
-                      <p className="text-[#0D4E96] text-[14px] font-bold whitespace-pre-wrap">{value}</p>
-                    </div>
-                  ))}
-
                   {/* Gray Dynamic Fields */}
                   {grayFields.map(({ label, value }, idx) => (
                     <div key={idx} className="border-b border-gray-300/30 pb-3 last:border-0 last:pb-0">

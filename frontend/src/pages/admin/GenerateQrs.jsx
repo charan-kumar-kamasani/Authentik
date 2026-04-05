@@ -336,6 +336,7 @@ export default function GenerateQrs() {
         // Variants (convert instances to simple array)
         variants: variantInstances.map(instance => ({
           variantName: instance.variantName,
+          variantLabel: instance.variantLabel,
           value: instance.value,
         })),
         // Dynamic fields (all custom field values)
