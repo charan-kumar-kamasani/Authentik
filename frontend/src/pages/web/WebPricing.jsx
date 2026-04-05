@@ -122,12 +122,6 @@ export default function WebPricing() {
         }).catch(e => console.error(e));
     }, []);
 
-    const CYCLES = [
-      { key: 'monthly', label: billingConfig?.monthlyLabel || 'Monthly' },
-      { key: 'quarterly', label: billingConfig?.quarterlyLabel || 'Quarterly' },
-      { key: 'yearly', label: billingConfig?.yearlyLabel || 'Yearly' }
-    ];
-
     return (
         <div className="min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden flex flex-col">
             <WebHeader />
@@ -144,32 +138,6 @@ export default function WebPricing() {
                     <p className="text-xl text-gray-400 font-bold max-w-2xl mx-auto mb-10 leading-relaxed opacity-80">
                         Enterprise-grade product authentication. Zero platform fees. Pay only for the protection you use.
                     </p>
-                    
-                    {/* Billing Cycle Switch */}
-                    <div className="inline-flex p-1.5 bg-white/5 rounded-3xl border border-white/10 backdrop-blur-md shadow-inner relative group">
-                      {CYCLES.map(c => (
-                        <button
-                          key={c.key}
-                          onClick={() => setSelectedCycle(c.key)}
-                          className={`relative px-8 py-3.5 rounded-[1.2rem] text-xs font-black uppercase tracking-[0.15em] transition-all duration-300 z-10 ${
-                            selectedCycle === c.key ? 'text-white' : 'text-gray-500 hover:text-gray-300'
-                          }`}
-                        >
-                          {c.label}
-                          {c.key === 'yearly' && (
-                            <span className="absolute -top-2 -right-1 bg-emerald-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full shadow-lg border border-emerald-400/50">BEST</span>
-                          )}
-                        </button>
-                      ))}
-                      {/* Sliding indicator */}
-                      <div 
-                        className="absolute top-1.5 bottom-1.5 left-1.5 bg-indigo-600/90 rounded-[1.2rem] transition-all duration-500 shadow-lg shadow-indigo-500/20 border border-indigo-400/30"
-                        style={{
-                          width: `calc(100% / 3 - 4px)`,
-                          transform: `translateX(${CYCLES.findIndex(c => c.key === selectedCycle) * 100}%)`
-                        }}
-                      />
-                    </div>
                 </div>
             </section>
 
