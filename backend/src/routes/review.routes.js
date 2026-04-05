@@ -101,6 +101,7 @@ router.post('/', protect, async (req, res) => {
       coupon: awardedCoupon 
     });
   } catch (err) {
+    console.error('Review creation error:', err);
     res.status(500).json({ error: err.message });
   }
 });

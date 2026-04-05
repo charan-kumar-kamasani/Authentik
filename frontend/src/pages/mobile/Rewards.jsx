@@ -161,7 +161,7 @@ export default function Rewards() {
                       </div>
                       {reward.couponExpiry && (
                         <p className="text-[#1a5fa8]/50 text-[11px] font-bold">
-                          Exp: {new Date(reward.couponExpiry).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          Exp: {new Date(reward.couponExpiry).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}
                         </p>
                       )}
                     </div>

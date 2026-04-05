@@ -543,6 +543,12 @@ export const getSettings = async () => {
     return res.json();
 };
 
+export const getBillingConfig = async () => {
+    const res = await fetch(`${API_BASE_URL}/plans/billing-config`);
+    if (!res.ok) throw new Error('Failed to fetch billing config');
+    return res.json();
+};
+
 export const updateSettings = async (data, token) => {
     const res = await fetch(`${API_BASE_URL}/plans/settings`, {
         method: 'PUT',
@@ -945,8 +951,8 @@ export const submitReview = async (reviewData, token) => {
             body: JSON.stringify(reviewData)
         });
         if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.message || 'Failed to submit review');
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.error || err.message || 'Failed to submit review');
         }
         return await response.json();
     } catch (error) {

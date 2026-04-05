@@ -93,8 +93,7 @@ export default function AdminPricePlans() {
       ]);
       if (pRes.ok) {
         const allPlans = await pRes.json();
-        // Only show plans with pricePerQr 0, 3, or 5
-        setPlans(allPlans.filter(p => [0, 3, 5].includes(p.pricePerQr)));
+        setPlans(allPlans);
       }
       if (fRes.ok) setFeatures(await fRes.json());
       if (cRes.ok) {

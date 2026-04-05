@@ -359,163 +359,214 @@ function ResultAuthentic({ data }: { data: any }) {
           {isReviewed ? "Product Reviewed" : "Review Product"}
         </button>
 
-        {/* Review Modal */}
+        {/* Review Modal — Premium Bottom Sheet */}
         {showReviewModal && (
-          <div className="fixed inset-0 z-[100] flex flex-col bg-white animate-in slide-in-from-bottom duration-500">
-            <Header title="Authentiks" />
+          <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center" style={{ animation: 'reviewOverlayIn 0.25s ease' }}>
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowReviewModal(false)} />
             
-            <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col items-center">
-              {/* Status Banner (Same as scan result) */}
-              <div className="w-full max-w-sm bg-[#2CA4D6] rounded-t-[16px] p-4 text-center text-white shadow-md">
-                <div className="flex flex-row justify-center items-center gap-2">
-                  <div className="bg-white rounded-full">
-                    <img src={authenticIcon} alt="Authentic" className="w-10 h-10 object-contain m-1" />
-                  </div>
-                  <div className="text-left">
-                    <h2 className="text-[17px] font-bold leading-tight">Authentic Product</h2>
-                    <p className="text-[11px] opacity-90 font-medium">This product has been verified as genuine</p>
-                  </div>
-                </div>
+            {/* Sheet */}
+            <div 
+              className="relative w-full sm:max-w-[440px] sm:mx-4 bg-white rounded-t-[28px] sm:rounded-[28px] max-h-[92vh] overflow-y-auto shadow-[0_-8px_40px_rgba(0,0,0,0.2)] sm:shadow-[0_24px_60px_rgba(0,0,0,0.25)]"
+              style={{ animation: 'reviewSheetUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
+            >
+              {/* Handle bar (mobile) */}
+              <div className="flex justify-center pt-3 pb-1 sm:hidden">
+                <div className="w-10 h-1 rounded-full bg-gray-300" />
               </div>
 
-              {/* Congratulations Box (Screenshot 1) */}
-              <div className="w-full max-w-sm bg-[#1F2642] p-8 text-center text-white rounded-b-[16px] shadow-lg mb-8">
-                <h3 className="text-[22px] font-bold leading-tight mb-2 uppercase tracking-wide">Congratulations,</h3>
-                <h2 className="text-[24px] font-black leading-tight tracking-tight">Your Product is 100% Authentik</h2>
+              {/* Close button */}
+              <button 
+                onClick={() => setShowReviewModal(false)}
+                className="absolute right-4 top-4 sm:top-5 w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors z-10"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+
+              {/* Product Hero */}
+              <div className="px-6 pt-5 sm:pt-7 pb-5 text-center">
+                {productImage ? (
+                  <div className="w-[72px] h-[72px] rounded-2xl overflow-hidden mx-auto mb-4 shadow-lg shadow-blue-500/10 border-2 border-white ring-2 ring-[#E8F4F9]">
+                    <img src={productImage} alt="" className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="w-[72px] h-[72px] rounded-2xl bg-gradient-to-br from-[#F0F7FF] to-[#E8F4F9] mx-auto mb-4 flex items-center justify-center shadow-inner border-2 border-white ring-2 ring-[#E8F4F9]">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2CA4D6" strokeWidth="1.5"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                  </div>
+                )}
+                <h2 className="text-[20px] font-black text-[#0D4E96] tracking-tight leading-tight mb-1">{productName}</h2>
+                <p className="text-[13px] font-semibold text-[#1a5fa8]/50 uppercase tracking-wider">{companyName}</p>
               </div>
 
-              <div className="w-full max-w-sm space-y-8 flex flex-col items-center">
-                {/* Star Rating Section */}
-                <div className="flex flex-col items-center gap-4">
-                  <p className="text-[16px] font-bold text-gray-700">Please rate your experience</p>
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button key={star} onClick={() => setRating(star)} className="transition-transform active:scale-90 duration-200">
-                        <svg
-                          width="48" height="48" viewBox="0 0 24 24"
-                          fill={star <= rating ? "#1E9BD3" : "none"}
-                          stroke={star <= rating ? "#1E9BD3" : "#D1D5DB"}
-                          strokeWidth="1.5"
-                        >
-                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+              {/* Divider */}
+              <div className="mx-6 h-px bg-gradient-to-r from-transparent via-[#E8F4F9] to-transparent" />
 
-                {/* Coupon Code Section (Screenshot 1) */}
-                {/* <div className="w-full flex flex-col items-center gap-2 mt-4 px-2">
-                  <p className="text-[16px] font-bold text-gray-700 mb-1">Coupon Code</p>
-                  <div className="w-full border-2 border-dashed border-gray-400 rounded-2xl py-5 px-6 flex items-center justify-center gap-4 bg-white shadow-sm">
-                    <div className="p-2 bg-gray-50 rounded-xl">
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-gray-900">
-                        <path d="M15 5H4v14h16v-7" />
-                        <path d="M22 2l-6 6" />
-                        <path d="M21 8V2h-6" />
-                        <rect x="7" y="10" width="10" height="5" rx="1" />
+              {/* Rating Section */}
+              <div className="px-6 py-6">
+                <p className="text-[15px] font-bold text-[#1e3a5f] text-center mb-1">How was your experience?</p>
+                <p className="text-[12px] text-[#1a5fa8]/40 text-center mb-5 font-medium">Tap a star to rate this product</p>
+                
+                <div className="flex justify-center gap-2 mb-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button 
+                      key={star} 
+                      onClick={() => setRating(star)} 
+                      className="transition-all duration-200 active:scale-75 hover:scale-110"
+                      style={{ 
+                        transform: star <= rating ? 'scale(1.1)' : 'scale(1)',
+                        transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                      }}
+                    >
+                      <svg width="44" height="44" viewBox="0 0 24 24" fill={star <= rating ? "#F59E0B" : "none"} stroke={star <= rating ? "#F59E0B" : "#D1D5DB"} strokeWidth="1.5">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                       </svg>
+                    </button>
+                  ))}
+                </div>
+                {rating > 0 && (
+                  <p className="text-center text-[13px] font-bold text-[#F59E0B] mb-1" style={{ animation: 'reviewFadeIn 0.3s ease' }}>
+                    {['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][rating]}
+                  </p>
+                )}
+              </div>
+
+              {/* Comment Section */}
+              <div className="px-6 pb-5">
+                <label className="text-[13px] font-bold text-[#1e3a5f]/70 block mb-2">Share your thoughts <span className="text-[#1a5fa8]/30 font-medium">(optional)</span></label>
+                <textarea
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="What did you think about this product?"
+                  rows={3}
+                  className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl px-4 py-3 text-[14px] text-[#1e3a5f] placeholder-[#94A3B8] font-medium resize-none focus:outline-none focus:ring-2 focus:ring-[#2CA4D6]/30 focus:border-[#2CA4D6]/50 transition-all"
+                />
+              </div>
+
+              {/* Opt-in & Submit */}
+              <div className="px-6 pb-8">
+                <label className="flex items-start gap-3 cursor-pointer mb-6 group">
+                  <div className="relative mt-0.5 flex-shrink-0">
+                    <input type="checkbox" checked={optIn} onChange={(e) => setOptIn(e.target.checked)} className="sr-only" />
+                    <div className={`w-5 h-5 rounded-md border-2 transition-all duration-200 flex items-center justify-center ${optIn ? 'bg-[#0D4E96] border-[#0D4E96] scale-105' : 'bg-white border-[#CBD5E1] group-hover:border-[#94A3B8]'}`}>
+                      {optIn && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4"><path d="M20 6L9 17l-5-5"/></svg>}
                     </div>
-                    <span className="text-[28px] font-black text-gray-900 tracking-[0.2em]">IE5050</span>
                   </div>
-                </div> */}
+                  <span className="text-[12px] font-medium text-[#64748B] leading-relaxed">I'd like to receive exclusive offers and updates from this brand</span>
+                </label>
 
-                {/* Opt-in & Submit */}
-                <div className="w-full space-y-6 pt-4">
-                  <label className="flex items-start gap-3 cursor-pointer group">
-                    <div className="relative mt-1">
-                      <input type="checkbox" checked={optIn} onChange={(e) => setOptIn(e.target.checked)} className="sr-only" />
-                      <div className={`w-6 h-6 rounded-lg border-2 transition-all flex items-center justify-center ${optIn ? 'bg-[#0E5CAB] border-[#0E5CAB]' : 'bg-white border-gray-300'}`}>
-                        {optIn && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4"><path d="M20 6L9 17l-5-5"/></svg>}
-                      </div>
-                    </div>
-                    <span className="text-[13px] font-semibold text-gray-600 leading-snug">Yes, I would like to receive exclusive offer and discounts from the brand</span>
-                  </label>
-
-                  <button
-                    onClick={async () => {
-                      if (rating === 0) return alert("Please select a rating");
-                      setSubmitting(true);
-                      try {
-                        const { submitReview } = await import("../../config/api");
-                        const token = localStorage.getItem('token');
-                        const result = await submitReview({
-                          productId: data.productId?._id || data.productId,
-                          rating,
-                          comment,
-                          optIn
-                        }, token);
+                <button
+                  onClick={async () => {
+                    if (rating === 0) return alert("Please select a rating");
+                    setSubmitting(true);
+                    try {
+                      const { submitReview } = await import("../../config/api");
+                      const token = localStorage.getItem('token');
+                      const result = await submitReview({
+                        productId: data.productId?._id || data.productId,
+                        rating,
+                        comment,
+                        optIn
+                      }, token);
+                      setIsReviewed(true);
+                      setShowReviewModal(false);
+                      
+                      // Check if a coupon was awarded
+                      if (result.coupon) {
+                        setAwardedCoupon(result.coupon);
+                        setTimeout(() => setShowCouponReveal(true), 300);
+                      } else {
+                        alert("Thank you for your review!");
+                      }
+                    } catch (error: any) {
+                      alert(error.message || "Failed to submit review");
+                      if (error.message && error.message.includes("already reviewed")) {
                         setIsReviewed(true);
                         setShowReviewModal(false);
-                        
-                        // Check if a coupon was awarded
-                        if (result.coupon) {
-                          setAwardedCoupon(result.coupon);
-                          setTimeout(() => setShowCouponReveal(true), 300);
-                        } else {
-                          alert("Thank you for your review!");
-                        }
-                      } catch (error: any) {
-                        alert(error.message || "Failed to submit review");
-                      } finally {
-                        setSubmitting(false);
                       }
-                    }}
-                    disabled={submitting}
-                    className="w-full bg-[#0E5CAB] text-white font-bold text-[18px] py-4 rounded-[30px] shadow-xl shadow-blue-500/20 active:scale-[0.98] transition-all disabled:opacity-50"
-                  >
-                    {submitting ? "Submitting..." : "Submit Review"}
-                  </button>
-                </div>
+                    } finally {
+                      setSubmitting(false);
+                    }
+                  }}
+                  disabled={submitting || rating === 0}
+                  className={`w-full font-bold text-[16px] py-4 rounded-2xl shadow-lg transition-all duration-300 active:scale-[0.97] ${
+                    rating === 0 
+                      ? 'bg-gray-200 text-gray-400 shadow-none cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] text-white shadow-blue-500/25 hover:shadow-blue-500/40'
+                  } disabled:opacity-60`}
+                >
+                  {submitting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25"/><path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="opacity-75"/></svg>
+                      Submitting...
+                    </span>
+                  ) : "Submit Review"}
+                </button>
               </div>
             </div>
-            
-            <button 
-              onClick={() => setShowReviewModal(false)}
-              className="absolute left-4 top-4 text-[#0D4E96] p-1 z-[110]"
-            >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M15 18l-6-6 6-6" /></svg>
-            </button>
+
+            <style>{`
+              @keyframes reviewOverlayIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+              }
+              @keyframes reviewSheetUp {
+                from { transform: translateY(100%); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
+              }
+              @keyframes reviewFadeIn {
+                from { opacity: 0; transform: translateY(-4px); }
+                to { opacity: 1; transform: translateY(0); }
+              }
+            `}</style>
           </div>
         )}
 
-        {/* Coupon Reveal Animation Overlay */}
+        {/* Coupon Reveal Dialog */}
         {showCouponReveal && awardedCoupon && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70" style={{ animation: 'fadeIn 0.3s ease' }}>
+          <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm" style={{ animation: 'couponFadeIn 0.25s ease' }}>
             {/* Confetti particles */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              {Array.from({ length: 30 }).map((_, i) => (
+              {Array.from({ length: 24 }).map((_, i) => (
                 <div
                   key={i}
-                  className="absolute w-2 h-2 rounded-full"
+                  className="absolute rounded-full"
                   style={{
+                    width: `${4 + Math.random() * 6}px`,
+                    height: `${4 + Math.random() * 6}px`,
                     left: `${Math.random() * 100}%`,
                     top: `-5%`,
                     backgroundColor: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96E6A1', '#DDA0DD', '#F0E68C'][i % 7],
-                    animation: `confettiFall ${2 + Math.random() * 3}s linear ${Math.random() * 2}s infinite`,
+                    animation: `couponConfetti ${2 + Math.random() * 3}s linear ${Math.random() * 1.5}s infinite`,
                   }}
                 />
               ))}
             </div>
 
-            <div className="bg-white/95 backdrop-blur-xl rounded-[32px] mx-6 w-full max-w-sm overflow-hidden shadow-[0_24px_60px_rgba(13,78,150,0.4)] border border-white" style={{ animation: 'scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }}>
+            <div 
+              className="bg-white rounded-t-[28px] sm:rounded-[28px] w-full sm:max-w-[380px] sm:mx-6 overflow-hidden shadow-[0_-8px_40px_rgba(0,0,0,0.15)] sm:shadow-[0_20px_60px_rgba(13,78,150,0.35)]"
+              style={{ animation: 'couponSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
+            >
               {/* Header */}
-              <div className="bg-gradient-to-br from-[#0D4E96] via-[#1a5fa8] to-[#2CA4D6] p-8 text-center relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
-                <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center mx-auto mb-4 border border-white/20 shadow-inner">
-                  <span className="text-4xl drop-shadow-md">🎉</span>
-                </div>
-                <h2 className="text-white text-[24px] font-black tracking-tight drop-shadow-sm">You Earned a Reward!</h2>
-                <p className="text-[#E8F4F9]/80 text-[14px] mt-2 font-bold tracking-wide uppercase">Thank you for your review</p>
+              <div className="bg-gradient-to-br from-[#0D4E96] via-[#1565B8] to-[#2CA4D6] px-6 py-7 text-center relative">
+                <span className="text-[40px] block mb-2">🎉</span>
+                <h2 className="text-white text-[22px] font-black tracking-tight leading-tight">You Earned a Reward!</h2>
+                <p className="text-white/70 text-[13px] mt-1.5 font-semibold uppercase tracking-widest">Thank you for your review</p>
+                {/* Close button */}
+                <button
+                  onClick={() => setShowCouponReveal(false)}
+                  className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/15 flex items-center justify-center active:bg-white/30 transition-colors"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
               </div>
 
-              {/* Coupon Card */}
-              <div className="p-8">
-                <div className="border-[2px] border-dashed border-[#2CA4D6]/40 rounded-[28px] p-6 bg-gradient-to-b from-[#F0F7FF] to-[#E8F4F9] text-center mb-6 shadow-inner relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-24 h-24 bg-white/40 rounded-full blur-2xl -ml-10 -mt-10" />
-                  <p className="text-[11px] text-[#1a5fa8] font-black uppercase tracking-[0.25em] mb-4 relative z-10">Your Coupon Code</p>
-                  <div className="flex items-center justify-center gap-4 relative z-10">
-                    <span className="text-[32px] font-black text-[#0D4E96] tracking-[0.15em] drop-shadow-sm">
+              {/* Body */}
+              <div className="px-6 py-6">
+                {/* Coupon Code Box */}
+                <div className="bg-[#F0F7FF] border-2 border-dashed border-[#2CA4D6]/30 rounded-2xl p-5 mb-5">
+                  <p className="text-[10px] text-[#1a5fa8]/70 font-black uppercase tracking-[0.2em] text-center mb-3">Your Coupon Code</p>
+                  <div className="flex items-center justify-center gap-3">
+                    <span className="text-[22px] sm:text-[26px] font-black text-[#0D4E96] tracking-[0.12em] break-all text-center leading-tight">
                       {awardedCoupon.code}
                     </span>
                     <button
@@ -524,55 +575,58 @@ function ResultAuthentic({ data }: { data: any }) {
                         setCouponCopied(true);
                         setTimeout(() => setCouponCopied(false), 2000);
                       }}
-                      className="w-12 h-12 bg-gradient-to-br from-[#0D4E96] to-[#2CA4D6] rounded-[16px] active:scale-90 transition-transform flex items-center justify-center shadow-[0_6px_16px_rgba(13,78,150,0.3)] hover:shadow-[0_8px_20px_rgba(13,78,150,0.4)]"
+                      className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-[#0D4E96] to-[#2CA4D6] rounded-xl active:scale-90 transition-transform flex items-center justify-center shadow-md"
                     >
                       {couponCopied ? (
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>
                       ) : (
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                       )}
                     </button>
                   </div>
+                  {couponCopied && (
+                    <p className="text-[#059669] text-[11px] font-bold text-center mt-2 animate-pulse">Copied to clipboard!</p>
+                  )}
                 </div>
 
                 {awardedCoupon.description && (
-                  <p className="text-[#1e3a5f]/80 text-[15px] text-center mb-4 font-medium leading-relaxed px-2">{awardedCoupon.description}</p>
+                  <p className="text-[#1e3a5f]/70 text-[14px] text-center mb-4 font-medium leading-relaxed">{awardedCoupon.description}</p>
                 )}
 
                 {awardedCoupon.expiryDate && (
-                  <p className="text-[#1a5fa8]/50 text-[12px] font-bold text-center mb-6">
-                    Valid until {new Date(awardedCoupon.expiryDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  <p className="text-[#1a5fa8]/40 text-[12px] font-bold text-center mb-5">
+                    Valid until {new Date(awardedCoupon.expiryDate).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
                   </p>
                 )}
 
                 <button
                   onClick={() => navigate('/rewards')}
-                  className="w-full bg-gradient-to-r from-[#0D4E96] via-[#1a5fa8] to-[#2CA4D6] text-white font-black text-[16px] py-4 rounded-[30px] shadow-[0_8px_24px_rgba(13,78,150,0.4)] hover:shadow-[0_12px_32px_rgba(13,78,150,0.5)] active:scale-[0.96] transition-all mb-3 leading-none"
+                  className="w-full bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] text-white font-bold text-[15px] py-3.5 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-[0.97] transition-all mb-2"
                 >
-                  View in Rewards
+                  View My Rewards
                 </button>
                 <button
                   onClick={() => setShowCouponReveal(false)}
-                  className="w-full text-[#1e3a5f]/50 font-bold text-[14px] py-3 active:bg-[#F0F7FF] rounded-xl transition-colors"
+                  className="w-full text-[#1e3a5f]/40 font-semibold text-[13px] py-2.5 active:bg-gray-50 rounded-xl transition-colors"
                 >
-                  Maybe Later
+                  Close
                 </button>
               </div>
             </div>
 
             {/* CSS for animations */}
             <style>{`
-              @keyframes confettiFall {
+              @keyframes couponConfetti {
                 0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
                 100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
               }
-              @keyframes fadeIn {
+              @keyframes couponFadeIn {
                 from { opacity: 0; }
                 to { opacity: 1; }
               }
-              @keyframes scaleIn {
-                from { transform: scale(0.8); opacity: 0; }
-                to { transform: scale(1); opacity: 1; }
+              @keyframes couponSlideUp {
+                from { transform: translateY(100%); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
               }
             `}</style>
           </div>
