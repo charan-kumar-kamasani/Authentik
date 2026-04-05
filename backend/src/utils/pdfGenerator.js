@@ -60,6 +60,10 @@ const buildQrPdf = async (products, options = {}) => {
     console.error("Failed to read logo.png", e);
   }
 
+  /** ─── FONT PATHS (Vercel Fix) ─── **/
+  const BOLD_FONT = path.join(__dirname, "../assets/fonts/Roboto-Bold.ttf");
+  const REGULAR_FONT = path.join(__dirname, "../assets/fonts/Roboto-Regular.ttf");
+
   const doc = new PDFDocument({
     size: [widthPts, heightPts],
     margin: 0,
@@ -111,7 +115,7 @@ const buildQrPdf = async (products, options = {}) => {
 
       doc
         .fillColor("#000")
-        .font("Helvetica-Bold")
+        .font(BOLD_FONT)
         .fontSize(6.5)
         .text("Scratch & Scan", x, y + headerHeight / 2 - 3, {
           width: cellWidth,
@@ -207,7 +211,7 @@ const buildQrPdf = async (products, options = {}) => {
 
       doc
         .fillColor("#000")
-        .font("Helvetica-Bold")
+        .font(BOLD_FONT)
         .fontSize(6.5)
         .text("Authentiks.in", x, footerY + footerBannerH / 2 - 3, {
           width: cellWidth,
@@ -236,7 +240,7 @@ const buildQrPdf = async (products, options = {}) => {
     const brand = products[start]?.brand || options.brand || "N/A";
 
     const pageFooterY = marginTop + gridHeight + 4;
-    doc.font("Helvetica-Bold").fontSize(8);
+    doc.font(BOLD_FONT).fontSize(8);
 
     const footerWidth = gridWidth;
     const colW = footerWidth / 3;

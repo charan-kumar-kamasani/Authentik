@@ -4,6 +4,25 @@ const path = require('path');
 const fs = require('fs');
 
 /**
+ * Register embedded fonts at module-load time (BEFORE any canvas is created).
+ * This fixes blank/tofu text on Vercel where system fonts are missing.
+ */
+const BOLD_FONT_PATH = path.join(__dirname, '../assets/fonts/Roboto-Bold.ttf');
+const REGULAR_FONT_PATH = path.join(__dirname, '../assets/fonts/Roboto-Regular.ttf');
+
+try {
+  if (fs.existsSync(BOLD_FONT_PATH)) {
+    registerFont(BOLD_FONT_PATH, { family: 'Roboto', weight: 'bold' });
+  }
+  if (fs.existsSync(REGULAR_FONT_PATH)) {
+    registerFont(REGULAR_FONT_PATH, { family: 'Roboto', weight: 'normal' });
+  }
+  console.log('[canvasGenerator] Roboto fonts registered successfully');
+} catch (e) {
+  console.warn('[canvasGenerator] Font registration failed, falling back to sans-serif:', e.message);
+}
+
+/**
  * Canvas-based QR image page generator.
  * Layout is an EXACT 1:1 clone of pdfGenerator.js so PNG/JPG output
  * looks identical to the PDF download.
@@ -95,7 +114,7 @@ const generateQrImagePages = async (products, format = 'png', options = {}) => {
       ctx.fillRect(x, y, cellWidth, headerHeight);
 
       ctx.fillStyle = '#000000';
-      ctx.font = 'bold 6.5px sans-serif';
+      ctx.font = 'bold 6.5px Roboto';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('Scratch & Scan', x + cellWidth / 2, y + headerHeight / 2);
@@ -129,7 +148,7 @@ const generateQrImagePages = async (products, format = 'png', options = {}) => {
       ctx.fillRect(x, footerY, cellWidth, footerBannerH);
 
       ctx.fillStyle = '#000000';
-      ctx.font = 'bold 6.5px sans-serif';
+      ctx.font = 'bold 6.5px Roboto';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('Authentiks.in', x + cellWidth / 2, footerY + footerBannerH / 2);
@@ -150,7 +169,7 @@ const generateQrImagePages = async (products, format = 'png', options = {}) => {
 
     const pageFooterY = marginTop + gridHeight + 4;
     ctx.fillStyle = '#000000';
-    ctx.font = 'bold 8px sans-serif';
+    ctx.font = 'bold 8px Roboto';
     ctx.textBaseline = 'top';
 
     const colW = gridWidth / 3;
