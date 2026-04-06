@@ -224,8 +224,13 @@ const BillingCredits = () => {
     try {
       const fetched = await getPlans();
       const allPlans = Array.isArray(fetched) ? fetched : fetched.plans || [];
-      // Only show plans with pricePerQr 0, 3, or 5
-      setPlans(allPlans.filter(p => [0, 3, 5].includes(p.pricePerQr)));
+      
+      // If user has used trial, hide trial plans
+      if (balance?.hasUsedTrial) {
+        setPlans(allPlans.filter(p => !p.isTrial));
+      } else {
+        setPlans(allPlans);
+      }
     } catch {
       setPlans([]);
     }

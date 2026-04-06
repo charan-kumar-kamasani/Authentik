@@ -23,6 +23,7 @@ const companySchema = new mongoose.Schema(
     creatorEmails: [{ type: String }], // creator email IDs
     qrCredits: { type: Number, default: 0 }, // available QR credits balance
     planId: { type: mongoose.Schema.Types.ObjectId, ref: 'PricePlan', default: null }, // active/last purchased plan
+    hasUsedTrial: { type: Boolean, default: false },
     status: { type: String, enum: ['active', 'blocked'], default: 'active' },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

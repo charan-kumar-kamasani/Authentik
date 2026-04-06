@@ -108,6 +108,13 @@ const ProductManager = () => {
         finalImageUrl = data.secure_url;
       }
 
+      const productInfoWords = formData.productInfo.trim().split(/\s+/).filter(Boolean).length;
+      if (productInfoWords > 250) {
+        alert('Product description cannot exceed 250 words.');
+        setSubmitting(false);
+        return;
+      }
+
       const productPayload = {
         productName: formData.productName,
         skuNumber: formData.skuNumber,
@@ -287,14 +294,37 @@ const ProductManager = () => {
                   
                   <div className="space-y-6">
                     <div className="flex flex-col gap-2">
-                        <label className="text-sm font-bold text-gray-600 ml-1">Image Description</label>
+                        <div className="flex items-center justify-between ml-1">
+                          <label className="text-sm font-bold text-gray-600">Image Description</label>
+                          <span className={`text-[10px] font-black uppercase tracking-widest ${
+                            (formData.productInfo.trim().split(/\s+/).filter(Boolean).length > 250) ? 'text-red-500' : 'text-gray-400'
+                          }`}>
+                            {formData.productInfo.trim().split(/\s+/).filter(Boolean).length} / 250 Words
+                          </span>
+                        </div>
                         <textarea
-                        placeholder="Comprehensive details for scan result page..."
-                        value={formData.productInfo}
-                        onChange={(e) => setFormData({ ...formData, productInfo: e.target.value })}
-                        rows={3}
-                        className="w-full px-6 py-4 bg-white border border-gray-100 rounded-[1.5rem] text-gray-900 resize-none focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium shadow-sm"
+                          placeholder="Comprehensive details for scan result page..."
+                          value={formData.productInfo}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const words = val.trim().split(/\s+/).filter(Boolean);
+                            // Allow deletion or keeping within 250 words
+                            if (words.length <= 250 || val.length < formData.productInfo.length) {
+                              setFormData({ ...formData, productInfo: val });
+                            }
+                          }}
+                          rows={3}
+                          className={`w-full px-6 py-4 bg-white border rounded-[1.5rem] text-gray-900 resize-none focus:outline-none focus:ring-4 transition-all font-medium shadow-sm ${
+                            (formData.productInfo.trim().split(/\s+/).filter(Boolean).length > 250) 
+                              ? 'border-red-500 focus:ring-red-500/10' 
+                              : 'border-gray-100 focus:ring-blue-500/10'
+                          }`}
                         />
+                        {formData.productInfo.trim().split(/\s+/).filter(Boolean).length > 250 && (
+                          <p className="text-[10px] font-bold text-red-500 ml-1 flex items-center gap-1">
+                            <Plus size={10} className="rotate-45" /> Description exceeds maximum word limit of 250 words.
+                          </p>
+                        )}
                     </div>
  
                     <div className="flex flex-col gap-2">
@@ -328,7 +358,7 @@ const ProductManager = () => {
 
                 <div className="pt-4">
                   <button 
-                    disabled={submitting}
+                    disabled={submitting || (formData.productInfo.trim().split(/\s+/).filter(Boolean).length > 250)}
                     className="w-full bg-gradient-to-r from-gray-900 to-indigo-900 text-white font-black py-4 rounded-[1.5rem] hover:shadow-2xl hover:shadow-indigo-900/40 active:scale-[0.98] transition-all uppercase tracking-widest text-sm flex items-center justify-center gap-3 disabled:opacity-50"
                   >
                     {submitting ? (editProductId ? 'Updating...' : 'Creating Product...') : (editProductId ? 'Update Product' : 'Add to Catalog')}

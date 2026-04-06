@@ -15,6 +15,7 @@ const creditTransactionSchema = new mongoose.Schema(
     // For purchases
     unitPrice: { type: Number }, // price per QR (e.g. 5)
     totalPaid: { type: Number }, // total ₹ paid
+    planId: { type: mongoose.Schema.Types.ObjectId, ref: 'PricePlan' }, // if bought a plan
     planName: { type: String },  // if bought a plan
     // For spends
     orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order' },

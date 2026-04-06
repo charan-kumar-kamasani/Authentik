@@ -277,10 +277,20 @@ async function addCreditsFromPayment(payment, company, user) {
         balanceAfter: newBalance,
         unitPrice: payment.type === 'topup' ? QR_TOPUP_PRICE : (payment.planId ? (payment.baseAmount / creditsToAdd) : 0),
         totalPaid: payment.finalAmount,
+        planId: payment.planId || null,
         planName: payment.type === 'plan' && payment.planId ? (await PricePlan.findById(payment.planId))?.name : null,
         performedBy: user._id,
         note: `Payment ${payment.merchantOrderId} — ₹${payment.finalAmount}`,
     });
+
+    // Mark trial as used if this was a trial plan
+    if (payment.type === 'plan' && payment.planId) {
+        const plan = await PricePlan.findById(payment.planId);
+        if (plan && plan.isTrial) {
+            company.hasUsedTrial = true;
+            await company.save({ validateModifiedOnly: true });
+        }
+    }
 
     payment.creditTransactionId = txn._id;
     await payment.save();

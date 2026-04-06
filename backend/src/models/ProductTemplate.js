@@ -17,7 +17,15 @@ const productTemplateSchema = new mongoose.Schema({
   },
   productInfo: {
     type: String,
-    trim: true
+    trim: true,
+    validate: {
+      validator: function(v) {
+        if (!v) return true;
+        const wordCount = v.trim().split(/\s+/).filter(Boolean).length;
+        return wordCount <= 250;
+      },
+      message: props => `Product description exceeds 250 words limit (current: ${props.value.trim().split(/\s+/).filter(Boolean).length})`
+    }
   },
   description: {
     type: String,
