@@ -623,20 +623,20 @@ router.get('/users/staff', protect, async (req, res) => {
                     query.$or = [{ brandId }, { brandIds: brandId }];
                 }
 
-                const users = await User.find(query).populate('createdBy', 'email');
+                const users = await User.find(query).populate('createdBy', 'email').lean();
                 return res.json(users);
             }
 
             // Admin: return companies created by this admin (existing behaviour)
             if (req.user.role === 'admin') {
-                const companies = await User.find({ role: 'company', createdBy: req.user._id });
+                const companies = await User.find({ role: 'company', createdBy: req.user._id }).lean();
                 return res.json(companies);
             }
 
             // Company: return staff belonging to this brand/company (prefer brandId)
             if (req.user.role === 'company') {
                 const bid = req.user.brandId || req.user._id;
-                const staff = await User.find({ brandId: bid });
+                const staff = await User.find({ brandId: bid }).lean();
                 return res.json(staff);
             }
 
@@ -1784,7 +1784,8 @@ router.get("/claimed-rewards", protect, async (req, res) => {
       .populate('userId', 'name mobile email')
       .populate('productId', 'productName batchNo')
       .populate('productCouponId', 'code expiryDate isActive')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.json(claimed);
   } catch (err) {

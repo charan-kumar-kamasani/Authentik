@@ -17,11 +17,11 @@ const getNotificationRecipients = async (order) => {
   
   try {
     // Add creator
-    const creator = await User.findById(order.createdBy);
+    const creator = await User.findById(order.createdBy).lean();
     if (creator && creator.email) recipients.add(creator.email);
     
     // Add company/brand authorizers
-    const brand = await Brand.findById(order.brandId);
+    const brand = await Brand.findById(order.brandId).lean();
     if (brand && brand.email) recipients.add(brand.email);
 
     // Find all authorizers for this brand
@@ -29,7 +29,7 @@ const getNotificationRecipients = async (order) => {
       brandId: order.brandId, 
       role: 'authorizer',
       email: { $exists: true, $ne: null }
-    });
+    }).lean();
     authorizers.forEach(auth => {
       if (auth.email) recipients.add(auth.email);
     });
@@ -38,7 +38,7 @@ const getNotificationRecipients = async (order) => {
     const admins = await User.find({ 
       role: { $in: ['admin', 'superadmin'] },
       email: { $exists: true, $ne: null }
-    });
+    }).lean();
     admins.forEach(admin => {
       if (admin.email) recipients.add(admin.email);
     });

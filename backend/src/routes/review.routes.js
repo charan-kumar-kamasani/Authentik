@@ -113,7 +113,8 @@ router.get('/product/:productId', protect, authorize('admin', 'superadmin', 'com
   try {
     const reviews = await Review.find({ productId: req.params.productId })
       .populate('userId', 'name mobile email')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
     
     res.json(reviews);
   } catch (err) {
@@ -129,7 +130,8 @@ router.get('/all', protect, authorize('superadmin', 'admin'), async (req, res) =
     const reviews = await Review.find()
       .populate('productId', 'productName brand')
       .populate('userId', 'name mobile email')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.json(reviews);
   } catch (err) {

@@ -664,7 +664,8 @@ router.get("/company/all", protect, async (req, res) => {
     const scans = await Scan.find(query)
       .populate('userId', 'name mobile email')
       .populate('productId', 'productName brand batchNo')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.json(scans);
   } catch (err) {
@@ -769,7 +770,7 @@ router.post("/report", protect, async (req, res) => {
 // Get user's reports
 router.get("/reports/my", protect, async (req, res) => {
   try {
-    const reports = await Report.find({ userId: req.user._id }).sort({ createdAt: -1 });
+    const reports = await Report.find({ userId: req.user._id }).sort({ createdAt: -1 }).lean();
     res.json(reports);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch reports" });
@@ -796,7 +797,7 @@ router.get("/reports/all", protect, async (req, res) => {
       return res.status(403).json({ error: "Not authorized" });
     }
 
-    const reports = await Report.find(query).populate('userId', 'name mobile').sort({ createdAt: -1 });
+    const reports = await Report.find(query).populate('userId', 'name mobile').sort({ createdAt: -1 }).lean();
     res.json(reports);
   } catch (err) {
     console.error("Error fetching all reports:", err);

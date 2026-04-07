@@ -28,4 +28,10 @@ const brandSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Performance Indexes
+brandSchema.index({ companyId: 1 });
+brandSchema.index({ status: 1 });
+brandSchema.index({ createdBy: 1 });
+brandSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model("Brand", brandSchema);

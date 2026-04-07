@@ -1,76 +1,83 @@
 const mongoose = require("mongoose");
 
-module.exports = mongoose.model(
-  "Product",
-  new mongoose.Schema(
-    {
-      qrCode: String,
-      productName: String,
-      skuNumber: { type: String, default: null },
-      brand: String,
-      brandId: { type: mongoose.Schema.Types.ObjectId, ref: 'Brand', default: null },
-      batchNo: String,
-      manufactureDate: String,
-      expiryDate: String,
-      description: String,
-      productInfo: String,
-      quantity: Number,
-      productImage: String,
-      sequence: { type: Number, default: 0 },
+const productSchema = new mongoose.Schema(
+  {
+    qrCode: String,
+    productName: String,
+    skuNumber: { type: String, default: null },
+    brand: String,
+    brandId: { type: mongoose.Schema.Types.ObjectId, ref: 'Brand', default: null },
+    batchNo: String,
+    manufactureDate: String,
+    expiryDate: String,
+    description: String,
+    productInfo: String,
+    quantity: Number,
+    productImage: String,
+    sequence: { type: Number, default: 0 },
 
-      orderId: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: "Order",
-        default: null 
-      },
-      isActive: { 
-        type: Boolean, 
-        default: false 
-      }, // QR codes are inactive until authorizer marks order as received/done
-      createdBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-      },
-      // Detailed fields (matching ProductTemplate/Order)
-      category: String,
-      mrp: Number,
-      keyBenefits: String,
-      manufacturedBy: String,
-      marketedBy: String,
-      importMarketedBy: String,
-      importerRegNo: String,
-      countryOfOrigin: String,
-      website: String,
-      supportEmail: String,
-      customerCare: String,
-
-      // Dynamic form fields
-      mfdOn: {
-        month: String, // MM format (01-12)
-        year: String,  // YYYY format
-      },
-      bestBefore: {
-        value: Number,
-        unit: { type: String, enum: ['months', 'years'] },
-      },
-      // Auto-calculated expiry based on mfdOn + bestBefore
-      calculatedExpiryDate: String, // MM/YYYY format
-      // Store variants (repeatable fields like Color, Size, Model)
-      variants: [{
-        variantName: String,  // e.g., "Color", "Size", "Model"
-        variantLabel: String,
-        inputType: { type: String, enum: ['color', 'text', 'dropdown'], default: 'text' },
-        value: String,        // e.g., "Red", "Large", "Pro Series"
-        options: [String]
-      }],
-      // Store all dynamic field values as key-value pairs
-      dynamicFields: {
-        type: Map,
-        of: mongoose.Schema.Types.Mixed,
-        default: {},
-      },
+    orderId: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "Order",
+      default: null 
     },
-    { timestamps: true }
-  )
+    isActive: { 
+      type: Boolean, 
+      default: false 
+    }, // QR codes are inactive until authorizer marks order as received/done
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    // Detailed fields (matching ProductTemplate/Order)
+    category: String,
+    mrp: Number,
+    keyBenefits: String,
+    manufacturedBy: String,
+    marketedBy: String,
+    importMarketedBy: String,
+    importerRegNo: String,
+    countryOfOrigin: String,
+    website: String,
+    supportEmail: String,
+    customerCare: String,
+
+    // Dynamic form fields
+    mfdOn: {
+      month: String, // MM format (01-12)
+      year: String,  // YYYY format
+    },
+    bestBefore: {
+      value: Number,
+      unit: { type: String, enum: ['months', 'years'] },
+    },
+    // Auto-calculated expiry based on mfdOn + bestBefore
+    calculatedExpiryDate: String, // MM/YYYY format
+    // Store variants (repeatable fields like Color, Size, Model)
+    variants: [{
+      variantName: String,  // e.g., "Color", "Size", "Model"
+      variantLabel: String,
+      inputType: { type: String, enum: ['color', 'text', 'dropdown'], default: 'text' },
+      value: String,        // e.g., "Red", "Large", "Pro Series"
+      options: [String]
+    }],
+    // Store all dynamic field values as key-value pairs
+    dynamicFields: {
+      type: Map,
+      of: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+  },
+  { timestamps: true }
 );
+
+// Performance Indexes
+productSchema.index({ qrCode: 1 });
+productSchema.index({ brandId: 1 });
+productSchema.index({ orderId: 1 });
+productSchema.index({ isActive: 1 });
+productSchema.index({ batchNo: 1 });
+productSchema.index({ createdAt: -1 });
+
+module.exports = mongoose.model("Product", productSchema);
