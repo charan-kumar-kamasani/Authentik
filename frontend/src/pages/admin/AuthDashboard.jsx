@@ -289,28 +289,28 @@ export default function AuthDashboard({ role: propRole }) {
         </div>
       </div>
 
-      {/* ─── Layout: Left Sidebar + Right Content ─── */}
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
-        {/* Left 10-Tab Sidebar */}
-        <div className="w-full lg:w-64 flex-shrink-0 bg-white rounded-2xl border border-slate-200/60 p-3 shadow-sm flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible sticky top-6">
+      {/* ─── Layout: Top Tab Row + Content ─── */}
+      <div className="flex flex-col gap-6 items-start">
+        {/* Top 10-Tab Row */}
+        <div className="w-full bg-white rounded-2xl border border-slate-200/60 p-3 shadow-sm flex flex-row flex-wrap gap-2 items-center justify-center">
           {tabs.map(t => {
             const isActive = activeTab === t.key;
             return (
               <button key={t.key} onClick={() => setActiveTab(t.key)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-black transition-all duration-300 whitespace-nowrap text-left ${
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-black transition-all duration-300 whitespace-nowrap ${
                   isActive 
                   ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' 
                   : 'text-slate-500 hover:text-blue-700 hover:bg-blue-50/70'
                 }`}>
-                <t.icon size={18} className={isActive ? 'text-white' : 'text-slate-400'} strokeWidth={2.5} />
+                <t.icon size={16} className={isActive ? 'text-white' : 'text-slate-400'} strokeWidth={2.5} />
                 {t.label}
               </button>
             );
           })}
         </div>
 
-        {/* Right Content Area */}
-        <div className="flex-1 w-full min-w-0">
+        {/* Content Area */}
+        <div className="w-full min-w-0">
 
       {/* ════════════════════════════════════════════
                   TAB 1 — AUTHENTICATION

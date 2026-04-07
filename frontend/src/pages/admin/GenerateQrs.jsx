@@ -833,23 +833,32 @@ export default function GenerateQrs() {
             <div className="col-span-2">
               <label className="block text-sm font-medium text-slate-700 mb-2">Available Variant Types</label>
               <div className="flex flex-wrap gap-2">
-                {(formConfig?.variants || []).map((variant) => (
+                {[
+                  { variantName: 'color', variantLabel: 'Color', inputType: 'color' },
+                  { variantName: 'size', variantLabel: 'Size', inputType: 'text' },
+                  { variantName: 'model_series', variantLabel: 'Model/Series', inputType: 'text' },
+                  { variantName: 'weight', variantLabel: 'Weight', inputType: 'text' },
+                  { variantName: 'storage', variantLabel: 'Storage', inputType: 'text' },
+                  { variantName: 'flavour', variantLabel: 'Flavour', inputType: 'text' },
+                  { variantName: 'capacity', variantLabel: 'Capacity', inputType: 'text' },
+                  { variantName: 'material', variantLabel: 'Material', inputType: 'text' }
+                ].map((variant) => (
                   <button
                     key={variant.variantName}
                     type="button"
                     onClick={() => addVariantInstance(variant)}
-                    className="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold rounded-lg transition-all flex items-center gap-2 text-sm"
+                    className="px-4 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold rounded-lg transition-all flex items-center gap-1.5 text-xs shadow-sm"
                   >
-                    <Plus size={16} />
+                    <Plus size={14} strokeWidth={3} />
                     Add {variant.variantLabel}
                   </button>
                 ))}
                 <button
                   type="button"
                   onClick={() => addVariantInstance({})}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition-all flex items-center gap-2 text-sm border border-slate-200 border-dashed"
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg transition-all flex items-center gap-1.5 text-xs shadow-sm border-2 border-slate-200 border-dashed"
                 >
-                  <Plus size={16} />
+                  <Plus size={14} strokeWidth={3} />
                   Add Custom Variant
                 </button>
               </div>
