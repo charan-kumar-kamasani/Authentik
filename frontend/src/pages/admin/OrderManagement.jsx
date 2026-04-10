@@ -553,12 +553,12 @@ const OrderManagement = () => {
             <div className="text-xl font-black text-emerald-600">{counts['Received'] || 0}</div>
             <div className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Received</div>
           </div>
-          {(role === 'admin' || role === 'superadmin' || role === 'creator') && (
+          {/* {(role === 'admin' || role === 'superadmin' || role === 'creator') && (
             <button onClick={() => setShowCreateModal(true)}
               className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 active:scale-95 transition-all">
               <Plus size={16} strokeWidth={3} /> New Order
             </button>
-          )}
+          )} */}
         </div>
       </div>
 
@@ -676,9 +676,9 @@ const OrderManagement = () => {
                         (order.status === 'Pending Authorization' && ['authorizer', 'company'].includes(role))) && (
                         <ActionBtn onClick={() => handleRejectOrder(order._id)} icon={XCircle} label="Reject" color="red" />
                       )}
-                      {/* Edit — allowed for superadmin/admin if not processed, authorizer/company ONLY if Pending, creator ONLY if Rejected */}
+                      {/* Edit — allowed for superadmin/admin if not processed, company ONLY if Pending, creator ONLY if Rejected */}
                       {((['Pending Authorization', 'Authorized', 'Rejected'].includes(order.status) && ['admin', 'superadmin'].includes(role)) || 
-                        (order.status === 'Pending Authorization' && ['authorizer', 'company'].includes(role)) ||
+                        (order.status === 'Pending Authorization' && ['company'].includes(role)) ||
                         (order.status === 'Rejected' && role === 'creator')) && (
                         <ActionBtn onClick={() => {
                           if (role === 'creator') {
@@ -688,8 +688,8 @@ const OrderManagement = () => {
                           }
                         }} icon={Edit} label="Edit" color="slate" />
                       )}
-                      {/* PDF — visible for superadmin/admin until order is marked Received */}
-                      {order.status !== 'Received' && (role === 'superadmin' || role === 'admin') && (
+                      {/* PDF — visible for superadmin/admin until order is marked Received, and only after authoriser approval */}
+                      {order.status !== 'Received' && !['Pending Authorization', 'Rejected'].includes(order.status) && (role === 'superadmin' || role === 'admin') && (
                         <ActionBtn onClick={() => setDownloadModal(order._id)} icon={FileDown} label="Download QRs" color="slate" />
                       )}
 

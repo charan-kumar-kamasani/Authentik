@@ -51,7 +51,7 @@ async function seedDefaultFormConfig() {
         },
         {
           fieldName: 'mrp',
-          fieldLabel: 'MRP (Maximum Retail Price)',
+          fieldLabel: 'MRP',
           fieldType: 'number',
           isMandatory: false,
           placeholder: 'e.g. 999',
@@ -152,7 +152,7 @@ async function seedDefaultFormConfig() {
           },
           {
             fieldName: 'mrp',
-            fieldLabel: 'MRP (Maximum Retail Price)',
+            fieldLabel: 'MRP',
             fieldType: 'number',
             isMandatory: false,
             placeholder: 'e.g. 999',
