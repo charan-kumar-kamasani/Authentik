@@ -292,6 +292,12 @@ export default function AdminLayout({ children }) {
                       icon={Tag}
                       isActive={activePath === "/admin/price-plans"}
                     />
+                    <SidebarItem
+                      label="QR Volume Pricing"
+                      onClick={() => navigate("/admin/qr-pricing")}
+                      icon={Layers}
+                      isActive={activePath === "/admin/qr-pricing"}
+                    />
                   </div>
                 </div>
               )}

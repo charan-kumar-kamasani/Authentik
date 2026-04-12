@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { getOrders, createOrder, updateOrderStatus, downloadOrderPdf, downloadOrderImages, checkOrderCredits, getPlans, calculatePrice, validateCoupon, initiatePayment, updateOrder } from '../../config/api';
+import { getOrders, createOrder, updateOrderStatus, downloadOrderPdf, downloadOrderImages, checkOrderCredits, getPlans, calculatePrice, validateCoupon, initiatePayment, updateOrder, getOrderPrice } from '../../config/api';
 import { useNavigate } from 'react-router-dom';
 import { useLoading } from '../../context/LoadingContext';
 import { useConfirm } from '../../components/ConfirmModal';
@@ -100,6 +100,82 @@ const DispatchModal = ({ orderId, initialData, onDispatch, onClose }) => {
   );
 };
 
+const PaymentOverviewModal = ({ order, priceData, onConfirm, onClose, isProcessing }) => {
+  return (
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-300">
+        <div className="bg-gradient-to-br from-indigo-600 to-violet-700 p-8 text-white relative">
+          <div className="absolute right-[-20px] top-[-20px] w-40 h-40 bg-white/10 rounded-full blur-3xl" />
+          <button onClick={onClose} className="absolute top-6 right-6 text-white/60 hover:text-white transition-colors"><X size={20} /></button>
+          
+          <div className="relative z-10 flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md mb-4 shadow-xl border border-white/20">
+              <ShieldCheck size={32} strokeWidth={2.5} />
+            </div>
+            <h3 className="text-2xl font-black tracking-tight uppercase">Order Authorization</h3>
+            <p className="text-indigo-100 text-sm font-bold opacity-80 mt-1">Payment & Security Review</p>
+          </div>
+        </div>
+
+        <div className="p-8 space-y-6">
+          <div className="space-y-4 bg-slate-50 p-5 rounded-2xl border border-slate-100">
+            <div className="flex justify-between items-center">
+               <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Product</span>
+               <span className="text-sm font-bold text-slate-800">{order.productName}</span>
+            </div>
+            <div className="flex justify-between items-center">
+               <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Quantity</span>
+               <span className="text-sm font-black text-slate-800">{order.quantity.toLocaleString()} units</span>
+            </div>
+            <div className="flex justify-between items-center pt-3 border-t border-slate-200">
+               <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Rate (per QR)</span>
+               <span className="text-sm font-black text-indigo-600">₹{priceData.pricePerQr}</span>
+            </div>
+          </div>
+
+          <div className="space-y-3 px-1">
+             <div className="flex justify-between items-center text-sm font-bold text-slate-600">
+                <span>Subtotal</span>
+                <span>₹{priceData.subtotal}</span>
+             </div>
+             <div className="flex justify-between items-center text-xs font-semibold text-slate-500">
+                <span>GST (18%)</span>
+                <span>₹{priceData.tax}</span>
+             </div>
+             <div className="flex justify-between items-center pt-4 mt-2 border-t-2 border-dashed border-slate-200">
+                <span className="text-base font-black text-slate-800 uppercase tracking-tight">Total Amount</span>
+                <span className="text-2xl font-black text-indigo-600 tracking-tighter">₹{priceData.total}</span>
+             </div>
+          </div>
+
+          <div className="bg-amber-50 border border-amber-100 p-4 rounded-xl flex gap-3 items-start">
+             <AlertCircle size={18} className="text-amber-500 shrink-0 mt-0.5" />
+             <p className="text-[10px] text-amber-800 font-bold leading-relaxed uppercase tracking-wide">
+                Authorisation will proceed automatically upon successful payment. This action is final and will allow QR generation.
+             </p>
+          </div>
+
+          <button 
+            onClick={onConfirm}
+            disabled={isProcessing}
+            className="w-full py-4 bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-black rounded-2xl shadow-xl shadow-indigo-200 hover:shadow-indigo-300 transition-all active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50"
+          >
+            {isProcessing ? (
+               <><Loader2 size={20} className="animate-spin" /> Processing...</>
+            ) : (
+               <><CreditCard size={20} strokeWidth={2.5} /> Confirm & Pay Now</>
+            )}
+          </button>
+          
+          <p className="text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+             Secure Payment powered by PhonePe
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const OrderManagement = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
@@ -135,6 +211,8 @@ const OrderManagement = () => {
   const [editOrderModal, setEditOrderModal] = useState({ isOpen: false, data: null });
   const [editing, setEditing] = useState(false);
   const [processModal, setProcessModal] = useState({ isOpen: false, order: null, bonusQuantity: 0 });
+  const [paymentOverview, setPaymentOverview] = useState(null); // { order, priceData }
+  const [payingOrder, setPayingOrder] = useState(false);
 
   useEffect(() => {
     fetchOrders();
@@ -241,6 +319,21 @@ const OrderManagement = () => {
 
       setGlobalLoading(true);
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      
+      if (action === 'authorize' && (role === 'company' || role === 'authorizer')) {
+         try {
+            const priceData = await getOrderPrice(orderId, token);
+            const order = orders.find(o => o._id === orderId);
+            setPaymentOverview({ order, priceData });
+            return;
+         } catch (err) {
+            alert('Failed to fetch pricing: ' + err.message);
+            return;
+         } finally {
+            setGlobalLoading(false);
+         }
+      }
+
       await updateOrderStatus(orderId, action, data, token);
       
       const successMessages = {
@@ -258,14 +351,31 @@ const OrderManagement = () => {
       if (action === 'process') setProcessModal({ isOpen: false, order: null, bonusQuantity: 0 });
       await fetchOrders();
     } catch (e) {
-      if (action === 'authorize' && e.creditData) {
-        setCreditModal({ orderId, ...e.creditData });
-        setCreditView('choice');
-        return;
-      }
       alert('Failed: ' + e.message);
     } finally {
       setGlobalLoading(false);
+    }
+  };
+
+  const handleOrderPayment = async () => {
+    if (!paymentOverview) return;
+    setPayingOrder(true);
+    try {
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      const res = await initiatePayment({ 
+        type: 'order', 
+        orderId: paymentOverview.order._id 
+      }, token);
+      
+      if (res.redirectUrl) {
+        window.location.href = res.redirectUrl;
+      } else {
+        alert('Payment initiated! You will be redirected.');
+      }
+    } catch (err) {
+      alert('Payment failed: ' + err.message);
+    } finally {
+      setPayingOrder(false);
     }
   };
 
@@ -611,6 +721,7 @@ const OrderManagement = () => {
                 <th className="px-6 py-4">Quantity</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4">Date</th>
+                <th className="px-6 py-4 text-right">Total Amount</th>
                 <th className="px-6 py-4">Actions</th>
               </tr>
             </thead>
@@ -647,6 +758,12 @@ const OrderManagement = () => {
                     <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
                       <Calendar size={12} /> {fmt(order.createdAt)}
                     </div>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="text-sm font-black text-slate-700">₹{(order.amount || 0).toLocaleString()}</div>
+                    {order.paymentStatus === 'completed' && (
+                      <div className="text-[10px] font-bold text-emerald-500 uppercase tracking-tight mt-1">Paid</div>
+                    )}
                   </td>
                   <td className="px-6 py-4" onClick={e => e.stopPropagation()}>
                     <div className="flex gap-2 flex-wrap">
@@ -699,9 +816,9 @@ const OrderManagement = () => {
                 {/* ── Expanded Row ── */}
                 {expandedOrder === order._id && (
                   <tr className="bg-blue-50/20">
-                    <td colSpan="6" className="px-6 py-5">
+                    <td colSpan="7" className="px-6 py-5">
                       <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
                           {/* Creator Info */}
                           <div className="space-y-3">
                             <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><User size={12} /> Creator Details</h4>
@@ -737,6 +854,39 @@ const OrderManagement = () => {
                             )}
                             {!order.description && !order.productInfo && (
                               <p className="text-sm text-slate-400 italic">No description provided</p>
+                            )}
+                          </div>
+
+                          {/* Billing & Pricing */}
+                          <div className="space-y-3">
+                            <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><Coins size={12} /> Billing & Pricing</h4>
+                            <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 space-y-2">
+                              <div className="flex justify-between items-center text-xs">
+                                <span className="font-bold text-slate-500">Rate:</span>
+                                <span className="font-black text-slate-700">₹{order.pricePerQr || 0} / QR</span>
+                              </div>
+                              <div className="flex justify-between items-center text-xs">
+                                <span className="font-bold text-slate-500">Subtotal:</span>
+                                <span className="font-bold text-slate-700">₹{(order.subtotal || 0).toLocaleString()}</span>
+                              </div>
+                              <div className="flex justify-between items-center text-xs text-indigo-600">
+                                <span className="font-bold">GST (18%):</span>
+                                <span className="font-bold">₹{(order.tax || 0).toLocaleString()}</span>
+                              </div>
+                              <div className="h-px bg-slate-200 my-1" />
+                              <div className="flex justify-between items-center">
+                                <span className="text-[10px] font-black uppercase text-slate-400">Total Amount:</span>
+                                <span className="text-sm font-black text-blue-600">₹{(order.amount || 0).toLocaleString()}</span>
+                              </div>
+                            </div>
+                            {order.paymentStatus === 'completed' ? (
+                              <div className="flex items-center gap-1.5 text-[10px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 py-1 px-2 rounded w-fit">
+                                <CheckCircle2 size={10} /> Payment Completed
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1.5 text-[10px] font-black text-amber-600 uppercase tracking-widest bg-amber-50 py-1 px-2 rounded w-fit">
+                                <Clock size={10} /> {order.paymentStatus === 'failed' ? 'Payment Failed' : 'Pending Payment'}
+                              </div>
                             )}
                           </div>
                         </div>
@@ -1326,7 +1476,7 @@ const OrderManagement = () => {
           </div>
         </div>
       )}
-      {/* Download Format Modal */}
+
       {downloadModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 text-left">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
@@ -1372,6 +1522,16 @@ const OrderManagement = () => {
         </div>
       )}
 
+      {/* Payment Overview Modal */}
+      {paymentOverview && (
+        <PaymentOverviewModal 
+          order={paymentOverview.order}
+          priceData={paymentOverview.priceData}
+          onClose={() => setPaymentOverview(null)}
+          onConfirm={handleOrderPayment}
+          isProcessing={payingOrder}
+        />
+      )}
     </div>
   );
 };

@@ -11,37 +11,30 @@ const Glow = ({ color, className }) => (
 
 const PricingCard = ({ plan, cycle, isIndia, onChoose }) => {
   const currentPricing = plan.pricing?.[cycle] || {};
-  const price = currentPricing.pricePerQr || plan.pricePerQr || 0;
-  const saveText = currentPricing.saveText || plan.saveText;
-  const validity = currentPricing.validity || plan.planValidity;
+  const platformFee = currentPricing.platformFee || plan.platformFee || 0;
+  // Note: For display, we can show the platform fee as the primary cost and QR price as additional
   const isPopular = plan.isPopular;
 
   return (
     <div className={`glass-effect p-8 rounded-[2.5rem] flex flex-col relative overflow-hidden transition-all duration-500 hover:scale-[1.02] border border-white/5 ${isPopular ? 'border-indigo-500/50 ring-1 ring-indigo-500/20 shadow-[0_0_40px_rgba(99,102,241,0.1)]' : ''}`}>
       {isPopular && (
         <div className="absolute top-0 right-0 bg-gradient-to-l from-indigo-600 to-violet-600 text-white text-[10px] font-black uppercase px-5 py-1.5 rounded-bl-2xl tracking-widest shadow-lg">
-          Best Value
+          Most Popular
         </div>
       )}
       
       <div className="mb-8">
         <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-1">{plan.name}</h3>
+        <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-4">Platform Subscription</p>
+        
         <div className="flex items-baseline gap-1">
-          <span className="text-5xl font-black text-white tracking-tighter">{isIndia ? `₹${price}` : `$${price}`}</span>
-          <span className="text-gray-500 text-sm font-bold">/unit</span>
+          <span className="text-5xl font-black text-white tracking-tighter">{isIndia ? `₹${(platformFee || 0).toLocaleString()}` : `$${(platformFee || 0).toLocaleString()}`}</span>
+          <span className="text-gray-500 text-sm font-bold">/month</span>
         </div>
         
-        <div className="flex flex-wrap gap-2 mt-4 min-h-[24px]">
-          {saveText && saveText !== "-" && (
-            <span className="text-[10px] font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-              Save {isIndia ? "₹" : "$"}{saveText}
-            </span>
-          )}
-          {validity && validity !== "-" && (
-            <span className="text-[10px] font-black bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-              {validity} Days
-            </span>
-          )}
+        <div className="mt-4 p-3 bg-white/5 rounded-2xl border border-white/5 inline-block">
+          <p className="text-[10px] text-indigo-400 font-black uppercase tracking-widest mb-1">QR Authentication</p>
+          <p className="text-xs text-gray-300 font-bold">Volume-based pricing applies</p>
         </div>
       </div>
 
@@ -68,9 +61,6 @@ const PricingCard = ({ plan, cycle, isIndia, onChoose }) => {
             </li>
           );
         })}
-        {(!plan.features || plan.features.length === 0) && (
-          <li className="text-gray-500 text-xs italic">Individual unit authentication</li>
-        )}
       </ul>
 
       <button 
@@ -81,7 +71,7 @@ const PricingCard = ({ plan, cycle, isIndia, onChoose }) => {
             : 'bg-white/5 text-white hover:bg-white/10 border border-white/10 shadow-sm'
         }`}
       >
-        Choose Plan
+        Select Tier
       </button>
     </div>
   );
@@ -118,7 +108,9 @@ export default function WebPricing() {
         // Fetch Plans
         getPlans().then(data => {
             const allPlans = data.plans || data;
-            setPlans(allPlans);
+            // Sort plans: Starter -> Growth -> Enterprise
+            const sorted = [...allPlans].sort((a, b) => (a.platformFee || 0) - (b.platformFee || 0));
+            setPlans(sorted);
         }).catch(e => console.error(e));
     }, []);
 
@@ -136,7 +128,7 @@ export default function WebPricing() {
                         Transparent <span className="gradient-text">Pricing</span>
                     </h1>
                     <p className="text-xl text-gray-400 font-bold max-w-2xl mx-auto mb-10 leading-relaxed opacity-80">
-                        Enterprise-grade product authentication. Zero platform fees. Pay only for the protection you use.
+                        Enterprise-grade product authentication. Scalable platform plans. Pay only for the volume you need.
                     </p>
                 </div>
             </section>
@@ -154,6 +146,54 @@ export default function WebPricing() {
                             onChoose={(name) => { setSelectedPlanName(name); setContactOpen(true); }}
                           />
                         ))}
+                    </div>
+
+                    {/* QR Volume Pricing Table */}
+                    <div className="mt-32 max-w-4xl mx-auto">
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-4">QR Code Authentication Pricing</h2>
+                            <p className="text-gray-400 font-bold">Transparent volume-based pricing for your authentication units.</p>
+                        </div>
+                        
+                        <div className="glass-effect rounded-[2.5rem] border border-white/5 overflow-hidden">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="border-b border-white/5 bg-white/5">
+                                        <th className="px-8 py-6 text-xs font-black text-indigo-400 uppercase tracking-widest">Quantity Range</th>
+                                        <th className="px-8 py-6 text-xs font-black text-indigo-400 uppercase tracking-widest text-right">Price per QR</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-white/5 font-bold">
+                                    {(billingConfig?.qrPricingBrackets || [
+                                        { minQuantity: 500, maxQuantity: 5000, pricePerQr: 3 },
+                                        { minQuantity: 5001, maxQuantity: 50000, pricePerQr: 2 },
+                                        { minQuantity: 50001, maxQuantity: null, pricePerQr: 1 }
+                                    ]).map((b, idx) => (
+                                        <tr key={idx} className="hover:bg-white/[0.02] transition-colors group">
+                                            <td className="px-8 py-6 text-white text-sm">
+                                                {b.minQuantity.toLocaleString()} {b.maxQuantity ? `– ${b.maxQuantity.toLocaleString()}` : '+'} units
+                                            </td>
+                                            <td className="px-8 py-6 text-right">
+                                                <span className="text-2xl font-black text-white">{isIndia ? '₹' : '$'}{b.pricePerQr}</span>
+                                                <span className="text-[10px] text-gray-500 uppercase ml-1 tracking-widest">/QR</span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div className="mt-8 flex items-center justify-center gap-6">
+                            <div className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                                <Shield size={14} className="text-indigo-500" /> Secure Generation
+                            </div>
+                            <div className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                                <Zap size={14} className="text-indigo-500" /> Instant Activation
+                            </div>
+                            <div className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                                <Globe size={14} className="text-indigo-500" /> Global Scalability
+                            </div>
+                        </div>
                     </div>
                     
                     <p className="text-center mt-12 text-gray-500 font-black italic opacity-60">

@@ -7,14 +7,17 @@ const planFeatureSchema = new mongoose.Schema({
 
 const cyclePricingSchema = new mongoose.Schema({
     pricePerQr: { type: Number, default: 0 },
+    platformFee: { type: Number, default: 0 }, // New: Fixed platform fee for this cycle
     validity:   { type: String,  default: '-' },
     saveText:   { type: String,  default: '-' },
 }, { _id: false });
 
 const pricePlanSchema = new mongoose.Schema({
     name:          { type: String, required: true, unique: true },
+    description:   { type: String }, // New: Description for the plan
     price:         { type: Number, required: true },
     pricePerQr:    { type: Number, required: true },
+    platformFee:   { type: Number, default: 0 }, // New: Base platform fee
     qrCodes:       { type: String },
     minQrPerOrder: { type: String },
     planValidity:  { type: String },

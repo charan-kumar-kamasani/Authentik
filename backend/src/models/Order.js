@@ -110,6 +110,18 @@ const orderSchema = new mongoose.Schema({
   qrGeneratedCount: { type: Number, default: 0 },
   bonusQuantity: { type: Number, default: 0 },
 
+  // Pricing & Payment
+  amount: { type: Number, default: 0 },
+  subtotal: { type: Number, default: 0 },
+  tax: { type: Number, default: 0 },
+  pricePerQr: { type: Number, default: 0 },
+  paymentStatus: {
+    type: String,
+    enum: ['unpaid', 'pending', 'paid'],
+    default: 'unpaid'
+  },
+  paymentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Payment' },
+
 }, { timestamps: true });
 
 // Performance Indexes

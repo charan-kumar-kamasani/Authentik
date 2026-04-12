@@ -10,6 +10,23 @@ const CreditTransaction = require('../models/CreditTransaction');
 const ProductCoupon = require('../models/ProductCoupon');
 const { generateQrPdf, generateQrPdfStream } = require('../utils/pdfGenerator');
 const { sendOrderStatusEmail } = require('../utils/emailService');
+const { calculateQrPrice } = require('../utils/pricing');
+
+// ... (existing code)
+
+// NEW: GET ORDER PRICE DETAILS
+router.get('/:id/price', protect, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+    
+    // Calculate based on current quantity
+    const pricing = await calculateQrPrice(order.quantity);
+    res.json(pricing);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 // Helper function to get all relevant users for email notifications
 const getNotificationRecipients = async (order) => {
@@ -190,6 +207,11 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
         description: req.body.coupon.description || '',
         expiryDate: req.body.coupon.expiryDate || null,
       } : undefined,
+      // Calculate and save pricing
+      amount: (await calculateQrPrice(quantityNumber)).total,
+      subtotal: (await calculateQrPrice(quantityNumber)).subtotal,
+      tax: (await calculateQrPrice(quantityNumber)).tax,
+      pricePerQr: (await calculateQrPrice(quantityNumber)).pricePerQr,
       history: [{
         status: 'Pending Authorization',
         changedBy: req.user._id,
@@ -274,19 +296,31 @@ router.get('/', protect, async (req, res) => {
       return res.status(403).json({ message: 'Not authorized' });
     }
 
-    const orders = await Order.find(query)
+    let orders = await Order.find(query)
       .populate('createdBy', 'name email role')
       .populate({
         path: 'brandId',
         select: 'brandName companyId',
         populate: {
           path: 'companyId',
-          select: 'companyName courierAddress registerOfficeAddress dispatchAddress'
+          select: 'companyName'
         }
       })
       .sort({ createdAt: -1 })
       .lean();
-      
+
+    // Auto-calculate amounts/breakdowns for orders that are missing them
+    orders = await Promise.all(orders.map(async (o) => {
+      if (!o.subtotal || o.subtotal === 0 || !o.tax || o.tax === 0) {
+        const pricing = await calculateQrPrice(o.quantity);
+        o.amount = pricing.total;
+        o.pricePerQr = pricing.pricePerQr;
+        o.subtotal = pricing.subtotal;
+        o.tax = pricing.tax;
+      }
+      return o;
+    }));
+
     res.json(orders);
   } catch (error) {
     console.error('Get orders error:', error);

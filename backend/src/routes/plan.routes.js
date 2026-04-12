@@ -105,7 +105,7 @@ router.put('/billing-config', protect, superAdminCheck, async (req, res) => {
     try {
         let config = await BillingConfig.findOne();
         if (!config) config = new BillingConfig();
-        const allowed = ['monthlyMultiplier', 'quarterlyMultiplier', 'yearlyMultiplier', 'monthlyLabel', 'quarterlyLabel', 'yearlyLabel'];
+        const allowed = ['monthlyMultiplier', 'quarterlyMultiplier', 'yearlyMultiplier', 'monthlyLabel', 'quarterlyLabel', 'yearlyLabel', 'qrPricingBrackets'];
         allowed.forEach(key => {
             if (req.body[key] !== undefined) config[key] = req.body[key];
         });

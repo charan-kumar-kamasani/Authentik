@@ -47,7 +47,7 @@ async function getPhonePeClient() {
 // Helper: calculate full price breakdown
 async function calculateBreakdown(baseAmount, couponCode) {
     const settings = await Setting.getSettings();
-    const gstPercentage = settings.gstPercentage || 0;
+    const gstPercentage = typeof settings.gstPercentage === 'number' ? settings.gstPercentage : 18;
     const gstAmount = Math.round((baseAmount * gstPercentage) / 100 * 100) / 100;
 
     const charges = [];
@@ -82,8 +82,8 @@ async function calculateBreakdown(baseAmount, couponCode) {
 // ─── Initiate Payment ───
 router.post('/initiate', protect, async (req, res) => {
     try {
-        const { type, planId, quantity, couponCode } = req.body;
-        if (!['plan', 'topup'].includes(type)) return res.status(400).json({ message: 'Invalid payment type' });
+        const { type, planId, orderId, quantity, couponCode } = req.body;
+        if (!['plan', 'topup', 'order'].includes(type)) return res.status(400).json({ message: 'Invalid payment type' });
 
         const user = await User.findById(req.user._id);
         if (!user || !user.companyId) return res.status(400).json({ message: 'User not linked to a company' });
@@ -93,19 +93,25 @@ router.post('/initiate', protect, async (req, res) => {
         let baseAmount = 0;
         let plan = null;
         let topupQty = 0;
+        let order = null;
 
         if (type === 'plan') {
             plan = await PricePlan.findById(planId);
             if (!plan) return res.status(404).json({ message: 'Plan not found' });
             
-            // Calculate price as pricePerQr * number of QR codes
             const qrCount = parseInt(String(plan.qrCodes || '0').replace(/[^\d]/g, ''), 10);
             const pricePerQr = plan.pricePerQr || 0;
             baseAmount = qrCount * pricePerQr;
             
-            if (qrCount <= 0 || baseAmount <= 0) {
-                return res.status(400).json({ message: 'Invalid plan configuration' });
-            }
+            if (qrCount <= 0 || baseAmount <= 0) return res.status(400).json({ message: 'Invalid plan configuration' });
+        } else if (type === 'order') {
+            const Order = require('../models/Order');
+            const { calculateQrPrice } = require('../utils/pricing');
+            order = await Order.findById(orderId);
+            if (!order) return res.status(404).json({ message: 'Order not found' });
+            
+            const pricing = await calculateQrPrice(order.quantity);
+            baseAmount = pricing.amount;
         } else {
             topupQty = parseInt(quantity) || 0;
             if (topupQty <= 0) return res.status(400).json({ message: 'Invalid quantity' });
@@ -133,6 +139,7 @@ router.post('/initiate', protect, async (req, res) => {
             companyId: company._id,
             type,
             planId: plan ? plan._id : null,
+            orderId: order ? order._id : null,
             quantity: topupQty,
             baseAmount,
             gstPercentage: breakdown.gstPercentage,
@@ -255,6 +262,7 @@ async function addCreditsFromPayment(payment, company, user) {
     let creditsToAdd = 0;
 
     if (payment.type === 'plan' && payment.planId) {
+        const PricePlan = require('../models/PricePlan');
         const plan = await PricePlan.findById(payment.planId);
         if (plan && plan.qrCodes) {
             const parsed = parseInt(String(plan.qrCodes).replace(/[^\d]/g, ''), 10);
@@ -262,6 +270,44 @@ async function addCreditsFromPayment(payment, company, user) {
         }
     } else if (payment.type === 'topup') {
         creditsToAdd = payment.quantity || 0;
+    } else if (payment.type === 'order' && payment.orderId) {
+        const Order = require('../models/Order');
+        const order = await Order.findById(payment.orderId);
+        if (order) {
+            order.status = 'Authorized';
+            order.paymentStatus = 'paid';
+            order.paymentId = payment._id;
+            order.amount = payment.baseAmount;
+            // Record rate per QR
+            const { calculateQrPrice } = require('../utils/pricing');
+            const { pricePerQr } = await calculateQrPrice(order.quantity);
+            order.pricePerQr = pricePerQr;
+            
+            order.history.push({
+                status: 'Authorized',
+                changedBy: user._id,
+                role: user.role,
+                comment: `Payment of ₹${payment.finalAmount} completed. Order authorized.`
+            });
+            await order.save();
+            console.log(`✅ Order ${order.orderId} marked as Authorized via payment.`);
+            
+            // For 'order' payment, we don't necessarily "add credits" to the company balance,
+            // we just fulfill the order. But we can still record a transaction for transparency.
+            const txn = await CreditTransaction.create({
+                companyId: company._id,
+                type: 'purchase_topup', // Reusing purchase_topup for simplicity
+                amount: order.quantity,
+                balanceAfter: company.qrCredits, // No change to real credit balance
+                unitPrice: pricePerQr,
+                totalPaid: payment.finalAmount,
+                performedBy: user._id,
+                orderId: order._id,
+                note: `Order ${order.orderId} Payment — ₹${payment.finalAmount}`,
+            });
+            payment.creditTransactionId = txn._id;
+            return { orderAuthorized: true };
+        }
     }
 
     if (creditsToAdd <= 0) return { creditsAdded: 0 };

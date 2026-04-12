@@ -176,6 +176,19 @@ export const getOrderById = async (orderId, token) => {
     }
 };
 
+export const getOrderPrice = async (orderId, token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/orders/${orderId}/price`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch order price');
+        return await response.json();
+    } catch (error) {
+        console.error("Get Order Price Error:", error);
+        throw error;
+    }
+};
+
 export const createStaffUser = async (userData, token) => {
     try {
         const response = await fetch(`${API_BASE_URL}/admin/users/staff`, {

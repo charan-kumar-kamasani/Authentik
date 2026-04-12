@@ -183,7 +183,6 @@ const BillingCredits = () => {
         ...(couponApplied ? { couponCode: couponApplied.code } : {}),
       };
       const result = await initiatePayment(payload, token);
-      await setTimeout(() => {}, 100000000000); // Artificial delay for testing
       console.log("Payment initiation result:", result.redirectUrl);
       if (result.redirectUrl) {
         // PhonePe redirect
@@ -752,10 +751,10 @@ const BillingCredits = () => {
                                       {plan.name}
                                     </div>
                                     <div className="text-3xl font-black text-blue-600 mb-0.5">
-                                      ₹{plan.pricePerQr || 0}
+                                      ₹{(plan.pricing?.monthly?.platformFee || plan.platformFee || 0).toLocaleString()}
                                     </div>
-                                    <div className="text-[10px] font-bold text-slate-500">
-                                      per QR • Yearly
+                                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                                      Platform / Month
                                     </div>
                                     {plan.isPopular && (
                                       <div className="mt-2">
@@ -770,17 +769,32 @@ const BillingCredits = () => {
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-200">
-                            {/* Price per QR */}
+                            {/* Platform Fee */}
                             <tr className="hover:bg-slate-50">
-                              <td className="px-4 py-3 text-xs font-bold text-blue-600 border-r border-slate-200">
-                                Price per QR (Yearly)
+                              <td className="px-4 py-3 text-xs font-bold text-indigo-600 border-r border-slate-200">
+                                Monthly Platform Fee
                               </td>
                               {plans.map((plan) => (
                                 <td
                                   key={plan._id}
                                   className="px-4 py-3 text-center font-bold text-slate-700 text-base border-r border-slate-200 last:border-r-0"
                                 >
-                                  ₹{plan.pricePerQr || 0}
+                                  ₹{(plan.pricing?.monthly?.platformFee || plan.platformFee || 0).toLocaleString()}
+                                </td>
+                              ))}
+                            </tr>
+
+                            {/* Price per QR */}
+                            <tr className="hover:bg-slate-50">
+                              <td className="px-4 py-3 text-xs font-bold text-blue-600 border-r border-slate-200">
+                                QR Authentication Cost
+                              </td>
+                              {plans.map((plan) => (
+                                <td
+                                  key={plan._id}
+                                  className="px-4 py-3 text-center font-bold text-slate-700 text-sm border-r border-slate-200 last:border-r-0 italic"
+                                >
+                                  Volume Pricing
                                 </td>
                               ))}
                             </tr>

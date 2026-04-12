@@ -7,6 +7,11 @@ const billingConfigSchema = new mongoose.Schema({
     monthlyLabel:        { type: String, default: 'Monthly' },
     quarterlyLabel:      { type: String, default: 'Quarterly' },
     yearlyLabel:         { type: String, default: 'Yearly' },
+    qrPricingBrackets: [{
+        minQuantity: { type: Number, required: true },
+        maxQuantity: { type: Number }, // If null, means max infinity
+        pricePerQr:  { type: Number, required: true }
+    }]
 }, { timestamps: true });
 
 // Singleton pattern — only one config doc ever

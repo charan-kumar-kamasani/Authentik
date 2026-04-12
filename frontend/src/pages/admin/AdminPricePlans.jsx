@@ -59,14 +59,9 @@ export default function AdminPricePlans() {
   const [planModal, setPlanModal] = useState(false);
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState({
-    name: "",
-    pricePerQr: 0,
-    qrCodes: "",
-    minQrPerOrder: "",
-    planValidity: "",
-    isPopular: false,
-    isTrial: false,
-    saveText: "",
+    formVal: [],
+    platformFee: 0,
+    description: "",
     pricing: {
       monthly: emptyCyclePricing(),
       quarterly: emptyCyclePricing(),
@@ -136,6 +131,14 @@ export default function AdminPricePlans() {
     return plan.saveText || "-";
   };
 
+  // Get the platform fee for a plan for the active cycle
+  const getPlanPlatformFee = (plan) => {
+    const cp = plan.pricing?.[cycle];
+    if (cp && cp.platformFee !== undefined && cp.platformFee !== null)
+      return cp.platformFee;
+    return plan.platformFee ?? 0;
+  };
+
   /* ─── Config ─── */
   const saveConfig = async () => {
     setConfigSaving(true);
@@ -196,14 +199,8 @@ export default function AdminPricePlans() {
     if (plan) {
       setEditId(plan._id);
       setForm({
-        name: plan.name,
-        pricePerQr: plan.pricePerQr,
-        qrCodes: plan.qrCodes || "",
-        minQrPerOrder: plan.minQrPerOrder || "",
-        planValidity: plan.planValidity || "",
-        isPopular: plan.isPopular,
-        isTrial: plan.isTrial || false,
-        saveText: plan.saveText || "",
+        platformFee: plan.platformFee || 0,
+        description: plan.description || "",
         pricing: {
           monthly: plan.pricing?.monthly || emptyCyclePricing(),
           quarterly: plan.pricing?.quarterly || emptyCyclePricing(),
@@ -418,11 +415,11 @@ export default function AdminPricePlans() {
                   <div className="mt-3 flex items-baseline justify-center gap-0.5">
                     <span className="text-lg font-bold opacity-80">₹</span>
                     <span className="text-5xl font-black tracking-tighter">
-                      {price}
+                      {(getPlanPlatformFee(plan) || 0).toLocaleString()}
                     </span>
                   </div>
-                  <div className="text-sm opacity-80 font-semibold mt-1">
-                    per QR Code
+                  <div className="text-sm opacity-80 font-semibold mt-1 uppercase tracking-widest text-[10px]">
+                    Platform Fee &middot; {cycleLabel(cycle)}
                   </div>
                   {save && save !== "-" && (
                     <div className="mt-3 bg-yellow-400 text-yellow-900 text-[10px] font-black px-2.5 py-1 rounded-md inline-block uppercase tracking-wide">
@@ -452,6 +449,12 @@ export default function AdminPricePlans() {
                         {validity && validity !== "-"
                           ? `${validity} days`
                           : "-"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-blue-600">
+                      <span className="text-blue-500 font-bold">QR Price</span>
+                      <span className="font-black">
+                        ₹{getPlanPrice(plan)} / QR
                       </span>
                     </div>
                   </div>
@@ -562,10 +565,10 @@ export default function AdminPricePlans() {
                             <span className="text-sm opacity-80 font-bold">
                               ₹
                             </span>
-                            <span className="text-3xl font-black">{price}</span>
+                            <span className="text-3xl font-black">{(getPlanPlatformFee(plan) || 0).toLocaleString()}</span>
                           </div>
                           <div className="text-[10px] opacity-75 font-bold mt-0.5">
-                            per QR &middot; {cycleLabel(cycle)}
+                            Platform Fee &middot; {cycleLabel(cycle)}
                           </div>
                           {save && save !== "-" && (
                             <div className="text-[9px] font-black bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded mt-2 inline-block uppercase">
@@ -595,15 +598,29 @@ export default function AdminPricePlans() {
                 </tr>
               </thead>
               <tbody>
-                {/* Price per QR (cycle) */}
                 <tr className="border-b border-slate-100/50 bg-blue-50/20">
                   <td className="px-5 py-3.5 border-r border-slate-100 bg-blue-50/40 text-sm font-bold text-blue-700 sticky left-0 backdrop-blur-sm">
-                    Price per QR ({cycleLabel(cycle)})
+                    Monthly Platform Fee ({cycleLabel(cycle)})
                   </td>
                   {plans.map((plan) => (
                     <td
                       key={plan._id}
                       className={`px-5 py-3.5 text-center text-sm font-black text-blue-700 ${plan.isPopular ? "bg-purple-50/10" : ""}`}
+                    >
+                      ₹{(getPlanPlatformFee(plan) || 0).toLocaleString()}
+                    </td>
+                  ))}
+                </tr>
+
+                {/* Price per QR (cycle) */}
+                <tr className="border-b border-slate-100/50 hover:bg-slate-50/50 transition-colors capitalize">
+                  <td className="px-5 py-3.5 border-r border-slate-100 bg-slate-50/80 text-xs font-bold text-slate-500 sticky left-0 backdrop-blur-sm">
+                    Price per QR ({cycleLabel(cycle)})
+                  </td>
+                  {plans.map((plan) => (
+                    <td
+                      key={plan._id}
+                      className={`px-5 py-3.5 text-center text-sm font-black text-slate-700 ${plan.isPopular ? "bg-purple-50/5" : ""}`}
                     >
                       ₹{getPlanPrice(plan)}
                     </td>
@@ -968,6 +985,23 @@ export default function AdminPricePlans() {
                           </div>
                           <div>
                             <label className="block text-[10px] font-black uppercase text-slate-500 tracking-wider mb-1">
+                              Platform Fee (₹)
+                            </label>
+                            <input
+                              type="number"
+                              value={cp.platformFee ?? 0}
+                              onChange={(e) =>
+                                setCF(
+                                  cyc,
+                                  "platformFee",
+                                  parseFloat(e.target.value) || 0,
+                                )
+                              }
+                              className="w-full p-2 bg-white border border-slate-200 rounded-lg font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-black uppercase text-slate-500 tracking-wider mb-1">
                               Validity (Days)
                             </label>
                             <input
@@ -997,6 +1031,19 @@ export default function AdminPricePlans() {
                     );
                   })}
                 </div>
+              </div>
+
+              {/* Description */}
+              <div>
+                 <label className="block text-xs font-bold uppercase text-slate-500 mb-1.5">
+                    Plan Description
+                 </label>
+                 <textarea
+                    value={form.description}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none h-20"
+                    placeholder="Brief description of the plan..."
+                 />
               </div>
 
               {/* Toggles */}
@@ -1161,6 +1208,7 @@ export default function AdminPricePlans() {
                 </div>
               ))}
             </div>
+
             <button
               onClick={saveConfig}
               disabled={configSaving}
