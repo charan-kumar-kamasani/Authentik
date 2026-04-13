@@ -33,7 +33,7 @@ async function getPhonePeClient() {
             console.warn('⚠️ PhonePe credentials not configured');
             return null;
         }
-        
+
         console.log(`🔧 PhonePe initializing: ${process.env.PHONEPE_ENV} mode, Client ID: ${clientId.slice(0, 6)}...`);
 
         phonePeClient = StandardCheckoutClient.getInstance(clientId, clientSecret, apiVersion, env);
@@ -47,7 +47,7 @@ async function getPhonePeClient() {
 // Helper: calculate full price breakdown
 async function calculateBreakdown(baseAmount, couponCode) {
     const settings = await Setting.getSettings();
-    const gstPercentage = typeof settings.gstPercentage === 'number' ? settings.gstPercentage : 18;
+    const gstPercentage = typeof settings.gstPercentage === 'number' ? settings.gstPercentage : 0;
     const gstAmount = Math.round((baseAmount * gstPercentage) / 100 * 100) / 100;
 
     const charges = [];
@@ -98,18 +98,18 @@ router.post('/initiate', protect, async (req, res) => {
         if (type === 'plan') {
             plan = await PricePlan.findById(planId);
             if (!plan) return res.status(404).json({ message: 'Plan not found' });
-            
+
             const qrCount = parseInt(String(plan.qrCodes || '0').replace(/[^\d]/g, ''), 10);
             const pricePerQr = plan.pricePerQr || 0;
             baseAmount = qrCount * pricePerQr;
-            
+
             if (qrCount <= 0 || baseAmount <= 0) return res.status(400).json({ message: 'Invalid plan configuration' });
         } else if (type === 'order') {
             const Order = require('../models/Order');
             const { calculateQrPrice } = require('../utils/pricing');
             order = await Order.findById(orderId);
             if (!order) return res.status(404).json({ message: 'Order not found' });
-            
+
             const pricing = await calculateQrPrice(order.quantity);
             baseAmount = pricing.amount;
         } else {
@@ -119,18 +119,18 @@ router.post('/initiate', protect, async (req, res) => {
         }
 
         const breakdown = await calculateBreakdown(baseAmount, couponCode);
-        
+
         // Check if this company is a test account
         const testAccount = await TestAccount.findOne({ companyId: company._id, isActive: true });
         let actualPaymentAmount = breakdown.finalAmount;
         let isTestPayment = false;
-        
+
         if (testAccount) {
             actualPaymentAmount = testAccount.testAmount;
             isTestPayment = true;
             console.log(`🧪 Test account detected: ${company.companyName} - Using test amount: ₹${testAccount.testAmount}`);
         }
-        
+
         // Generate merchantOrderId (max 63 chars, only alphanumeric, _ and -)
         const merchantOrderId = 'ORD_' + randomUUID().replace(/-/g, '').slice(0, 16).toUpperCase();
 
@@ -158,12 +158,12 @@ router.post('/initiate', protect, async (req, res) => {
         if (client && actualPaymentAmount > 0) {
             try {
                 const amountInPaise = Math.round(actualPaymentAmount * 100);
-                
+
                 // PhonePe requires minimum 100 paise (₹1)
                 if (amountInPaise < 100) {
                     throw new Error('Minimum amount is ₹1');
                 }
-                
+
                 const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5175'}/admin/billing?payment=${merchantOrderId}`;
 
                 // Note: callbackUrl is configured in PhonePe dashboard, not sent in request
@@ -195,11 +195,11 @@ router.post('/initiate', protect, async (req, res) => {
                 });
             } catch (phonePeErr) {
                 console.error('❌ PhonePe pay error:', phonePeErr.message);
-                console.error('❌ PhonePe error details:', { 
-                    type: phonePeErr.type, 
-                    code: phonePeErr.code, 
+                console.error('❌ PhonePe error details:', {
+                    type: phonePeErr.type,
+                    code: phonePeErr.code,
                     httpStatusCode: phonePeErr.httpStatusCode,
-                    data: phonePeErr.data 
+                    data: phonePeErr.data
                 });
                 // Mark payment as failed and do NOT auto-complete or add credits
                 payment.status = 'failed';
@@ -282,7 +282,7 @@ async function addCreditsFromPayment(payment, company, user) {
             const { calculateQrPrice } = require('../utils/pricing');
             const { pricePerQr } = await calculateQrPrice(order.quantity);
             order.pricePerQr = pricePerQr;
-            
+
             order.history.push({
                 status: 'Authorized',
                 changedBy: user._id,
@@ -291,7 +291,7 @@ async function addCreditsFromPayment(payment, company, user) {
             });
             await order.save();
             console.log(`✅ Order ${order.orderId} marked as Authorized via payment.`);
-            
+
             // For 'order' payment, we don't necessarily "add credits" to the company balance,
             // we just fulfill the order. But we can still record a transaction for transparency.
             const txn = await CreditTransaction.create({

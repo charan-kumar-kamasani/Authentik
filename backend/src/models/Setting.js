@@ -8,7 +8,7 @@ const additionalChargeSchema = new mongoose.Schema({
 }, { _id: true });
 
 const settingSchema = new mongoose.Schema({
-    gstPercentage:     { type: Number, default: 18, min: 0, max: 100 },
+    gstPercentage:     { type: Number, default: 0, min: 0, max: 100 },
     additionalCharges: [additionalChargeSchema],
 }, { timestamps: true });
 

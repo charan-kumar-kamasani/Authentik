@@ -1008,7 +1008,7 @@ const UserManagement = () => {
                 required={false} 
               />
               <InputGroup 
-                label="CIN / GST Number" 
+                label="CIN Number" 
                 placeholder="Registration ID" 
                 value={editingBrand ? brandForm.cinGst : companyForm.cinGst} 
                 onChange={(v) => editingBrand ? setBrandForm({ ...brandForm, cinGst: v }) : setCompanyForm({ ...companyForm, cinGst: v })} 

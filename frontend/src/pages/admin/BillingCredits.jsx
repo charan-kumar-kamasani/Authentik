@@ -1236,17 +1236,7 @@ const BillingCredits = () => {
                             </span>
                           </div>
                           {/* GST */}
-                          {priceBreakdown.gstAmount > 0 && (
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="font-medium text-slate-600 flex items-center gap-1">
-                                <Percent size={12} className="text-slate-400" />{" "}
-                                GST ({priceBreakdown.gstPercentage}%)
-                              </span>
-                              <span className="font-bold text-slate-700">
-                                + ₹{priceBreakdown.gstAmount?.toLocaleString()}
-                              </span>
-                            </div>
-                          )}
+                          {/* GST Row Removed */}
                           {/* Additional Charges */}
                           {(priceBreakdown.additionalCharges || []).map(
                             (ch, idx) => (

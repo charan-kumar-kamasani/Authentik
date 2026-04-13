@@ -678,15 +678,7 @@ export default function AdminTransactions() {
                                   )}
 
                                   {/* GST */}
-                                  {t.payment.gstAmount > 0 && (
-                                    <div>
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <Receipt size={13} className="text-slate-400" />
-                                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">GST</span>
-                                      </div>
-                                      <p className="text-sm font-semibold text-slate-700">₹{t.payment.gstAmount.toLocaleString()}</p>
-                                    </div>
-                                  )}
+                                  {/* GST Row Removed */}
 
                                   {/* Final Amount */}
                                   <div>

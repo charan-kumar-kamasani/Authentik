@@ -7,7 +7,7 @@ import TablePagination from '../../components/TablePagination';
 import {
   Package, Search, Filter, X, Plus, Truck, CheckCircle2, Clock, Settings, ShieldCheck,
   FileDown, PackageCheck, AlertTriangle, ArrowRight, Hash, Calendar, ChevronRight, XCircle, Send,
-  CreditCard, Zap, Coins, ShoppingCart, Loader2, Percent, IndianRupee, Gift, Receipt, AlertCircle, Tag, Eye, ChevronDown, User, Edit
+  CreditCard, Zap, Coins, ShoppingCart, Loader2, Percent, IndianRupee, Gift, Receipt, AlertCircle, Tag, Eye, ChevronDown, User, Edit, Smartphone
 } from 'lucide-react';
 
 
@@ -138,10 +138,7 @@ const PaymentOverviewModal = ({ order, priceData, onConfirm, onClose, isProcessi
                 <span>Subtotal</span>
                 <span>₹{priceData.subtotal}</span>
              </div>
-             <div className="flex justify-between items-center text-xs font-semibold text-slate-500">
-                <span>GST (18%)</span>
-                <span>₹{priceData.tax}</span>
-             </div>
+             {/* GST Row Removed */}
              <div className="flex justify-between items-center pt-4 mt-2 border-t-2 border-dashed border-slate-200">
                 <span className="text-base font-black text-slate-800 uppercase tracking-tight">Total Amount</span>
                 <span className="text-2xl font-black text-indigo-600 tracking-tighter">₹{priceData.total}</span>
@@ -176,6 +173,8 @@ const PaymentOverviewModal = ({ order, priceData, onConfirm, onClose, isProcessi
   );
 };
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://authentik-8p39.vercel.app';
+
 const OrderManagement = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
@@ -194,6 +193,8 @@ const OrderManagement = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [creatorSubmitting, setCreatorSubmitting] = useState(false);
   const [userPlan, setUserPlan] = useState(null);
+  const [mobilePreviewOrder, setMobilePreviewOrder] = useState(null);
+  const [globalFieldLabels, setGlobalFieldLabels] = useState({});
 
   // Credit modal state
   const [creditModal, setCreditModal] = useState(null); // { orderId, required, available, shortfall, topupCostPerQr, topupTotalCost }
@@ -216,6 +217,7 @@ const OrderManagement = () => {
 
   useEffect(() => {
     fetchOrders();
+    fetchFormConfigLabels();
     const adminRole = localStorage.getItem('adminRole');
     if (adminRole) { setRole(adminRole); return; }
     const userStr = localStorage.getItem('userInfo');
@@ -230,6 +232,38 @@ const OrderManagement = () => {
     }
     else { setRole(localStorage.getItem('role') || ''); }
   }, []);
+
+  const fetchFormConfigLabels = async () => {
+    try {
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      const res = await fetch(`${API_BASE_URL}/admin/form-config`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.formConfig) {
+          const dict = {};
+          if (data.formConfig.customFields) {
+            data.formConfig.customFields.forEach(f => {
+              if (f.fieldName && f.fieldLabel) {
+                 dict[f.fieldName.toLowerCase()] = f.fieldLabel;
+              }
+            });
+          }
+          if (data.formConfig.variants) {
+            data.formConfig.variants.forEach(f => {
+              if (f.variantName && f.variantLabel) {
+                 dict[f.variantName.toLowerCase()] = f.variantLabel;
+              }
+            });
+          }
+          setGlobalFieldLabels(dict);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to fetch FormConfig to resolve labels:', e);
+    }
+  };
 
   const fetchUserProfile = async () => {
     try {
@@ -869,10 +903,6 @@ const OrderManagement = () => {
                                 <span className="font-bold text-slate-500">Subtotal:</span>
                                 <span className="font-bold text-slate-700">₹{(order.subtotal || 0).toLocaleString()}</span>
                               </div>
-                              <div className="flex justify-between items-center text-xs text-indigo-600">
-                                <span className="font-bold">GST (18%):</span>
-                                <span className="font-bold">₹{(order.tax || 0).toLocaleString()}</span>
-                              </div>
                               <div className="h-px bg-slate-200 my-1" />
                               <div className="flex justify-between items-center">
                                 <span className="text-[10px] font-black uppercase text-slate-400">Total Amount:</span>
@@ -920,12 +950,36 @@ const OrderManagement = () => {
                           <div className="mt-4 pt-4 border-t border-slate-100">
                             <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2">Custom Fields</h4>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                              {Object.entries(order.dynamicFields).map(([key, val]) => (
-                                <div key={key} className="bg-slate-50 rounded-lg p-2 border border-slate-100">
-                                  <div className="text-[10px] font-bold text-slate-400 uppercase">{key}</div>
-                                  <div className="text-sm font-medium text-slate-700 truncate">{String(val)}</div>
-                                </div>
-                              ))}
+                              {Object.entries(order.dynamicFields).map(([key, val]) => {
+                                const formatLabel = (k) => {
+                                  if (!k) return '';
+                                  const lowerK = k.toLowerCase();
+                                  if (globalFieldLabels[lowerK]) return globalFieldLabels[lowerK];
+                                  
+                                  if (lowerK.startsWith('field_')) return "Product Detail";
+                                  if (lowerK.startsWith('variant_')) return "Specification";
+                                  
+                                  const manualMap = {
+                                    "marketedby": "Marketed By",
+                                    "manufacturedby": "Manufactured By",
+                                    "countryoforigin": "Country of Origin",
+                                    "customercare": "Customer Care"
+                                  };
+                                  if (manualMap[lowerK]) return manualMap[lowerK];
+                                  if (k.includes(' ')) return k.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+                                  if (k !== k.toUpperCase()) {
+                                    const result = k.replace(/([A-Z])/g, " $1");
+                                    return result.charAt(0).toUpperCase() + result.slice(1).trim();
+                                  }
+                                  return k.charAt(0).toUpperCase() + k.slice(1).toLowerCase();
+                                };
+                                return (
+                                  <div key={key} className="bg-slate-50 rounded-lg p-2 border border-slate-100">
+                                    <div className="text-[10px] font-bold text-slate-400 uppercase">{formatLabel(key)}</div>
+                                    <div className="text-sm font-medium text-slate-700 truncate">{String(val)}</div>
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
                         )}
@@ -953,6 +1007,26 @@ const OrderManagement = () => {
                             </div>
                           </div>
                         )}
+
+                        {/* Consumer Mobile Scan Preview Button */}
+                        <div className="mt-6 pt-5 border-t-2 border-dashed border-slate-200 flex justify-end">
+                          <button
+                            onClick={() => setMobilePreviewOrder({ ...order, 
+                              productName: order.productName,
+                              productImage: order.productImage,
+                              brand: order.brand || order.brandId?.brandName || '-',
+                              companyName: order.brandId?.companyId?.companyName || '-',
+                              description: order.description || order.productInfo,
+                              mfdOn: order.mfdOn,
+                              expiryDate: order.expiryDate || order.calculatedExpiryDate,
+                              dynamicFields: order.dynamicFields,
+                              variants: order.variants
+                            })}
+                            className="px-6 py-3 bg-gradient-to-r from-[#0E5CAB] to-[#1F2642] text-white rounded-xl text-sm font-black flex items-center gap-2 hover:shadow-lg hover:shadow-blue-500/20 transition-all uppercase tracking-widest active:scale-95"
+                          >
+                            <Smartphone size={16} /> Original Scan Preview
+                          </button>
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -1334,14 +1408,7 @@ const OrderManagement = () => {
                           <span className="font-medium text-slate-600">Base Amount</span>
                           <span className="font-bold text-slate-800">₹{creditPriceBreakdown.baseAmount?.toLocaleString()}</span>
                         </div>
-                        {creditPriceBreakdown.gstAmount > 0 && (
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="font-medium text-slate-600 flex items-center gap-1">
-                              <Percent size={12} className="text-slate-400" /> GST ({creditPriceBreakdown.gstPercentage}%)
-                            </span>
-                            <span className="font-bold text-slate-700">+ ₹{creditPriceBreakdown.gstAmount?.toLocaleString()}</span>
-                          </div>
-                        )}
+                        {/* GST Row Removed */}
                         {(creditPriceBreakdown.additionalCharges || []).map((ch, idx) => (
                           <div key={idx} className="flex items-center justify-between text-sm">
                             <span className="font-medium text-slate-600 flex items-center gap-1">
@@ -1531,6 +1598,138 @@ const OrderManagement = () => {
           onConfirm={handleOrderPayment}
           isProcessing={payingOrder}
         />
+      )}
+
+      {/* --- Consumer Mobile Preview Modal --- */}
+      {mobilePreviewOrder && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+          <div className="relative w-full max-w-[375px] h-[750px] max-h-[90vh] bg-[#F5F5F5] rounded-[2.5rem] shadow-2xl overflow-y-auto border-[10px] border-slate-800 flex flex-col hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {/* Notch */}
+            <div className="absolute top-0 inset-x-0 h-5 bg-slate-800 rounded-b-2xl w-1/2 mx-auto z-50"></div>
+            
+            {/* Header */}
+            <div className="w-full flex items-center justify-center p-4 bg-white sticky top-0 z-40 shadow-sm/50 pt-8">
+              <h1 className="text-[18px] font-bold text-[#0D4E96] tracking-tight">Authentiks</h1>
+              <button 
+                onClick={() => setMobilePreviewOrder(null)} 
+                className="absolute right-4 top-7 w-7 h-7 flex items-center justify-center bg-slate-100 text-slate-500 rounded-full hover:bg-slate-200 transition-colors"
+                title="Close Emulator"
+              >
+                <X size={14} strokeWidth={3} />
+              </button>
+            </div>
+
+            <div className="w-full flex flex-col pb-6">
+              {/* Authentic Status Card */}
+              <div className="bg-[#2CA4D6] p-3 text-center text-white relative shadow-sm z-10 mx-3 mt-3 rounded-t-[14px]">
+                <div className="flex flex-row justify-center items-center gap-3">
+                  <div className="bg-white rounded-full p-1.5">
+                    <ShieldCheck size={24} className="text-[#2CA4D6] fill-white" />
+                  </div>
+                  <div className="text-left">
+                    <h2 className="text-[16px] font-bold leading-tight">Authentic Product</h2>
+                    <p className="text-[11px] opacity-90 font-medium">This product has been verified as genuine</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className="bg-white shadow-sm rounded-b-[14px] mx-3">
+                <div className="bg-white pb-5 flex flex-col items-center relative gap-3 rounded-b-[14px]">
+                  <div className="w-full bg-[#1F2642] py-2 text-center">
+                    <h3 className="text-white font-bold text-[18px] px-2 truncate leading-tight">{mobilePreviewOrder.productName}</h3>
+                  </div>
+                  <div className="relative h-[200px] w-[90%] rounded-[1.5rem] mt-2 mx-auto overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 shadow-md border-4 border-white flex items-center justify-center">
+                    {mobilePreviewOrder.productImage ? (
+                      <img src={mobilePreviewOrder.productImage} className="w-full h-full object-contain" alt="Product" />
+                    ) : (
+                      <span className="text-slate-300 font-bold text-sm">No Image</span>
+                    )}
+                  </div>
+                  
+                  {/* Grid Fields */}
+                  <div className="w-full px-4 pt-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="bg-[#F0F7FF] rounded-xl flex items-center justify-start gap-3 p-3 border border-[#e5f0fa]">
+                         <div className="flex-1 w-full flex flex-col items-start gap-0"><span className="text-[#0D4E96] text-[9px] font-black uppercase tracking-widest opacity-60">Brand</span><span className="text-[#0D4E96] text-[13px] font-black tracking-tight">{mobilePreviewOrder.brand}</span></div>
+                      </div>
+                      {mobilePreviewOrder.mfdOn && (
+                        <div className="bg-[#F0F7FF] rounded-xl flex items-center justify-start gap-3 p-3 border border-[#e5f0fa]">
+                           <div className="flex-1 w-full flex flex-col items-start gap-0"><span className="text-[#0D4E96] text-[9px] font-black uppercase tracking-widest opacity-60">Mfd on</span><span className="text-[#0D4E96] text-[13px] font-black tracking-tight">{mobilePreviewOrder.mfdOn?.month} {mobilePreviewOrder.mfdOn?.year}</span></div>
+                        </div>
+                      )}
+                      {(mobilePreviewOrder.variants || []).slice(0,2).map((val, idx) => (
+                        <div key={idx} className="bg-[#F0F7FF] rounded-xl flex items-center justify-start gap-3 p-3 border border-[#e5f0fa]">
+                           <div className="flex-1 w-full flex flex-col items-start gap-0"><span className="text-[#0D4E96] text-[9px] font-black uppercase tracking-widest opacity-60 truncate w-full">{val.variantName}</span><span className="text-[#0D4E96] text-[13px] font-black tracking-tight truncate w-full">{val.value}</span></div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Additional Info */}
+                    <div className="mt-5 border-t border-gray-100 pt-3 mb-3">
+                      <h4 className="text-[#333] font-bold text-[12px] mb-2 ml-1 uppercase tracking-tight">Additional Info:</h4>
+                      <div className="bg-[#F2F2F2] p-3 rounded-[16px] shadow-sm space-y-3 border border-gray-200/50">
+                        {mobilePreviewOrder.description && (
+                          <div className="mb-3">
+                            <p className="text-[#444] text-[12px] font-medium whitespace-pre-wrap leading-relaxed">{mobilePreviewOrder.description}</p>
+                          </div>
+                        )}
+                        <div className="space-y-2">
+                          <div className="border-b border-gray-300/30 pb-2">
+                             <p className="text-[#333] text-[10px] font-bold uppercase tracking-wider opacity-60 mb-0.5">Manufactured By</p>
+                             <p className="text-[#0D4E96] text-[12px] font-bold">{mobilePreviewOrder.companyName}</p>
+                          </div>
+                          {Object.entries(mobilePreviewOrder.dynamicFields || {}).filter(([k]) => !k.toLowerCase().includes('quantity') && !k.toLowerCase().includes('sku')).map(([k, v], idx) => {
+                            const formatLabel = (key) => {
+                              if (!key) return '';
+                              const lowerK = key.toLowerCase();
+                              if (globalFieldLabels[lowerK]) return globalFieldLabels[lowerK];
+                              
+                              if (lowerK.startsWith('field_')) return "Product Detail";
+                              if (lowerK.startsWith('variant_')) return "Specification";
+                              
+                              const manualMap = {
+                                "marketedby": "Marketed By",
+                                "manufacturedby": "Manufactured By",
+                                "countryoforigin": "Country of Origin",
+                                "customercare": "Customer Care"
+                              };
+                              if (manualMap[lowerK]) return manualMap[lowerK];
+
+                              if (key.includes(' ')) {
+                                return key.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+                              }
+
+                              if (key !== key.toUpperCase()) {
+                                const result = key.replace(/([A-Z])/g, " $1");
+                                return result.charAt(0).toUpperCase() + result.slice(1).trim();
+                              }
+
+                              return key.charAt(0).toUpperCase() + key.slice(1).toLowerCase();
+                            };
+                            return (
+                              <div key={idx} className="border-b border-gray-300/30 pb-2 last:border-0 last:pb-0">
+                                 <p className="text-[#333] text-[10px] font-bold uppercase tracking-wider opacity-60 mb-0.5">{formatLabel(k)}</p>
+                                 <p className="text-[#0D4E96] text-[12px] font-bold max-w-full break-words">{typeof v === 'object' ? `${v?.month || ''} ${v?.year || ''}` : String(v)}</p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="px-4 pb-5">
+                  <button className="w-full bg-gradient-to-r from-[#0E5CAB] to-[#1F2642] opacity-50 cursor-not-allowed text-white font-bold text-[14px] py-3 rounded-2xl shadow-sm mt-1 flex items-center justify-center gap-2">
+                    Review Product
+                  </button>
+                  <p className="text-center text-[9px] text-slate-400 font-bold mt-2.5 uppercase tracking-widest">Simulator Mode - View Only</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -45,7 +45,7 @@ const calculateQrPrice = async (quantity) => {
     // Get GST percentage from settings
     const Setting = require('../models/Setting');
     const settings = await Setting.getSettings();
-    const gstPercentage = settings.gstPercentage || 18;
+    const gstPercentage = typeof settings.gstPercentage === 'number' ? settings.gstPercentage : 18;
 
     const subtotal = Math.round(quantity * pricePerQr * 100) / 100;
     const tax = Math.round((subtotal * gstPercentage) / 100 * 100) / 100;

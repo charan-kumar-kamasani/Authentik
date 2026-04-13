@@ -19,7 +19,7 @@ export default function AdminSettings() {
   const [toast, setToast] = useState(null);
 
   // Tax & Charges state
-  const [gstPercentage, setGstPercentage] = useState(18);
+  const [gstPercentage, setGstPercentage] = useState(0);
   const [charges, setCharges] = useState([]);
 
   // Coupons state
@@ -38,7 +38,7 @@ export default function AdminSettings() {
         getSettings(),
         getCoupons(token).catch(() => []),
       ]);
-      setGstPercentage(settingsData.gstPercentage ?? 18);
+      setGstPercentage(settingsData.gstPercentage ?? 0);
       setCharges(settingsData.additionalCharges || []);
       setCoupons(couponsData || []);
     } catch (err) {
@@ -160,7 +160,8 @@ export default function AdminSettings() {
       {/* ═══════════════ TAX & CHARGES TAB ═══════════════ */}
       {tab === 'tax' && (
         <div className="space-y-5">
-          {/* GST Card */}
+          {/* GST Card removed for now */}
+          {false && (
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-3">
               <div className="w-1.5 h-6 bg-indigo-500 rounded-full" />
@@ -184,6 +185,7 @@ export default function AdminSettings() {
               </div>
             </div>
           </div>
+          )}
 
           {/* Additional Charges Card */}
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
