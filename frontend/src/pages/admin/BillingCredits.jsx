@@ -185,13 +185,8 @@ const BillingCredits = () => {
       const result = await initiatePayment(payload, token);
       console.log("Payment initiation result:", result.redirectUrl);
       if (result.redirectUrl) {
-        // PhonePe redirect
-        const a = document.createElement("a");
-        a.href = result.redirectUrl;
-        a.target = "_self";
-        a.rel = "noopener noreferrer";
-        document.body.appendChild(a);
-        a.click();
+        // PhonePe redirect — use window.location.href to preserve referrer
+        window.location.href = result.redirectUrl;
         return;
       }
 
