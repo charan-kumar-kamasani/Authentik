@@ -1,91 +1,33 @@
 import React, { useEffect, useState } from "react";
 import { getPlans, getBillingConfig } from '../../config/api';
-import { Check, Shield, Zap, TrendingUp, Globe, Star, X } from "lucide-react";
+import { 
+    Check, Shield, Zap, TrendingUp, Globe, Star, X,
+    Users, BarChart3, Repeat, AlertTriangle, QrCode, Lock, ArrowRight,
+    Package, Truck, Smartphone, Gift
+} from "lucide-react";
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
 
+/* ═══════════════════════ REUSABLE COMPONENTS ═══════════════════════ */
+
 const Glow = ({ color, className }) => (
-  <div className={`glow-bg h-64 w-64 ${color} ${className}`} />
+  <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
 );
 
-const PricingCard = ({ plan, cycle, isIndia, onChoose }) => {
-  const currentPricing = plan.pricing?.[cycle] || {};
-  const platformFee = currentPricing.platformFee || plan.platformFee || 0;
-  // Note: For display, we can show the platform fee as the primary cost and QR price as additional
-  const isPopular = plan.isPopular;
-
-  return (
-    <div className={`glass-effect p-8 rounded-[2.5rem] flex flex-col relative overflow-hidden transition-all duration-500 hover:scale-[1.02] border border-white/5 ${isPopular ? 'border-indigo-500/50 ring-1 ring-indigo-500/20 shadow-[0_0_40px_rgba(99,102,241,0.1)]' : ''}`}>
-      {isPopular && (
-        <div className="absolute top-0 right-0 bg-gradient-to-l from-indigo-600 to-violet-600 text-white text-[10px] font-black uppercase px-5 py-1.5 rounded-bl-2xl tracking-widest shadow-lg">
-          Most Popular
-        </div>
-      )}
-      
-      <div className="mb-8">
-        <h3 className="text-xl font-black text-white uppercase tracking-tighter mb-1">{plan.name}</h3>
-        <p className="text-gray-500 text-[10px] font-black uppercase tracking-widest mb-4">Platform Subscription</p>
-        
-        <div className="flex items-baseline gap-1">
-          <span className="text-5xl font-black text-white tracking-tighter">{isIndia ? `₹${(platformFee || 0).toLocaleString()}` : `$${(platformFee || 0).toLocaleString()}`}</span>
-          <span className="text-gray-500 text-sm font-bold">/month</span>
-        </div>
-        
-        <div className="mt-4 p-3 bg-white/5 rounded-2xl border border-white/5 inline-block">
-          <p className="text-[10px] text-indigo-400 font-black uppercase tracking-widest mb-1">QR Authentication</p>
-          <p className="text-xs text-gray-300 font-bold">Volume-based pricing applies</p>
-        </div>
-      </div>
-
-      <ul className="space-y-4 mb-10 flex-grow">
-        {plan.features?.map((f, i) => {
-          const val = f.value;
-          const name = f.featureId?.name;
-          if (!name) return null;
-          
-          const isCheck = val === true || val === "true";
-          const isCross = !val || val === false || val === "false";
-          
-          return (
-            <li key={i} className={`flex items-start gap-3 text-sm font-bold ${isCross ? 'text-gray-600' : 'text-gray-300'}`}>
-              {isCross ? (
-                <X size={18} className="text-gray-600 shrink-0 mt-0.5" />
-              ) : (
-                <Check size={18} className="text-indigo-400 shrink-0 mt-0.5" />
-              )}
-              <span className={isCross ? 'line-through opacity-70' : ''}>
-                {name}
-                {(!isCheck && !isCross) && <span className="ml-1 text-indigo-400/80 font-black tracking-tight">: {val}</span>}
-              </span>
-            </li>
-          );
-        })}
-      </ul>
-
-      <button 
-        onClick={() => onChoose(plan.name)} 
-        className={`w-full py-4 rounded-2xl font-black uppercase tracking-widest text-xs transition-all active:scale-95 ${
-          isPopular 
-            ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white hover:shadow-[0_0_25px_rgba(99,102,241,0.4)] shadow-lg shadow-indigo-500/20' 
-            : 'bg-white/5 text-white hover:bg-white/10 border border-white/10 shadow-sm'
-        }`}
-      >
-        Select Tier
-      </button>
-    </div>
-  );
-};
-
-const FeatureItem = ({ icon: Icon, title, description }) => (
-  <div className="glass-effect p-8 rounded-[2rem] border border-white/5 hover:border-indigo-500/20 transition-all group">
-    <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center mb-5 group-hover:scale-110 group-hover:bg-indigo-500/20 transition-all border border-indigo-500/10">
-      <Icon size={28} />
-    </div>
-    <h4 className="text-white font-black uppercase tracking-tight mb-2 text-sm">{title}</h4>
-    <p className="text-xs text-gray-400 font-bold leading-relaxed">{description}</p>
+const SectionTag = ({ children, className = '' }) => (
+  <div className={`inline-flex items-center gap-2 px-5 py-2 rounded-full border text-[11px] font-black uppercase tracking-[0.25em] mb-6 ${className}`}>
+    {children}
   </div>
 );
+
+const SectionTitle = ({ children, className = '' }) => (
+  <h2 className={`text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tighter leading-[1.05] mb-6 ${className}`}>
+    {children}
+  </h2>
+);
+
+/* ═══════════════════════ MAIN COMPONENT ═══════════════════════ */
 
 export default function WebPricing() {
     const [isIndia, setIsIndia] = useState(false);
@@ -93,8 +35,8 @@ export default function WebPricing() {
     const [selectedPlanName, setSelectedPlanName] = useState('');
     const [plans, setPlans] = useState([]);
     const [billingConfig, setBillingConfig] = useState(null);
-    const [selectedCycle, setSelectedCycle] = useState('yearly');
-    
+    const [billingCycle, setBillingCycle] = useState('yearly'); // 'monthly' | 'yearly'
+
     useEffect(() => {
         // Find user location
         fetch("https://ipapi.co/json/")
@@ -108,150 +50,529 @@ export default function WebPricing() {
         // Fetch Plans
         getPlans().then(data => {
             const allPlans = data.plans || data;
-            // Sort plans: Starter -> Growth -> Enterprise
             const sorted = [...allPlans].sort((a, b) => (a.platformFee || 0) - (b.platformFee || 0));
             setPlans(sorted);
         }).catch(e => console.error(e));
     }, []);
 
+    // Helper to extract dynamic price or fallback
+    const getDynamicPrice = (planName, cycle, fallbackPrice) => {
+        const p = plans.find(p => p.name.toLowerCase() === planName.toLowerCase());
+        if (p && p.pricing && p.pricing[cycle]) {
+            return p.pricing[cycle].platformFee || p.platformFee || fallbackPrice;
+        }
+        return fallbackPrice;
+    };
+
+    // Static display data combined with potential dynamic pricing
+    const pricingDisplayData = [
+        {
+            id: 'starter',
+            name: 'STARTER',
+            color: 'from-emerald-500 to-emerald-400',
+            borderColor: 'border-emerald-500/20 hover:border-emerald-500/40',
+            bgGlow: 'bg-emerald-500',
+            iconColor: 'text-emerald-400',
+            monthlyPrice: getDynamicPrice('Starter', 'monthly', 5000),
+            yearlyPrice: getDynamicPrice('Starter', 'yearly', 50000),
+            saveAmount: 10000,
+            bonusCredits: 10000,
+            subtitle: 'Start Protecting Your Products from Day One',
+            bestFor: 'Small brands entering authentication',
+            includesPrefix: 'Includes:',
+            features: [
+                'Unique QR for every product unit',
+                'First-scan authentication',
+                'Basic scan tracking',
+                'Dashboard access'
+            ],
+            highlights: [
+                'Prevent fake products',
+                'Start tracking real customer scans'
+            ]
+        },
+        {
+            id: 'growth',
+            name: 'GROWTH',
+            isPopular: true,
+            color: 'from-blue-500 to-cyan-400',
+            borderColor: 'border-blue-500/30 shadow-[0_0_40px_rgba(59,130,246,0.15)] ring-1 ring-blue-500/20 hover:border-blue-500/50',
+            bgGlow: 'bg-blue-500',
+            iconColor: 'text-blue-400',
+            monthlyPrice: getDynamicPrice('Growth', 'monthly', 10000),
+            yearlyPrice: getDynamicPrice('Growth', 'yearly', 100000),
+            saveAmount: 20000,
+            bonusCredits: 20000,
+            subtitle: 'Drive Repeat Sales & Own Your Customers',
+            bestFor: 'Growing brands needing direct engagement',
+            includesPrefix: 'Everything in Starter, plus:',
+            features: [
+                'Coupon & rewards engine',
+                'Customer data capture',
+                'Redirect traffic to your website',
+                'Location-based scan insights'
+            ],
+            highlights: [
+                'Convert scans into customers',
+                'Reduce dependency on marketplaces',
+                'Build your own customer database'
+            ]
+        },
+        {
+            id: 'enterprise',
+            name: 'ENTERPRISE',
+            color: 'from-red-500 to-orange-400',
+            borderColor: 'border-red-500/20 hover:border-red-500/40',
+            bgGlow: 'bg-red-500',
+            iconColor: 'text-red-400',
+            monthlyPrice: getDynamicPrice('Enterprise', 'monthly', 20000),
+            yearlyPrice: getDynamicPrice('Enterprise', 'yearly', 200000),
+            saveAmount: 40000,
+            bonusCredits: 40000,
+            subtitle: 'Gain Complete Control Over Your Market',
+            bestFor: 'Large operations scaling supply chain',
+            includesPrefix: 'Everything in Growth, plus:',
+            features: [
+                'Real-time counterfeit alerts',
+                'Advanced analytics & insights',
+                'Batch-level tracking',
+                'Geo heatmaps & fraud detection',
+                'API integrations',
+                'Priority support'
+            ],
+            highlights: [
+                'Detect fake products instantly',
+                'Track product movement across regions',
+                'Make data-driven business decisions'
+            ]
+        }
+    ];
+
+    const comparisonFeatures = [
+        { name: "Unique QR per unit", starter: "✅", growth: "✅", enterprise: "✅" },
+        { name: "Authentication", starter: "✅", growth: "✅", enterprise: "✅" },
+        { name: "Scan tracking", starter: "Basic", growth: "Advanced", enterprise: "Advanced" },
+        { name: "Coupons & rewards", starter: "❌", growth: "✅", enterprise: "✅" },
+        { name: "Customer data capture", starter: "❌", growth: "✅", enterprise: "✅" },
+        { name: "Website redirection", starter: "❌", growth: "✅", enterprise: "✅" },
+        { name: "Counterfeit alerts", starter: "❌", starterClass: "text-gray-600", growth: "❌", growthClass: "text-gray-600", enterprise: "✅" },
+        { name: "Advanced analytics", starter: "❌", starterClass: "text-gray-600", growth: "Limited", enterprise: "Full" },
+        { name: "API integration", starter: "❌", starterClass: "text-gray-600", growth: "❌", growthClass: "text-gray-600", enterprise: "✅" }
+    ];
+
     return (
         <div className="min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden flex flex-col">
             <WebHeader />
 
-            {/* Hero Section */}
-            <section className="relative pt-40 pb-20 px-6 overflow-hidden">
-                <Glow color="bg-indigo-600" className="-top-24 -left-24 opacity-20" />
-                <Glow color="bg-violet-600" className="top-1/2 -right-24 opacity-10" />
+            {/* ═══════════════ HERO SECTION ═══════════════ */}
+            <section className="relative pt-24 md:pt-36 pb-20 px-6 overflow-hidden">
+                <Glow color="bg-indigo-600" className="-top-32 -left-32 opacity-20" />
+                <Glow color="bg-cyan-600" className="top-1/2 -right-32 opacity-15" />
                 
-                <div className="container mx-auto text-center relative z-10">
-                    <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-white mb-8 uppercase leading-[0.9]">
-                        Transparent <span className="gradient-text">Pricing</span>
+                <div className="container mx-auto text-center relative z-10 max-w-5xl">
+                    <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 text-[11px] font-black uppercase tracking-[0.2em] mb-8 hero-slide-enter">
+                        🔥 High Impact ROI
+                    </div>
+
+                    <h1 className="hero-slide-enter text-4xl md:text-7xl font-black tracking-tighter text-white mb-8 leading-[1.05]">
+                        Turn Every Product Into <span className="gradient-text">Revenue</span>,<br />
+                        Not Just Inventory
                     </h1>
-                    <p className="text-xl text-gray-400 font-bold max-w-2xl mx-auto mb-10 leading-relaxed opacity-80">
-                        Enterprise-grade product authentication. Scalable platform plans. Pay only for the volume you need.
-                    </p>
-                </div>
-            </section>
-
-            {/* Pricing Plans */}
-            <section className="py-20 px-6 relative">
-                <div className="container mx-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-                        {plans.map((p, index) => (
-                          <PricingCard 
-                            key={p._id || index}
-                            plan={p}
-                            cycle={selectedCycle}
-                            isIndia={isIndia}
-                            onChoose={(name) => { setSelectedPlanName(name); setContactOpen(true); }}
-                          />
-                        ))}
-                    </div>
-
-                    {/* QR Volume Pricing Table */}
-                    <div className="mt-32 max-w-4xl mx-auto">
-                        <div className="text-center mb-12">
-                            <h2 className="text-3xl font-black text-white uppercase tracking-tighter mb-4">QR Code Authentication Pricing</h2>
-                            <p className="text-gray-400 font-bold">Transparent volume-based pricing for your authentication units.</p>
-                        </div>
-                        
-                        <div className="glass-effect rounded-[2.5rem] border border-white/5 overflow-hidden">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="border-b border-white/5 bg-white/5">
-                                        <th className="px-8 py-6 text-xs font-black text-indigo-400 uppercase tracking-widest">Quantity Range</th>
-                                        <th className="px-8 py-6 text-xs font-black text-indigo-400 uppercase tracking-widest text-right">Price per QR</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-white/5 font-bold">
-                                    {(billingConfig?.qrPricingBrackets || [
-                                        { minQuantity: 500, maxQuantity: 5000, pricePerQr: 3 },
-                                        { minQuantity: 5001, maxQuantity: 50000, pricePerQr: 2 },
-                                        { minQuantity: 50001, maxQuantity: null, pricePerQr: 1 }
-                                    ]).map((b, idx) => (
-                                        <tr key={idx} className="hover:bg-white/[0.02] transition-colors group">
-                                            <td className="px-8 py-6 text-white text-sm">
-                                                {b.minQuantity.toLocaleString()} {b.maxQuantity ? `– ${b.maxQuantity.toLocaleString()}` : '+'} units
-                                            </td>
-                                            <td className="px-8 py-6 text-right">
-                                                <span className="text-2xl font-black text-white">{isIndia ? '₹' : '$'}{b.pricePerQr}</span>
-                                                <span className="text-[10px] text-gray-500 uppercase ml-1 tracking-widest">/QR</span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <div className="mt-8 flex items-center justify-center gap-6">
-                            <div className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                                <Shield size={14} className="text-indigo-500" /> Secure Generation
-                            </div>
-                            <div className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                                <Zap size={14} className="text-indigo-500" /> Instant Activation
-                            </div>
-                            <div className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                                <Globe size={14} className="text-indigo-500" /> Global Scalability
-                            </div>
-                        </div>
-                    </div>
                     
-                    <p className="text-center mt-12 text-gray-500 font-black italic opacity-60">
-                        {isIndia ? "Just 1 prevented counterfeit case can save ₹10-50 lakhs." : "Preventing just one counterfeit batch can save $50k - $200k in brand equity."}
+                    <p className="hero-slide-enter-delay max-w-3xl mx-auto text-lg md:text-2xl font-bold text-gray-400 mb-10 leading-relaxed">
+                        Protect your products, capture customers, and drive repeat sales — with one complete solution delivered to your doorstep.
                     </p>
+
+                    <div className="hero-slide-enter-delay flex flex-col items-center mb-12">
+                        <div className="glass-effect rounded-2xl px-8 py-5 border-emerald-500/30 relative overflow-hidden group mb-8">
+                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 opacity-50 block" />
+                            <h3 className="relative z-10 text-xl md:text-2xl font-black text-white mb-2 tracking-tight">
+                                Get ₹60,000 Worth of Premium Features — <span className="text-emerald-400 tracking-tighter">Complimentary for 90 Days</span>
+                            </h3>
+                            <p className="relative z-10 text-sm font-bold text-gray-300 flex items-center justify-center gap-2">
+                                <ArrowRight size={16} className="text-emerald-400" />
+                                No commitment. Experience full impact before you pay.
+                            </p>
+                        </div>
+                        
+                        <button 
+                            onClick={() => setContactOpen(true)}
+                            className="px-12 py-5 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-[0_0_60px_rgba(255,255,255,0.15)] hover:scale-105 active:scale-95 text-sm flex items-center gap-3"
+                        >
+                            Start 90-Day Experience
+                            <ArrowRight size={18} />
+                        </button>
+                    </div>
+
+                    <div className="hero-slide-enter-delay-2 flex flex-col items-center mt-8">
+                        <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center justify-center gap-2">
+                            Trusted by Growing Brands Across India
+                        </p>
+                        <p className="text-gray-400 font-bold italic flex items-center gap-2">
+                            <ArrowRight size={14} className="text-indigo-400 opacity-60" />
+                            “Helping brands reduce counterfeits & drive direct sales”
+                        </p>
+                        <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 mt-8 opacity-40 grayscale">
+                          <div className="font-black text-xl md:text-2xl tracking-tighter uppercase">100+ Brands</div>
+                          <div className="font-black text-xl md:text-2xl tracking-tighter uppercase">Unilever</div>
+                          <div className="font-black text-xl md:text-2xl tracking-tighter uppercase">5M+ Scans</div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
-            {/* Full Suite Features */}
-            <section className="py-32 px-6 border-y border-white/5 relative overflow-hidden">
-                <div className="absolute inset-0 bg-white/[0.01]" />
-                <div className="container mx-auto relative z-10">
-                    <div className="text-center mb-20">
-                        <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-4">Core Protection Engine</h2>
-                        <p className="text-gray-400 font-bold max-w-xl mx-auto">Every plan comes with our enterprise-grade security stack as standard.</p>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-                        <FeatureItem icon={Zap} title="Unique QR Generation" description="Advanced cryptographic generation ensuring every label is one-of-a-kind and practically un-cloneable." />
-                        <FeatureItem icon={TrendingUp} title="Scan Analysis" description="Real-time geo-located verification patterns to instantly detect and map high-risk counterfeit hotspots." />
-                        <FeatureItem icon={Shield} title="Anti-Counterfeit" description="Instant push alerts and automated reporting when duplicate or unauthorized scan attempts are detected." />
-                        <FeatureItem icon={Star} title="Brand Engagement" description="Convert standard authentication checks into a premium direct-to-consumer digital touchpoint." />
+            {/* ═══════════════ ROI SECTION ═══════════════ */}
+            <section className="py-20 px-6 bg-gradient-to-b from-black/40 to-transparent relative">
+                <div className="container mx-auto max-w-6xl">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+                        <div>
+                            <SectionTag className="bg-emerald-500/10 border-emerald-500/20 text-emerald-400"><BarChart3 size={14} /> ROI Calculator</SectionTag>
+                            <SectionTitle>What Happens When Customers Scan Your Product?</SectionTitle>
+                            <p className="text-gray-400 font-medium text-lg leading-relaxed mb-8 border-l-2 border-emerald-500/30 pl-4 py-1">
+                                If <span className="text-white font-black">1,000 products</span> are scanned:
+                            </p>
+
+                            <div className="space-y-4 font-bold text-sm md:text-base">
+                                {[
+                                    { icon: Users, value: '400+', label: 'customers engage with your brand', color: 'text-blue-400', bg: 'bg-blue-500/10' },
+                                    { icon: Globe, value: '100–200', label: 'users visit your website', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+                                    { icon: Repeat, value: '50–100', label: 'potential repeat customers', color: 'text-purple-400', bg: 'bg-purple-500/10' },
+                                    { icon: AlertTriangle, value: 'Instant', label: 'alerts if duplicate/fake scans detected', color: 'text-red-400', bg: 'bg-red-500/10' },
+                                ].map((item, i) => (
+                                    <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] transition-all group">
+                                        <div className={`p-3 rounded-xl ${item.bg} ${item.color} group-hover:scale-110 transition-transform`}>
+                                            <item.icon size={20} />
+                                        </div>
+                                        <div>
+                                            <span className="text-white font-black text-lg">{item.value}</span>
+                                            <span className="text-gray-400 font-medium ml-2">{item.label}</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="glass-effect rounded-[2.5rem] p-10 md:p-14 relative overflow-hidden flex flex-col items-center text-center justify-center h-full min-h-[300px]">
+                            <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-emerald-500 rounded-full blur-[100px] opacity-20" />
+                            <div className="relative z-10 w-full">
+                                <h3 className="text-xl md:text-2xl font-black text-white mb-6 tracking-tight">The Authentiks Advantage</h3>
+                                <div className="text-7xl font-black text-white tracking-tighter mb-4">10x</div>
+                                <p className="text-gray-400 font-bold mb-6 text-lg flex flex-col gap-2">
+                                  <span>Your ₹10K/month can generate</span>
+                                  <span className="text-emerald-400">far more in repeat revenue.</span>
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            {/* Protection that Scales */}
-            <section className="py-32 px-6 background-grid">
-                <div className="container mx-auto max-w-7xl">
-                    <div className="flex flex-col md:flex-row items-end justify-between mb-24 gap-8 text-center md:text-left">
-                        <h2 className="text-4xl md:text-7xl font-black text-white uppercase tracking-tighter leading-[0.85]">
-                            Protection that <br /><span className="gradient-text">Scales</span> with You.
-                        </h2>
-                        <div className="flex flex-col items-center md:items-end gap-3 translate-y-[-10px]">
-                          <div className="bg-indigo-500/10 border border-indigo-500/20 px-4 py-1.5 rounded-full flex items-center gap-2 text-indigo-400 font-black uppercase tracking-widest text-[10px]">
-                            AUTHENTIK GLOBAL NETWORK <Globe size={14} />
-                          </div>
-                          <p className="text-xs text-gray-500 font-bold">Safeguarding billions of units in 40+ countries.</p>
+            {/* ═══════════════ CHOOSE YOUR PLAN ═══════════════ */}
+            <section className="py-24 px-6 relative" id="pricing-plans">
+                <Glow color="bg-indigo-600" className="-top-32 left-1/2 -translate-x-1/2 opacity-15" />
+                <div className="container mx-auto max-w-7xl relative z-10">
+                    <div className="text-center mb-16">
+                        <SectionTitle>Choose Your Plan</SectionTitle>
+                        
+                        {/* Billing Toggle */}
+                        <div className="inline-flex items-center p-1.5 bg-white/5 rounded-full border border-white/10 relative mt-4">
+                            <div 
+                                className={`absolute inset-y-1.5 w-1/2 bg-white rounded-full transition-all duration-300 shadow-md ${billingCycle === 'monthly' ? 'left-1.5' : 'left-[calc(50%-6px)]'}`}
+                            />
+                            <button 
+                                onClick={() => setBillingCycle('monthly')}
+                                className={`relative z-10 px-8 py-3 rounded-full font-black uppercase tracking-widest text-xs transition-colors ${billingCycle === 'monthly' ? 'text-black' : 'text-gray-400 hover:text-white'}`}
+                            >
+                                Monthly
+                            </button>
+                            <button 
+                                onClick={() => setBillingCycle('yearly')}
+                                className={`relative z-10 px-8 py-3 rounded-full font-black uppercase tracking-widest text-xs transition-colors flex items-center gap-2 ${billingCycle === 'yearly' ? 'text-black' : 'text-gray-400 hover:text-white'}`}
+                            >
+                                Yearly
+                                {billingCycle === 'monthly' && <span className="bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded text-[9px] border border-emerald-500/30">SAVE 15%</span>}
+                            </button>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {[
-                            { t: "Real-Time Verification", d: "Confirm every product unit as genuine at the point of scan with millisecond response times." },
-                            { t: "Grey Market Detection", d: "Identify parallel sales, unauthorized cross-border distribution, and territory violations automatically." },
-                            { t: "Market Intelligence", d: "Track regional demand signals, scan densities, and consumer behavior patterns in a live dashboard." },
-                            { t: "Enhanced Loyalty", d: "Turn the authentication moment into a secure marketing bridge to reward your genuine customers." }
-                        ].map((item, i) => (
-                            <div key={i} className="glass-effect p-10 rounded-[2.5rem] border border-white/5 flex items-start gap-8 group hover:border-indigo-500/20 transition-all duration-500">
-                                <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 mt-2.5 group-hover:scale-150 transition-all shadow-[0_0_15px_rgba(99,102,241,0.6)]"></div>
-                                <div>
-                                    <h4 className="text-white font-black uppercase tracking-tight mb-3 text-lg">{item.t}</h4>
-                                    <p className="text-gray-400 font-bold text-sm leading-relaxed opacity-80">{item.d}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        {pricingDisplayData.map((plan, idx) => {
+                            const isYearly = billingCycle === 'yearly';
+                            const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
+                            
+                            return (
+                                <div key={idx} className={`glass-effect rounded-[2.5rem] p-8 md:p-10 border relative overflow-hidden transition-all duration-500 hover:-translate-y-2 group flex flex-col ${plan.borderColor}`}>
+                                    {plan.isPopular && (
+                                        <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-blue-500 to-cyan-400" />
+                                    )}
+                                    
+                                    <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full blur-[80px] opacity-20 pointer-events-none transition-opacity group-hover:opacity-40" className={`absolute -top-20 -right-20 w-40 h-40 rounded-full blur-[80px] opacity-20 pointer-events-none transition-opacity group-hover:opacity-40 ${plan.bgGlow}`} />
+
+                                    <div className="mb-8">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h3 className="text-xl font-black text-white uppercase tracking-wider">{plan.name}</h3>
+                                            {plan.isPopular && <span className="text-[10px] font-black uppercase text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20 tracking-widest">Most Popular</span>}
+                                        </div>
+                                        
+                                        <p className="text-sm font-bold text-gray-400 mb-6 min-h-[40px] opacity-80 leading-relaxed border-b border-white/5 pb-4">
+                                            {plan.subtitle}
+                                        </p>
+
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-4xl md:text-5xl font-black text-white tracking-tighter">
+                                                ₹{price.toLocaleString()}
+                                            </span>
+                                            <span className="text-gray-500 font-bold text-sm tracking-widest uppercase">
+                                                /{isYearly ? 'year' : 'month'}
+                                            </span>
+                                        </div>
+
+                                        {isYearly && (
+                                            <div className="mt-4 flex flex-col gap-2">
+                                                <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg w-fit">
+                                                    Save ₹{plan.saveAmount.toLocaleString()}
+                                                </div>
+                                                <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-purple-400 bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-lg w-fit">
+                                                    <Gift size={12} /> + ₹{plan.bonusCredits.toLocaleString()} QR Credits
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="mb-8 bg-white/[0.02] rounded-2xl p-4 border border-white/5">
+                                        <p className="text-xs font-black text-gray-500 uppercase tracking-widest mb-1">Best For:</p>
+                                        <p className="text-sm font-bold text-white">{plan.bestFor}</p>
+                                    </div>
+
+                                    <div className="flex-grow">
+                                        <p className="text-xs font-black text-gray-500 uppercase tracking-widest mb-4">
+                                            {plan.includesPrefix}
+                                        </p>
+                                        <ul className="space-y-3 mb-8">
+                                            {plan.features.map((f, i) => (
+                                                <li key={i} className="flex items-start gap-3 text-sm font-bold text-gray-300">
+                                                    <div className={`mt-0.5 shrink-0 w-4 h-4 rounded-full flex items-center justify-center bg-white/10 text-white`}>•</div>
+                                                    <span className="leading-tight">{f}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+
+                                        <div className="space-y-2 mt-auto mb-8 border-l-2 border-indigo-500/30 pl-4 py-1">
+                                            {plan.highlights.map((h, i) => (
+                                                <li key={i} className="flex items-start gap-3 text-sm font-black text-white italic list-none">
+                                                    <Check size={16} className={plan.iconColor + " shrink-0 mt-0.5"} />
+                                                    <span className="leading-tight">{h}</span>
+                                                </li>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <button 
+                                        onClick={() => { setSelectedPlanName(plan.name); setContactOpen(true); }}
+                                        className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-xs transition-all active:scale-95 ${
+                                            plan.isPopular 
+                                                ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 hover:brightness-110' 
+                                                : 'bg-white text-black hover:bg-gray-200 shadow-md shadow-white/5'
+                                        }`}
+                                    >
+                                        Get Started
+                                    </button>
                                 </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </section>
+
+            {/* ═══════════════ COMPARISON TABLE ═══════════════ */}
+            <section className="py-24 px-6 overflow-x-hidden border-y border-white/5">
+                <div className="container mx-auto max-w-5xl">
+                    <div className="text-center mb-16">
+                        <SectionTag><BarChart3 size={14} /> Full Comparison</SectionTag>
+                        <SectionTitle>Compare Plan Features</SectionTitle>
+                    </div>
+
+                    <div className="w-full overflow-x-auto pb-4">
+                        <table className="w-full text-left border-collapse min-w-[700px]">
+                            <thead>
+                                <tr className="border-b border-white/10">
+                                    <th className="p-6 text-sm font-black text-white uppercase tracking-widest w-1/3">Features</th>
+                                    <th className="p-6 text-sm font-black text-emerald-400 uppercase tracking-widest w-[22%] text-center">Starter</th>
+                                    <th className="p-6 text-sm font-black text-blue-400 uppercase tracking-widest w-[22%] text-center">Growth</th>
+                                    <th className="p-6 text-sm font-black text-red-400 uppercase tracking-widest w-[22%] text-center">Enterprise</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5 font-bold">
+                                {comparisonFeatures.map((f, i) => (
+                                    <tr key={i} className="hover:bg-white/[0.02] transition-colors">
+                                        <td className="p-6 text-gray-300 text-sm tracking-tight">{f.name}</td>
+                                        <td className={`p-6 text-center text-sm ${f.starterClass || ''}`}>{f.starter}</td>
+                                        <td className={`p-6 text-center text-sm ${f.growthClass || ''}`}>{f.growth}</td>
+                                        <td className={`p-6 text-center text-sm ${f.enterpriseClass || ''}`}>{f.enterprise}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            {/* ═══════════════ LABELS PRICING ═══════════════ */}
+            <section className="py-24 px-6 bg-gradient-to-b from-transparent to-black/40 relative">
+                <Glow color="bg-indigo-600" className="top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-10 blur-[150px] w-full" />
+                <div className="container mx-auto max-w-4xl relative z-10">
+                    <div className="text-center mb-16">
+                        <SectionTag className="bg-purple-500/10 border-purple-500/20 text-purple-400"><QrCode size={14} /> Label Pricing</SectionTag>
+                        <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter leading-[1.05] mb-4">
+                            Serialized QR Labels —<br />Delivered to Your Doorstep
+                        </h2>
+                        <p className="text-gray-400 font-bold text-lg">Pricing from ₹3 → ₹1 per label (volume-based)</p>
+                    </div>
+
+                    <div className="glass-effect rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl shadow-indigo-500/5 mb-10">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="border-b border-white/5 bg-white/[0.03]">
+                                    <th className="px-8 py-6 text-xs font-black text-purple-400 uppercase tracking-widest">Quantity Range</th>
+                                    <th className="px-8 py-6 text-xs font-black text-purple-400 uppercase tracking-widest text-right">Price per QR</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5 font-bold">
+                                <tr className="hover:bg-white/[0.02] transition-colors">
+                                    <td className="px-8 py-6 text-white tracking-tight">1,000 – 5,000 units</td>
+                                    <td className="px-8 py-6 text-right text-gray-300"><span className="text-xl text-white font-black">₹3</span>/QR</td>
+                                </tr>
+                                <tr className="hover:bg-white/[0.02] transition-colors">
+                                    <td className="px-8 py-6 text-white tracking-tight">5,001 – 50,000 units</td>
+                                    <td className="px-8 py-6 text-right text-gray-300"><span className="text-xl text-white font-black">₹2</span>/QR</td>
+                                </tr>
+                                <tr className="hover:bg-white/[0.02] transition-colors">
+                                    <td className="px-8 py-6 text-white tracking-tight">50,001 + units</td>
+                                    <td className="px-8 py-6 text-right text-gray-300"><span className="text-xl text-white font-black">₹1</span>/QR</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12 text-sm font-bold text-gray-300">
+                        <div className="flex items-center justify-center gap-3 bg-white/5 p-4 rounded-2xl border border-white/10">
+                            <Check size={18} className="text-emerald-400" /> Unique QR for every product unit
+                        </div>
+                        <div className="flex items-center justify-center gap-3 bg-white/5 p-4 rounded-2xl border border-white/10">
+                            <Check size={18} className="text-emerald-400" /> Tamper-proof & scratch-enabled
+                        </div>
+                        <div className="flex items-center justify-center gap-3 bg-white/5 p-4 rounded-2xl border border-white/10">
+                            <Check size={18} className="text-emerald-400" /> Ready-to-use delivery
+                        </div>
+                    </div>
+
+                    <div className="text-center font-black italic text-lg flex items-center justify-center gap-3 border border-indigo-500/30 bg-indigo-500/10 p-6 rounded-2xl max-w-xl mx-auto shadow-lg shadow-indigo-500/10">
+                        <ArrowRight size={20} className="text-indigo-400" />
+                        <span className="text-white">Use your annual credits to offset label costs</span>
+                    </div>
+                </div>
+            </section>
+
+            {/* ═══════════════ WHY ANNUAL ═══════════════ */}
+            <section className="py-24 px-6 border-y border-white/5">
+                <div className="container mx-auto max-w-5xl">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+                        <div>
+                            <h2 className="text-4xl md:text-5xl font-black text-white tracking-tighter leading-[1.05] mb-6">
+                                Save More. <span className="text-emerald-400">Get More.</span><br />Grow Faster.
+                            </h2>
+                            <ul className="space-y-6 text-base font-bold text-gray-300 mb-8">
+                                <li className="flex items-center gap-4">
+                                    <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl"><TrendingUp size={20} /></div>
+                                    Save more than 15% on subscription
+                                </li>
+                                <li className="flex items-center gap-4">
+                                    <div className="p-2 bg-purple-500/10 text-purple-400 rounded-xl"><Gift size={20} /></div>
+                                    Get up to ₹40,000 in QR credits
+                                </li>
+                                <li className="flex items-center gap-4">
+                                    <div className="p-2 bg-blue-500/10 text-blue-400 rounded-xl"><Lock size={20} /></div>
+                                    Lock pricing for 12 months
+                                </li>
+                                <li className="flex items-center gap-4">
+                                    <div className="p-2 bg-orange-500/10 text-orange-400 rounded-xl"><BarChart3 size={20} /></div>
+                                    Maximize ROI with continuous usage
+                                </li>
+                            </ul>
+                            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/10 bg-white/5 font-black uppercase text-xs tracking-widest text-gray-400">
+                                <ArrowRight size={14} /> Credits valid for 12 months
+                            </div>
+                        </div>
+                        <div className="relative">
+                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-[3rem] blur-[80px] opacity-20 transform -rotate-6" />
+                            <div className="glass-effect p-12 rounded-[3rem] border border-white/10 text-center relative z-10 font-bold uppercase tracking-widest shadow-2xl">
+                                <h3 className="text-sm text-gray-400 mb-6">Annual Billing Benefit</h3>
+                                <div className="text-7xl font-black text-white tracking-tighter mb-4">+₹40K</div>
+                                <p className="text-emerald-400">In QR Printing Credits</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* ═══════════════ HOW IT WORKS ═══════════════ */}
+            <section className="py-24 px-6 overflow-hidden">
+                <div className="container mx-auto max-w-6xl relative z-10">
+                    <div className="text-center mb-16">
+                        <SectionTag>How It Works</SectionTag>
+                        <SectionTitle>From Product to Customer in 4 Steps</SectionTitle>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
+                        {/* Connecting line (desktop) */}
+                        <div className="hidden md:block absolute top-[72px] left-[12.5%] right-[12.5%] h-[2px] bg-gradient-to-r from-emerald-500/30 via-blue-500/30 to-purple-500/30" />
+
+                        {[
+                            { step: '01', icon: QrCode, title: 'Place your order', color: 'text-emerald-400', stepBg: 'bg-emerald-500/20 border-emerald-500/30', ring: 'ring-emerald-500/20' },
+                            { step: '02', icon: Package, title: 'We generate & deliver', color: 'text-blue-400', stepBg: 'bg-blue-500/20 border-blue-500/30', ring: 'ring-blue-500/20' },
+                            { step: '03', icon: Truck, title: 'Apply to products', color: 'text-amber-400', stepBg: 'bg-amber-500/20 border-amber-500/30', ring: 'ring-amber-500/20' },
+                            { step: '04', icon: Smartphone, title: 'Customers scan & engage', color: 'text-purple-400', stepBg: 'bg-purple-500/20 border-purple-500/30', ring: 'ring-purple-500/20' },
+                        ].map((item, i) => (
+                            <div key={i} className="group flex flex-col items-center text-center relative">
+                                <div className={`relative z-10 w-16 h-16 rounded-full ${item.stepBg} border flex items-center justify-center mb-6 ring-4 ${item.ring}`}>
+                                    <item.icon size={24} className={item.color} />
+                                </div>
+                                <h3 className="text-sm font-black text-white mb-2 uppercase tracking-widest">{item.title}</h3>
                             </div>
                         ))}
                     </div>
                 </div>
             </section>
+
+            {/* ═══════════════ FINAL CTA ═══════════════ */}
+            <section className="py-24 px-6">
+                <div className="container mx-auto max-w-5xl">
+                    <div className="relative rounded-[3rem] overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 via-blue-600/10 to-transparent" />
+                        <div className="glass-effect rounded-[3rem] p-12 md:p-20 text-center relative z-10">
+                            <h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-6 tracking-tighter leading-[1.05]">
+                                Ready to Turn Every Product<br />Into a Sales Channel?
+                            </h2>
+                            <p className="text-gray-400 font-bold mb-2">Stop losing customers to marketplaces.</p>
+                            <p className="text-white font-black mb-10 text-lg">Start owning your customer journey.</p>
+                            <button
+                                onClick={() => setContactOpen(true)}
+                                className="px-12 py-6 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-[0_0_80px_rgba(255,255,255,0.15)] hover:scale-105 active:scale-95 text-sm inline-flex items-center gap-3"
+                            >
+                                Start Your 90-Day Experience
+                                <ArrowRight size={18} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* FOOTNOTE */}
+            <div className="container mx-auto px-6 py-8 text-center border-t border-white/5">
+                <p className="text-xs text-gray-600 font-bold max-w-3xl mx-auto leading-relaxed">
+                    90-day access includes limited-time premium features. QR credits applicable only on annual plans and valid for 12 months. Label printing and delivery charged separately. Terms apply.
+                </p>
+            </div>
 
             <WebFooter />
             <ContactFormModal isOpen={contactOpen} onClose={() => setContactOpen(false)} planName={selectedPlanName} />

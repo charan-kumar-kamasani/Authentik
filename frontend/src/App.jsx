@@ -8,9 +8,14 @@ import OTP from "./pages/mobile/OTP";
 import Home from "./pages/mobile/Home";
 import LandingPage from "./pages/web/LandingPage";
 import WebAboutUs from "./pages/web/WebAboutUs";
-import WebSolutions from "./pages/web/WebSolutions";
 import WebPricing from "./pages/web/WebPricing";
 import WebContactUs from "./pages/web/WebContactUs";
+import WebProduct from "./pages/web/WebProduct";
+import WebHowItWorks from "./pages/web/WebHowItWorks";
+import WebIndustries from "./pages/web/WebIndustries";
+import WebFAQs from "./pages/web/WebFAQs";
+import WebPrivacyPolicy from "./pages/web/WebPrivacyPolicy";
+import WebTermsConditions from "./pages/web/WebTermsConditions";
 import Scan from "./pages/mobile/scan";
 import Result from "./pages/mobile/Result";
 import Profile from "./pages/mobile/profile";
@@ -110,10 +115,15 @@ export default function App() {
             <Routes>
             {/* Public Website */}
             <Route path="/" element={<LandingPage />} />
-            <Route path="/about-us" element={<WebAboutUs />} />
+            <Route path="/product" element={<WebProduct />} />
+            <Route path="/how-it-works" element={<WebHowItWorks />} />
+            <Route path="/industries" element={<WebIndustries />} />
             <Route path="/pricing" element={<WebPricing />} />
-            <Route path="/solutions" element={<WebSolutions />} />
+            <Route path="/about-us" element={<WebAboutUs />} />
+            <Route path="/faqs" element={<WebFAQs />} />
             <Route path="/contact-us" element={<WebContactUs />} />
+            <Route path="/privacy-policy" element={<WebPrivacyPolicy />} />
+            <Route path="/terms-conditions" element={<WebTermsConditions />} />
 
             {/* Admin */}
             <Route path="/enterprise" element={<AdminLogin />} />

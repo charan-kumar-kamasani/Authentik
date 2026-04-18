@@ -55,7 +55,7 @@ export default function ContactFormModal({ isOpen, onClose, planName = '' }) {
       <div className="bg-[#0f172a] rounded-[2rem] border border-white/10 w-full max-w-lg shadow-2xl shadow-indigo-500/10 relative overflow-hidden">
         {/* Glow */}
         <div className="absolute -top-24 -right-24 w-64 h-64 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none" />
-        
+
         {/* Close */}
         <button onClick={onClose} className="absolute top-5 right-5 text-gray-500 hover:text-white transition-colors z-10">
           <X size={20} />
@@ -109,7 +109,7 @@ export default function ContactFormModal({ isOpen, onClose, planName = '' }) {
                     type="tel"
                     value={form.phone}
                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                    placeholder="+91 98765 43210"
+                    placeholder="+91 93425 01819"
                     className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-medium text-sm"
                   />
                 </div>

@@ -29,12 +29,15 @@ export default function WebHeader() {
       </div>
 
       <div className="flex items-center gap-8">
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden lg:flex items-center gap-5">
           {[
             { name: "Home", path: "/" },
-            { name: "About Us", path: "/about-us" },
+            { name: "Product", path: "/product" },
+            { name: "How it works", path: "/how-it-works" },
+            { name: "Industries", path: "/industries" },
             { name: "Pricing", path: "/pricing" },
-            { name: "Solutions", path: "/solutions" },
+            { name: "About us", path: "/about-us" },
+            { name: "FAQs", path: "/faqs" },
           ].map((item) => (
             <Link
               key={item.path}
