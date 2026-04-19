@@ -29,7 +29,7 @@ export default function WebHeader() {
       </div>
 
       <div className="flex items-center gap-8">
-        <nav className="hidden lg:flex items-center gap-6">
+        <nav className="hidden lg:flex items-center gap-8">
           {[
             { name: "Home", path: "/" },
             { name: "Product", path: "/product" },
@@ -38,7 +38,7 @@ export default function WebHeader() {
             { name: "Pricing", path: "/pricing" },
             { name: "About us", path: "/about-us" },
             { name: "FAQs", path: "/faqs" },
-            { name: "Live Demo", path: "/live-demo" },
+            { name: "Contact Us", path: "/contact-us" },
           ].map((item) => {
             const isActive = location.pathname === item.path;
 
@@ -59,7 +59,7 @@ export default function WebHeader() {
                   className={`absolute left-0 -bottom-1 h-[2px] w-full bg-indigo-500 transition-all duration-300 
           ${isActive
                       ? "opacity-100 scale-x-100"
-                      : "opacity-0 scale-x-0 group-hover:scale-x-100 group-hover:opacity-100"
+                      : "opacity-0 scale-x-0 transition-opacity hover:opacity-100"
                     }`}
                 ></span>
               </Link>
@@ -67,9 +67,9 @@ export default function WebHeader() {
           })}
         </nav>
 
-        <Link to="/contact-us">
+        <Link to="/live-demo">
           <button className="bg-indigo-600/20 text-indigo-400 px-6 py-2 rounded-full font-bold text-sm md:text-base hover:bg-indigo-600 hover:text-white border border-indigo-500/30 transition-all shadow-[0_0_20px_rgba(99,102,241,0.2)]">
-            Contact Us
+            Live Demo
           </button>
         </Link>
       </div>

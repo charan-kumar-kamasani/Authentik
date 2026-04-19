@@ -18,12 +18,12 @@ const FaqItem = ({ question, answer }) => {
     const [isOpen, setIsOpen] = useState(false);
     return (
         <div
-            className={`glass-effect p-6 md:p-8 rounded-2xl border mb-6 transition-all duration-300 cursor-pointer ${isOpen ? 'border-indigo-500/40 bg-indigo-500/5' : 'border-white/5 hover:border-indigo-500/20'}`}
+            className={`glass-effect p-6 md:p-8 rounded-2xl border mb-6 transition-all duration-300 cursor-pointer ${isOpen ? 'border-indigo-500/40 bg-indigo-500/20' : 'border-white/5 bg-white/5 hover:bg-white/10 hover:border-indigo-500/20'}`}
             onClick={() => setIsOpen(!isOpen)}
         >
             <div className="flex justify-between items-center gap-4">
                 <h4 className="text-lg font-black text-white tracking-tight">{question}</h4>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${isOpen ? 'bg-indigo-500 text-white rotate-180' : 'bg-white/5 text-gray-400'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${isOpen ? 'bg-indigo-500 text-white rotate-180' : 'bg-white/10 text-white'}`}>
                     <ChevronDown size={20} />
                 </div>
             </div>

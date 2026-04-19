@@ -145,9 +145,7 @@ body[data-loading="true"] select {
 }
 
 /* Global utility for consistent readable form controls */
-input, select, textarea {
-  color: #1e293b; /* slate-800 */
-}
+/* Removed global dark color to support dark theme components */
 
 body {
   background-color: var(--bg-dark);

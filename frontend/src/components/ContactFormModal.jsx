@@ -34,8 +34,14 @@ export default function ContactFormModal({ isOpen, onClose, planName = '' }) {
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || 'Something went wrong');
+        let errorText = 'Something went wrong';
+        try {
+          const data = await res.json();
+          errorText = data.message || errorText;
+        } catch (e) {
+          errorText = `Server Error (${res.status}): ${res.statusText || 'Unknown'}`;
+        }
+        throw new Error(errorText);
       }
 
       setStatus('success');
@@ -87,7 +93,7 @@ export default function ContactFormModal({ isOpen, onClose, planName = '' }) {
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
                     placeholder="Your full name"
                     required
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-medium text-sm"
+                    className="w-full px-4 py-3 bg-slate-800/80 border border-white/10 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-medium text-sm"
                   />
                 </div>
                 <div>
@@ -98,11 +104,10 @@ export default function ContactFormModal({ isOpen, onClose, planName = '' }) {
                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
                     placeholder="+91 93425 01819"
                     required
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-medium text-sm"
+                    className="w-full px-4 py-3 bg-slate-800/80 border border-white/10 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-medium text-sm"
                   />
                 </div>
               </div>
-
               {/* Row 2: Email + Company */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -113,7 +118,7 @@ export default function ContactFormModal({ isOpen, onClose, planName = '' }) {
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
                     placeholder="work@company.com"
                     required
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-medium text-sm"
+                    className="w-full px-4 py-3 bg-slate-800/80 border border-white/10 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-medium text-sm"
                   />
                 </div>
                 <div>
@@ -123,10 +128,26 @@ export default function ContactFormModal({ isOpen, onClose, planName = '' }) {
                     value={form.company}
                     onChange={(e) => setForm({ ...form, company: e.target.value })}
                     placeholder="Your company name"
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-medium text-sm"
+                    className="w-full px-4 py-3 bg-slate-800/80 border border-white/10 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-medium text-sm"
                   />
                 </div>
               </div>
+
+              {!planName && (
+                <div>
+                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Interested Plan</label>
+                   <select
+                    value={form.planInterest}
+                    onChange={(e) => setForm({ ...form, planInterest: e.target.value })}
+                    className="w-full px-4 py-3 bg-slate-800/80 border border-white/10 rounded-xl text-white appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-medium text-sm cursor-pointer"
+                  >
+                    <option value="">Select a Plan</option>
+                    <option value="Starter">Starter Plan</option>
+                    <option value="Growth">Growth Plan</option>
+                    <option value="Enterprise">Enterprise Solution</option>
+                  </select>
+                </div>
+              )}
 
               <div>
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Requirements</label>
@@ -135,7 +156,7 @@ export default function ContactFormModal({ isOpen, onClose, planName = '' }) {
                   onChange={(e) => setForm({ ...form, requirements: e.target.value })}
                   placeholder="Tell us about your brand protection needs, volume, timeline..."
                   rows={3}
-                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-medium text-sm resize-none"
+                  className="w-full px-4 py-3 bg-slate-800/80 border border-white/10 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-medium text-sm resize-none"
                 />
               </div>
 

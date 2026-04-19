@@ -264,9 +264,9 @@ export default function AdminLayout({ children }) {
         {/* Toggle Button */}
         <button 
           onClick={toggleSidebar}
-          className="absolute -right-3 top-8 w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-400 hover:text-blue-600 hover:border-blue-300 shadow-sm z-50 transition-colors"
+          className="absolute -right-3 top-8 w-7 h-7 bg-blue-600 border border-blue-500 rounded-full flex items-center justify-center text-white hover:bg-blue-700 hover:scale-110 shadow-[0_4px_12px_rgba(37,99,235,0.3)] z-50 transition-all duration-300"
         >
-          <ChevronRight size={14} className={`transition-transform duration-300 ${isCollapsed ? '' : 'rotate-180'}`} />
+          <ChevronRight size={16} className={`transition-transform duration-300 ${isCollapsed ? '' : 'rotate-180'}`} />
         </button>
 
         <div className={`p-6 border-b border-slate-100 flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>

@@ -5,7 +5,8 @@ import ContactFormModal from "../../components/ContactFormModal";
 import { QRCodeSVG } from 'qrcode.react';
 import { 
     CheckCircle2, AlertTriangle, ShieldAlert, ArrowRight,
-    ScanLine, Smartphone, Link, TrendingUp, Users, RefreshCw
+    ScanLine, Smartphone, Link, TrendingUp, Users, RefreshCw,
+    ChevronLeft
 } from 'lucide-react';
 
 const Glow = ({ color, className }) => (
@@ -223,56 +224,112 @@ export default function WebLiveDemo() {
                                 </div>
                                 
                                 {/* App content */}
-                                <div className="flex-1 overflow-y-auto custom-scrollbar pt-6 pb-10">
-                                    <div className="bg-gradient-to-b from-emerald-500/20 to-transparent p-6 pb-8 text-center border-b border-white/10">
-                                        <div className="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-4 border-4 border-emerald-500/30">
-                                            <CheckCircle2 size={40} />
-                                        </div>
-                                        <h3 className="text-2xl font-black text-white px-2">Verified Authentic</h3>
-                                        <p className="text-emerald-400 font-bold text-sm mt-1">First time scan confirmed</p>
+                                <div className="flex-1 overflow-y-auto custom-scrollbar pt-0 pb-10 bg-[#F5F5F5]">
+                                    {/* App Header */}
+                                    <div className="bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center sticky top-0 z-30">
+                                      <div className="text-[#0D4E96]"><ChevronLeft size={20} /></div>
+                                      <h4 className="text-[#0D4E96] font-bold text-sm">Scan Result</h4>
+                                      <div className="w-5"></div>
                                     </div>
 
-                                    <div className="p-6">
-                                        <div className="flex items-center gap-4 mb-6 pb-6 border-b border-white/10">
-                                            <div className="w-16 h-16 rounded-xl bg-white/10 flex items-center justify-center p-2">
-                                                <img src="/logo.svg" alt="product" className="w-full opacity-80" />
-                                            </div>
-                                            <div>
-                                                <h4 className="text-white font-black text-lg">ALPHALITE Panther</h4>
-                                                <p className="text-gray-400 text-sm font-medium">Cricket Bat - Grade 1</p>
-                                            </div>
+                                    <div className="mt-4 mx-4 bg-[#2CA4D6] rounded-t-[16px] p-4 text-center text-white relative shadow-md z-10">
+                                      <div className="flex flex-row justify-center items-center gap-2">
+                                        <div className="bg-white rounded-full">
+                                          <img src="/logo.svg" alt="Auth" className="w-10 h-10 object-contain m-1" />
+                                        </div>
+                                        <div className="text-left">
+                                          <h2 className="text-[16px] font-bold leading-tight">Authentic Product</h2>
+                                          <p className="text-[11px] opacity-90 font-medium">This product has been verified as genuine</p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="mx-4 bg-white shadow-sm rounded-b-[16px] pb-4">
+                                      <div className="bg-white pb-6 flex flex-col items-center relative gap-3">
+                                        <div className="w-full bg-[#1F2642] py-2 text-center h-[36px]">
+                                          <h3 className="text-white font-bold text-[16px] leading-[20px]">ALPHALITE Panther</h3>
+                                        </div>
+                                        <div className="relative group">
+                                          <div className="relative h-[200px] w-full max-w-[200px] rounded-[1.5rem] overflow-hidden bg-white shadow-2xl border-4 border-white shadow-indigo-200/50">
+                                            <img src="https://res.cloudinary.com/dx4i1w3uf/image/upload/v1776596909/alphali_nig1vq.jpg" alt="product" className="w-full h-full object-contain" />
+                                          </div>
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="px-3 space-y-3">
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {[
+                                              { l: "Brand", v: "Alphalite" },
+                                              { l: "Category", v: "Sporting Goods" },
+                                              { l: "Batch #", v: "ALPHA-2478" },
+                                              { l: "Mfd on", v: "Feb 2026" },
+                                              { l: "Color", v: "Black" },
+                                              { l: "Size", v: "10 UK" },
+                                              { l: "MRP (Maximum Retail Price)", v: "₹36,999.00" },
+                                              { l: "Model / Series", v: "Panther" },
+                                              { l: "SKU/Model Number", v: "AL2468" },
+                                              { l: "Material", v: "High-density mesh" }
+                                            ].map((item, i) => (
+                                              <div key={i} className="bg-[#259DCF] rounded-[16px] p-3 shadow-lg text-left">
+                                                <p className="text-white/80 text-[8px] font-black uppercase tracking-wider mb-0.5">{item.l}</p>
+                                                <p className="text-white text-[11px] font-black leading-tight">{item.v}</p>
+                                              </div>
+                                            ))}
                                         </div>
 
-                                        <h5 className="text-xs font-black uppercase text-gray-500 tracking-widest mb-3">Product Ledger</h5>
-                                        <div className="space-y-3 mb-6">
-                                            <div className="flex justify-between items-center py-2 border-b border-white/5">
-                                                <span className="text-gray-400 text-sm">Batch Number</span>
-                                                <span className="text-white font-bold text-sm">BAT-2026-X9</span>
-                                            </div>
-                                            <div className="flex justify-between items-center py-2 border-b border-white/5">
-                                                <span className="text-gray-400 text-sm">Manufactured</span>
-                                                <span className="text-white font-bold text-sm">Mar 12, 2026</span>
-                                            </div>
-                                            <div className="flex justify-between items-center py-2 border-b border-white/5">
-                                                <span className="text-gray-400 text-sm">MRP</span>
-                                                <span className="text-white font-bold text-sm">₹6,999.00</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="bg-indigo-500/10 border border-indigo-500/30 rounded-2xl p-4 flex items-center gap-3 mb-6">
-                                            <div className="w-10 h-10 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
-                                                <RefreshCw size={18} />
-                                            </div>
+                                        <div className="mt-8 border-t border-gray-100 pt-5 text-left pb-10">
+                                          <h4 className="text-[#333] font-black text-[14px] mb-3 ml-1 uppercase tracking-tight">Additional Info:</h4>
+                                          <div className="bg-[#F2F2F2] p-5 rounded-[20px] shadow-sm space-y-6 border border-gray-200/50">
                                             <div>
-                                                <div className="text-white font-bold text-sm">Register Warranty</div>
-                                                <div className="text-indigo-400 text-xs">Unlock 6-months extended cover</div>
+                                              <p className="text-[#444] text-[13px] font-bold leading-[1.6]">
+                                                ALPHALITE Performance Series: Panther - Neon Blue
+                                              </p>
+                                              <p className="text-[#666] text-[12px] font-medium leading-[1.6] mt-1">
+                                                Experience the intersection of high-performance athletics and cutting-edge digital security. The ALPHALITE Performance Series isn't just a sneaker; it's a verified piece of technology designed for those who demand intelligence as much as they demand speed.
+                                              </p>
                                             </div>
-                                            <ChevronRight size={16} className="text-indigo-500 ml-auto" />
+                                            
+                                            <div>
+                                              <p className="text-[#333] text-[10px] font-black uppercase tracking-wider opacity-60 mb-2">Key Benefits</p>
+                                              <div className="space-y-3">
+                                                <div>
+                                                  <p className="text-[#444] text-[12px] font-bold">Design & Aesthetics</p>
+                                                  <p className="text-[#666] text-[11px] font-medium leading-relaxed">A sleek, low-top aerodynamic profile finished in a deep carbon black.</p>
+                                                </div>
+                                                <div>
+                                                  <p className="text-[#444] text-[12px] font-bold">Smart Midsole</p>
+                                                  <p className="text-[#666] text-[11px] font-medium leading-relaxed">Features integrated neon-blue electroluminescent piping along the midsole, providing a signature "glow".</p>
+                                                </div>
+                                                <div>
+                                                  <p className="text-[#444] text-[12px] font-bold">Breathable Mesh</p>
+                                                  <p className="text-[#666] text-[11px] font-medium leading-relaxed">Constructed with a high-density engineered mesh upper for maximum breathability.</p>
+                                                </div>
+                                              </div>
+                                            </div>
+
+                                            <div className="space-y-5 pt-3">
+                                              {[
+                                                { label: "Manufactured by", val: "ALPHALITE SPORTS" },
+                                                { label: "Country of Origin", val: "Made in India" },
+                                                { label: "Website", val: "www.alphalite.com" },
+                                                { label: "Customer Care", val: "1600800800" },
+                                                { label: "Support Email", val: "care@alphalite.com" }
+                                              ].map((f, idx) => (
+                                                <div key={idx} className="border-b border-gray-300/30 pb-4 last:border-0 last:pb-0">
+                                                  <p className="text-[#333] text-[10px] font-black uppercase tracking-wider opacity-60 mb-1">{f.label}</p>
+                                                  <p className="text-[#0D4E96] text-[14px] font-black">{f.val}</p>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
                                         </div>
-                                        
-                                        <button className="w-full py-4 bg-white text-black rounded-xl font-black text-sm uppercase tracking-widest text-center mt-2">
-                                            View Brand Website
-                                        </button>
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="px-4 mt-2">
+                                      <button className="w-full bg-gradient-to-r from-[#0E5CAB] to-[#1F2642] text-white rounded-[30px] font-bold text-[15px] uppercase tracking-widest text-center py-4 shadow-[0_10px_25px_rgba(14,92,171,0.3)] transform transition-transform active:scale-95">
+                                            Review Product
+                                      </button>
                                     </div>
                                 </div>
                             </div>

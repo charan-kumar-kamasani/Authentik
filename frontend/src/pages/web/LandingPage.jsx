@@ -435,9 +435,6 @@ export default function LandingPage() {
           {/* Infinite scrolling marquee */}
           <div className="relative">
             {/* Gradient fade edges */}
-            <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-[#020617] to-transparent z-10 pointer-events-none" />
-            <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-[#020617] to-transparent z-10 pointer-events-none" />
-
             <div className="testimonial-marquee-track">
               {[...Array(2)].map((_, setIdx) => (
                 <div key={setIdx} className="testimonial-marquee-set">

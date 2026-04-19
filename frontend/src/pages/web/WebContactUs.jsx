@@ -19,7 +19,7 @@ const SectionTag = ({ children, className = '' }) => (
 
 export default function WebContactUs() {
     const [form, setForm] = useState({
-        name: '', phone: '', email: '', company: '', requirements: ''
+        name: '', phone: '', email: '', company: '', requirements: '', planInterest: ''
     });
     const [status, setStatus] = useState('idle'); // idle | loading | success | error
     const [errorMsg, setErrorMsg] = useState('');
@@ -35,21 +35,30 @@ export default function WebContactUs() {
         setErrorMsg('');
 
         try {
+            console.log(`[FormDebug] Submitting to: ${API_BASE_URL}/leads`);
             const res = await fetch(`${API_BASE_URL}/leads`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ ...form, source: 'contact-page' })
             });
 
+            console.log(`[FormDebug] Response Status: ${res.status} ${res.statusText}`);
+
             if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.message || 'Something went wrong');
+                let errorText = 'Something went wrong';
+                try {
+                    const data = await res.json();
+                    errorText = data.message || errorText;
+                } catch (e) {
+                    errorText = `Server Error (${res.status}): ${res.statusText || 'Unknown'}`;
+                }
+                throw new Error(errorText);
             }
 
             setStatus('success');
             setTimeout(() => {
                 setStatus('idle');
-                setForm({ name: '', phone: '', email: '', company: '', requirements: '' });
+                setForm({ name: '', phone: '', email: '', company: '', requirements: '', planInterest: '' });
             }, 5000);
         } catch (err) {
             setErrorMsg(err.message);
@@ -121,7 +130,7 @@ export default function WebContactUs() {
                                                             onChange={(e) => setForm({ ...form, name: e.target.value })}
                                                             placeholder="John Doe"
                                                             required
-                                                            className="w-full pl-12 pr-4 py-4 bg-white/[0.03] border border-white/10 rounded-2xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/40 transition-all font-bold text-sm"
+                                                            className="w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-white/10 rounded-2xl text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/40 transition-all font-bold text-sm"
                                                         />
                                                     </div>
                                                 </div>
@@ -137,7 +146,7 @@ export default function WebContactUs() {
                                                             onChange={(e) => setForm({ ...form, phone: e.target.value })}
                                                             placeholder="+91 12345 67890"
                                                             required
-                                                            className="w-full pl-12 pr-4 py-4 bg-white/[0.03] border border-white/10 rounded-2xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/40 transition-all font-bold text-sm"
+                                                            className="w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-white/10 rounded-2xl text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/40 transition-all font-bold text-sm"
                                                         />
                                                     </div>
                                                 </div>
@@ -156,24 +165,46 @@ export default function WebContactUs() {
                                                             onChange={(e) => setForm({ ...form, email: e.target.value })}
                                                             placeholder="name@brand.com"
                                                             required
-                                                            className="w-full pl-12 pr-4 py-4 bg-white/[0.03] border border-white/10 rounded-2xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/40 transition-all font-bold text-sm"
+                                                            className="w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-white/10 rounded-2xl text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/40 transition-all font-bold text-sm"
                                                         />
                                                     </div>
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Company Name</label>
+                                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Interested Plan</label>
                                                     <div className="relative group">
                                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-indigo-400 transition-colors">
-                                                            <Building2 size={18} />
+                                                            <Layers size={18} />
                                                         </div>
-                                                        <input
-                                                            type="text"
-                                                            value={form.company}
-                                                            onChange={(e) => setForm({ ...form, company: e.target.value })}
-                                                            placeholder="Google Inc."
-                                                            className="w-full pl-12 pr-4 py-4 bg-white/[0.03] border border-white/10 rounded-2xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/40 transition-all font-bold text-sm"
-                                                        />
+                                                        <select
+                                                            value={form.planInterest}
+                                                            onChange={(e) => setForm({ ...form, planInterest: e.target.value })}
+                                                            className="w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-white/10 rounded-2xl text-white appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/40 transition-all font-bold text-sm cursor-pointer"
+                                                        >
+                                                            <option value="" className="bg-slate-900">Select a Plan</option>
+                                                            <option value="Starter" className="bg-slate-900">Starter Plan</option>
+                                                            <option value="Growth" className="bg-slate-900">Growth Plan</option>
+                                                            <option value="Enterprise" className="bg-slate-900">Enterprise Solution</option>
+                                                        </select>
+                                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none">
+                                                            <ChevronRight size={14} className="rotate-90" />
+                                                        </div>
                                                     </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Company Name</label>
+                                                <div className="relative group">
+                                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-indigo-400 transition-colors">
+                                                        <Building2 size={18} />
+                                                    </div>
+                                                    <input
+                                                        type="text"
+                                                        value={form.company}
+                                                        onChange={(e) => setForm({ ...form, company: e.target.value })}
+                                                        placeholder="Google Inc."
+                                                        className="w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-white/10 rounded-2xl text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/40 transition-all font-bold text-sm"
+                                                    />
                                                 </div>
                                             </div>
 
@@ -184,7 +215,7 @@ export default function WebContactUs() {
                                                     onChange={(e) => setForm({ ...form, requirements: e.target.value })}
                                                     placeholder="Product volume, timeline, specific pain points (counterfeits, gray markets, etc.)"
                                                     rows={5}
-                                                    className="w-full px-5 py-4 bg-white/[0.03] border border-white/10 rounded-2xl text-white placeholder:text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500/40 transition-all font-bold text-sm resize-none"
+                                                    className="w-full px-5 py-4 bg-slate-800/50 border border-white/10 rounded-2xl text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/40 transition-all font-bold text-sm resize-none"
                                                 />
                                             </div>
 
@@ -253,7 +284,7 @@ export default function WebContactUs() {
                                         </div>
                                         <div className="max-w-[240px]">
                                             <span className="block text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] mb-1">Our HQ</span>
-                                            <p className="text-slate-300 font-bold text-sm leading-relaxed">VOC Nagar, Anna Nagar, Chennai, TN 600102</p>
+                                            <p className="text-slate-300 font-bold text-sm leading-relaxed">Recomm Innovations Pvt. Ltd., VOC Nagar, Anna Nagar, Chennai, TN 600102</p>
                                         </div>
                                     </div>
                                 </div>
@@ -278,15 +309,7 @@ export default function WebContactUs() {
                                 </div>
                             </div>
 
-                            {/* Company Tagline */}
-                            <div className="glass-effect rounded-[2rem] border border-white/5 p-8 flex items-center gap-5 group hover:border-indigo-500/30 transition-all cursor-default">
-                                <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center shrink-0 shadow-lg group-hover:scale-110 transition-transform">
-                                    <img src="/logo.svg" alt="Auth" className="w-8 h-8 opacity-80" />
-                                </div>
-                                <p className="text-xs text-slate-400 font-bold leading-relaxed">
-                                    Authentiks is a product of <span className="text-white font-black">Recomm Innovations</span>. We're dedicated to building transparent supply chains for global brands.
-                                </p>
-                            </div>
+                           
                         </div>
 
                     </div>
