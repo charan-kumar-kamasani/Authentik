@@ -106,6 +106,13 @@ export default function AdminLayout({ children }) {
   const location = useLocation();
   const role = localStorage.getItem("adminRole") || "";
   const email = localStorage.getItem("adminEmail") || "";
+  
+  // Collapse state
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    const saved = localStorage.getItem('sidebarCollapsed');
+    return saved === 'true';
+  });
+
   const [remainingCredits, setRemainingCredits] = useState(() => {
     const v =
       localStorage.getItem("availableCredits") ||
@@ -125,6 +132,12 @@ export default function AdminLayout({ children }) {
     localStorage.removeItem("adminRole");
     localStorage.removeItem("adminEmail");
     navigate("/enterprise");
+  };
+
+  const toggleSidebar = () => {
+    const newVal = !isCollapsed;
+    setIsCollapsed(newVal);
+    localStorage.setItem('sidebarCollapsed', newVal.toString());
   };
 
   const roleColors = {
@@ -166,16 +179,102 @@ export default function AdminLayout({ children }) {
     };
   }, [role, token]);
 
+  // Sidebar item component WITH collapse support
+  const SidebarItemCollapse = ({ label, onClick, icon: Icon, isActive, hasSubmenu }) => {
+    return (
+      <button
+        onClick={onClick}
+        title={isCollapsed ? label : undefined}
+        className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0' : 'justify-between px-4'} py-3 rounded-xl text-sm font-semibold transition-all duration-300 group relative
+            ${
+              isActive
+                ? "bg-blue-600 shadow-[0_4px_12px_rgba(37,99,235,0.3)] text-white"
+                : "text-gray-500 hover:bg-blue-50/50 hover:text-blue-700"
+            }`}
+      >
+        <div className="flex items-center justify-center gap-3 w-full">
+          <Icon
+            size={20}
+            className={`${isActive ? "text-white" : "text-gray-400"} shrink-0`}
+            strokeWidth={2.5}
+          />
+          {!isCollapsed && <span className="truncate whitespace-nowrap overflow-hidden text-left w-full">{label}</span>}
+        </div>
+        {!isCollapsed && hasSubmenu && (
+          <ChevronRight
+            size={16}
+            className={`transition-transform duration-300 ${isActive ? "rotate-90 text-white/80" : "text-gray-300"}`}
+          />
+        )}
+        
+        {/* Tooltip for collapsed mode */}
+        {isCollapsed && (
+          <div className="absolute left-full ml-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 text-white text-xs py-1 px-2 rounded pointer-events-none whitespace-nowrap z-50">
+            {label}
+          </div>
+        )}
+      </button>
+    );
+  };
+
+  const UsersSubmenuCollapse = () => {
+    if (isCollapsed) return null;
+    const isParentActive = activePath === "/users" || activePath.startsWith("/users");
+    if (!isParentActive) return null;
+    const isSearch = (name) => location.search.includes(`tab=${name}`);
+    const isList = isSearch("list") || (!location.search && activePath === "/users");
+
+    return (
+      <div className="mt-1 mb-2 px-3 pl-11 flex flex-col gap-1 border-l-2 border-blue-100/50 ml-6 pb-2 relative transition-all duration-300 overflow-hidden">
+        <button
+          onClick={() => navigate("/users?tab=list")}
+          className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-all ${isList ? "bg-blue-50 text-blue-700 font-bold shadow-sm ring-1 ring-blue-100/50" : "text-gray-500 hover:text-blue-600 hover:bg-gray-50"}`}
+        >
+          <div className="flex items-center gap-2">
+            <Users size={14} /> User List
+          </div>
+        </button>
+        <button
+          onClick={() => navigate("/users?tab=createBrand")}
+          className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-all ${isSearch("createBrand") ? "bg-blue-50 text-blue-700 font-bold shadow-sm ring-1 ring-blue-100/50" : "text-gray-500 hover:text-blue-600 hover:bg-gray-50"}`}
+        >
+          <div className="flex items-center gap-2">
+            <Building size={14} /> Create Company
+          </div>
+        </button>
+        <button
+          onClick={() => navigate("/users?tab=createStaff")}
+          className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-all ${isSearch("createStaff") ? "bg-blue-50 text-blue-700 font-bold shadow-sm ring-1 ring-blue-100/50" : "text-gray-500 hover:text-blue-600 hover:bg-gray-50"}`}
+        >
+          <div className="flex items-center gap-2">
+            <UserPlus size={14} /> Create User
+          </div>
+        </button>
+      </div>
+    );
+  };
+
+  const sidebarWidth = isCollapsed ? 'w-[80px]' : 'w-[280px]';
+  const mainMargin = isCollapsed ? 'ml-[80px]' : 'ml-[280px]';
+
   return (
     <div className="min-h-screen bg-[#f8fafc] flex font-sans text-gray-800">
       {/* Sidebar */}
-      <aside className="w-[280px] bg-white border-r border-slate-200/60 flex flex-col h-screen fixed top-0 left-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-30">
-        <div className="p-8 pb-6 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md">
-              <img src="/logo.svg" alt="Logo" className="w-8 h-8" />
-            </div>
-            <div>
+      <aside className={`${sidebarWidth} transition-all duration-300 ease-in-out bg-white border-r border-slate-200/60 flex flex-col h-screen fixed top-0 left-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-40`}>
+        {/* Toggle Button */}
+        <button 
+          onClick={toggleSidebar}
+          className="absolute -right-3 top-8 w-6 h-6 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-400 hover:text-blue-600 hover:border-blue-300 shadow-sm z-50 transition-colors"
+        >
+          <ChevronRight size={14} className={`transition-transform duration-300 ${isCollapsed ? '' : 'rotate-180'}`} />
+        </button>
+
+        <div className={`p-6 border-b border-slate-100 flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md shrink-0">
+            <img src="/logo.svg" alt="Logo" className="w-8 h-8" />
+          </div>
+          {!isCollapsed && (
+            <div className="overflow-hidden transition-all duration-300 whitespace-nowrap">
               <h1 className="text-xl font-black tracking-tight text-slate-800">
                 Authentiks<span className="text-blue-600">.</span>
               </h1>
@@ -183,31 +282,31 @@ export default function AdminLayout({ children }) {
                 Enterprise panel
               </p>
             </div>
-          </div>
+          )}
         </div>
 
-        <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto custom-scrollbar">
+        <nav className={`flex-1 ${isCollapsed ? 'px-3' : 'px-4'} py-6 space-y-1.5 overflow-y-auto overflow-x-hidden custom-scrollbar`}>
           {role === "creator" ? (
             <div className="space-y-1.5">
-              <SidebarItem
+              <SidebarItemCollapse
                 label="Generate QRs"
                 onClick={() => navigate("/generate-qrs")}
                 icon={Box}
                 isActive={activePath === "/generate-qrs"}
               />
-              <SidebarItem
+              <SidebarItemCollapse
                 label="Product Manager"
                 onClick={() => navigate("/product-manager")}
                 icon={Package}
                 isActive={activePath === "/product-manager"}
               />
-              <SidebarItem
+              <SidebarItemCollapse
                 label="Order History"
                 onClick={() => navigate("/orders")}
                 icon={FileText}
                 isActive={activePath === "/orders"}
               />
-              <SidebarItem
+              <SidebarItemCollapse
                 label="Coupons & Rewards"
                 onClick={() => navigate("/admin/coupons")}
                 icon={Gift}
@@ -216,49 +315,49 @@ export default function AdminLayout({ children }) {
             </div>
           ) : (
             <>
-              <SidebarItem
+              <SidebarItemCollapse
                 label="Dashboard"
                 onClick={() => navigate("/admin/analytics")}
                 icon={LayoutDashboard}
                 isActive={activePath === "/admin/analytics"}
               />
-              <SidebarItem
+              <SidebarItemCollapse
                 label="Product Manager"
                 onClick={() => navigate("/product-manager")}
                 icon={Package}
                 isActive={activePath === "/product-manager"}
               />
-              <SidebarItem
+              <SidebarItemCollapse
                 label="Order Management"
                 onClick={() => navigate("/orders")}
                 icon={FileText}
                 isActive={activePath === "/orders"}
               />
-              <SidebarItem
+              <SidebarItemCollapse
                 label="Scanned QRs"
                 onClick={() => navigate("/admin/scanned-qrs")}
                 icon={Search}
                 isActive={activePath === "/admin/scanned-qrs"}
               />
-              <SidebarItem
+              <SidebarItemCollapse
                 label="Reports"
                 onClick={() => navigate("/admin/reports")}
                 icon={BarChart2}
                 isActive={activePath === "/admin/reports"}
               />
-              <SidebarItem
+              <SidebarItemCollapse
                 label="Product Reviews"
                 onClick={() => navigate("/admin/reviews")}
                 icon={Star}
                 isActive={activePath === "/admin/reviews"}
               />
-              <SidebarItem
+              <SidebarItemCollapse
                 label="QR Inventory"
                 onClick={() => navigate("/admin/dashboard")}
                 icon={Package}
                 isActive={activePath === "/admin/dashboard"}
               />
-              <SidebarItem
+              <SidebarItemCollapse
                 label="Coupons & Rewards"
                 onClick={() => navigate("/admin/coupons")}
                 icon={Gift}
@@ -266,7 +365,7 @@ export default function AdminLayout({ children }) {
               />
 
               {["superadmin", "admin"].includes(role) && (
-                <SidebarItem
+                <SidebarItemCollapse
                   label="Sales Leads"
                   onClick={() => navigate("/admin/leads")}
                   icon={Briefcase}
@@ -276,23 +375,25 @@ export default function AdminLayout({ children }) {
 
               {["superadmin"].includes(role) && (
                 <div className="pt-4 pb-2">
-                  <p className="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                    Billing & Pricing
-                  </p>
+                  {!isCollapsed ? (
+                    <p className="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 whitespace-nowrap">
+                      Billing & Pricing
+                    </p>
+                  ) : <div className="h-px w-8 mx-auto bg-slate-200 my-2" />}
                   <div className="space-y-1.5">
-                    <SidebarItem
+                    <SidebarItemCollapse
                       label="Transactions"
                       onClick={() => navigate("/admin/transactions")}
                       icon={CreditCard}
                       isActive={activePath === "/admin/transactions"}
                     />
-                    <SidebarItem
+                    <SidebarItemCollapse
                       label="Price Plans"
                       onClick={() => navigate("/admin/price-plans")}
                       icon={Tag}
                       isActive={activePath === "/admin/price-plans"}
                     />
-                    <SidebarItem
+                    <SidebarItemCollapse
                       label="QR Volume Pricing"
                       onClick={() => navigate("/admin/qr-pricing")}
                       icon={Layers}
@@ -304,12 +405,14 @@ export default function AdminLayout({ children }) {
 
               {["superadmin", "admin"].includes(role) && (
                 <div className="pt-4 pb-2">
-                  <p className="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                    Configuration
-                  </p>
+                  {!isCollapsed ? (
+                    <p className="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 whitespace-nowrap">
+                      Configuration
+                    </p>
+                  ) : <div className="h-px w-8 mx-auto bg-slate-200 my-2" />}
                   <div className="space-y-1.5">
                     {["superadmin"].includes(role) && (
-                      <SidebarItem
+                      <SidebarItemCollapse
                         label="Settings"
                         onClick={() => navigate("/admin/settings")}
                         icon={Ticket}
@@ -317,14 +420,14 @@ export default function AdminLayout({ children }) {
                       />
                     )}
                     {["superadmin"].includes(role) && (
-                      <SidebarItem
+                      <SidebarItemCollapse
                         label="Test Accounts"
                         onClick={() => navigate("/admin/test-accounts")}
                         icon={Beaker}
                         isActive={activePath === "/admin/test-accounts"}
                       />
                     )}
-                    <SidebarItem
+                    <SidebarItemCollapse
                       label="QR Form Config"
                       onClick={() => navigate("/admin/form-config")}
                       icon={FormInput}
@@ -336,17 +439,19 @@ export default function AdminLayout({ children }) {
 
               {["company", "authorizer"].includes(role) && (
                 <div className="pt-4 pb-2">
-                  <p className="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                    Billing
-                  </p>
+                  {!isCollapsed ? (
+                    <p className="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 whitespace-nowrap">
+                      Billing
+                    </p>
+                  ) : <div className="h-px w-8 mx-auto bg-slate-200 my-2" />}
                   <div className="space-y-1.5">
-                    <SidebarItem
+                    <SidebarItemCollapse
                       label="Credits & Billing"
                       onClick={() => navigate("/admin/billing")}
                       icon={CreditCard}
                       isActive={activePath === "/admin/billing"}
                     />
-                    <SidebarItem
+                    <SidebarItemCollapse
                       label="Transactions"
                       onClick={() => navigate("/admin/transactions")}
                       icon={Receipt}
@@ -358,19 +463,21 @@ export default function AdminLayout({ children }) {
 
               {["superadmin", "admin", "company"].includes(role) && (
                 <div className="pt-4 pb-2">
-                  <p className="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
-                    Team & Access
-                  </p>
+                  {!isCollapsed ? (
+                    <p className="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 whitespace-nowrap">
+                      Team & Access
+                    </p>
+                  ) : <div className="h-px w-8 mx-auto bg-slate-200 my-2" />}
                   <div className="space-y-1.5">
                     {role === "superadmin" && (
                       <>
-                        <SidebarItem
+                        <SidebarItemCollapse
                           label="Mobile Users"
                           onClick={() => navigate("/users?tab=user")}
                           icon={Users}
                           isActive={activePath === "/users" && location.search.includes("tab=user")}
                         />
-                        <SidebarItem
+                        <SidebarItemCollapse
                           label="Companies"
                           onClick={() => navigate("/users?tab=brand")}
                           icon={Building}
@@ -378,7 +485,7 @@ export default function AdminLayout({ children }) {
                         />
                       </>
                     )}
-                    <SidebarItem
+                    <SidebarItemCollapse
                       label="User Management"
                       onClick={() => navigate("/users")}
                       icon={Users}
@@ -386,13 +493,9 @@ export default function AdminLayout({ children }) {
                         activePath === "/users" &&
                         (!location.search || (!location.search.includes("tab=user") && !location.search.includes("tab=brand")))
                       }
-                      hasSubmenu={true}
+                      hasSubmenu={!isCollapsed}
                     />
-                    <UsersSubmenu
-                      activePath={activePath}
-                      locationSearch={location.search}
-                      navigateTo={(to) => navigate(to)}
-                    />
+                    <UsersSubmenuCollapse />
                   </div>
                 </div>
               )}
@@ -400,9 +503,9 @@ export default function AdminLayout({ children }) {
           )}
         </nav>
 
-        {/* Logout button below menu tabs */}
-        <div className="px-4 pb-6">
-          <SidebarItem
+        {/* Logout button */}
+        <div className={`px-4 pb-6 mt-auto`}>
+          <SidebarItemCollapse
             label="Log out"
             onClick={handleLogout}
             icon={LogOut}
@@ -412,14 +515,11 @@ export default function AdminLayout({ children }) {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 ml-[280px] p-8 md:p-12 min-h-screen">
+      <main className={`flex-1 ${mainMargin} transition-all duration-300 ease-in-out p-8 md:p-12 min-h-screen relative`}>
         {/* Fixed top header (aligned with sidebar) */}
-        <div className="fixed left-[280px] right-0 top-0 z-30">
-          <div className="bg-white p-2 shadow-sm flex items-center">
-            {/* left: avatar only */}
-
-            {/* right: avatar, email/role and credits grouped */}
-            <div className="ml-auto flex items-center gap-6 px-4">
+        <div className={`fixed ${isCollapsed ? 'left-[80px]' : 'left-[280px]'} right-0 top-0 z-30 transition-all duration-300 ease-in-out`}>
+          <div className="bg-white p-2 shadow-sm flex items-center pr-8">
+            <div className="ml-auto flex items-center gap-6">
               <div className="flex items-center gap-3">
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold ${roleColors[role] || roleColors.company}`}
@@ -444,7 +544,7 @@ export default function AdminLayout({ children }) {
         </div>
 
         {/* Spacer to offset fixed header height */}
-        <div className="h-20" />
+        <div className="h-16" />
 
         <div className="w-full h-full animate-in fade-in duration-500">
           {children}

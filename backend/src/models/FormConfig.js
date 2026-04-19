@@ -113,8 +113,20 @@ const formConfigSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
+// Static variables for internal caching to boost performance and prevent N+1 DB calls
+let _cachedConfig = null;
+let _cacheExpiry = 0;
+const CACHE_TTL = 60 * 1000; // 60 seconds
+
 // Static method to get global form config
 formConfigSchema.statics.getGlobalFormConfig = async function() {
+  const now = Date.now();
+  
+  // Use cached version if it hasn't expired
+  if (_cachedConfig && now < _cacheExpiry) {
+    return _cachedConfig;
+  }
+
   let config = await this.findOne({ isGlobal: true, isActive: true });
   if (!config) {
     // Return default config if none exists
@@ -127,8 +139,14 @@ formConfigSchema.statics.getGlobalFormConfig = async function() {
         mfdOn: { enabled: true, isMandatory: true },
         bestBefore: { enabled: true, isMandatory: true },
       },
+      variants: []
     };
   }
+
+  // Update internal cache
+  _cachedConfig = config;
+  _cacheExpiry = now + CACHE_TTL;
+  
   return config;
 };
 

@@ -281,8 +281,8 @@ export default function GenerateQrs() {
       const qtyValue = (quantityField ? uploadedDynamicFields[quantityField.fieldName] : (uploadedDynamicFields['quantity'] || uploadedDynamicFields['qrQuantity'] || '')) || 1;
       const quantity = Number(qtyValue) || 1;
 
-      // Hard minimum: 500 units required
-      if (quantity < 500) {
+      // Hard minimum: 1000 units required
+      if (quantity < 1000) {
         alert(`Minimum order quantity is 500 units. You entered ${quantity}.`);
         setSubmitting(false);
         return;

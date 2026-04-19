@@ -46,24 +46,33 @@ async function getPlaceFromCoords(lat, lon) {
   }
 }
 
-// Get scan statistics for the current user
+// Get scan statistics for the current user (Optimized with $facet)
 router.get("/stats", protect, async (req, res) => {
   try {
     const userId = req.user._id;
 
-    const totalScans = await Scan.countDocuments({ userId });
-    const originalScans = await Scan.countDocuments({ userId, status: "ORIGINAL" });
-    const fakeScans = await Scan.countDocuments({ userId, status: "FAKE" });
-    const duplicateScans = await Scan.countDocuments({
-      userId,
-      $or: [{ status: "ALREADY_USED" }, { status: "DUPLICATE" }],
-    });
+    const statsArray = await Scan.aggregate([
+      { $match: { userId } },
+      {
+        $facet: {
+          total: [{ $count: "count" }],
+          original: [{ $match: { status: "ORIGINAL" } }, { $count: "count" }],
+          fake: [{ $match: { status: "FAKE" } }, { $count: "count" }],
+          alert: [
+            { $match: { status: { $in: ["ALREADY_USED", "DUPLICATE"] } } },
+            { $count: "count" }
+          ]
+        }
+      }
+    ]);
+
+    const stats = statsArray[0] || {};
 
     res.json({
-      totalScans,
-      authentiks: originalScans,
-      counterfeit: fakeScans,
-      alert: duplicateScans,
+      totalScans: stats.total?.[0]?.count || 0,
+      authentiks: stats.original?.[0]?.count || 0,
+      counterfeit: stats.fake?.[0]?.count || 0,
+      alert: stats.alert?.[0]?.count || 0,
     });
   } catch (err) {
     console.error("Error fetching scan stats:", err);
@@ -73,84 +82,96 @@ router.get("/stats", protect, async (req, res) => {
 
 router.get("/history", protect, async (req, res) => {
   try {
-    let scans = await Scan.find({ userId: req.user._id })
+    const rawScans = await Scan.find({ userId: req.user._id })
       .sort({ createdAt: -1 })
       .populate("productId")
       .populate({ path: "brandId", populate: { path: "companyId" } })
       .lean();
 
-    // For any ALREADY_USED scans, include the original scan details (scannedBy, scannedAt, place)
-    scans = await Promise.all(
-      scans.map(async (s) => {
-        const obj = s.toObject ? s.toObject() : s;
-        
-        // Inject companyName from populated brandId so frontend picks it up automatically
-        if (obj.brandId && obj.brandId.companyId) {
-          obj.companyName = obj.brandId.companyId.companyName || obj.brandId.companyId.name;
-        }
+    // 1. Fetch Global Config ONCE (uses internal cache helper from Phase 2)
+    const globalConfig = await FormConfig.getGlobalFormConfig();
+    const globalFieldLabels = {};
+    if (globalConfig) {
+      if (globalConfig.customFields) {
+        globalConfig.customFields.forEach(f => {
+          if (f.fieldName) {
+            const label = f.fieldLabel;
+            globalFieldLabels[f.fieldName] = label;
+            globalFieldLabels[f.fieldName.toLowerCase()] = label;
+            globalFieldLabels[f.fieldName.toUpperCase()] = label;
+          }
+        });
+      }
+      if (globalConfig.variants) {
+        globalConfig.variants.forEach(f => {
+          if (f.variantName) {
+            const label = f.variantLabel;
+            globalFieldLabels[f.variantName] = label;
+            globalFieldLabels[f.variantName.toLowerCase()] = label;
+            globalFieldLabels[f.variantName.toUpperCase()] = label;
+          }
+        });
+      }
+    }
 
-        if (obj.status === 'ALREADY_USED' && obj.productId) {
-          try {
-            const original = await Scan.findOne({ productId: obj.productId._id, status: 'ORIGINAL' }).populate('userId', 'mobile');
-            if (original) {
-              // Mask mobile
-              let masked = 'Unknown';
-              if (original.userId && original.userId.mobile) {
-                const m = original.userId.mobile.toString();
-                masked = m.length > 2 ? m.slice(0, 3) + '*'.repeat(m.length - 3) + m.slice(-4) : m;
-              }
-              obj.originalScan = {
-                scannedBy: masked,
-                scannedAt: original.createdAt,
-                place: original.place,
-              };
-            }
-          } catch (e) {
-            console.warn('Failed to fetch original scan for history item', e);
-          }
-        }
-        
-        // Fetch and inject field labels for dynamic mapping in the frontend
-        try {
-          const config = await FormConfig.getGlobalFormConfig();
-          const fl = {};
-          if (config) {
-            if (config.customFields) {
-              config.customFields.forEach(f => {
-                if (f.fieldName) {
-                  fl[f.fieldName] = f.fieldLabel;
-                  fl[f.fieldName.toLowerCase()] = f.fieldLabel;
-                  fl[f.fieldName.toUpperCase()] = f.fieldLabel;
-                }
-              });
-            }
-            if (config.variants) {
-              config.variants.forEach(v => {
-                if (v.variantName) {
-                  fl[v.variantName] = v.variantLabel;
-                  fl[v.variantName.toLowerCase()] = v.variantLabel;
-                  fl[v.variantName.toUpperCase()] = v.variantLabel;
-                }
-              });
-            }
-          }
-          if (obj.productId?.variants) {
-            obj.productId.variants.forEach(v => {
-              if (v.variantName && v.variantLabel) {
-                fl[v.variantName] = v.variantLabel;
-                fl[v.variantName.toLowerCase()] = v.variantLabel;
-                fl[v.variantName.toUpperCase()] = v.variantLabel;
-              }
-            });
-          }
-          obj.fieldLabels = fl;
-        } catch (e) {
-          console.warn('Failed to resolve fieldLabels for history item', e);
-        }
+    // 2. Identify all ALREADY_USED scan productId's to batch-fetch Original scans
+    const alreadyUsedProductIds = rawScans
+      .filter(s => s.status === 'ALREADY_USED' && s.productId)
+      .map(s => s.productId._id);
+    
+    const originalScansMap = new Map();
+    if (alreadyUsedProductIds.length > 0) {
+      const originals = await Scan.find({ 
+        productId: { $in: alreadyUsedProductIds }, 
+        status: 'ORIGINAL' 
+      }).populate('userId', 'mobile').lean();
+      
+      originals.forEach(o => {
+        originalScansMap.set(o.productId.toString(), o);
+      });
+    }
 
-        return obj;
-      })
-    );
+    // 3. Process scans with pre-fetched data
+    const scans = rawScans.map(s => {
+      const obj = s;
+      
+      // Inject companyName
+      if (obj.brandId && obj.brandId.companyId) {
+        obj.companyName = obj.brandId.companyId.companyName || obj.brandId.companyId.name;
+      }
+
+      // Handle ALREADY_USED mapping using map
+      if (obj.status === 'ALREADY_USED' && obj.productId) {
+        const original = originalScansMap.get(obj.productId._id.toString());
+        if (original) {
+          let masked = 'Unknown';
+          if (original.userId && original.userId.mobile) {
+            const m = original.userId.mobile.toString();
+            masked = m.length > 2 ? m.slice(0, 3) + '*'.repeat(m.length - 3) + m.slice(-4) : m;
+          }
+          obj.originalScan = {
+            scannedBy: masked,
+            scannedAt: original.createdAt,
+            place: original.place,
+          };
+        }
+      }
+      
+      // Resolve field labels (start with global, then override with product-specific)
+      const fl = { ...globalFieldLabels };
+      if (obj.productId?.variants) {
+        obj.productId.variants.forEach(v => {
+          if (v.variantName && v.variantLabel) {
+            fl[v.variantName] = v.variantLabel;
+            fl[v.variantName.toLowerCase()] = v.variantLabel;
+            fl[v.variantName.toUpperCase()] = v.variantLabel;
+          }
+        });
+      }
+      obj.fieldLabels = fl;
+
+      return obj;
+    });
 
     res.json(scans);
   } catch (err) {
@@ -167,6 +188,16 @@ console.log(qrCode)
     if (!qrCode) {
       return res.status(400).json({ error: "qrCode required" });
     }
+
+    // --- DEMO INTERCEPTOR ---
+    if (['DEMO-GENUINE-QR', 'DEMO-DUPLICATE-QR'].includes(qrCode)) {
+      const { DEMO_PRODUCT } = require('../utils/demoData');
+      return res.json({ status: "FOUND", isActive: true, product: DEMO_PRODUCT });
+    }
+    if (qrCode === 'DEMO-FAKE-QR') {
+      return res.json({ status: "FAKE", isActive: false, product: null });
+    }
+    // ------------------------
 
     const product = await Product.findOne({ qrCode })
       .populate('orderId')
@@ -310,6 +341,14 @@ router.post("/", protect, async (req, res) => {
     if (!qrCode) {
       return res.status(400).json({ error: "qrCode is required for scanning." });
     }
+
+    // --- DEMO INTERCEPTOR ---
+    if (['DEMO-GENUINE-QR', 'DEMO-DUPLICATE-QR', 'DEMO-FAKE-QR'].includes(qrCode)) {
+      const { getDemoResult } = require('../utils/demoData');
+      const place = await getPlaceFromCoords(latitude, longitude);
+      return res.json(getDemoResult(qrCode, userId, latitude, longitude, place));
+    }
+    // ------------------------
 
     // --- BRAND RESOLUTION (Guess from QR prefix even if product not found) ---
     let brandIdFromPrefix = null;

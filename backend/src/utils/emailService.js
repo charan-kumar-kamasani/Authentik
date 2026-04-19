@@ -215,20 +215,29 @@ async function sendLeadConfirmation(leadData) {
       `
     });
 
-    // Email to admin
+    // Email to admin + lead notification emails
+    const notificationEmails = [];
     const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
-    if (adminEmail) {
+    if (adminEmail) notificationEmails.push(adminEmail);
+    
+    // Add all LEAD_NOTIFICATION_EMAILS (comma-separated)
+    const leadEmails = (process.env.LEAD_NOTIFICATION_EMAILS || '').split(',').map(e => e.trim()).filter(e => e && e.includes('@'));
+    leadEmails.forEach(e => {
+      if (!notificationEmails.includes(e)) notificationEmails.push(e);
+    });
+
+    if (notificationEmails.length > 0) {
       await transporter.sendMail({
         from: `"Authentiks Leads" <${process.env.EMAIL_USER}>`,
-        to: adminEmail,
+        to: notificationEmails.join(','),
         subject: `🔔 New Lead: ${leadData.name} - ${leadData.company || 'No Company'}`,
         html: `
           <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
             <h2>New Lead Captured</h2>
             <table style="width:100%;border-collapse:collapse;">
               <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Name</td><td style="padding:8px;border-bottom:1px solid #eee;">${leadData.name}</td></tr>
-              <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Email</td><td style="padding:8px;border-bottom:1px solid #eee;">${leadData.email}</td></tr>
               <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Phone</td><td style="padding:8px;border-bottom:1px solid #eee;">${leadData.phone || 'N/A'}</td></tr>
+              <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Email</td><td style="padding:8px;border-bottom:1px solid #eee;">${leadData.email}</td></tr>
               <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Company</td><td style="padding:8px;border-bottom:1px solid #eee;">${leadData.company || 'N/A'}</td></tr>
               <tr><td style="padding:8px;border-bottom:1px solid #eee;font-weight:bold;">Plan Interest</td><td style="padding:8px;border-bottom:1px solid #eee;">${leadData.planInterest || 'N/A'}</td></tr>
               <tr><td style="padding:8px;font-weight:bold;">Requirements</td><td style="padding:8px;">${leadData.requirements || 'N/A'}</td></tr>

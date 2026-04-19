@@ -29,7 +29,7 @@ export default function WebHeader() {
       </div>
 
       <div className="flex items-center gap-8">
-        <nav className="hidden lg:flex items-center gap-5">
+        <nav className="hidden lg:flex items-center gap-6">
           {[
             { name: "Home", path: "/" },
             { name: "Product", path: "/product" },
@@ -38,15 +38,33 @@ export default function WebHeader() {
             { name: "Pricing", path: "/pricing" },
             { name: "About us", path: "/about-us" },
             { name: "FAQs", path: "/faqs" },
-          ].map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`text-sm font-bold transition-all hover:text-white ${location.pathname === item.path ? "text-white" : "text-gray-400"}`}
-            >
-              {item.name}
-            </Link>
-          ))}
+            { name: "Live Demo", path: "/live-demo" },
+          ].map((item) => {
+            const isActive = location.pathname === item.path;
+
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`relative text-base md:text-[17px] font-semibold transition-all duration-300 
+        ${isActive
+                    ? "text-white"
+                    : "text-gray-400 hover:text-white"
+                  }`}
+              >
+                {item.name}
+
+                {/* Underline effect */}
+                <span
+                  className={`absolute left-0 -bottom-1 h-[2px] w-full bg-indigo-500 transition-all duration-300 
+          ${isActive
+                      ? "opacity-100 scale-x-100"
+                      : "opacity-0 scale-x-0 group-hover:scale-x-100 group-hover:opacity-100"
+                    }`}
+                ></span>
+              </Link>
+            );
+          })}
         </nav>
 
         <Link to="/contact-us">

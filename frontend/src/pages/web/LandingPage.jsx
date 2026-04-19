@@ -98,9 +98,9 @@ export default function LandingPage() {
           backgroundSize: '60px 60px'
         }} />
 
-        <WebHeroSlider 
-          slides={heroSlides} 
-          onCTA={() => setShowContactForm(true)} 
+        <WebHeroSlider
+          slides={heroSlides}
+          onCTA={() => setShowContactForm(true)}
           onSlideChange={(index) => setActiveSlide(index)}
         />
       </section>
@@ -424,39 +424,122 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ═══════════════ TESTIMONIAL ═══════════════ */}
-      <section className="py-12 md:py-12 px-6">
-        <div className="container mx-auto max-w-4xl">
+      {/* ═══════════════ TESTIMONIALS ═══════════════ */}
+      <section className="py-12 md:py-12 px-6 overflow-hidden">
+        <div className="container mx-auto max-w-7xl">
           <div className="text-center mb-16">
             <SectionTag><Quote size={14} /> Testimonials</SectionTag>
             <SectionTitle>What Our Clients Say</SectionTitle>
           </div>
 
-          <div className="glass-effect rounded-[3rem] p-10 md:p-16 text-center relative overflow-hidden">
-            <div className="absolute -top-16 -right-16 w-48 h-48 bg-amber-500 rounded-full blur-[100px] opacity-10" />
-            <Quote size={48} className="text-indigo-500/20 mx-auto mb-6" />
+          {/* Infinite scrolling marquee */}
+          <div className="relative">
+            {/* Gradient fade edges */}
+            <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-[#020617] to-transparent z-10 pointer-events-none" />
+            <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-[#020617] to-transparent z-10 pointer-events-none" />
 
-            <div className="flex justify-center gap-1 mb-6">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} size={18} className="text-amber-400 fill-amber-400" />
+            <div className="testimonial-marquee-track">
+              {[...Array(2)].map((_, setIdx) => (
+                <div key={setIdx} className="testimonial-marquee-set">
+                  {[
+                    {
+                      name: 'Rahul Mehta',
+                      title: 'Head of Operations',
+                      company: 'Leading FMCG Brand',
+                      initial: 'R',
+                      color: 'from-emerald-500 to-teal-500',
+                      quote: 'We were facing increasing issues with duplicate products in key markets. After implementing Authentiks, we started receiving real-time alerts on suspicious scans. Within the first month itself, we identified multiple counterfeit sources and were able to act quickly. It has significantly strengthened our brand protection.'
+                    },
+                    {
+                      name: 'Ankit Sharma',
+                      title: 'Supply Chain Manager',
+                      company: 'Consumer Electronics Company',
+                      initial: 'A',
+                      color: 'from-blue-500 to-cyan-500',
+                      quote: 'Authentiks gave us visibility we never had before. Today, we can clearly see where our products are being scanned and identify unusual patterns across regions. This has helped us reduce distributor-level leakage and improve our overall supply chain control.'
+                    },
+                    {
+                      name: 'Priya Nair',
+                      title: 'Founder',
+                      company: 'D2C Skincare Brand',
+                      initial: 'P',
+                      color: 'from-purple-500 to-pink-500',
+                      quote: 'We initially started using Authentiks for product authentication, but the real value came from customer engagement. Every scan is now an opportunity for us to connect with our customers and build loyalty. We\'ve already started seeing better engagement and repeat interactions.'
+                    },
+                    {
+                      name: 'Karthik Reddy',
+                      title: 'Brand Manager',
+                      company: 'Apparel & Fashion Brand',
+                      initial: 'K',
+                      color: 'from-amber-500 to-orange-500',
+                      quote: 'Counterfeit products were impacting our brand trust. With Authentiks, customers can instantly verify authenticity before purchase. This has improved customer confidence and helped us reinforce our premium positioning in the market.'
+                    },
+                    {
+                      name: 'Dr. Amit Verma',
+                      title: 'Director',
+                      company: 'Pharmaceutical Distribution Company',
+                      initial: 'A',
+                      color: 'from-red-500 to-rose-500',
+                      quote: 'In our industry, authenticity is critical. Authentiks has added an extra layer of security by enabling product verification at multiple levels. The ability to track and validate products gives us much better control and peace of mind.'
+                    },
+                    {
+                      name: 'Neha Kapoor',
+                      title: 'Co-Founder',
+                      company: 'Emerging D2C Brand',
+                      initial: 'N',
+                      color: 'from-indigo-500 to-violet-500',
+                      quote: 'As a growing brand, we needed something simple yet scalable. Authentiks was easy to implement and started delivering insights almost immediately. It feels like having an enterprise-level system without heavy investment.'
+                    },
+                  ].map((t, i) => (
+                    <div key={i} className="testimonial-card glass-effect rounded-[2rem] p-8 border border-white/5 hover:border-indigo-500/20 transition-all flex flex-col min-w-[380px] max-w-[400px] mx-3 shrink-0">
+                      <div className="flex justify-center gap-1 mb-4">
+                        {Array.from({ length: 5 }).map((_, j) => (
+                          <Star key={j} size={14} className="text-amber-400 fill-amber-400" />
+                        ))}
+                      </div>
+
+                      <Quote size={24} className="text-indigo-500/30 mb-3 shrink-0" />
+
+                      <blockquote className="text-sm font-medium text-gray-300 leading-relaxed mb-6 italic flex-grow">
+                        "{t.quote}"
+                      </blockquote>
+
+                      <div className="flex items-center gap-3 mt-auto pt-4 border-t border-white/5">
+                        <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center text-white font-black text-sm shrink-0`}>
+                          {t.initial}
+                        </div>
+                        <div>
+                          <div className="font-black text-white text-sm">{t.name}</div>
+                          <div className="text-xs text-gray-500 font-bold">{t.title}, {t.company}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ))}
-            </div>
-
-            <blockquote className="text-xl md:text-2xl font-medium text-gray-200 leading-relaxed mb-10 italic max-w-2xl mx-auto">
-              "Authentiks helped us connect directly with our customers and track our products better. The QR-based authentication gave our brand the trust factor we needed."
-            </blockquote>
-
-            <div className="flex items-center justify-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-black text-lg">
-                A
-              </div>
-              <div className="text-left">
-                <div className="font-black text-white">Authentiks Partner</div>
-                <div className="text-sm text-gray-500 font-bold">Verified Brand</div>
-              </div>
             </div>
           </div>
         </div>
+
+        {/* Marquee animation CSS */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          .testimonial-marquee-track {
+            display: flex;
+            width: max-content;
+            animation: testimonialScroll 40s linear infinite;
+          }
+          .testimonial-marquee-track:hover {
+            animation-play-state: paused;
+          }
+          .testimonial-marquee-set {
+            display: flex;
+            flex-shrink: 0;
+          }
+          @keyframes testimonialScroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+        `}} />
       </section>
 
       {/* ═══════════════ FINAL CTA ═══════════════ */}

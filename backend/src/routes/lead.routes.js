@@ -9,8 +9,8 @@ router.post('/', async (req, res) => {
   try {
     const { name, email, phone, company, requirements, planInterest } = req.body;
 
-    if (!name || !email) {
-      return res.status(400).json({ message: 'Name and email are required' });
+    if (!name || !email || !phone) {
+      return res.status(400).json({ message: 'Name, phone and email are required' });
     }
 
     // Basic email validation

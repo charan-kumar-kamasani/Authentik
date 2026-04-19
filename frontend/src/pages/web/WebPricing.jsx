@@ -3,7 +3,7 @@ import { getPlans, getBillingConfig } from '../../config/api';
 import {
     Check, Shield, Zap, TrendingUp, Globe, Star, X,
     Users, BarChart3, Repeat, AlertTriangle, QrCode, Lock, ArrowRight,
-    Package, Truck, Smartphone, Gift
+    Package, Truck, Smartphone, Gift, Crown, Sparkles
 } from "lucide-react";
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
@@ -30,41 +30,11 @@ const SectionTitle = ({ children, className = '' }) => (
 /* ═══════════════════════ MAIN COMPONENT ═══════════════════════ */
 
 export default function WebPricing() {
-    const [isIndia, setIsIndia] = useState(false);
     const [contactOpen, setContactOpen] = useState(false);
     const [selectedPlanName, setSelectedPlanName] = useState('');
-    const [plans, setPlans] = useState([]);
-    const [billingConfig, setBillingConfig] = useState(null);
-    const [billingCycle, setBillingCycle] = useState('yearly'); // 'monthly' | 'yearly'
+    const [billingCycle, setBillingCycle] = useState('yearly'); // 'halfYearly' | 'yearly'
 
-    useEffect(() => {
-        // Find user location
-        fetch("https://ipapi.co/json/")
-            .then(res => res.json())
-            .then(data => setIsIndia(data.country_code === "IN"))
-            .catch(() => setIsIndia(false));
-
-        // Fetch Admin Config
-        getBillingConfig().then(setBillingConfig).catch(e => console.error(e));
-
-        // Fetch Plans
-        getPlans().then(data => {
-            const allPlans = data.plans || data;
-            const sorted = [...allPlans].sort((a, b) => (a.platformFee || 0) - (b.platformFee || 0));
-            setPlans(sorted);
-        }).catch(e => console.error(e));
-    }, []);
-
-    // Helper to extract dynamic price or fallback
-    const getDynamicPrice = (planName, cycle, fallbackPrice) => {
-        const p = plans.find(p => p.name.toLowerCase() === planName.toLowerCase());
-        if (p && p.pricing && p.pricing[cycle]) {
-            return p.pricing[cycle].platformFee || p.platformFee || fallbackPrice;
-        }
-        return fallbackPrice;
-    };
-
-    // Static display data combined with potential dynamic pricing
+    // Static display data with pricing
     const pricingDisplayData = [
         {
             id: 'starter',
@@ -73,10 +43,12 @@ export default function WebPricing() {
             borderColor: 'border-emerald-500/20 hover:border-emerald-500/40',
             bgGlow: 'bg-emerald-500',
             iconColor: 'text-emerald-400',
-            monthlyPrice: getDynamicPrice('Starter', 'monthly', 5000),
-            yearlyPrice: getDynamicPrice('Starter', 'yearly', 50000),
-            saveAmount: 10000,
-            bonusCredits: 10000,
+            monthlyRate: 5000,
+            halfYearlyPrice: 30000,
+            yearlyOriginal: 60000,
+            yearlyDiscounted: 50000,
+            yearlySaveAmount: 10000,
+            yearlyBonusQR: 10000,
             subtitle: 'Start Protecting Your Products from Day One',
             bestFor: 'Small brands entering authentication',
             includesPrefix: 'Includes:',
@@ -99,10 +71,12 @@ export default function WebPricing() {
             borderColor: 'border-blue-500/30 shadow-[0_0_40px_rgba(59,130,246,0.15)] ring-1 ring-blue-500/20 hover:border-blue-500/50',
             bgGlow: 'bg-blue-500',
             iconColor: 'text-blue-400',
-            monthlyPrice: getDynamicPrice('Growth', 'monthly', 10000),
-            yearlyPrice: getDynamicPrice('Growth', 'yearly', 100000),
-            saveAmount: 20000,
-            bonusCredits: 20000,
+            monthlyRate: 10000,
+            halfYearlyPrice: 60000,
+            yearlyOriginal: 120000,
+            yearlyDiscounted: 100000,
+            yearlySaveAmount: 20000,
+            yearlyBonusQR: 20000,
             subtitle: 'Drive Repeat Sales & Own Your Customers',
             bestFor: 'Growing brands needing direct engagement',
             includesPrefix: 'Everything in Starter, plus:',
@@ -125,10 +99,12 @@ export default function WebPricing() {
             borderColor: 'border-red-500/20 hover:border-red-500/40',
             bgGlow: 'bg-red-500',
             iconColor: 'text-red-400',
-            monthlyPrice: getDynamicPrice('Enterprise', 'monthly', 20000),
-            yearlyPrice: getDynamicPrice('Enterprise', 'yearly', 200000),
-            saveAmount: 40000,
-            bonusCredits: 40000,
+            monthlyRate: 20000,
+            halfYearlyPrice: 120000,
+            yearlyOriginal: 240000,
+            yearlyDiscounted: 200000,
+            yearlySaveAmount: 40000,
+            yearlyBonusQR: 40000,
             subtitle: 'Gain Complete Control Over Your Market',
             bestFor: 'Large operations scaling supply chain',
             includesPrefix: 'Everything in Growth, plus:',
@@ -148,7 +124,7 @@ export default function WebPricing() {
         }
     ];
 
-const comparisonFeatures = [
+    const comparisonFeatures = [
         { name: "Unique QR per unit", starter: "✅", growth: "✅", enterprise: "✅" },
         { name: "Authentication", starter: "✅", growth: "✅", enterprise: "✅" },
         { name: "Scan tracking", starter: "✅", growth: "✅", enterprise: "✅" },
@@ -165,7 +141,7 @@ const comparisonFeatures = [
             <WebHeader />
 
             {/* ═══════════════ HERO SECTION ═══════════════ */}
-            <section className="relative pt-24 md:pt-36 pb-20 px-6 overflow-hidden">
+            <section className="relative pt-10 md:pt-16pb-20 px-6 overflow-hidden">
                 <Glow color="bg-indigo-600" className="-top-32 -left-32 opacity-20" />
                 <Glow color="bg-cyan-600" className="top-1/2 -right-32 opacity-15" />
 
@@ -210,7 +186,7 @@ const comparisonFeatures = [
                         </p>
                         <p className="text-gray-400 font-bold italic flex items-center gap-2">
                             <ArrowRight size={14} className="text-indigo-400 opacity-60" />
-                            “Helping brands reduce counterfeits & drive direct sales”
+                            "Helping brands reduce counterfeits & drive direct sales"
                         </p>
                         <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 mt-8 opacity-40 grayscale">
                             <div className="font-black text-xl md:text-2xl tracking-tighter uppercase">100+ Brands</div>
@@ -274,66 +250,91 @@ const comparisonFeatures = [
                     <div className="text-center mb-16">
                         <SectionTitle>Choose Your Plan</SectionTitle>
 
-                        {/* Billing Toggle */}
+                        {/* Billing Toggle: Half-Yearly / Yearly */}
                         <div className="inline-flex items-center p-1.5 bg-white/5 rounded-full border border-white/10 relative mt-4">
                             <div
-                                className={`absolute inset-y-1.5 w-1/2 bg-white rounded-full transition-all duration-300 shadow-md ${billingCycle === 'monthly' ? 'left-1.5' : 'left-[calc(50%-6px)]'}`}
+                                className={`absolute inset-y-1.5 w-1/2 rounded-full transition-all duration-300 shadow-md ${billingCycle === 'halfYearly' ? 'left-1.5 bg-white' : 'left-[calc(50%-6px)] bg-gradient-to-r from-amber-400 to-orange-500'}`}
                             />
                             <button
-                                onClick={() => setBillingCycle('monthly')}
-                                className={`relative z-10 px-8 py-3 rounded-full font-black uppercase tracking-widest text-xs transition-colors ${billingCycle === 'monthly' ? 'text-black' : 'text-gray-400 hover:text-white'}`}
+                                onClick={() => setBillingCycle('halfYearly')}
+                                className={`relative z-10 px-8 py-3 rounded-full font-black uppercase tracking-widest text-xs transition-colors ${billingCycle === 'halfYearly' ? 'text-black' : 'text-gray-400 hover:text-white'}`}
                             >
-                                Monthly
+                                Half-Yearly
                             </button>
                             <button
                                 onClick={() => setBillingCycle('yearly')}
                                 className={`relative z-10 px-8 py-3 rounded-full font-black uppercase tracking-widest text-xs transition-colors flex items-center gap-2 ${billingCycle === 'yearly' ? 'text-black' : 'text-gray-400 hover:text-white'}`}
                             >
-                                Yearly
-                                {billingCycle === 'monthly' && <span className="bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded text-[9px] border border-emerald-500/30">SAVE 15%</span>}
+                                <Crown size={14} /> Yearly
+                                {billingCycle === 'halfYearly' && <span className="bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded text-[9px] border border-amber-500/30 animate-pulse">BEST VALUE</span>}
                             </button>
                         </div>
+
+                        {billingCycle === 'yearly' && (
+                            <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-black uppercase tracking-widest animate-in fade-in duration-500">
+                                <Sparkles size={14} /> Yearly plans include discounts + bonus QR credits!
+                            </div>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {pricingDisplayData.map((plan, idx) => {
                             const isYearly = billingCycle === 'yearly';
-                            const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
+                            const displayPrice = isYearly ? plan.yearlyDiscounted : plan.halfYearlyPrice;
+                            const originalPrice = isYearly ? plan.yearlyOriginal : null;
+                            const perMonth = isYearly ? Math.round(plan.yearlyDiscounted / 12) : Math.round(plan.halfYearlyPrice / 6);
 
                             return (
-                                <div key={idx} className={`glass-effect rounded-[2.5rem] p-8 md:p-10 border relative overflow-hidden transition-all duration-500 hover:-translate-y-2 group flex flex-col ${plan.borderColor}`}>
+                                <div key={idx} className={`glass-effect rounded-[2.5rem] p-8 md:p-10 border relative overflow-hidden transition-all duration-500 hover:-translate-y-2 group flex flex-col ${plan.borderColor} ${isYearly ? 'ring-1 ring-amber-500/10' : ''}`}>
                                     {plan.isPopular && (
                                         <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-blue-500 to-cyan-400" />
                                     )}
 
-                                    <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full blur-[80px] opacity-20 pointer-events-none transition-opacity group-hover:opacity-40" className={`absolute -top-20 -right-20 w-40 h-40 rounded-full blur-[80px] opacity-20 pointer-events-none transition-opacity group-hover:opacity-40 ${plan.bgGlow}`} />
+                                    <div className={`absolute -top-20 -right-20 w-40 h-40 rounded-full blur-[80px] opacity-20 pointer-events-none transition-opacity group-hover:opacity-40 ${plan.bgGlow}`} />
 
                                     <div className="mb-8">
                                         <div className="flex items-center justify-between mb-2">
                                             <h3 className="text-xl font-black text-white uppercase tracking-wider">{plan.name}</h3>
-                                            {plan.isPopular && <span className="text-[10px] font-black uppercase text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20 tracking-widest">Most Popular</span>}
+                                            <div className="flex items-center gap-2">
+                                                {plan.isPopular && <span className="text-[10px] font-black uppercase text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20 tracking-widest">Most Popular</span>}
+                                            </div>
                                         </div>
 
                                         <p className="text-sm font-bold text-gray-400 mb-6 min-h-[40px] opacity-80 leading-relaxed border-b border-white/5 pb-4">
                                             {plan.subtitle}
                                         </p>
 
-                                        <div className="flex items-baseline gap-1">
-                                            <span className="text-4xl md:text-5xl font-black text-white tracking-tighter">
-                                                ₹{price.toLocaleString()}
-                                            </span>
-                                            <span className="text-gray-500 font-bold text-sm tracking-widest uppercase">
-                                                /{isYearly ? 'year' : 'month'}
-                                            </span>
+                                        {/* Price display */}
+                                        <div className="flex flex-col gap-1">
+                                            {isYearly && originalPrice && (
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-lg text-gray-500 font-bold line-through">₹{originalPrice.toLocaleString()}</span>
+                                                </div>
+                                            )}
+                                            <div className="flex items-baseline gap-1">
+                                                <span className="text-4xl md:text-5xl font-black text-white tracking-tighter">
+                                                    ₹{displayPrice.toLocaleString()}
+                                                </span>
+                                                <span className="text-gray-500 font-bold text-sm tracking-widest uppercase">
+                                                    /{isYearly ? 'year' : '6 months'}
+                                                </span>
+                                            </div>
+                                            <div className="text-sm font-bold text-gray-500 mt-1">
+                                                ≈ ₹{perMonth.toLocaleString()}/month
+                                            </div>
                                         </div>
 
+                                        {/* Yearly benefits badges */}
                                         {isYearly && (
                                             <div className="mt-4 flex flex-col gap-2">
-                                                <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg w-fit">
-                                                    Save ₹{plan.saveAmount.toLocaleString()}
+                                                <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 rounded-lg w-fit animate-in slide-in-from-left duration-300">
+                                                    <Sparkles size={12} /> Save ₹{plan.yearlySaveAmount.toLocaleString()} Discount
                                                 </div>
-                                                <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-purple-400 bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-lg w-fit">
-                                                    <Gift size={12} /> + ₹{plan.bonusCredits.toLocaleString()} QR Credits
+                                                <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-purple-400 bg-purple-500/10 border border-purple-500/20 px-3 py-2 rounded-lg w-fit animate-in slide-in-from-left duration-300" style={{ animationDelay: '100ms' }}>
+                                                    <Gift size={12} /> + ₹{plan.yearlyBonusQR.toLocaleString()} Free QR Credits
+                                                </div>
+                                                <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-2 rounded-lg w-fit animate-in slide-in-from-left duration-300" style={{ animationDelay: '200ms' }}>
+                                                    <Crown size={12} /> Total Value: ₹{(plan.yearlySaveAmount + plan.yearlyBonusQR).toLocaleString()}
                                                 </div>
                                             </div>
                                         )}
@@ -370,8 +371,8 @@ const comparisonFeatures = [
                                     <button
                                         onClick={() => { setSelectedPlanName(plan.name); setContactOpen(true); }}
                                         className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-xs transition-all active:scale-95 ${plan.isPopular
-                                                ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 hover:brightness-110'
-                                                : 'bg-white text-black hover:bg-gray-200 shadow-md shadow-white/5'
+                                            ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 hover:brightness-110'
+                                            : 'bg-white text-black hover:bg-gray-200 shadow-md shadow-white/5'
                                             }`}
                                     >
                                         Get Started

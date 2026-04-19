@@ -56,7 +56,7 @@ export default function WebHowItWorks() {
             <WebHeader />
 
             {/* ═══════════════ HERO SECTION ═══════════════ */}
-            <section className="relative pt-24 md:pt-36 pb-20 px-6 overflow-hidden">
+            <section className="relative pt-10 md:pt-16 pb-20 px-6 overflow-hidden">
                 <Glow color="bg-emerald-600" className="-top-32 -left-32 opacity-20" />
                 <Glow color="bg-blue-600" className="top-1/2 -right-32 opacity-15" />
                 

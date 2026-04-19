@@ -29,11 +29,11 @@ export default function WebHeroSlider({ slides, onCTA, onSlideChange }) {
   const slide = slides[activeSlide];
 
   return (
-    <div className="container mx-auto text-center relative z-10 max-w-5xl">
+    <div className="container mx-auto text-center relative z-10 ">
       {/* Banner Image Carousel */}
       <div
         onClick={onCTA}
-        className="hero-slide-enter relative w-full max-w-6xl mx-auto mb-10 rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
+        className="hero-slide-enter relative w-full  mx-auto mb-10 rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
       >
         <div className="relative w-full" style={{ aspectRatio: '1672/741' }}>
           {slides.map((s, i) => (

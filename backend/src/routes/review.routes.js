@@ -20,9 +20,29 @@ router.post('/', protect, async (req, res) => {
 
     // Check if user already reviewed this product
     const existingReview = await Review.findOne({ productId, userId: req.user._id });
-    if (existingReview) {
+    if (existingReview && productId !== '00000000000000000000demo') {
       return res.status(400).json({ error: 'You have already reviewed this product' });
     }
+
+    // --- DEMO INTERCEPTOR ---
+    if (productId === '00000000000000000000demo') {
+      const awardedCoupon = {
+        code: "ALPHA50OFF",
+        description: "Offer: 50% Flat Discount. Redemption: use this code at www.alphalite.com for purchase Limit: One-time use per verified product ID. Terms: Valid on Performance Series; cannot be combined with other offers.",
+        expiryDate: new Date("2028-12-28T00:00:00Z"),
+        rewardId: "mock-reward-id" 
+      };
+      
+      return res.status(201).json({ 
+        productId,
+        userId: req.user._id,
+        rating,
+        comment,
+        optIn,
+        coupon: awardedCoupon 
+      });
+    }
+    // ------------------------
 
     const review = await Review.create({
       productId,

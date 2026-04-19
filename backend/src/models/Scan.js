@@ -60,6 +60,7 @@ module.exports.collection && module.exports.collection.createIndex && (async () 
     await module.exports.collection.createIndex({ userId: 1, qrCode: 1 });
     await module.exports.collection.createIndex({ userId: 1, productId: 1 });
     await module.exports.collection.createIndex({ brandId: 1, status: 1 }); // Useful for company dashboard
+    await module.exports.collection.createIndex({ createdAt: -1 }); // Fast history sort
     // Drop any existing unique ORIGINAL index — one product can have multiple ORIGINAL scans (same user re-scans)
     try { await module.exports.collection.dropIndex('productId_1_status_1'); } catch (_) { /* may not exist */ }
   } catch (err) {

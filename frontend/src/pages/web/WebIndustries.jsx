@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { 
-    Factory, Sparkles, Shirt, Pill, Monitor, Wine, Rocket, 
+import {
+    Factory, Sparkles, Shirt, Pill, Monitor, Wine, Rocket,
     CheckCircle2, ArrowRight, Activity, Building2
 } from "lucide-react";
 import WebHeader from "../../components/WebHeader";
@@ -8,19 +8,19 @@ import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
 
 const Glow = ({ color, className }) => (
-  <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
+    <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
 );
 
 const SectionTag = ({ children, className = '' }) => (
-  <div className={`inline-flex items-center gap-2 px-5 py-2 rounded-full border text-[11px] font-black uppercase tracking-[0.25em] mb-6 ${className}`}>
-    {children}
-  </div>
+    <div className={`inline-flex items-center gap-2 px-5 py-2 rounded-full border text-[11px] font-black uppercase tracking-[0.25em] mb-6 ${className}`}>
+        {children}
+    </div>
 );
 
 const SectionTitle = ({ children, className = '' }) => (
-  <h2 className={`text-3xl md:text-5xl font-black text-white tracking-tighter leading-[1.05] mb-6 ${className}`}>
-    {children}
-  </h2>
+    <h2 className={`text-3xl md:text-5xl font-black text-white tracking-tighter leading-[1.05] mb-6 ${className}`}>
+        {children}
+    </h2>
 );
 
 export default function WebIndustries() {
@@ -31,15 +31,15 @@ export default function WebIndustries() {
             <WebHeader />
 
             {/* ═══════════════ HERO SECTION ═══════════════ */}
-            <section className="relative pt-24 md:pt-36 pb-20 px-6 overflow-hidden">
+            <section className="relative pt-10 md:pt-16pb-20 px-6 overflow-hidden">
                 <Glow color="bg-indigo-600" className="-top-32 -left-32 opacity-20" />
                 <Glow color="bg-cyan-600" className="top-1/2 -right-32 opacity-15" />
-                
+
                 <div className="container mx-auto text-center relative z-10 max-w-5xl">
                     <h1 className="hero-slide-enter text-4xl md:text-7xl font-black tracking-tighter text-white mb-8 leading-[1.05]">
                         Built for Every Industry That <span className="gradient-text-blue">Sells Physical Products</span>
                     </h1>
-                    
+
                     <p className="hero-slide-enter-delay max-w-3xl mx-auto text-lg md:text-2xl font-bold text-gray-400 mb-6 leading-relaxed">
                         From startups to large enterprises — Authentiks helps brands protect their products, track their movement, and connect directly with customers.
                     </p>
@@ -49,7 +49,7 @@ export default function WebIndustries() {
                     </p>
 
                     <div className="hero-slide-enter-delay-2 flex flex-col items-center">
-                        <button 
+                        <button
                             onClick={() => setContactOpen(true)}
                             className="px-12 py-5 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-[0_0_60px_rgba(255,255,255,0.15)] hover:scale-105 active:scale-95 text-sm flex items-center gap-3"
                         >
@@ -66,7 +66,7 @@ export default function WebIndustries() {
                     <SectionTag><Building2 size={14} /> Global Application</SectionTag>
                     <SectionTitle>If You Make It, We Make It Smart</SectionTitle>
                     <p className="text-gray-400 font-bold mb-10 text-lg">Authentiks works across industries where:</p>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
                         {[
                             "Counterfeits are a risk",
@@ -90,7 +90,7 @@ export default function WebIndustries() {
             <section className="py-24 px-6 relative">
                 <Glow color="bg-emerald-600" className="top-1/4 -right-32 opacity-10" />
                 <Glow color="bg-purple-600" className="bottom-1/4 -left-32 opacity-10" />
-                
+
                 <div className="container mx-auto max-w-7xl relative z-10">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {[
@@ -144,7 +144,7 @@ export default function WebIndustries() {
                                 </div>
                                 <h3 className="text-3xl font-black text-white uppercase tracking-tight mb-2">{ind.title}</h3>
                                 <p className={`text-sm font-black uppercase tracking-widest text-${ind.color}-400 mb-8`}>{ind.sub}</p>
-                                
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 flex-grow">
                                     <div>
                                         <h4 className="text-sm font-black text-red-400 uppercase tracking-widest mb-4">Challenges:</h4>
@@ -184,7 +184,7 @@ export default function WebIndustries() {
                 <div className="container mx-auto max-w-4xl text-center">
                     <SectionTag><CheckCircle2 size={14} /> Universal Solution</SectionTag>
                     <SectionTitle>One Platform. Multiple Use Cases.</SectionTitle>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12 text-left">
                         {[
                             "Unique identity for every product",
@@ -198,7 +198,7 @@ export default function WebIndustries() {
                             </div>
                         ))}
                     </div>
-                    
+
                     <h4 className="mt-10 text-xl font-black text-indigo-400 uppercase tracking-widest italic">
                         👉 Adaptable to any product-based business
                     </h4>

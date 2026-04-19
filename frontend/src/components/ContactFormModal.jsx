@@ -18,8 +18,8 @@ export default function ContactFormModal({ isOpen, onClose, planName = '' }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.email.trim()) {
-      setErrorMsg('Name and email are required');
+    if (!form.name.trim() || !form.phone.trim() || !form.email.trim()) {
+      setErrorMsg('Name, phone and email are required');
       return;
     }
 
@@ -77,6 +77,7 @@ export default function ContactFormModal({ isOpen, onClose, planName = '' }) {
             </p>
 
             <div className="space-y-4">
+              {/* Row 1: Name + Phone */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Name *</label>
@@ -90,6 +91,21 @@ export default function ContactFormModal({ isOpen, onClose, planName = '' }) {
                   />
                 </div>
                 <div>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Phone *</label>
+                  <input
+                    type="tel"
+                    value={form.phone}
+                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    placeholder="+91 93425 01819"
+                    required
+                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-medium text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* Row 2: Email + Company */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Email *</label>
                   <input
                     type="email"
@@ -97,19 +113,6 @@ export default function ContactFormModal({ isOpen, onClose, planName = '' }) {
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
                     placeholder="work@company.com"
                     required
-                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-medium text-sm"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Phone</label>
-                  <input
-                    type="tel"
-                    value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                    placeholder="+91 93425 01819"
                     className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-medium text-sm"
                   />
                 </div>
