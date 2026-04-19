@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getPlans, getBillingConfig } from '../../config/api';
-import { 
+import {
     Check, Shield, Zap, TrendingUp, Globe, Star, X,
     Users, BarChart3, Repeat, AlertTriangle, QrCode, Lock, ArrowRight,
     Package, Truck, Smartphone, Gift
@@ -12,19 +12,19 @@ import ContactFormModal from "../../components/ContactFormModal";
 /* ═══════════════════════ REUSABLE COMPONENTS ═══════════════════════ */
 
 const Glow = ({ color, className }) => (
-  <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
+    <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
 );
 
 const SectionTag = ({ children, className = '' }) => (
-  <div className={`inline-flex items-center gap-2 px-5 py-2 rounded-full border text-[11px] font-black uppercase tracking-[0.25em] mb-6 ${className}`}>
-    {children}
-  </div>
+    <div className={`inline-flex items-center gap-2 px-5 py-2 rounded-full border text-[11px] font-black uppercase tracking-[0.25em] mb-6 ${className}`}>
+        {children}
+    </div>
 );
 
 const SectionTitle = ({ children, className = '' }) => (
-  <h2 className={`text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tighter leading-[1.05] mb-6 ${className}`}>
-    {children}
-  </h2>
+    <h2 className={`text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tighter leading-[1.05] mb-6 ${className}`}>
+        {children}
+    </h2>
 );
 
 /* ═══════════════════════ MAIN COMPONENT ═══════════════════════ */
@@ -43,10 +43,10 @@ export default function WebPricing() {
             .then(res => res.json())
             .then(data => setIsIndia(data.country_code === "IN"))
             .catch(() => setIsIndia(false));
-            
+
         // Fetch Admin Config
         getBillingConfig().then(setBillingConfig).catch(e => console.error(e));
-        
+
         // Fetch Plans
         getPlans().then(data => {
             const allPlans = data.plans || data;
@@ -148,15 +148,15 @@ export default function WebPricing() {
         }
     ];
 
-    const comparisonFeatures = [
+const comparisonFeatures = [
         { name: "Unique QR per unit", starter: "✅", growth: "✅", enterprise: "✅" },
         { name: "Authentication", starter: "✅", growth: "✅", enterprise: "✅" },
-        { name: "Scan tracking", starter: "Basic", growth: "Advanced", enterprise: "Advanced" },
+        { name: "Scan tracking", starter: "✅", growth: "✅", enterprise: "✅" },
         { name: "Coupons & rewards", starter: "❌", growth: "✅", enterprise: "✅" },
         { name: "Customer data capture", starter: "❌", growth: "✅", enterprise: "✅" },
         { name: "Website redirection", starter: "❌", growth: "✅", enterprise: "✅" },
-        { name: "Counterfeit alerts", starter: "❌", starterClass: "text-gray-600", growth: "❌", growthClass: "text-gray-600", enterprise: "✅" },
-        { name: "Advanced analytics", starter: "❌", starterClass: "text-gray-600", growth: "Limited", enterprise: "Full" },
+        { name: "Counterfeit alerts", starter: "❌", starterClass: "text-gray-600", growth: "Limited", growthClass: "text-gray-600", enterprise: "✅" },
+        { name: "Geo-location", starter: "❌", starterClass: "text-gray-600", growth: "Limited", enterprise: "✅" },
         { name: "API integration", starter: "❌", starterClass: "text-gray-600", growth: "❌", growthClass: "text-gray-600", enterprise: "✅" }
     ];
 
@@ -168,7 +168,7 @@ export default function WebPricing() {
             <section className="relative pt-24 md:pt-36 pb-20 px-6 overflow-hidden">
                 <Glow color="bg-indigo-600" className="-top-32 -left-32 opacity-20" />
                 <Glow color="bg-cyan-600" className="top-1/2 -right-32 opacity-15" />
-                
+
                 <div className="container mx-auto text-center relative z-10 max-w-5xl">
                     <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 text-[11px] font-black uppercase tracking-[0.2em] mb-8 hero-slide-enter">
                         🔥 High Impact ROI
@@ -178,7 +178,7 @@ export default function WebPricing() {
                         Turn Every Product Into <span className="gradient-text">Revenue</span>,<br />
                         Not Just Inventory
                     </h1>
-                    
+
                     <p className="hero-slide-enter-delay max-w-3xl mx-auto text-lg md:text-2xl font-bold text-gray-400 mb-10 leading-relaxed">
                         Protect your products, capture customers, and drive repeat sales — with one complete solution delivered to your doorstep.
                     </p>
@@ -194,8 +194,8 @@ export default function WebPricing() {
                                 No commitment. Experience full impact before you pay.
                             </p>
                         </div>
-                        
-                        <button 
+
+                        <button
                             onClick={() => setContactOpen(true)}
                             className="px-12 py-5 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-[0_0_60px_rgba(255,255,255,0.15)] hover:scale-105 active:scale-95 text-sm flex items-center gap-3"
                         >
@@ -213,9 +213,9 @@ export default function WebPricing() {
                             “Helping brands reduce counterfeits & drive direct sales”
                         </p>
                         <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 mt-8 opacity-40 grayscale">
-                          <div className="font-black text-xl md:text-2xl tracking-tighter uppercase">100+ Brands</div>
-                          <div className="font-black text-xl md:text-2xl tracking-tighter uppercase">Unilever</div>
-                          <div className="font-black text-xl md:text-2xl tracking-tighter uppercase">5M+ Scans</div>
+                            <div className="font-black text-xl md:text-2xl tracking-tighter uppercase">100+ Brands</div>
+                            <div className="font-black text-xl md:text-2xl tracking-tighter uppercase">Unilever</div>
+                            <div className="font-black text-xl md:text-2xl tracking-tighter uppercase">5M+ Scans</div>
                         </div>
                     </div>
                 </div>
@@ -258,8 +258,8 @@ export default function WebPricing() {
                                 <h3 className="text-xl md:text-2xl font-black text-white mb-6 tracking-tight">The Authentiks Advantage</h3>
                                 <div className="text-7xl font-black text-white tracking-tighter mb-4">10x</div>
                                 <p className="text-gray-400 font-bold mb-6 text-lg flex flex-col gap-2">
-                                  <span>Your ₹10K/month can generate</span>
-                                  <span className="text-emerald-400">far more in repeat revenue.</span>
+                                    <span>Your ₹10K/month can generate</span>
+                                    <span className="text-emerald-400">far more in repeat revenue.</span>
                                 </p>
                             </div>
                         </div>
@@ -273,19 +273,19 @@ export default function WebPricing() {
                 <div className="container mx-auto max-w-7xl relative z-10">
                     <div className="text-center mb-16">
                         <SectionTitle>Choose Your Plan</SectionTitle>
-                        
+
                         {/* Billing Toggle */}
                         <div className="inline-flex items-center p-1.5 bg-white/5 rounded-full border border-white/10 relative mt-4">
-                            <div 
+                            <div
                                 className={`absolute inset-y-1.5 w-1/2 bg-white rounded-full transition-all duration-300 shadow-md ${billingCycle === 'monthly' ? 'left-1.5' : 'left-[calc(50%-6px)]'}`}
                             />
-                            <button 
+                            <button
                                 onClick={() => setBillingCycle('monthly')}
                                 className={`relative z-10 px-8 py-3 rounded-full font-black uppercase tracking-widest text-xs transition-colors ${billingCycle === 'monthly' ? 'text-black' : 'text-gray-400 hover:text-white'}`}
                             >
                                 Monthly
                             </button>
-                            <button 
+                            <button
                                 onClick={() => setBillingCycle('yearly')}
                                 className={`relative z-10 px-8 py-3 rounded-full font-black uppercase tracking-widest text-xs transition-colors flex items-center gap-2 ${billingCycle === 'yearly' ? 'text-black' : 'text-gray-400 hover:text-white'}`}
                             >
@@ -299,13 +299,13 @@ export default function WebPricing() {
                         {pricingDisplayData.map((plan, idx) => {
                             const isYearly = billingCycle === 'yearly';
                             const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
-                            
+
                             return (
                                 <div key={idx} className={`glass-effect rounded-[2.5rem] p-8 md:p-10 border relative overflow-hidden transition-all duration-500 hover:-translate-y-2 group flex flex-col ${plan.borderColor}`}>
                                     {plan.isPopular && (
                                         <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-blue-500 to-cyan-400" />
                                     )}
-                                    
+
                                     <div className="absolute -top-20 -right-20 w-40 h-40 rounded-full blur-[80px] opacity-20 pointer-events-none transition-opacity group-hover:opacity-40" className={`absolute -top-20 -right-20 w-40 h-40 rounded-full blur-[80px] opacity-20 pointer-events-none transition-opacity group-hover:opacity-40 ${plan.bgGlow}`} />
 
                                     <div className="mb-8">
@@ -313,7 +313,7 @@ export default function WebPricing() {
                                             <h3 className="text-xl font-black text-white uppercase tracking-wider">{plan.name}</h3>
                                             {plan.isPopular && <span className="text-[10px] font-black uppercase text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20 tracking-widest">Most Popular</span>}
                                         </div>
-                                        
+
                                         <p className="text-sm font-bold text-gray-400 mb-6 min-h-[40px] opacity-80 leading-relaxed border-b border-white/5 pb-4">
                                             {plan.subtitle}
                                         </p>
@@ -367,13 +367,12 @@ export default function WebPricing() {
                                         </div>
                                     </div>
 
-                                    <button 
+                                    <button
                                         onClick={() => { setSelectedPlanName(plan.name); setContactOpen(true); }}
-                                        className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-xs transition-all active:scale-95 ${
-                                            plan.isPopular 
-                                                ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 hover:brightness-110' 
+                                        className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-xs transition-all active:scale-95 ${plan.isPopular
+                                                ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 hover:brightness-110'
                                                 : 'bg-white text-black hover:bg-gray-200 shadow-md shadow-white/5'
-                                        }`}
+                                            }`}
                                     >
                                         Get Started
                                     </button>
