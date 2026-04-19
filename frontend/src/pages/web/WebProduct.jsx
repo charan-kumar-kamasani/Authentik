@@ -53,7 +53,7 @@ export default function WebProduct() {
                         <div className="absolute inset-0 bg-white/0 group-hover:bg-white-[0.02] transition-colors z-20 pointer-events-none" />
                     </div>
 
-                    <div className="hero-slide-enter-delay-2 flex flex-col items-center gap-6 mb-8 relative z-30">
+                    {/* <div className="hero-slide-enter-delay-2 flex flex-col items-center gap-6 mb-8 relative z-30">
                         <button 
                             onClick={() => setContactOpen(true)}
                             className="group px-10 md:px-14 py-5 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-[0_0_60px_rgba(255,255,255,0.15)] hover:shadow-[0_0_80px_rgba(255,255,255,0.25)] hover:scale-[1.02] active:scale-95 text-sm flex items-center gap-3"
@@ -61,7 +61,7 @@ export default function WebProduct() {
                             Start Your 90-Day Free Trial
                             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                         </button>
-                    </div>
+                    </div> */}
                 </div>
             </section>
 
