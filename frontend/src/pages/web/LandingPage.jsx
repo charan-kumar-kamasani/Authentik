@@ -9,14 +9,15 @@ import WebHeader from '../../components/WebHeader';
 import WebFooter from '../../components/WebFooter';
 import ContactFormModal from '../../components/ContactFormModal';
 import heroImage from '../../assets/web/image 1.png';
-import banner1 from '../../assets/banners/Banner 1.png';
-import banner2 from '../../assets/banners/Banner 2.png';
-import banner3 from '../../assets/banners/Banner 3.png';
+import banner1 from '../../assets/banners/banner_1.jpg';
+import banner2 from '../../assets/banners/banner_2.jpg';
+import banner3 from '../../assets/banners/banner_3.jpg';
+import WebHeroSlider from '../../components/WebHeroSlider';
 
 /* ═══════════════════════ HERO SLIDES ═══════════════════════ */
 const heroSlides = [
   {
-    tag: 'STARTER',
+    tag: 'BANNER 1',
     tagColor: 'from-emerald-500 to-emerald-400',
     tagBg: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400',
     glowColor: 'bg-emerald-500',
@@ -26,7 +27,7 @@ const heroSlides = [
     banner: banner1,
   },
   {
-    tag: 'GROWTH',
+    tag: 'BANNER 2',
     tagColor: 'from-blue-500 to-cyan-400',
     tagBg: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
     glowColor: 'bg-blue-500',
@@ -37,7 +38,7 @@ const heroSlides = [
     banner: banner2,
   },
   {
-    tag: 'ENTERPRISE',
+    tag: 'BANNER 3',
     tagColor: 'from-red-500 to-orange-400',
     tagBg: 'bg-red-500/10 border-red-500/20 text-red-400',
     glowColor: 'bg-red-500',
@@ -72,30 +73,6 @@ const SectionTitle = ({ children, className = '' }) => (
 export default function LandingPage() {
   const [showContactForm, setShowContactForm] = useState(false);
   const [activeSlide, setActiveSlide] = useState(0);
-  const [slideDirection, setSlideDirection] = useState('right');
-  const [isAnimating, setIsAnimating] = useState(false);
-
-  const goToSlide = useCallback((index, direction = 'right') => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-    setSlideDirection(direction);
-    setActiveSlide(index);
-    setTimeout(() => setIsAnimating(false), 600);
-  }, [isAnimating]);
-
-  const nextSlide = useCallback(() => {
-    goToSlide((activeSlide + 1) % heroSlides.length, 'right');
-  }, [activeSlide, goToSlide]);
-
-  const prevSlide = useCallback(() => {
-    goToSlide((activeSlide - 1 + heroSlides.length) % heroSlides.length, 'left');
-  }, [activeSlide, goToSlide]);
-
-  // Auto-advance hero slider
-  useEffect(() => {
-    const timer = setInterval(nextSlide, 5500);
-    return () => clearInterval(timer);
-  }, [nextSlide]);
 
   const slide = heroSlides[activeSlide];
 
@@ -121,59 +98,11 @@ export default function LandingPage() {
           backgroundSize: '60px 60px'
         }} />
 
-        <div className="container mx-auto text-center relative z-10 max-w-5xl">
-          {/* Banner Image Carousel */}
-          <div 
-            onClick={() => setShowContactForm(true)}
-            className="hero-slide-enter relative w-full max-w-6xl mx-auto mb-10 rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
-          >
-            <div className="relative w-full" style={{ aspectRatio: '1672/941' }}>
-              {heroSlides.map((s, i) => (
-                <img
-                  key={i}
-                  src={s.banner}
-                  alt={`Banner ${i + 1}`}
-                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-in-out group-hover:scale-[1.01] ${
-                    i === activeSlide ? 'opacity-100 z-10 block' : 'opacity-0 z-0'
-                  }`}
-                />
-              ))}
-            </div>
-            {/* Subtle overlay gradient for blending with dark bg */}
-            <div className="absolute inset-0 pointer-events-none rounded-[2rem] ring-1 ring-inset ring-white/10 z-20" />
-            <div className="absolute inset-0 bg-white/0 group-hover:bg-white-[0.02] transition-colors z-20 pointer-events-none" />
-          </div>
-
-          {/* Slide Navigation Dots */}
-          <div className="flex items-center justify-center gap-4 mb-10 relative z-30">
-            <button onClick={prevSlide} className="p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all">
-              <ChevronLeft size={18} />
-            </button>
-            {heroSlides.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => goToSlide(i, i > activeSlide ? 'right' : 'left')}
-                className={`h-2 rounded-full transition-all duration-500 ${
-                  i === activeSlide ? 'w-10 bg-white' : 'w-2 bg-white/20 hover:bg-white/40'
-                }`}
-              />
-            ))}
-            <button onClick={nextSlide} className="p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all">
-              <ChevronRight size={18} />
-            </button>
-          </div>
-
-          {/* Global CTA Button */}
-          <div className="hero-slide-enter-delay-2 flex flex-col items-center gap-6 mb-8 relative z-30">
-            <button
-              onClick={() => setShowContactForm(true)}
-              className="group px-10 md:px-14 py-5 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-[0_0_60px_rgba(255,255,255,0.15)] hover:shadow-[0_0_80px_rgba(255,255,255,0.25)] hover:scale-[1.02] active:scale-95 text-sm flex items-center gap-3"
-            >
-              Start Your 90-Day Free Trial
-              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-            </button>
-          </div>
-        </div>
+        <WebHeroSlider 
+          slides={heroSlides} 
+          onCTA={() => setShowContactForm(true)} 
+          onSlideChange={(index) => setActiveSlide(index)}
+        />
       </section>
 
       {/* ═══════════════ TRUST SECTION ═══════════════ */}
@@ -463,7 +392,7 @@ export default function LandingPage() {
 
           <div className="glass-effect rounded-[2.5rem] p-8 md:p-14 relative overflow-hidden">
             <div className="absolute -top-24 -left-24 w-64 h-64 bg-indigo-600 rounded-full blur-[120px] opacity-15 pointer-events-none" />
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
               {[
                 { icon: QrCode, label: 'QR Generation', desc: 'Unique serialized codes for every product unit' },
@@ -506,7 +435,7 @@ export default function LandingPage() {
           <div className="glass-effect rounded-[3rem] p-10 md:p-16 text-center relative overflow-hidden">
             <div className="absolute -top-16 -right-16 w-48 h-48 bg-amber-500 rounded-full blur-[100px] opacity-10" />
             <Quote size={48} className="text-indigo-500/20 mx-auto mb-6" />
-            
+
             <div className="flex justify-center gap-1 mb-6">
               {Array.from({ length: 5 }).map((_, i) => (
                 <Star key={i} size={18} className="text-amber-400 fill-amber-400" />

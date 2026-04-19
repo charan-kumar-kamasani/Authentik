@@ -7,6 +7,7 @@ import {
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
+import productBanner from '../../assets/banners/product_page.jpg';
 
 const Glow = ({ color, className }) => (
   <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
@@ -32,26 +33,33 @@ export default function WebProduct() {
             <WebHeader />
 
             {/* ═══════════════ HERO SECTION ═══════════════ */}
-            <section className="relative pt-24 md:pt-36 pb-20 px-6 overflow-hidden">
+            <section className="relative pt-12 px-6 min-h-[85vh] flex items-center overflow-hidden">
                 <Glow color="bg-indigo-600" className="-top-32 -left-32 opacity-20" />
                 <Glow color="bg-blue-600" className="top-1/2 -right-32 opacity-15" />
                 
                 <div className="container mx-auto text-center relative z-10 max-w-5xl">
-                    <h1 className="hero-slide-enter text-4xl md:text-7xl font-black tracking-tighter text-white mb-8 leading-[1.05]">
-                        Turn Every Product Into a <span className="gradient-text-blue">Secure, Smart and Trackable Asset</span>
-                    </h1>
-                    
-                    <p className="hero-slide-enter-delay max-w-3xl mx-auto text-lg md:text-2xl font-bold text-gray-400 mb-10 leading-relaxed">
-                        Authentiks gives every product a unique identity — helping you prevent counterfeits, track movement, and connect directly with your customers.
-                    </p>
+                    <div 
+                        onClick={() => setContactOpen(true)}
+                        className="hero-slide-enter relative w-full max-w-6xl mx-auto mb-10 rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
+                    >
+                        <div className="relative w-full" style={{ aspectRatio: '1672/741' }}>
+                            <img 
+                                src={productBanner} 
+                                alt="Product Page banner" 
+                                className="absolute inset-0 w-full h-full object-contain transition-all duration-1000 ease-in-out group-hover:scale-[1.01]"
+                            />
+                        </div>
+                        <div className="absolute inset-0 pointer-events-none rounded-[2rem] ring-1 ring-inset ring-white/10 z-20" />
+                        <div className="absolute inset-0 bg-white/0 group-hover:bg-white-[0.02] transition-colors z-20 pointer-events-none" />
+                    </div>
 
-                    <div className="hero-slide-enter-delay flex flex-col items-center">
+                    <div className="hero-slide-enter-delay-2 flex flex-col items-center gap-6 mb-8 relative z-30">
                         <button 
                             onClick={() => setContactOpen(true)}
-                            className="px-12 py-5 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-[0_0_60px_rgba(255,255,255,0.15)] hover:scale-105 active:scale-95 text-sm flex items-center gap-3"
+                            className="group px-10 md:px-14 py-5 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-[0_0_60px_rgba(255,255,255,0.15)] hover:shadow-[0_0_80px_rgba(255,255,255,0.25)] hover:scale-[1.02] active:scale-95 text-sm flex items-center gap-3"
                         >
                             Start Your 90-Day Free Trial
-                            <ArrowRight size={18} />
+                            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                         </button>
                     </div>
                 </div>
