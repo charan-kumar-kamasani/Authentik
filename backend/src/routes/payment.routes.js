@@ -154,60 +154,87 @@ router.post('/initiate', protect, async (req, res) => {
         });
 
         // Try PhonePe
-        const client = await getPhonePeClient();
-        if (client && actualPaymentAmount > 0) {
-            try {
-                const amountInPaise = Math.round(actualPaymentAmount * 100);
+      // Try PhonePe
+const client = await getPhonePeClient();
 
-                // PhonePe requires minimum 100 paise (₹1)
-                if (amountInPaise < 100) {
-                    throw new Error('Minimum amount is ₹1');
-                }
+if (client && actualPaymentAmount > 0) {
+    try {
+        const amountInPaise = Math.round(actualPaymentAmount * 100);
 
-                const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5175'}/admin/billing?payment=${merchantOrderId}`;
-
-                // Note: callbackUrl is configured in PhonePe dashboard, not sent in request
-                // Configure it as: https://api.authentiks.in/payments/callback
-                const request = pgSdkRequest(merchantOrderId, amountInPaise, redirectUrl);
-                console.log('🔵 PhonePe request:', { merchantOrderId, amountInPaise, redirectUrl, isTestPayment });
-                const response = await client.pay(request);
-                console.log('✅ PhonePe response:', JSON.stringify(response).slice(0, 500));
-
-                payment.redirectUrl = response.redirectUrl || response.data?.redirectUrl || null;
-                await payment.save();
-
-                return res.json({
-                    paymentId: payment._id,
-                    merchantOrderId,
-                    redirectUrl: payment.redirectUrl,
-                    finalAmount: breakdown.finalAmount,
-                    actualPaymentAmount: actualPaymentAmount,
-                    isTestAccount: isTestPayment,
-                    breakdown: {
-                        baseAmount,
-                        gstPercentage: breakdown.gstPercentage,
-                        gstAmount: breakdown.gstAmount,
-                        additionalCharges: breakdown.charges,
-                        couponDiscount: breakdown.couponDiscount,
-                        finalAmount: breakdown.finalAmount,
-                        testAmount: isTestPayment ? actualPaymentAmount : null,
-                    },
-                });
-            } catch (phonePeErr) {
-                console.error('❌ PhonePe pay error:', phonePeErr.message);
-                console.error('❌ PhonePe error details:', {
-                    type: phonePeErr.type,
-                    code: phonePeErr.code,
-                    httpStatusCode: phonePeErr.httpStatusCode,
-                    data: phonePeErr.data
-                });
-                // Mark payment as failed and do NOT auto-complete or add credits
-                payment.status = 'failed';
-                payment.phonePeError = phonePeErr.message;
-                try { await payment.save({ validateModifiedOnly: true }); } catch (e) { console.warn('Failed to save failed payment:', e.message); }
-                return res.status(502).json({ message: 'Payment gateway error', detail: phonePeErr.message });
-            }
+        if (amountInPaise < 100) {
+            throw new Error('Minimum amount is ₹1');
         }
+
+        const redirectUrl = `${process.env.FRONTEND_URL}/admin/billing?payment=${merchantOrderId}`;
+
+        console.log("🔵 Initiating PhonePe Payment:", {
+            merchantOrderId,
+            amountInPaise,
+            redirectUrl
+        });
+
+        const pgSdk = require('pg-sdk-node');
+        const requestPayload = pgSdk.StandardCheckoutPayRequest.builder()
+            .merchantOrderId(merchantOrderId)
+            .amount(amountInPaise)
+            .redirectUrl(redirectUrl)
+            .build();
+
+        // ✅ CORRECT SDK USAGE (Builder Pattern)
+        const response = await client.pay(requestPayload);
+
+        console.log("✅ PhonePe SDK Response:", JSON.stringify(response, null, 2));
+
+        // Handle response safely
+        const redirect =
+            response?.redirectUrl ||
+            response?.data?.redirectUrl ||
+            response?.instrumentResponse?.redirectInfo?.url ||
+            null;
+
+        if (!redirect) {
+            throw new Error("No redirect URL received from PhonePe");
+        }
+
+        payment.redirectUrl = redirect;
+        await payment.save();
+
+        return res.json({
+            paymentId: payment._id,
+            merchantOrderId,
+            redirectUrl: redirect,
+            finalAmount: breakdown.finalAmount,
+            actualPaymentAmount,
+            isTestAccount: isTestPayment,
+            breakdown: {
+                baseAmount,
+                gstPercentage: breakdown.gstPercentage,
+                gstAmount: breakdown.gstAmount,
+                additionalCharges: breakdown.charges,
+                couponDiscount: breakdown.couponDiscount,
+                finalAmount: breakdown.finalAmount,
+                testAmount: isTestPayment ? actualPaymentAmount : null,
+            },
+        });
+
+    } catch (phonePeErr) {
+        console.error('❌ PhonePe pay error:', phonePeErr);
+
+        payment.status = 'failed';
+        payment.phonePeError = phonePeErr.message;
+
+        try {
+            await payment.save({ validateModifiedOnly: true });
+        } catch (e) {
+            console.warn('Failed to save failed payment:', e.message);
+        }
+
+        return res.status(502).json({
+            message: 'Payment gateway error',
+            detail: phonePeErr.message,
+        });
+    }
+}
 
         // If PhonePe not configured or amount is 0, auto-complete
         payment.status = 'completed';

@@ -8,8 +8,7 @@ export default function ContactFormModal({ isOpen, onClose, planName = '' }) {
     email: '',
     phone: '',
     company: '',
-    requirements: '',
-    planInterest: planName
+    requirements: ''
   });
   const [status, setStatus] = useState('idle'); // idle | loading | success | error
   const [errorMsg, setErrorMsg] = useState('');
@@ -18,8 +17,8 @@ export default function ContactFormModal({ isOpen, onClose, planName = '' }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.phone.trim() || !form.email.trim()) {
-      setErrorMsg('Name, phone and email are required');
+    if (!form.name.trim() || !form.phone.trim()) {
+      setErrorMsg('Name and phone are required');
       return;
     }
 
@@ -30,7 +29,7 @@ export default function ContactFormModal({ isOpen, onClose, planName = '' }) {
       const res = await fetch(`${API_BASE_URL}/leads`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form, planInterest: planName || form.planInterest })
+        body: JSON.stringify({ ...form, source: planName ? `pricing-${planName}` : 'modal' })
       });
 
       if (!res.ok) {
@@ -48,7 +47,7 @@ export default function ContactFormModal({ isOpen, onClose, planName = '' }) {
       setTimeout(() => {
         onClose();
         setStatus('idle');
-        setForm({ name: '', email: '', phone: '', company: '', requirements: '', planInterest: '' });
+        setForm({ name: '', email: '', phone: '', company: '', requirements: '' });
       }, 2500);
     } catch (err) {
       setErrorMsg(err.message);
@@ -79,7 +78,7 @@ export default function ContactFormModal({ isOpen, onClose, planName = '' }) {
           <form onSubmit={handleSubmit} className="p-8">
             <h3 className="text-2xl font-black text-white mb-1 tracking-tight">Get Started</h3>
             <p className="text-sm text-gray-400 font-medium mb-6">
-              {planName ? `Interested in ${planName} plan` : 'Tell us about your needs and we\'ll get back to you'}
+              {planName ? `Inquiry regarding ${planName} plan` : 'Tell us about your needs and we\'ll get back to you'}
             </p>
 
             <div className="space-y-4">
@@ -111,13 +110,12 @@ export default function ContactFormModal({ isOpen, onClose, planName = '' }) {
               {/* Row 2: Email + Company */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Email *</label>
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Email</label>
                   <input
                     type="email"
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
                     placeholder="work@company.com"
-                    required
                     className="w-full px-4 py-3 bg-slate-800/80 border border-white/10 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-medium text-sm"
                   />
                 </div>
@@ -133,21 +131,6 @@ export default function ContactFormModal({ isOpen, onClose, planName = '' }) {
                 </div>
               </div>
 
-              {!planName && (
-                <div>
-                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Interested Plan</label>
-                   <select
-                    value={form.planInterest}
-                    onChange={(e) => setForm({ ...form, planInterest: e.target.value })}
-                    className="w-full px-4 py-3 bg-slate-800/80 border border-white/10 rounded-xl text-white appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-medium text-sm cursor-pointer"
-                  >
-                    <option value="">Select a Plan</option>
-                    <option value="Starter">Starter Plan</option>
-                    <option value="Growth">Growth Plan</option>
-                    <option value="Enterprise">Enterprise Solution</option>
-                  </select>
-                </div>
-              )}
 
               <div>
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 block">Requirements</label>

@@ -7,29 +7,31 @@ const { sendLeadConfirmation } = require('../utils/emailService');
 // POST /leads — Public: capture a new lead from the website
 router.post('/', async (req, res) => {
   try {
-    const { name, email, phone, company, requirements, planInterest } = req.body;
+    const { name, email, phone, company, requirements } = req.body;
 
-    if (!name || !email || !phone) {
-      return res.status(400).json({ message: 'Name, phone and email are required' });
+    if (!name || !phone) {
+      return res.status(400).json({ message: 'Name and phone are required' });
     }
 
-    // Basic email validation
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    // Basic email validation if provided
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ message: 'Please provide a valid email address' });
     }
 
     const lead = await Lead.create({
       name: name.trim(),
-      email: email.trim().toLowerCase(),
+      email: email ? email.trim().toLowerCase() : '',
       phone: (phone || '').trim(),
       company: (company || '').trim(),
       requirements: (requirements || '').trim(),
-      planInterest: (planInterest || '').trim(),
       source: 'website'
     });
 
     // Send confirmation emails (non-blocking)
-    sendLeadConfirmation(lead).catch(() => {});
+    console.log(`[LeadRoute] Lead created, triggering email service for lead ID: ${lead._id}`);
+    sendLeadConfirmation(lead).catch((err) => {
+      console.error(`[LeadRoute] Email service error for lead ID ${lead._id}:`, err);
+    });
 
     res.status(201).json({ 
       message: 'Thank you! We will contact you shortly.',

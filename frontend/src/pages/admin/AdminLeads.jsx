@@ -80,7 +80,7 @@ const AdminLeads = () => {
                             <thead className="bg-slate-50 border-b border-slate-100 uppercase text-[11px] font-black tracking-wider text-slate-400">
                                 <tr>
                                     <th className="px-6 py-4">Contact Detail</th>
-                                    <th className="px-6 py-4">Company & Plan</th>
+                                    <th className="px-6 py-4">Company</th>
                                     <th className="px-6 py-4">Requirements</th>
                                     <th className="px-6 py-4">Status & Date</th>
                                     <th className="px-6 py-4 text-right">Actions</th>
@@ -100,7 +100,6 @@ const AdminLeads = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="font-bold text-slate-700 text-sm flex items-center gap-2"><Briefcase size={14} className="text-slate-400"/> {l.company || 'Not Specified'}</div>
-                                            {l.planInterest && <div className="inline-block mt-2 px-2 py-0.5 bg-indigo-50 border border-indigo-100 text-indigo-600 text-[10px] font-black uppercase tracking-wider rounded-md">{l.planInterest} Plan</div>}
                                         </td>
                                         <td className="px-6 py-4">
                                             <p className="text-xs text-slate-600 font-medium whitespace-pre-wrap max-w-xs">{l.requirements || '-'}</p>

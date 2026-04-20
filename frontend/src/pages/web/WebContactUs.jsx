@@ -19,15 +19,15 @@ const SectionTag = ({ children, className = '' }) => (
 
 export default function WebContactUs() {
     const [form, setForm] = useState({
-        name: '', phone: '', email: '', company: '', requirements: '', planInterest: ''
+        name: '', phone: '', email: '', company: '', requirements: ''
     });
     const [status, setStatus] = useState('idle'); // idle | loading | success | error
     const [errorMsg, setErrorMsg] = useState('');
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!form.name.trim() || !form.phone.trim() || !form.email.trim()) {
-            setErrorMsg('Name, phone and email are required');
+        if (!form.name.trim() || !form.phone.trim()) {
+            setErrorMsg('Name and phone are required');
             return;
         }
 
@@ -58,7 +58,7 @@ export default function WebContactUs() {
             setStatus('success');
             setTimeout(() => {
                 setStatus('idle');
-                setForm({ name: '', phone: '', email: '', company: '', requirements: '', planInterest: '' });
+                setForm({ name: '', phone: '', email: '', company: '', requirements: '' });
             }, 5000);
         } catch (err) {
             setErrorMsg(err.message);
@@ -154,7 +154,7 @@ export default function WebContactUs() {
 
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Work Email *</label>
+                                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Work Email</label>
                                                     <div className="relative group">
                                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-indigo-400 transition-colors">
                                                             <Mail size={18} />
@@ -164,49 +164,27 @@ export default function WebContactUs() {
                                                             value={form.email}
                                                             onChange={(e) => setForm({ ...form, email: e.target.value })}
                                                             placeholder="name@brand.com"
-                                                            required
                                                             className="w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-white/10 rounded-2xl text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/40 transition-all font-bold text-sm"
                                                         />
                                                     </div>
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Interested Plan</label>
+                                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Company Name</label>
                                                     <div className="relative group">
                                                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-indigo-400 transition-colors">
-                                                            <Layers size={18} />
+                                                            <Building2 size={18} />
                                                         </div>
-                                                        <select
-                                                            value={form.planInterest}
-                                                            onChange={(e) => setForm({ ...form, planInterest: e.target.value })}
-                                                            className="w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-white/10 rounded-2xl text-white appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/40 transition-all font-bold text-sm cursor-pointer"
-                                                        >
-                                                            <option value="" className="bg-slate-900">Select a Plan</option>
-                                                            <option value="Starter" className="bg-slate-900">Starter Plan</option>
-                                                            <option value="Growth" className="bg-slate-900">Growth Plan</option>
-                                                            <option value="Enterprise" className="bg-slate-900">Enterprise Solution</option>
-                                                        </select>
-                                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none">
-                                                            <ChevronRight size={14} className="rotate-90" />
-                                                        </div>
+                                                        <input
+                                                            type="text"
+                                                            value={form.company}
+                                                            onChange={(e) => setForm({ ...form, company: e.target.value })}
+                                                            placeholder="Google Inc."
+                                                            className="w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-white/10 rounded-2xl text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/40 transition-all font-bold text-sm"
+                                                        />
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Company Name</label>
-                                                <div className="relative group">
-                                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-indigo-400 transition-colors">
-                                                        <Building2 size={18} />
-                                                    </div>
-                                                    <input
-                                                        type="text"
-                                                        value={form.company}
-                                                        onChange={(e) => setForm({ ...form, company: e.target.value })}
-                                                        placeholder="Google Inc."
-                                                        className="w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-white/10 rounded-2xl text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/40 transition-all font-bold text-sm"
-                                                    />
-                                                </div>
-                                            </div>
 
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Tell us what you need</label>

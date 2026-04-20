@@ -1,25 +1,44 @@
 const nodemailer = require('nodemailer');
+const fs = require('fs');
+const path = require('path');
 
-// Create transporter
+const logFile = path.join(__dirname, '../../email_debug.log');
+
+const logToFile = (msg) => {
+  const timestamp = new Date().toISOString();
+  fs.appendFileSync(logFile, `[${timestamp}] ${msg}\n`);
+};
+
+let transporterInstance = null;
+
 const createTransporter = () => {
-  const port = parseInt(process.env.EMAIL_PORT || '587', 10);
-  const host = process.env.EMAIL_HOST || 'smtp.gmail.com';
-  
-  console.log(`[EmailService] Creating transporter for ${host}:${port} (user: ${process.env.EMAIL_USER})`);
-  
-  return nodemailer.createTransport({
-    host: host,
-    port: port,
-    secure: port === 465, // true for 465, false for other ports
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-    tls: {
-      // Do not fail on invalid certs (common for some SMTP setups)
-      rejectUnauthorized: false
-    }
-  });
+  if (transporterInstance) return transporterInstance;
+
+  try {
+    const port = parseInt(process.env.EMAIL_PORT || '587', 10);
+    const host = process.env.EMAIL_HOST || 'smtp.zoho.in';
+    
+    console.log(`[EmailService] Initializing transporter for ${host}:${port}`);
+    
+    transporterInstance = nodemailer.createTransport({
+      host: host,
+      port: port,
+      secure: port === 465,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+      tls: {
+        rejectUnauthorized: false
+      }
+    });
+
+    return transporterInstance;
+  } catch (err) {
+    console.error('[EmailService] Failed to create transporter:', err);
+    logToFile(`Failed to create transporter: ${err.message}`);
+    throw err;
+  }
 };
 
 // Send email notification
@@ -193,6 +212,7 @@ module.exports = { sendOrderStatusEmail, sendLeadConfirmation, sendCouponExpiryN
 
 // ── Lead Confirmation Email ──
 async function sendLeadConfirmation(leadData) {
+  logToFile(`ENTRY: sendLeadConfirmation called for ${leadData.name}`);
   try {
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
         console.warn('[EmailService] Missing email credentials in env');
@@ -200,110 +220,129 @@ async function sendLeadConfirmation(leadData) {
     }
     const transporter = createTransporter();
 
-    console.log(`[EmailService] Attempting to send thank-you email to ${leadData.email}...`);
-    // Email to lead
-    await transporter.sendMail({
-      from: `"Authentiks" <${process.env.EMAIL_USER}>`,
-      to: leadData.email,
-      subject: 'Thank you for your interest in Authentiks!',
-      html: `
-        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-          <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:30px;text-align:center;border-radius:12px 12px 0 0;">
-            <h1 style="margin:0;">🔐 Authentiks</h1>
-            <p style="margin:8px 0 0;">World-Class Brand Protection</p>
-          </div>
-          <div style="background:#f9f9f9;padding:25px;border:1px solid #ddd;">
-            <h2>Hi ${leadData.name},</h2>
-            <p>Thank you for your interest in Authentiks! We've received your inquiry and our team will get back to you within 24 hours.</p>
-            <div style="background:white;padding:15px;margin:15px 0;border-radius:8px;border-left:4px solid #667eea;">
-              <p><strong>Plan Interest:</strong> ${leadData.planInterest || 'General Inquiry'}</p>
-              ${leadData.requirements ? `<p><strong>Your Requirements:</strong> ${leadData.requirements}</p>` : ''}
-            </div>
-            <p>In the meantime, feel free to explore our features at <a href="https://authentiks.in">authentiks.in</a></p>
-          </div>
-          <div style="background:#333;color:#fff;padding:15px;text-align:center;border-radius:0 0 8px 8px;font-size:12px;">
-            <p>© 2026 Authentiks - QR Authentication System</p>
-          </div>
-        </div>
-      `
-    });
-    console.log(`[EmailService] Thank-you email sent successfully to ${leadData.email}`);
+    console.log(`[EmailService] Processing lead confirmation for: ${leadData.name} (${leadData.email || 'no email'})`);
+    logToFile(`Processing lead confirmation for: ${leadData.name} (${leadData.email || 'no email'})`);
+    
+    const emailPromises = [];
 
-    // Email to admin + lead notification emails
+    // 1. Thank-you email to user
+    if (leadData.email) {
+      console.log(`[EmailService] Queueing thank-you email to ${leadData.email}...`);
+      emailPromises.push(
+        transporter.sendMail({
+          from: `"Authentiks" <${process.env.EMAIL_USER}>`,
+          to: leadData.email,
+          subject: 'Thank you for your interest in Authentiks!',
+          html: `
+            <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+              <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:30px;text-align:center;border-radius:12px 12px 0 0;">
+                <h1 style="margin:0;">🔐 Authentiks</h1>
+                <p style="margin:8px 0 0;">World-Class Brand Protection</p>
+              </div>
+              <div style="background:#f9f9f9;padding:25px;border:1px solid #ddd;">
+                <h2>Hi ${leadData.name},</h2>
+                <p>Thank you for your interest in Authentiks! We've received your inquiry and our team will get back to you within 24 hours.</p>
+                <div style="background:white;padding:15px;margin:15px 0;border-radius:8px;border-left:4px solid #667eea;">
+                  ${leadData.requirements ? `<p><strong>Your Requirements:</strong> ${leadData.requirements}</p>` : '<p>We have received your general inquiry.</p>'}
+                </div>
+                <p>In the meantime, feel free to explore our features at <a href="https://authentiks.in">authentiks.in</a></p>
+              </div>
+              <div style="background:#333;color:#fff;padding:15px;text-align:center;border-radius:0 0 8px 8px;font-size:12px;">
+                <p>© 2026 Authentiks - QR Authentication System</p>
+              </div>
+            </div>
+          `
+        }).then(info => {
+            console.log(`[EmailService] Thank-you email sent successfully to ${leadData.email}. Response: ${info.response}`);
+            logToFile(`Thank-you email sent successfully to ${leadData.email}. Response: ${info.response}`);
+        }).catch(userEmailErr => {
+            console.error(`[EmailService] Failed to send thank-you email to ${leadData.email}:`, userEmailErr);
+            logToFile(`Failed to send thank-you email to ${leadData.email}: ${userEmailErr.message}`);
+        })
+      );
+    }
+
+    // 2. Lead notification email to admin
     const notificationEmails = [];
     const adminEmail = process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
     if (adminEmail) notificationEmails.push(adminEmail);
     
-    // Add all LEAD_NOTIFICATION_EMAILS (comma-separated)
     const leadEmails = (process.env.LEAD_NOTIFICATION_EMAILS || '').split(',').map(e => e.trim()).filter(e => e && e.includes('@'));
     leadEmails.forEach(e => {
       if (!notificationEmails.includes(e)) notificationEmails.push(e);
     });
 
     if (notificationEmails.length > 0) {
-      console.log(`[EmailService] Attempting to send lead notification to admin(s): ${notificationEmails.join(', ')}`);
-      
-      const info = await transporter.sendMail({
-        from: `"Authentiks Leads" <${process.env.EMAIL_USER}>`,
-        to: notificationEmails.join(','),
-        subject: `🔔 New Lead: ${leadData.name} (${leadData.company || 'No Company'})`,
-        html: `
-          <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; background-color: #f8fafc; color: #1e293b;">
-            <div style="background-color: #ffffff; border-radius: 24px; padding: 40px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
-              
-              <div style="margin-bottom: 32px; border-bottom: 2px solid #3b82f6; padding-bottom: 16px;">
-                <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.025em;">New Lead Captured</h1>
-                <p style="margin: 4px 0 0; color: #64748b; font-weight: 500;">A new brand authentication inquiry has been received.</p>
-              </div>
-
-              <div style="display: grid; gap: 20px;">
+      console.log(`[EmailService] Queueing lead notification to admin(s): ${notificationEmails.join(', ')}`);
+      emailPromises.push(
+        transporter.sendMail({
+          from: `"Authentiks Leads" <${process.env.EMAIL_USER}>`,
+          to: notificationEmails.join(','),
+          subject: `🔔 New Lead: ${leadData.name} (${leadData.company || 'No Company'})`,
+          html: `
+            <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; background-color: #f8fafc; color: #1e293b;">
+              <div style="background-color: #ffffff; border-radius: 24px; padding: 40px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
                 
-                <div style="background-color: #f1f5f9; padding: 20px; border-radius: 16px;">
-                  <span style="display: block; font-size: 11px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Brand Expert</span>
-                  <span style="display: block; font-size: 18px; font-weight: 700; color: #0f172a;">${leadData.name}</span>
+                <div style="margin-bottom: 32px; border-bottom: 2px solid #3b82f6; padding-bottom: 16px;">
+                  <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.025em;">New Lead Captured</h1>
+                  <p style="margin: 4px 0 0; color: #64748b; font-weight: 500;">A new brand authentication inquiry has been received.</p>
                 </div>
 
-                <div style="margin-top: 20px;">
-                  <table style="width: 100%; border-collapse: separate; border-spacing: 0 8px;">
-                    <tr>
-                      <td style="padding: 12px; background-color: #f8fafc; border-radius: 12px 0 0 12px; width: 40%; font-weight: 700; color: #475569; font-size: 14px;">Email</td>
-                      <td style="padding: 12px; background-color: #f8fafc; border-radius: 0 12px 12px 0; color: #0f172a; font-size: 14px; font-weight: 600;">${leadData.email}</td>
-                    </tr>
-                    <tr>
-                      <td style="padding: 12px; background-color: #ffffff; border: 1px solid #f1f5f9; border-radius: 12px 0 0 12px; width: 40%; font-weight: 700; color: #475569; font-size: 14px;">Phone</td>
-                      <td style="padding: 12px; background-color: #ffffff; border: 1px solid #f1f5f9; border-radius: 0 12px 12px 0; color: #0f172a; font-size: 14px; font-weight: 600;">${leadData.phone || 'Not provided'}</td>
-                    </tr>
-                    <tr>
-                      <td style="padding: 12px; background-color: #f8fafc; border-radius: 12px 0 0 12px; width: 40%; font-weight: 700; color: #475569; font-size: 14px;">Company</td>
-                      <td style="padding: 12px; background-color: #f8fafc; border-radius: 0 12px 12px 0; color: #0f172a; font-size: 14px; font-weight: 600;">${leadData.company || 'Not provided'}</td>
-                    </tr>
-                    <tr>
-                      <td style="padding: 12px; background-color: #ffffff; border: 1px solid #f1f5f9; border-radius: 12px 0 0 12px; width: 40%; font-weight: 700; color: #475569; font-size: 14px;">Interested Plan</td>
-                      <td style="padding: 12px; background-color: #ffffff; border: 1px solid #f1f5f9; border-radius: 0 12px 12px 0; color: #3b82f6; font-size: 14px; font-weight: 800;">${leadData.planInterest || 'General Inquiry'}</td>
-                    </tr>
-                  </table>
+                <div style="display: grid; gap: 20px;">
+                  
+                  <div style="background-color: #f1f5f9; padding: 20px; border-radius: 16px;">
+                    <span style="display: block; font-size: 11px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Brand Expert</span>
+                    <span style="display: block; font-size: 18px; font-weight: 700; color: #0f172a;">${leadData.name}</span>
+                  </div>
+
+                  <div style="margin-top: 20px;">
+                    <table style="width: 100%; border-collapse: separate; border-spacing: 0 8px;">
+                      <tr>
+                        <td style="padding: 12px; background-color: #f8fafc; border-radius: 12px 0 0 12px; width: 40%; font-weight: 700; color: #475569; font-size: 14px;">Email</td>
+                        <td style="padding: 12px; background-color: #f8fafc; border-radius: 0 12px 12px 0; color: #0f172a; font-size: 14px; font-weight: 600;">${leadData.email || 'Not provided'}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 12px; background-color: #ffffff; border: 1px solid #f1f5f9; border-radius: 12px 0 0 12px; width: 40%; font-weight: 700; color: #475569; font-size: 14px;">Phone</td>
+                        <td style="padding: 12px; background-color: #ffffff; border: 1px solid #f1f5f9; border-radius: 0 12px 12px 0; color: #0f172a; font-size: 14px; font-weight: 600;">${leadData.phone || 'Not provided'}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 12px; background-color: #f8fafc; border-radius: 12px 0 0 12px; width: 40%; font-weight: 700; color: #475569; font-size: 14px;">Company</td>
+                        <td style="padding: 12px; background-color: #f8fafc; border-radius: 0 12px 12px 0; color: #0f172a; font-size: 14px; font-weight: 600;">${leadData.company || 'Not provided'}</td>
+                      </tr>
+                    </table>
+                  </div>
+
+                  <div style="margin-top: 24px; padding: 24px; background-color: #0f172a; border-radius: 20px; color: #f8fafc;">
+                    <span style="display: block; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;">Requirements & Details</span>
+                    <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #e2e8f0; font-style: italic;">
+                      "${leadData.requirements || 'The user did not provide specific requirements.'}"
+                    </p>
+                  </div>
+
                 </div>
 
-                <div style="margin-top: 24px; padding: 24px; background-color: #0f172a; border-radius: 20px; color: #f8fafc;">
-                  <span style="display: block; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;">Requirements & Details</span>
-                  <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #e2e8f0; font-style: italic;">
-                    "${leadData.requirements || 'The user did not provide specific requirements.'}"
-                  </p>
+                <div style="margin-top: 40px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 24px;">
+                  <p style="font-size: 12px; color: #94a3b8; font-weight: 600; margin: 0;">This lead was captured from the Authentiks Public Website.</p>
                 </div>
-
-              </div>
-
-              <div style="margin-top: 40px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 24px;">
-                <p style="font-size: 12px; color: #94a3b8; font-weight: 600; margin: 0;">This lead was captured from the Authentiks Public Website.</p>
               </div>
             </div>
-          </div>
-        `
-      });
-      console.log(`[EmailService] Lead notification sent. Response: ${info.response}`);
+          `
+        }).then(info => {
+            console.log(`[EmailService] Lead notification sent. Response: ${info.response}`);
+            logToFile(`Lead notification sent. Response: ${info.response}`);
+        }).catch(adminEmailErr => {
+            console.error('[EmailService] Failed to send admin notification:', adminEmailErr);
+            logToFile(`Failed to send admin notification: ${adminEmailErr.message}`);
+        })
+      );
     }
+
+    // Wait for all emails to complete in parallel
+    await Promise.all(emailPromises);
+    console.log('[EmailService] All lead confirmation emails processed.');
   } catch (err) {
-    console.warn('[EmailService] Lead email error (non-blocking):', err.stack || err.message);
+    console.error('[EmailService] Lead email error (non-blocking):', err.stack || err.message);
+    logToFile(`Lead email error (non-blocking): ${err.stack || err.message}`);
   }
 }
 

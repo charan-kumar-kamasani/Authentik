@@ -22,6 +22,7 @@ import statusValid from "../../assets/logo.svg";
 export default function Home() {
   const navigate = useNavigate();
   const [recentScans, setRecentScans] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalScans: 0,
     authentiks: 0,
@@ -45,9 +46,11 @@ export default function Home() {
     const fetchAllData = async () => {
       const token = localStorage.getItem("token");
       if (!token) {
+        setLoading(false);
         return;
       }
 
+      setLoading(true);
       try {
         const [statsRes, historyRes, profileData] = await Promise.all([
           fetch(`${API_BASE_URL}/scan/stats`, {
@@ -136,6 +139,8 @@ export default function Home() {
         }
       } catch (err) {
         console.error("Failed to fetch home data:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -212,6 +217,7 @@ export default function Home() {
                 <img
                   src={banner}
                   alt={`Banner ${index + 1}`}
+                  loading="lazy"
                   className="w-full h-full object-contain"
                 />
               </div>
@@ -234,7 +240,22 @@ export default function Home() {
           </div>
         </div>
 
-        {recentScans.length > 0 ? (
+        {loading ? (
+          <div className="px-4">
+            <ScanQrCodeButton onScanClick={() => {}} />
+            <div className="grid grid-cols-4 gap-3 mb-6">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="skeleton h-[90px] rounded-[16px]" />
+              ))}
+            </div>
+            <div className="h-6 w-32 skeleton mb-4" />
+            <div className="flex flex-col gap-3.5">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="skeleton h-20 rounded-[20px]" />
+              ))}
+            </div>
+          </div>
+        ) : recentScans.length > 0 ? (
           <>
             <ScanQrCodeButton onScanClick={handleScanClick} />
             {/* Stats Grid */}
@@ -279,90 +300,84 @@ export default function Home() {
                 </button>
               </div>
               <div className="flex flex-col gap-3.5">
-                {recentScans.length === 0 ? (
-                  <p className="text-gray-500 text-sm text-center py-4">
-                    No recent scans found.
-                  </p>
-                ) : (
-                  recentScans.slice(0, 5).map((scan, index) => (
-                    <div
-                      key={scan.id}
-                      onClick={() => handleRecentScanClick(scan)}
-                      className="relative group cursor-pointer"
-                      style={{
-                        animation: `fadeSlideUp 0.5s ease-out forwards`,
-                        animationDelay: `${index * 0.1}s`,
-                        opacity: 0
-                      }}
-                    >
-                      {/* Gradient background glow */}
-                      <div className={`absolute inset-0 rounded-[20px] blur-lg opacity-20 transition-opacity duration-300 group-hover:opacity-30 ${
-                        scan.statusColor.includes('red') 
-                          ? 'bg-gradient-to-br from-red-400 to-red-600' 
-                          : scan.statusColor.includes('amber') 
-                          ? 'bg-gradient-to-br from-amber-400 to-amber-600'
-                          : 'bg-gradient-to-br from-[#2CA4D6] to-[#0D4E96]'
-                      }`} />
-                      
-                      {/* Main card */}
-                      <div className="relative bg-white/95 backdrop-blur-sm rounded-[20px] p-4 flex items-center shadow-[0_4px_20px_rgba(13,78,150,0.12)] border border-white/50 hover:shadow-[0_8px_30px_rgba(13,78,150,0.2)] transition-all duration-300 hover:scale-[1.02]">
-                        {/* Icon Container with gradient circle */}
-                        <div className="relative w-[52px] h-[52px] flex-shrink-0 mr-4">
-                          {/* Glow effect */}
-                          <div className={`absolute inset-0 rounded-full blur-md opacity-40 ${
-                            scan.statusColor.includes('red') 
-                              ? 'bg-gradient-to-br from-red-400 to-red-600' 
-                              : scan.statusColor.includes('amber') 
-                              ? 'bg-gradient-to-br from-amber-400 to-amber-600'
-                              : 'bg-gradient-to-br from-[#2CA4D6] to-[#0D4E96]'
-                          }`} />
-                          
-                          {/* Icon background */}
-                          <div className={`relative w-full h-full rounded-full flex items-center justify-center shadow-lg border-2 ${
-                            scan.statusColor.includes('red') 
-                              ? 'bg-gradient-to-br from-[#FFEBEE] to-[#FFCDD2] border-red-200/50' 
-                              : scan.statusColor.includes('amber') 
-                              ? 'bg-gradient-to-br from-[#FFF8E1] to-[#FFECB3] border-amber-200/50'
-                              : 'bg-gradient-to-br from-[#E8F4F9] to-[#F0F9FF] border-[#2CA4D6]/30'
-                          }`}>
-                            <img
-                              src={scan.icon}
-                              alt={scan.title}
-                              className="w-[32px] h-[32px] object-contain"
-                            />
-                          </div>
-                        </div>
+                {recentScans.slice(0, 5).map((scan, index) => (
+                  <div
+                    key={scan.id}
+                    onClick={() => handleRecentScanClick(scan)}
+                    className="relative group cursor-pointer"
+                    style={{
+                      animation: `fadeSlideUp 0.5s ease-out forwards`,
+                      animationDelay: `${index * 0.1}s`,
+                      opacity: 0
+                    }}
+                  >
+                    {/* Gradient background glow */}
+                    <div className={`absolute inset-0 rounded-[20px] blur-lg opacity-20 transition-opacity duration-300 group-hover:opacity-30 ${
+                      scan.statusColor.includes('red') 
+                        ? 'bg-gradient-to-br from-red-400 to-red-600' 
+                        : scan.statusColor.includes('amber') 
+                        ? 'bg-gradient-to-br from-amber-400 to-amber-600'
+                        : 'bg-gradient-to-br from-[#2CA4D6] to-[#0D4E96]'
+                    }`} />
+                    
+                    {/* Main card */}
+                    <div className="relative bg-white/95 backdrop-blur-sm rounded-[20px] p-4 flex items-center shadow-[0_4px_20px_rgba(13,78,150,0.12)] border border-white/50 hover:shadow-[0_8px_30px_rgba(13,78,150,0.2)] transition-all duration-300 hover:scale-[1.02]">
+                      {/* Icon Container with gradient circle */}
+                      <div className="relative w-[52px] h-[52px] flex-shrink-0 mr-4">
+                        {/* Glow effect */}
+                        <div className={`absolute inset-0 rounded-full blur-md opacity-40 ${
+                          scan.statusColor.includes('red') 
+                            ? 'bg-gradient-to-br from-red-400 to-red-600' 
+                            : scan.statusColor.includes('amber') 
+                            ? 'bg-gradient-to-br from-amber-400 to-amber-600'
+                            : 'bg-gradient-to-br from-[#2CA4D6] to-[#0D4E96]'
+                        }`} />
                         
-                        {/* Text Content */}
-                        <div className="flex-1 min-w-0">
-                          <h4
-                            className={`font-black text-[15px] leading-tight mb-1.5 ${scan.statusColor}`}
-                          >
-                            {scan.title}
-                          </h4>
-                          <div className="flex items-center gap-2">
-                            <svg className="w-3 h-3 text-gray-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                            </svg>
-                            <p className="text-gray-600 text-[11px] font-semibold truncate">
-                              {scan.date} • {scan.time}
-                            </p>
-                          </div>
+                        {/* Icon background */}
+                        <div className={`relative w-full h-full rounded-full flex items-center justify-center shadow-lg border-2 ${
+                          scan.statusColor.includes('red') 
+                            ? 'bg-gradient-to-br from-[#FFEBEE] to-[#FFCDD2] border-red-200/50' 
+                            : scan.statusColor.includes('amber') 
+                            ? 'bg-gradient-to-br from-[#FFF8E1] to-[#FFECB3] border-amber-200/50'
+                            : 'bg-gradient-to-br from-[#E8F4F9] to-[#F0F9FF] border-[#2CA4D6]/30'
+                        }`}>
+                          <img
+                            src={scan.icon}
+                            alt={scan.title}
+                            className="w-[32px] h-[32px] object-contain"
+                          />
                         </div>
-                        
-                        {/* Arrow indicator */}
-                        <svg 
-                          className="w-5 h-5 text-gray-400 ml-2 flex-shrink-0 group-hover:translate-x-1 transition-transform duration-300" 
-                          fill="none" 
-                          stroke="currentColor" 
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
                       </div>
+                      
+                      {/* Text Content */}
+                      <div className="flex-1 min-w-0">
+                        <h4
+                          className={`font-black text-[15px] leading-tight mb-1.5 ${scan.statusColor}`}
+                        >
+                          {scan.title}
+                        </h4>
+                        <div className="flex items-center gap-2">
+                          <svg className="w-3 h-3 text-gray-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                          </svg>
+                          <p className="text-gray-600 text-[11px] font-semibold truncate">
+                            {scan.date} • {scan.time}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Arrow indicator */}
+                      <svg 
+                        className="w-5 h-5 text-gray-400 ml-2 flex-shrink-0 group-hover:translate-x-1 transition-transform duration-300" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
                     </div>
-                  ))
-                )}
+                  </div>
+                ))}
               </div>
             </div>
             

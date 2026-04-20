@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
-import { QRCodeSVG } from 'qrcode.react';
 import { 
     CheckCircle2, AlertTriangle, ShieldAlert, ArrowRight,
     ScanLine, Smartphone, Link, TrendingUp, Users, RefreshCw,
     ChevronLeft
 } from 'lucide-react';
+
+// Demo QR Images
+import authenticImg from '../../assets/demo_qrs/authentic.jpg';
+import alertImg from '../../assets/demo_qrs/alert.jpg';
 
 const Glow = ({ color, className }) => (
     <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
@@ -85,19 +88,11 @@ export default function WebLiveDemo() {
                                 </div>
                             </div>
                             
-                            <div className="bg-white p-4 rounded-3xl mx-auto w-fit mb-8 shadow-xl relative group-hover:scale-105 transition-transform">
-                                {/* SVG Logo overlay in center of QR */}
-                                <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                                    <div className="bg-white p-1 rounded-md shadow-sm">
-                                        <img src="/logo.svg" alt="Auth" className="w-6 h-6" />
-                                    </div>
-                                </div>
-                                <QRCodeSVG 
-                                    value={genuineUrl} 
-                                    size={200}
-                                    fgColor="#000000"
-                                    bgColor="#ffffff"
-                                    level="H" 
+                            <div className="bg-white p-2 rounded-3xl mx-auto w-fit mb-8 shadow-xl relative group-hover:scale-105 transition-transform overflow-hidden">
+                                <img 
+                                    src={authenticImg} 
+                                    alt="Genuine QR" 
+                                    className="w-[220px] h-[220px] object-contain rounded-2xl" 
                                 />
                             </div>
 
@@ -120,18 +115,11 @@ export default function WebLiveDemo() {
                                 </div>
                             </div>
                             
-                            <div className="bg-white p-4 rounded-3xl mx-auto w-fit mb-8 shadow-xl relative group-hover:scale-105 transition-transform">
-                                <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                                    <div className="bg-white p-1 rounded-md shadow-sm">
-                                        <img src="/logo.svg" alt="Auth" className="w-6 h-6" />
-                                    </div>
-                                </div>
-                                <QRCodeSVG 
-                                    value={duplicateUrl} 
-                                    size={200}
-                                    fgColor="#000000"
-                                    bgColor="#ffffff"
-                                    level="H" 
+                            <div className="bg-white p-2 rounded-3xl mx-auto w-fit mb-8 shadow-xl relative group-hover:scale-105 transition-transform overflow-hidden">
+                                <img 
+                                    src={alertImg} 
+                                    alt="Duplicate QR" 
+                                    className="w-[220px] h-[220px] object-contain rounded-2xl" 
                                 />
                             </div>
 
@@ -154,18 +142,11 @@ export default function WebLiveDemo() {
                                 </div>
                             </div>
                             
-                            <div className="bg-white p-4 rounded-3xl mx-auto w-fit mb-8 shadow-xl relative group-hover:scale-105 transition-transform">
-                                <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                                    <div className="bg-white p-1 rounded-md shadow-sm">
-                                        <ShieldAlert size={24} className="text-red-500" />
-                                    </div>
-                                </div>
-                                <QRCodeSVG 
-                                    value={fakeUrl} 
-                                    size={200}
-                                    fgColor="#000000"
-                                    bgColor="#ffffff"
-                                    level="H" 
+                            <div className="bg-white p-2 rounded-3xl mx-auto w-fit mb-8 shadow-xl relative group-hover:scale-105 transition-transform overflow-hidden">
+                                <img 
+                                    src={authenticImg} 
+                                    alt="Fake QR" 
+                                    className="w-[220px] h-[220px] object-contain rounded-2xl" 
                                 />
                             </div>
 

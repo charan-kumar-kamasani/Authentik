@@ -1,0 +1,6 @@
+[2026-04-20T16:46:27.333Z] Creating transporter for smtp.zoho.in:587 (user: support@authentiks.in)
+[2026-04-20T16:46:27.335Z] Processing lead confirmation for: dfsf (asfd@dfasdf.dfsadf)
+[2026-04-20T16:46:27.335Z] Attempting to send thank-you email to asfd@dfasdf.dfsadf...
+[2026-04-20T16:46:27.584Z] Transporter is ready to send emails
+[2026-04-20T16:46:28.186Z] Attempting to send lead notification to admin(s): support@authentiks.in, charankumarreddy03@gmail.com
+[2026-04-20T16:46:28.662Z] Lead notification sent. Response: 250 Message received

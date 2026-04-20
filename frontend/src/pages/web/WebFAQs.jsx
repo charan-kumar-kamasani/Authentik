@@ -47,7 +47,7 @@ export default function WebFAQs() {
             <WebHeader />
 
             {/* ═══════════════ HERO SECTION ═══════════════ */}
-            <section className="relative pt-10 md:pt-16pb-20 px-6 overflow-hidden">
+            <section className="relative pt-10 md:pt-16 pb-20 px-6 overflow-hidden">
                 <Glow color="bg-indigo-600" className="-top-32 left-1/2 -translate-x-1/2 opacity-20" />
 
                 <div className="container mx-auto text-center relative z-10 max-w-4xl">

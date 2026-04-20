@@ -2,12 +2,17 @@ import React, { useState } from "react";
 import { 
     ShieldCheck, QrCode, Lock, Globe, Server, AlertTriangle, 
     Smartphone, BarChart3, TrendingUp, Cpu, Workflow, ArrowRight,
-    Users, Briefcase, Zap, Star, LayoutDashboard
+    Users, Briefcase, Zap, Star, LayoutDashboard, CheckCircle2
 } from "lucide-react";
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
 import productBanner from '../../assets/banners/product_page.jpg';
+
+// Product Step Images
+import qr1 from '../../assets/demo_qrs/product/QR1.jpg';
+import qr2 from '../../assets/demo_qrs/product/QR2.jpg';
+import qr3 from '../../assets/demo_qrs/product/QR3.jpg';
 
 const Glow = ({ color, className }) => (
   <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
@@ -196,6 +201,162 @@ export default function WebProduct() {
                                 <p className="text-xs text-gray-400 font-bold">{step.desc}</p>
                             </div>
                         ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* ═══════════════ FROM LABEL TO CUSTOMER TRUST ═══════════════ */}
+            <section className="py-24 px-6 relative overflow-hidden">
+                <Glow color="bg-indigo-600" className="top-0 left-1/4 opacity-10" />
+                <Glow color="bg-blue-600" className="bottom-0 right-1/4 opacity-10" />
+                
+                <div className="container mx-auto max-w-7xl relative z-10">
+                    <div className="text-center mb-16">
+                        <SectionTag className="bg-indigo-500/10 border-indigo-500/20 text-indigo-400">
+                            From Label to Customer Trust
+                        </SectionTag>
+                        <SectionTitle>See How Authentiks Works on Your Product</SectionTitle>
+                        <p className="text-gray-400 font-bold max-w-2xl mx-auto text-lg">
+                            From printing to customer scan — every step is designed for security, durability, and brand trust.
+                        </p>
+                    </div>
+
+                    {/* 🧩 STEP FLOW (3-CARD GRID) */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
+                        {[
+                            {
+                                step: "Step 1",
+                                title: "Unique QR Code Creation",
+                                img: qr1,
+                                subTitle: "Unique QR Code Assigned to Every Product",
+                                desc: "Each product gets a unique, encrypted QR code generated through Authentiks. This gives every item a secure digital identity that cannot be duplicated.",
+                                highlights: ["One QR per product", "Linked to SKU, batch, and product data", "Ready for printing and packaging"],
+                                borderColor: "border-blue-500/30",
+                                tagColor: "bg-blue-500/10 text-blue-400"
+                            },
+                            {
+                                step: "Step 2",
+                                title: "Tamper-Proof Protection",
+                                img: qr2,
+                                subTitle: "Secure Scratch-Protected Label",
+                                desc: "A hologram scratch layer protects the QR code, ensuring it cannot be scanned before purchase — eliminating misuse and fraud.",
+                                highlights: ["Prevents unauthorized pre-scans", "Ensures only end customers verify", "Builds trust at point of sale"],
+                                borderColor: "border-amber-500/30",
+                                tagColor: "bg-amber-500/10 text-amber-400"
+                            },
+                            {
+                                step: "Step 3",
+                                title: "Customer Verification",
+                                img: qr3,
+                                subTitle: "Instant Scan & Verification",
+                                desc: "Customers scratch and scan to instantly verify authenticity and engage directly with your brand.",
+                                highlights: ["Real-time authenticity check", "Detect counterfeit attempts", "Enable offers, rewards & engagement"],
+                                borderColor: "border-emerald-500/30",
+                                tagColor: "bg-emerald-500/10 text-emerald-400"
+                            }
+                        ].map((item, i) => (
+                            <div key={i} className={`glass-effect rounded-[2.5rem] overflow-hidden border ${item.borderColor} flex flex-col group hover:-translate-y-2 transition-all duration-300 bg-white/5`}>
+                                <div className="h-72 overflow-hidden bg-slate-950 flex items-center justify-center relative p-2">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-50" />
+                                    <img 
+                                        src={item.img} 
+                                        alt={item.title} 
+                                        className="max-w-[90%] max-h-[90%] object-contain rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 group-hover:scale-110 transition-transform duration-700" 
+                                    />
+                                    <div className={`absolute top-6 left-6 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-2xl ${item.tagColor} border border-white/10 backdrop-blur-xl z-20`}>
+                                        {item.step}
+                                    </div>
+                                </div>
+                                <div className="p-10 flex flex-col flex-grow">
+                                    <h3 className="text-xl font-black text-white mb-4 leading-tight">{item.subTitle}</h3>
+                                    <p className="text-gray-400 font-bold text-sm leading-relaxed mb-6 flex-grow">{item.desc}</p>
+                                    
+                                    <div className="space-y-3 pt-6 border-t border-white/5">
+                                        <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Highlights:</p>
+                                        {item.highlights.map((h, idx) => (
+                                            <div key={idx} className="flex items-center gap-2 text-xs font-bold text-gray-300">
+                                                <CheckCircle2 size={14} className="text-indigo-400" />
+                                                {h}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* 📏 LABEL SPECIFICATIONS */}
+                    <div className="glass-effect rounded-[3rem] p-8 md:p-16 border border-white/10 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600/10 rounded-full blur-[100px] -mr-48 -mt-48" />
+                        
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 relative z-10 items-center">
+                            <div>
+                                <SectionTag className="bg-cyan-500/10 border-cyan-500/20 text-cyan-400">
+                                    Label Specifications
+                                </SectionTag>
+                                <h3 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tighter">
+                                    Built for Real-World Conditions
+                                </h3>
+                                
+                                <div className="space-y-8">
+                                    <div className="bg-white/5 rounded-2xl p-6 border border-white/5">
+                                        <div className="flex items-center gap-4 mb-2">
+                                            <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center text-indigo-400">
+                                                <LayoutDashboard size={20} />
+                                            </div>
+                                            <h4 className="text-white font-black text-lg">Size</h4>
+                                        </div>
+                                        <p className="text-gray-400 font-bold ml-14">
+                                            2.5 cm (H) × 2 cm (W) — compact and easy to fit across all product types.
+                                        </p>
+                                    </div>
+
+                                    <div className="bg-white/5 rounded-2xl p-6 border border-white/5">
+                                        <div className="flex items-center gap-4 mb-4">
+                                            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                                                <ShieldCheck size={20} />
+                                            </div>
+                                            <h4 className="text-white font-black text-lg">Material & Build</h4>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ml-14">
+                                            {["High-quality industrial adhesive", "Scratch-enabled hologram layer", "Waterproof — withstands moisture & handling", "Non-tearable — tamper-resistant and durable"].map((spec, idx) => (
+                                                <div key={idx} className="flex items-center gap-3 text-sm font-bold text-gray-300">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                                                    {spec}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-8">
+                                <div className="bg-white/[0.03] rounded-3xl p-8 border border-white/10">
+                                    <h4 className="text-white font-black text-xl mb-6 flex items-center gap-3">
+                                        <Globe size={20} className="text-blue-400" />
+                                        Placement Flexibility
+                                    </h4>
+                                    <p className="text-gray-400 font-bold mb-6">Works seamlessly on:</p>
+                                    <div className="flex flex-wrap gap-3 mb-8">
+                                        {["Packaging boxes", "Apparel tags & footwear", "Bottles", "Containers", "Electronics"].map((p, idx) => (
+                                            <span key={idx} className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-black text-gray-300">
+                                                {p}
+                                            </span>
+                                        ))}
+                                    </div>
+                                    <div className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-sm font-black italic">
+                                        Custom sizes and designs available for enterprise brands.
+                                    </div>
+                                </div>
+
+                                <div className="text-center p-8 bg-gradient-to-br from-indigo-600/20 to-transparent rounded-3xl border border-white/5">
+                                    <p className="text-white font-black text-xl italic mb-2">
+                                        “Every scan is not just a verification — it’s a customer connection.”
+                                    </p>
+                                    <p className="text-indigo-400 font-black uppercase tracking-[0.2em] text-[10px]">Trust Line</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>

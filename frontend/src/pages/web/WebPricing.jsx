@@ -141,7 +141,7 @@ export default function WebPricing() {
             <WebHeader />
 
             {/* ═══════════════ HERO SECTION ═══════════════ */}
-            <section className="relative pt-10 md:pt-16pb-20 px-6 overflow-hidden">
+            <section className="relative pt-10 md:pt-10 pb-20 px-6 overflow-hidden">
                 <Glow color="bg-indigo-600" className="-top-32 -left-32 opacity-20" />
                 <Glow color="bg-cyan-600" className="top-1/2 -right-32 opacity-15" />
 
@@ -180,71 +180,12 @@ export default function WebPricing() {
                         </button>
                     </div>
 
-                    <div className="hero-slide-enter-delay-2 flex flex-col items-center mt-8">
-                        <p className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center justify-center gap-2">
-                            Trusted by Growing Brands Across India
-                        </p>
-                        <p className="text-gray-400 font-bold italic flex items-center gap-2">
-                            <ArrowRight size={14} className="text-indigo-400 opacity-60" />
-                            "Helping brands reduce counterfeits & drive direct sales"
-                        </p>
-                        <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 mt-8 opacity-40 grayscale">
-                            <div className="font-black text-xl md:text-2xl tracking-tighter uppercase">100+ Brands</div>
-                            <div className="font-black text-xl md:text-2xl tracking-tighter uppercase">Unilever</div>
-                            <div className="font-black text-xl md:text-2xl tracking-tighter uppercase">5M+ Scans</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
-            {/* ═══════════════ ROI SECTION ═══════════════ */}
-            <section className="py-20 px-6 bg-gradient-to-b from-black/40 to-transparent relative">
-                <div className="container mx-auto max-w-6xl">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-                        <div>
-                            <SectionTag className="bg-emerald-500/10 border-emerald-500/20 text-emerald-400"><BarChart3 size={14} /> ROI Calculator</SectionTag>
-                            <SectionTitle>What Happens When Customers Scan Your Product?</SectionTitle>
-                            <p className="text-gray-400 font-medium text-lg leading-relaxed mb-8 border-l-2 border-emerald-500/30 pl-4 py-1">
-                                If <span className="text-white font-black">1,000 products</span> are scanned:
-                            </p>
-
-                            <div className="space-y-4 font-bold text-sm md:text-base">
-                                {[
-                                    { icon: Users, value: '400+', label: 'customers engage with your brand', color: 'text-blue-400', bg: 'bg-blue-500/10' },
-                                    { icon: Globe, value: '100–200', label: 'users visit your website', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-                                    { icon: Repeat, value: '50–100', label: 'potential repeat customers', color: 'text-purple-400', bg: 'bg-purple-500/10' },
-                                    { icon: AlertTriangle, value: 'Instant', label: 'alerts if duplicate/fake scans detected', color: 'text-red-400', bg: 'bg-red-500/10' },
-                                ].map((item, i) => (
-                                    <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] transition-all group">
-                                        <div className={`p-3 rounded-xl ${item.bg} ${item.color} group-hover:scale-110 transition-transform`}>
-                                            <item.icon size={20} />
-                                        </div>
-                                        <div>
-                                            <span className="text-white font-black text-lg">{item.value}</span>
-                                            <span className="text-gray-400 font-medium ml-2">{item.label}</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="glass-effect rounded-[2.5rem] p-10 md:p-14 relative overflow-hidden flex flex-col items-center text-center justify-center h-full min-h-[300px]">
-                            <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-emerald-500 rounded-full blur-[100px] opacity-20" />
-                            <div className="relative z-10 w-full">
-                                <h3 className="text-xl md:text-2xl font-black text-white mb-6 tracking-tight">The Authentiks Advantage</h3>
-                                <div className="text-7xl font-black text-white tracking-tighter mb-4">10x</div>
-                                <p className="text-gray-400 font-bold mb-6 text-lg flex flex-col gap-2">
-                                    <span>Your ₹10K/month can generate</span>
-                                    <span className="text-emerald-400">far more in repeat revenue.</span>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </section>
 
             {/* ═══════════════ CHOOSE YOUR PLAN ═══════════════ */}
-            <section className="py-24 px-6 relative" id="pricing-plans">
+            <section className="py-12 px-6 relative" id="pricing-plans">
                 <Glow color="bg-indigo-600" className="-top-32 left-1/2 -translate-x-1/2 opacity-15" />
                 <div className="container mx-auto max-w-7xl relative z-10">
                     <div className="text-center mb-16">
@@ -473,42 +414,46 @@ export default function WebPricing() {
                 </div>
             </section>
 
-            {/* ═══════════════ WHY ANNUAL ═══════════════ */}
-            <section className="py-24 px-6 border-y border-white/5">
-                <div className="container mx-auto max-w-5xl">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+            {/* ═══════════════ ROI SECTION ═══════════════ */}
+            <section className="py-20 px-6 bg-gradient-to-b from-black/40 to-transparent relative">
+                <div className="container mx-auto max-w-6xl">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
                         <div>
-                            <h2 className="text-4xl md:text-5xl font-black text-white tracking-tighter leading-[1.05] mb-6">
-                                Save More. <span className="text-emerald-400">Get More.</span><br />Grow Faster.
-                            </h2>
-                            <ul className="space-y-6 text-base font-bold text-gray-300 mb-8">
-                                <li className="flex items-center gap-4">
-                                    <div className="p-2 bg-emerald-500/10 text-emerald-400 rounded-xl"><TrendingUp size={20} /></div>
-                                    Save more than 15% on subscription
-                                </li>
-                                <li className="flex items-center gap-4">
-                                    <div className="p-2 bg-purple-500/10 text-purple-400 rounded-xl"><Gift size={20} /></div>
-                                    Get up to ₹40,000 in QR credits
-                                </li>
-                                <li className="flex items-center gap-4">
-                                    <div className="p-2 bg-blue-500/10 text-blue-400 rounded-xl"><Lock size={20} /></div>
-                                    Lock pricing for 12 months
-                                </li>
-                                <li className="flex items-center gap-4">
-                                    <div className="p-2 bg-orange-500/10 text-orange-400 rounded-xl"><BarChart3 size={20} /></div>
-                                    Maximize ROI with continuous usage
-                                </li>
-                            </ul>
-                            <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/10 bg-white/5 font-black uppercase text-xs tracking-widest text-gray-400">
-                                <ArrowRight size={14} /> Credits valid for 12 months
+                            <SectionTag className="bg-emerald-500/10 border-emerald-500/20 text-emerald-400"><BarChart3 size={14} /> ROI Calculator</SectionTag>
+                            <SectionTitle>What Happens When Customers Scan Your Product?</SectionTitle>
+                            <p className="text-gray-400 font-medium text-lg leading-relaxed mb-8 border-l-2 border-emerald-500/30 pl-4 py-1">
+                                If <span className="text-white font-black">1,000 products</span> are scanned:
+                            </p>
+
+                            <div className="space-y-4 font-bold text-sm md:text-base">
+                                {[
+                                    { icon: Users, value: '400+', label: 'customers engage with your brand', color: 'text-blue-400', bg: 'bg-blue-500/10' },
+                                    { icon: Globe, value: '100–200', label: 'users visit your website', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+                                    { icon: Repeat, value: '50–100', label: 'potential repeat customers', color: 'text-purple-400', bg: 'bg-purple-500/10' },
+                                    { icon: AlertTriangle, value: 'Instant', label: 'alerts if duplicate/fake scans detected', color: 'text-red-400', bg: 'bg-red-500/10' },
+                                ].map((item, i) => (
+                                    <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] transition-all group">
+                                        <div className={`p-3 rounded-xl ${item.bg} ${item.color} group-hover:scale-110 transition-transform`}>
+                                            <item.icon size={20} />
+                                        </div>
+                                        <div>
+                                            <span className="text-white font-black text-lg">{item.value}</span>
+                                            <span className="text-gray-400 font-medium ml-2">{item.label}</span>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
-                        <div className="relative">
-                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-[3rem] blur-[80px] opacity-20 transform -rotate-6" />
-                            <div className="glass-effect p-12 rounded-[3rem] border border-white/10 text-center relative z-10 font-bold uppercase tracking-widest shadow-2xl">
-                                <h3 className="text-sm text-gray-400 mb-6">Annual Billing Benefit</h3>
-                                <div className="text-7xl font-black text-white tracking-tighter mb-4">+₹40K</div>
-                                <p className="text-emerald-400">In QR Printing Credits</p>
+
+                        <div className="glass-effect rounded-[2.5rem] p-10 md:p-14 relative overflow-hidden flex flex-col items-center text-center justify-center h-full min-h-[300px]">
+                            <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-emerald-500 rounded-full blur-[100px] opacity-20" />
+                            <div className="relative z-10 w-full">
+                                <h3 className="text-xl md:text-2xl font-black text-white mb-6 tracking-tight">The Authentiks Advantage</h3>
+                                <div className="text-7xl font-black text-white tracking-tighter mb-4">10x</div>
+                                <p className="text-gray-400 font-bold mb-6 text-lg flex flex-col gap-2">
+                                    <span>Your ₹10K/month can generate</span>
+                                    <span className="text-emerald-400">far more in repeat revenue.</span>
+                                </p>
                             </div>
                         </div>
                     </div>
