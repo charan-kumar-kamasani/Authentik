@@ -354,19 +354,8 @@ const OrderManagement = () => {
       setGlobalLoading(true);
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       
-      if (action === 'authorize' && (role === 'company' || role === 'authorizer')) {
-         try {
-            const priceData = await getOrderPrice(orderId, token);
-            const order = orders.find(o => o._id === orderId);
-            setPaymentOverview({ order, priceData });
-            return;
-         } catch (err) {
-            alert('Failed to fetch pricing: ' + err.message);
-            return;
-         } finally {
-            setGlobalLoading(false);
-         }
-      }
+      // Restore credits logic: let updateOrderStatus handle authorization.
+      // If there's a shortfall, it will throw an error with creditData.
 
       await updateOrderStatus(orderId, action, data, token);
       
@@ -385,7 +374,12 @@ const OrderManagement = () => {
       if (action === 'process') setProcessModal({ isOpen: false, order: null, bonusQuantity: 0 });
       await fetchOrders();
     } catch (e) {
-      alert('Failed: ' + e.message);
+      if (e.creditData) {
+        setCreditModal({ orderId, ...e.creditData });
+        setCreditView('choice');
+      } else {
+        alert('Failed: ' + e.message);
+      }
     } finally {
       setGlobalLoading(false);
     }
@@ -517,38 +511,43 @@ const OrderManagement = () => {
   };
 
   const handleCreditProceedPayment = async () => {
-    //     setCreditProcessing(true);
-    //     try {
-    //       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-    //       const payload = {
-    //         type: selectedCreditPlan ? 'plan' : 'topup',
-    //         ...(selectedCreditPlan ? { planId: selectedCreditPlan._id } : { quantity: creditModal?.shortfall || 0 }),
-    //         ...(creditCouponApplied ? { couponCode: creditCouponApplied.code } : {}),
-    //       };
-    //       const result = await initiatePayment(payload, token);
-    // console.log('Initiate Payment Result:', result);
-    // await new Promise(resolve => setTimeout(resolve, 20000000)); // Simulate waiting for payment completion
-    //       // if (result.redirectUrl) {
-    //       //   // window.location.href = result.redirectUrl;
-    //       //   return;
-    //       // }
-
-    //       // Auto-completed — re-try authorize
-    //       // setCreditView('processing');
-    //       // await updateOrderStatus(creditModal.orderId, 'authorize', {}, token);
-    //       // setCreditModal(null);
-    //       // resetCreditCheckout();
-    //       // fetchOrders();
-    //       alert('Credits purchased & order authorized successfully!');
-    //     } catch (e) {
-    //       if (e.creditData) {
-    //         setCreditModal({ orderId: creditModal.orderId, ...e.creditData });
-    //         setCreditView('choice');
-    //         alert('Payment completed but still insufficient credits. Please buy more.');
-    //       } else {
-    //         alert('Error: ' + e.message);
-    //       }
-    //     } finally { setCreditProcessing(false); }
+    setCreditProcessing(true);
+    try {
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      const payload = {
+        type: selectedCreditPlan ? 'plan' : 'topup',
+        ...(selectedCreditPlan ? { planId: selectedCreditPlan._id } : { quantity: creditModal?.shortfall || 0 }),
+        ...(creditCouponApplied ? { couponCode: creditCouponApplied.code } : {}),
+      };
+      
+      const result = await initiatePayment(payload, token);
+      console.log('Initiate Payment Result:', result);
+      
+      if (result.redirectUrl) {
+        window.location.href = result.redirectUrl;
+        return;
+      } else if (result.autoCompleted) {
+        // Auto-completed — re-try authorize
+        setCreditView('processing');
+        await updateOrderStatus(creditModal.orderId, 'authorize', {}, token);
+        setCreditModal(null);
+        resetCreditCheckout();
+        fetchOrders();
+        alert('Credits purchased & order authorized successfully!');
+      } else {
+        alert('Payment initiated! You will be redirected.');
+      }
+    } catch (e) {
+      if (e.creditData) {
+        setCreditModal({ orderId: creditModal.orderId, ...e.creditData });
+        setCreditView('choice');
+        alert('Payment completed but still insufficient credits. Please buy more.');
+      } else {
+        alert('Error: ' + e.message);
+      }
+    } finally { 
+      setCreditProcessing(false); 
+    }
   };
 
   const resetCreditCheckout = () => {
