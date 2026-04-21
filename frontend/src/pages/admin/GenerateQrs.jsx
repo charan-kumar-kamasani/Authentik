@@ -283,7 +283,7 @@ export default function GenerateQrs() {
 
       // Hard minimum: 1000 units required
       if (quantity < 1000) {
-        alert(`Minimum order quantity is 500 units. You entered ${quantity}.`);
+        alert(`Minimum order quantity is 1000 units. You entered ${quantity}.`);
         setSubmitting(false);
         return;
       }

@@ -11,6 +11,7 @@ import {
 // Demo QR Images
 import authenticImg from '../../assets/demo_qrs/authentic.jpg';
 import alertImg from '../../assets/demo_qrs/alert.jpg';
+import fraudImg from '../../assets/demo_qrs/fraud.jpg';
 
 const Glow = ({ color, className }) => (
     <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
@@ -144,7 +145,7 @@ export default function WebLiveDemo() {
                             
                             <div className="bg-white p-2 rounded-3xl mx-auto w-fit mb-8 shadow-xl relative group-hover:scale-105 transition-transform overflow-hidden">
                                 <img 
-                                    src={authenticImg} 
+                                    src={fraudImg} 
                                     alt="Fake QR" 
                                     className="w-[220px] h-[220px] object-contain rounded-2xl" 
                                 />

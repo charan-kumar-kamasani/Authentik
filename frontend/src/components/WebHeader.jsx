@@ -33,6 +33,7 @@ export default function WebHeader() {
           {[
             { name: "Home", path: "/" },
             { name: "Product", path: "/product" },
+            { name: "AI Pulse", path: "/ai-pulse", isButton: true },
             { name: "How it works", path: "/how-it-works" },
             { name: "Industries", path: "/industries" },
             { name: "Pricing", path: "/pricing" },
@@ -41,6 +42,26 @@ export default function WebHeader() {
             { name: "Contact Us", path: "/contact-us" },
           ].map((item) => {
             const isActive = location.pathname === item.path;
+
+            if (item.isButton) {
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`relative text-[14px] md:text-[15px] font-bold transition-all duration-300 flex items-center gap-2 px-4 py-1.5 rounded-full border shadow-sm
+          ${isActive
+                      ? "bg-cyan-500/20 border-cyan-500/50 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
+                      : "bg-white/5 border-white/10 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/30 hover:text-cyan-300 hover:shadow-[0_0_15px_rgba(6,182,212,0.2)]"
+                    }`}
+                >
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+                  </span>
+                  {item.name}
+                </Link>
+              );
+            }
 
             return (
               <Link
