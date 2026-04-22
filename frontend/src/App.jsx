@@ -54,7 +54,7 @@ import AdminReviews from "./pages/admin/AdminReviews";
 import ProductCoupons from "./pages/admin/ProductCoupons";
 import AdminLeads from "./pages/admin/AdminLeads";
 import QrPricingManagement from "./pages/admin/QrPricingManagement";
-// Import removed (SkuDashboard)
+import AIPulseDashboard from "./pages/admin/AIPulseDashboard";
 
 // User private route
 function PrivateRoute({ children }) {
@@ -182,6 +182,7 @@ export default function App() {
             <Route path="/admin/leads" element={<AdminRoute><AdminLayout><AdminLeads /></AdminLayout></AdminRoute>} />
             <Route path="/admin/qr-pricing" element={<AdminRoute><AdminLayout><QrPricingManagement /></AdminLayout></AdminRoute>} />
             <Route path="/admin/analytics" element={<AdminRoute><AdminLayout><AuthDashboard /></AdminLayout></AdminRoute>} />
+            <Route path="/admin/ai-pulse" element={<AdminRoute><AdminLayout><AIPulseDashboard /></AdminLayout></AdminRoute>} />
             <Route path="/admin/reviews" element={<AdminRoute><AdminLayout><AdminReviews /></AdminLayout></AdminRoute>} />
             <Route path="/admin/coupons" element={<AdminRoute><AdminLayout><ProductCoupons /></AdminLayout></AdminRoute>} />
             <Route
@@ -318,6 +319,7 @@ export default function App() {
           <Route path="/admin/leads" element={<AdminRoute><AdminLayout><AdminLeads /></AdminLayout></AdminRoute>} />
           <Route path="/admin/qr-pricing" element={<AdminRoute><AdminLayout><QrPricingManagement /></AdminLayout></AdminRoute>} />
           <Route path="/admin/analytics" element={<AdminRoute><AdminLayout><AuthDashboard /></AdminLayout></AdminRoute>} />
+          <Route path="/admin/ai-pulse" element={<AdminRoute><AdminLayout><AIPulseDashboard /></AdminLayout></AdminRoute>} />
           <Route path="/admin/reviews" element={<AdminRoute><AdminLayout><AdminReviews /></AdminLayout></AdminRoute>} />
           <Route path="/admin/coupons" element={<AdminRoute><AdminLayout><ProductCoupons /></AdminLayout></AdminRoute>} />
 

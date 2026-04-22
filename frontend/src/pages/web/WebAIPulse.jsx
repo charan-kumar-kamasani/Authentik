@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import { 
-    Zap, Calendar, Target, TrendingUp, AlertTriangle, 
+import {
+    Zap, Calendar, Target, TrendingUp, AlertTriangle,
     ArrowRight, Mail, CheckCircle2,
-    BrainCircuit, BarChart3, Users, Lightbulb, Activity, MapPin, 
+    BrainCircuit, BarChart3, Users, Lightbulb, Activity, MapPin,
     ShieldAlert, Box, FileText, MoveRight
 } from "lucide-react";
 import WebHeader from "../../components/WebHeader";
@@ -12,19 +12,19 @@ import aiPulseBanner from "../../assets/ai_pulse/ai_pulse.jpg";
 
 // Reusable styling components
 const Glow = ({ color, className }) => (
-  <div className={`absolute rounded-full blur-[100px] pointer-events-none mix-blend-screen h-72 w-72 ${color} ${className}`} />
+    <div className={`absolute rounded-full blur-[100px] pointer-events-none mix-blend-screen h-72 w-72 ${color} ${className}`} />
 );
 
 const SectionTag = ({ children, className = '' }) => (
-  <div className={`inline-flex items-center gap-2 px-5 py-2 rounded-full border text-[11px] font-black uppercase tracking-[0.25em] mb-6 ${className}`}>
-    {children}
-  </div>
+    <div className={`inline-flex items-center gap-2 px-5 py-2 rounded-full border text-[11px] font-black uppercase tracking-[0.25em] mb-6 ${className}`}>
+        {children}
+    </div>
 );
 
 const SectionTitle = ({ children, className = '' }) => (
-  <h2 className={`text-3xl md:text-5xl font-black text-white tracking-tighter leading-[1.05] mb-6 ${className}`}>
-    {children}
-  </h2>
+    <h2 className={`text-3xl md:text-5xl font-black text-white tracking-tighter leading-[1.05] mb-6 ${className}`}>
+        {children}
+    </h2>
 );
 
 export default function WebAIPulse() {
@@ -35,7 +35,29 @@ export default function WebAIPulse() {
             <WebHeader />
 
             {/* ═══════════════ HERO SECTION ═══════════════ */}
-            <section className="relative pt-24 pb-16 px-6 min-h-[85vh] flex items-center overflow-hidden">
+            <section className="relative pt-12 px-6 min-h-[85vh] flex items-center overflow-hidden">
+                <Glow color="bg-indigo-600" className="-top-32 -left-32 opacity-20" />
+                <Glow color="bg-blue-600" className="top-1/2 -right-32 opacity-15" />
+
+                <div className="container mx-auto text-center relative z-10 ">
+                    <div
+                        onClick={() => setContactOpen(true)}
+                        className="hero-slide-enter relative w-full mx-auto mb-10 rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
+                    >
+                        <div className="relative w-full" style={{ aspectRatio: '1672/741' }}>
+                            <img
+                                src={aiPulseBanner}
+                                alt="Product Page banner"
+                                className="absolute inset-0 w-full h-full object-contain transition-all duration-1000 ease-in-out group-hover:scale-[1.01]"
+                            />
+                        </div>
+                        <div className="absolute inset-0 pointer-events-none rounded-[2rem] ring-1 ring-inset ring-white/10 z-20" />
+                        <div className="absolute inset-0 bg-white/0 group-hover:bg-white-[0.02] transition-colors z-20 pointer-events-none" />
+                    </div>
+                </div>
+            </section>
+
+            {/* <section className="relative pt-24 pb-16 px-6 min-h-[85vh] flex items-center overflow-hidden">
                 <Glow color="bg-indigo-600" className="-top-32 -left-32 opacity-20" />
                 <Glow color="bg-cyan-600" className="top-1/2 -right-32 opacity-15" />
                 <Glow color="bg-blue-600" className="bottom-0 left-1/2 transform -translate-x-1/2 opacity-10 w-96 h-96" />
@@ -71,7 +93,8 @@ export default function WebAIPulse() {
                         <div className="absolute inset-0 bg-white/0 group-hover:bg-white-[0.02] transition-colors z-20 pointer-events-none" />
                     </div>
                 </div>
-            </section>
+            </section> */}
+
 
             {/* ═══════════════ WHAT IS AI PULSE? ═══════════════ */}
             <section className="py-24 px-6 border-t border-white/5 bg-white/[0.02] relative">
@@ -128,7 +151,7 @@ export default function WebAIPulse() {
             <section className="py-24 px-6 relative">
                 <Glow color="bg-cyan-600" className="top-1/4 -right-32 opacity-10" />
                 <Glow color="bg-indigo-600" className="bottom-1/4 -left-32 opacity-10" />
-                
+
                 <div className="container mx-auto max-w-7xl relative z-10">
                     <div className="text-center mb-20 md:mb-24">
                         <SectionTag className="bg-cyan-500/10 border-cyan-500/20 text-cyan-400">
@@ -325,7 +348,7 @@ export default function WebAIPulse() {
             {/* ═══════════════ WHY AI PULSE IS DIFFERENT & WHO IS IT FOR ═══════════════ */}
             <section className="py-24 px-6 relative">
                 <Glow color="bg-indigo-600" className="top-0 left-1/4 opacity-10" />
-                
+
                 <div className="container mx-auto max-w-6xl">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
                         {/* Why it's different */}
@@ -334,14 +357,14 @@ export default function WebAIPulse() {
                                 <Target size={14} /> The Difference
                             </SectionTag>
                             <SectionTitle>Data vs. Direction</SectionTitle>
-                            
+
                             <div className="mb-8">
                                 <p className="text-xl font-bold text-gray-400 line-through mb-2">Most tools give you data.</p>
                                 <p className="text-2xl font-black text-indigo-400 mb-8">AI Pulse gives you direction.</p>
                             </div>
-                            
+
                             <p className="text-gray-300 font-bold mb-6">Instead of spending hours analyzing dashboards, you get:</p>
-                            
+
                             <div className="space-y-4 mb-10">
                                 {["Weekly clarity", "Actionable insights", "Faster decision-making"].map((item, i) => (
                                     <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/10">
@@ -352,7 +375,7 @@ export default function WebAIPulse() {
                                     </div>
                                 ))}
                             </div>
-                            
+
                             <div className="p-6 rounded-2xl bg-gradient-to-r from-indigo-500/10 to-transparent border border-indigo-500/20">
                                 <h4 className="text-indigo-400 font-black mb-3 flex items-center gap-2">
                                     <Lightbulb size={18} /> Simple. Powerful. Automatic.
@@ -376,7 +399,7 @@ export default function WebAIPulse() {
                                 <Users size={14} /> Built For
                             </SectionTag>
                             <SectionTitle>Designed for Decision Makers</SectionTitle>
-                            
+
                             <div className="grid grid-cols-2 gap-4 mt-10">
                                 {[
                                     { title: "Founders", icon: <BrainCircuit size={20} /> },
@@ -410,7 +433,7 @@ export default function WebAIPulse() {
                     <div className="relative rounded-[3rem] overflow-hidden">
                         <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/30 via-cyan-600/20 to-black" />
                         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20 mix-blend-overlay"></div>
-                        
+
                         <div className="glass-effect rounded-[3rem] p-12 md:p-20 text-center relative z-10 border border-white/10 shadow-[0_0_100px_rgba(99,102,241,0.2)]">
                             <h2 className="text-3xl md:text-6xl font-black text-white mb-6 tracking-tighter leading-[1.05]">
                                 Turn Your Weekly Data into Growth Decisions

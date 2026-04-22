@@ -131,7 +131,8 @@ export default function WebPricing() {
         { name: "Coupons & rewards", starter: "❌", growth: "✅", enterprise: "✅" },
         { name: "Customer data capture", starter: "❌", growth: "✅", enterprise: "✅" },
         { name: "Website redirection", starter: "❌", growth: "✅", enterprise: "✅" },
-        { name: "Counterfeit alerts", starter: "❌", starterClass: "text-gray-600", growth: "Limited", growthClass: "text-gray-600", enterprise: "✅" },
+        { name: "AI Pulse (Weekly Intelligence)", starter: "❌", growth: "✅", enterprise: "✅" },
+        { name: "Counterfeit alerts", starter: "❌", starterClass: "text-gray-600", growth: "Limited", enterprise: "✅" },
         { name: "Geo-location", starter: "❌", starterClass: "text-gray-600", growth: "Limited", enterprise: "✅" },
         { name: "API integration", starter: "❌", starterClass: "text-gray-600", growth: "❌", growthClass: "text-gray-600", enterprise: "✅" }
     ];

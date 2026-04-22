@@ -27,6 +27,7 @@ import {
   Gift,
   Layers,
   Briefcase,
+  Sparkles,
 } from "lucide-react";
 import GenerateQrs from "./GenerateQrs";
 import QrManagement from "./QrManagement";
@@ -321,6 +322,14 @@ export default function AdminLayout({ children }) {
                 icon={LayoutDashboard}
                 isActive={activePath === "/admin/analytics"}
               />
+              {["superadmin", "authorizer"].includes(role) && (
+                <SidebarItemCollapse
+                  label="AI Pulse (Beta)"
+                  onClick={() => navigate("/admin/ai-pulse")}
+                  icon={Sparkles}
+                  isActive={activePath === "/admin/ai-pulse"}
+                />
+              )}
               <SidebarItemCollapse
                 label="Product Manager"
                 onClick={() => navigate("/product-manager")}

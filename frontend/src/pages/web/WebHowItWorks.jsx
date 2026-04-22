@@ -7,6 +7,7 @@ import {
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
+import howItWorksBanner from "../../assets/banners/how_it_works_banner.jpg";
 
 const Glow = ({ color, className }) => (
   <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
@@ -56,7 +57,7 @@ export default function WebHowItWorks() {
             <WebHeader />
 
             {/* ═══════════════ HERO SECTION ═══════════════ */}
-            <section className="relative pt-10 md:pt-16 pb-20 px-6 overflow-hidden">
+            {/* <section className="relative pt-10 md:pt-16 pb-20 px-6 overflow-hidden">
                 <Glow color="bg-emerald-600" className="-top-32 -left-32 opacity-20" />
                 <Glow color="bg-blue-600" className="top-1/2 -right-32 opacity-15" />
                 
@@ -87,7 +88,29 @@ export default function WebHowItWorks() {
                         </button>
                     </div>
                 </div>
-            </section>
+            </section> */}
+
+                  <section className="relative pt-12 px-6 min-h-[85vh] flex items-center overflow-hidden">
+                            <Glow color="bg-indigo-600" className="-top-32 -left-32 opacity-20" />
+                            <Glow color="bg-blue-600" className="top-1/2 -right-32 opacity-15" />
+            
+                            <div className="container mx-auto text-center relative z-10 ">
+                                <div
+                                    onClick={() => setContactOpen(true)}
+                                    className="hero-slide-enter relative w-full mx-auto mb-10 rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
+                                >
+                                    <div className="relative w-full" style={{ aspectRatio: '1672/741' }}>
+                                        <img
+                                            src={howItWorksBanner}
+                                            alt="Product Page banner"
+                                            className="absolute inset-0 w-full h-full object-contain transition-all duration-1000 ease-in-out group-hover:scale-[1.01]"
+                                        />
+                                    </div>
+                                    <div className="absolute inset-0 pointer-events-none rounded-[2rem] ring-1 ring-inset ring-white/10 z-20" />
+                                    <div className="absolute inset-0 bg-white/0 group-hover:bg-white-[0.02] transition-colors z-20 pointer-events-none" />
+                                </div>
+                            </div>
+                        </section>
 
             {/* ═══════════════ OVERVIEW ═══════════════ */}
             <section className="py-16 px-6 border-t border-white/5 bg-white/[0.02]">
