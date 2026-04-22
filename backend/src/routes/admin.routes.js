@@ -292,7 +292,13 @@ router.get("/users", protect, authorize("superadmin", "admin"), async (req, res)
          query = { role: { $in: ['admin', 'manager', 'user', 'company', 'authorizer', 'creator'] } };
     }
 
-    const users = await User.find(query).populate('createdBy', 'email').lean();
+    // Optimize query by excluding large/sensitive fields and sorting
+    const users = await User.find(query)
+      .select('-password -__v')
+      .populate('createdBy', 'email')
+      .sort({ createdAt: -1 })
+      .lean();
+      
     res.json(users);
 });
 

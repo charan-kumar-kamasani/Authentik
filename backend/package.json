@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/server.js",
-    "start": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "build": "ncc build src/server.js -o dist --external canvas",
     "seed": "node scripts/seedPricing.js"
   },
   "keywords": [],
@@ -31,6 +32,10 @@
     "pdfkit": "^0.17.2",
     "pg-sdk-node": "^2.0.2",
     "qrcode": "^1.5.4",
+    "redis": "^5.12.1",
     "svg-to-pdfkit": "^0.1.8"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.38.4"
   }
 }

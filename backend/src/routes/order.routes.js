@@ -309,17 +309,58 @@ router.get('/', protect, async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    // Auto-calculate amounts/breakdowns for orders that are missing them
-    orders = await Promise.all(orders.map(async (o) => {
+    // N+1 Fix: Fetch pricing configs ONCE for all orders
+    const BillingConfig = require('../models/BillingConfig');
+    const Setting = require('../models/Setting');
+    
+    const [config, settings] = await Promise.all([
+      BillingConfig.getConfig(),
+      Setting.getSettings()
+    ]);
+    
+    let brackets = config.qrPricingBrackets || [];
+    if (brackets.length === 0) {
+        brackets = [
+            { minQuantity: 500, maxQuantity: 5000, pricePerQr: 3 },
+            { minQuantity: 5001, maxQuantity: 50000, pricePerQr: 2 },
+            { minQuantity: 50001, maxQuantity: null, pricePerQr: 1 }
+        ];
+    }
+    const gstPercentage = typeof settings.gstPercentage === 'number' ? settings.gstPercentage : 18;
+
+    const calculatePriceInline = (quantity) => {
+        let pricePerQr = 1;
+        if (brackets.length > 0) {
+            const match = brackets.find(b => {
+                const min = b.minQuantity || 0;
+                const max = b.maxQuantity || Infinity;
+                return quantity >= min && (max === null || max === Infinity || quantity <= max);
+            });
+            if (match) {
+                pricePerQr = match.pricePerQr;
+            } else {
+                const sortedByMin = [...brackets].sort((a, b) => a.minQuantity - b.minQuantity);
+                if (quantity < sortedByMin[0].minQuantity) { pricePerQr = sortedByMin[0].pricePerQr; }
+                else { pricePerQr = sortedByMin[sortedByMin.length - 1].pricePerQr; }
+            }
+        }
+        const subtotal = Math.round(quantity * pricePerQr * 100) / 100;
+        const tax = Math.round((subtotal * gstPercentage) / 100 * 100) / 100;
+        const total = Math.round((subtotal + tax) * 100) / 100;
+        return { pricePerQr, subtotal, tax, total };
+    };
+
+    // Auto-calculate amounts/breakdowns synchronously in memory
+    orders = orders.map((o) => {
       if (!o.subtotal || o.subtotal === 0 || !o.tax || o.tax === 0) {
-        const pricing = await calculateQrPrice(o.quantity);
+        const pricing = calculatePriceInline(o.quantity || 0);
         o.amount = pricing.total;
         o.pricePerQr = pricing.pricePerQr;
         o.subtotal = pricing.subtotal;
         o.tax = pricing.tax;
       }
       return o;
-    }));
+    });
 
     res.json(orders);
   } catch (error) {
