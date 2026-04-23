@@ -11,23 +11,25 @@ const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-const placeCache = new Map(); // Simple in-memory cache for coordinates
+const redisClient = require('../config/redisClient');
 
-// helper for reverse geocoding (using native fetch — Node 18+)
+// helper for reverse geocoding (using native fetch + Redis Cache)
 async function getPlaceFromCoords(lat, lon) {
   if (!lat || !lon) return "Unknown location";
-  
-  const key = `${lat.toFixed(3)},${lon.toFixed(3)}`;
-  if (placeCache.has(key)) return placeCache.get(key);
+  const cacheKey = `geo:${lat.toFixed(3)},${lon.toFixed(3)}`;
 
   try {
+    // 1. Check Redis Cache
+    if (redisClient.isReady) {
+      const cached = await redisClient.get(cacheKey);
+      if (cached) return cached;
+    }
+
+    // 2. Fetch from external API (Slow)
     const res = await fetch(
       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`,
       {
-        headers: {
-          "User-Agent": "Authentik/1.0 (contact@authentik.com)",
-        },
-        // Set a short timeout for the external API
+        headers: { "User-Agent": "Authentik/1.0 (contact@authentik.com)" },
         signal: AbortSignal.timeout(1500)
       }
     );
@@ -37,11 +39,14 @@ async function getPlaceFromCoords(lat, lon) {
     const state = data.address?.state || "";
     const result = [city, state].filter(Boolean).join(", ") || "Unknown location";
     
-    if (result !== "Unknown location") {
-      placeCache.set(key, result);
+    // 3. Save to Redis (Cache for 7 days)
+    if (result !== "Unknown location" && redisClient.isReady) {
+      await redisClient.setEx(cacheKey, 60 * 60 * 24 * 7, result);
     }
+
     return result;
-  } catch {
+  } catch (e) {
+    console.error('[GEO SCAN] error:', e.message);
     return "Unknown location";
   }
 }

@@ -9,10 +9,21 @@ const Brand = require('../models/Brand');
 const User = require('../models/User');
 const Report = require('../models/Report');
 
-// ─── Reverse Geocoding helper (Nominatim + native fetch) ───
+const redisClient = require('../config/redisClient');
+
+// ─── Reverse Geocoding helper (Nominatim + native fetch + Redis Cache) ───
 async function reverseGeocode(lat, lng) {
   if (!lat || !lng) return null;
+  const cacheKey = `geo:${lat.toFixed(3)},${lng.toFixed(3)}`;
+  
   try {
+    // 1. Check Redis Cache
+    if (redisClient.isReady) {
+      const cached = await redisClient.get(cacheKey);
+      if (cached) return cached;
+    }
+
+    // 2. Fetch from external API (Slow)
     const res = await fetch(
       `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
       { headers: { 'User-Agent': 'Authentik-Dashboard/1.0 (contact@authentik.com)' } }
@@ -21,8 +32,18 @@ async function reverseGeocode(lat, lng) {
     const city  = data.address?.city || data.address?.town || data.address?.village || data.address?.county || '';
     const state = data.address?.state || '';
     const parts = [city, state].filter(Boolean).join(', ');
-    return parts || null;
-  } catch { return null; }
+    const result = parts || null;
+
+    // 3. Save to Redis (Cache for 7 days)
+    if (result && redisClient.isReady) {
+      await redisClient.setEx(cacheKey, 60 * 60 * 24 * 7, result);
+    }
+
+    return result;
+  } catch (e) { 
+    console.error('[GEO] Reverse Geocode error:', e.message);
+    return null; 
+  }
 }
 
 // Resolve "Unknown location" entries & update DB in background
@@ -778,6 +799,68 @@ router.get('/consumer-insights', protect, async (req, res) => {
     });
   } catch (error) {
     console.error('Consumer insights error:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// ─── GET /dashboard/bootstrap — Combined data for mobile dashboard (<100ms goal) ───
+router.get('/bootstrap', protect, async (req, res) => {
+  try {
+    const scope = await buildScopeFilter(req.user);
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 7); // Last 7 days for trend
+
+    const [
+      totalScans, authenticScans, suspiciousScans, duplicateAlerts,
+      totalProducts, totalOrders,
+      recentActivity,
+      trendData
+    ] = await Promise.all([
+      Scan.countDocuments(scope),
+      Scan.countDocuments({ ...scope, status: 'ORIGINAL' }),
+      Scan.countDocuments({ ...scope, status: 'FAKE' }),
+      Scan.countDocuments({ ...scope, status: 'ALREADY_USED' }),
+      Product.countDocuments(scope.brandId ? { brandId: scope.brandId } : {}),
+      Order.countDocuments(scope.brandId ? { brandId: scope.brandId } : {}),
+      Scan.find(scope)
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate('brandId', 'brandName')
+        .lean(),
+      Scan.aggregate([
+        { $match: { ...scope, createdAt: { $gte: startDate } } },
+        {
+          $group: {
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+            count: { $sum: 1 },
+            authentic: { $sum: { $cond: [{ $eq: ['$status', 'ORIGINAL'] }, 1, 0] } },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ])
+    ]);
+
+    res.json({
+      stats: {
+        totalScans, authenticScans, suspiciousScans, duplicateAlerts,
+        totalProducts, totalOrders
+      },
+      recentActivity: recentActivity.map(s => ({
+        _id: s._id,
+        status: s.status,
+        productName: s.productName || 'Unknown',
+        brand: s.brandId?.brandName || s.brand || 'Unknown',
+        place: s.place || 'N/A',
+        createdAt: s.createdAt,
+      })),
+      trend: trendData.map(t => ({
+        date: t._id,
+        count: t.count,
+        authentic: t.authentic
+      }))
+    });
+  } catch (error) {
+    console.error('Dashboard bootstrap error:', error);
     res.status(500).json({ message: error.message });
   }
 });

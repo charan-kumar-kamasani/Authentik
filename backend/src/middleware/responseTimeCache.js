@@ -10,7 +10,24 @@ module.exports = function responseTimeCache(options = {}) {
 
   return async (req, res, next) => {
     const start = Date.now();
-    const key = `cache:${req.method}:${req.originalUrl}`;
+    
+    // Extract userId from JWT if available to make cache user-aware
+    let userId = 'guest';
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const jwt = require('jsonwebtoken');
+        const decoded = jwt.decode(token); // Use decode to be fast, verification happens in authMiddleware
+        if (decoded && (decoded.userId || decoded.id)) {
+          userId = decoded.userId || decoded.id;
+        }
+      } catch (e) {
+        // ignore decoding errors
+      }
+    }
+
+    const key = `cache:${userId}:${req.method}:${req.originalUrl}`;
 
     // serve from cache for GET requests matching prefix
     if (req.method === 'GET' && prefixes.some(p => req.originalUrl.startsWith(p))) {
