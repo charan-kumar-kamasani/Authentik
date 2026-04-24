@@ -6,6 +6,7 @@ import {
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
+import industriesBanner from '../../assets/banners/industries_banner.jpg';
 
 const Glow = ({ color, className }) => (
     <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
@@ -31,31 +32,24 @@ export default function WebIndustries() {
             <WebHeader />
 
             {/* ═══════════════ HERO SECTION ═══════════════ */}
-            <section className="relative pt-10 md:pt-16 pb-20 px-6 overflow-hidden">
+            <section className="relative pt-12 px-6 min-h-[85vh] flex items-center overflow-hidden">
                 <Glow color="bg-indigo-600" className="-top-32 -left-32 opacity-20" />
-                <Glow color="bg-cyan-600" className="top-1/2 -right-32 opacity-15" />
+                <Glow color="bg-blue-600" className="top-1/2 -right-32 opacity-15" />
 
-                <div className="container mx-auto text-center relative z-10 max-w-5xl">
-                    <h1 className="hero-slide-enter text-4xl md:text-7xl font-black tracking-tighter text-white mb-8 leading-[1.05]">
-                        Built for Every Industry That <span className="gradient-text-blue">Sells Physical Products</span>
-                    </h1>
-
-                    <p className="hero-slide-enter-delay max-w-3xl mx-auto text-lg md:text-2xl font-bold text-gray-400 mb-6 leading-relaxed">
-                        From startups to large enterprises — Authentiks helps brands protect their products, track their movement, and connect directly with customers.
-                    </p>
-
-                    <p className="hero-slide-enter-delay text-indigo-400 font-black italic flex items-center justify-center gap-2 mb-10">
-                        <ArrowRight size={18} /> One platform. Multiple industries. Endless possibilities.
-                    </p>
-
-                    <div className="hero-slide-enter-delay-2 flex flex-col items-center">
-                        <button
-                            onClick={() => setContactOpen(true)}
-                            className="px-12 py-5 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-[0_0_60px_rgba(255,255,255,0.15)] hover:scale-105 active:scale-95 text-sm flex items-center gap-3"
-                        >
-                            Start Your 90-Day Free Trial
-                            <ArrowRight size={18} />
-                        </button>
+                <div className="container mx-auto text-center relative z-10 ">
+                    <div
+                        onClick={() => setContactOpen(true)}
+                        className="hero-slide-enter relative w-[94%] mx-auto mb-10 rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
+                    >
+                        <div className="relative w-full" style={{ aspectRatio: '1772/751' }}>
+                            <img
+                                src={industriesBanner}
+                                alt="Industry Page banner"
+                                className="absolute inset-0 w-full h-full object-contain transition-all duration-1000 ease-in-out group-hover:scale-[1.01]"
+                            />
+                        </div>
+                        <div className="absolute inset-0 pointer-events-none rounded-[2rem] ring-1 ring-inset ring-white/10 z-20" />
+                        <div className="absolute inset-0 bg-white/0 group-hover:bg-white-[0.02] transition-colors z-20 pointer-events-none" />
                     </div>
                 </div>
             </section>

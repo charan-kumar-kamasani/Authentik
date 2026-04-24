@@ -205,7 +205,7 @@ export default function Home() {
         </div>
 
         {/* Banner Carousel */}
-        <div className="mt-2 mb-4 mx-4">
+        <div className="mt-2 mb-4 w-[92%] mx-auto">
           <div className="relative rounded-[24px] overflow-hidden bg-black shadow-lg aspect-[340/115]">
             {banners.map((banner, index) => (
               <div
