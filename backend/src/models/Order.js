@@ -100,8 +100,10 @@ const orderSchema = new mongoose.Schema({
   
   // Promotional coupon attached to this order's products
   coupon: {
+    title: { type: String, trim: true },
     code: { type: String, trim: true, uppercase: true },
     description: { type: String, trim: true },
+    websiteLink: { type: String, trim: true },
     expiryDate: { type: Date, default: null },
   },
 

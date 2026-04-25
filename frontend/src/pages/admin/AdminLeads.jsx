@@ -32,13 +32,18 @@ const AdminLeads = () => {
     }, [page, limit, statusFilter]);
 
     const handleStatusUpdate = async (id, newStatus) => {
-        if (!window.confirm(`Change status to ${newStatus}?`)) return;
+        // Optimistic update
+        const prevLeads = [...leads];
+        setLeads(leads.map(l => l._id === id ? { ...l, status: newStatus } : l));
+
         setGlobalLoading(true);
         try {
             const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
             await updateLeadStatus(id, newStatus, undefined, token);
-            fetchLeadsData();
+            // Re-fetch to ensure sync with server
+            await fetchLeadsData();
         } catch (e) {
+            setLeads(prevLeads); // Rollback
             alert('Failed: ' + e.message);
         } finally {
             setGlobalLoading(false);
@@ -108,13 +113,17 @@ const AdminLeads = () => {
                                             <div className={`inline-block px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border ${statusColors[l.status] || 'bg-slate-50 text-slate-600'}`}>
                                                 {l.status}
                                             </div>
-                                            <div className="text-xs text-slate-400 font-medium mt-2 flex items-center gap-1"><Calendar size={12}/> {new Date(l.createdAt).toLocaleDateString()}</div>
+                                            <div className="text-[10px] text-slate-400 font-bold mt-2 flex items-center gap-1 uppercase tracking-wider">
+                                                <Calendar size={10}/> 
+                                                <span>Created: {new Date(l.createdAt).toLocaleDateString()}</span>
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <select
                                                 value={l.status}
+                                                disabled={l.status === 'qualified'}
                                                 onChange={(e) => handleStatusUpdate(l._id, e.target.value)}
-                                                className="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-lg px-2 py-1.5 outline-none cursor-pointer hover:border-slate-300">
+                                                className={`bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-lg px-2 py-1.5 outline-none cursor-pointer hover:border-slate-300 ${l.status === 'qualified' ? 'opacity-50 cursor-not-allowed' : ''}`}>
                                                 <option value="new">New</option>
                                                 <option value="contacted">Contacted</option>
                                                 <option value="qualified">Qualified</option>

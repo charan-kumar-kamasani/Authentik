@@ -92,8 +92,10 @@ router.post('/', protect, async (req, res) => {
               productId: productId,
               scanId: scan ? scan._id : null,
               reviewId: review._id,
+              couponTitle: productCoupon.title,
               couponCode: productCoupon.code,
               couponDescription: productCoupon.description,
+              websiteLink: productCoupon.websiteLink,
               couponExpiry: productCoupon.expiryDate,
               productName: product?.productName || '',
               productImage: product?.productImage || null,
@@ -102,10 +104,12 @@ router.post('/', protect, async (req, res) => {
               reviewRating: rating,
               reviewComment: comment || '',
             });
-
+            
             awardedCoupon = {
+              title: productCoupon.title,
               code: productCoupon.code,
               description: productCoupon.description,
+              websiteLink: productCoupon.websiteLink,
               expiryDate: productCoupon.expiryDate,
               rewardId: reward._id,
             };

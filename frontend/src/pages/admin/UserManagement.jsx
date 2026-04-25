@@ -659,6 +659,15 @@ const UserManagement = () => {
     e.preventDefault();
     const token =
       localStorage.getItem("adminToken") || localStorage.getItem("token");
+
+    // Phone validation: exactly 10 digits
+    if (brandForm.phoneNumber) {
+      const phoneClean = brandForm.phoneNumber.replace(/[^0-9]/g, '');
+      if (phoneClean.length !== 10) {
+        alert("Please enter a valid 10-digit Phone Number for the brand.");
+        return;
+      }
+    }
     try {
       let finalBrandLogo = brandForm.brandLogo;
       if (brandForm.brandLogoFile) {
@@ -767,6 +776,13 @@ const UserManagement = () => {
     const { companyName, registerOfficeAddress, courierAddress, email, phoneNumber, supportNumber } = companyForm;
     if (!companyName?.trim() || !registerOfficeAddress?.trim() || !courierAddress?.trim() || !email?.trim() || !phoneNumber?.trim()) {
       alert("Please fill in all required fields: Company Name, Office Address, Courier Address, Support Email, and Phone Number.");
+      return;
+    }
+
+    // Phone validation: exactly 10 digits
+    const phoneClean = phoneNumber.replace(/[^0-9]/g, '');
+    if (phoneClean.length !== 10) {
+      alert("Please enter a valid 10-digit Phone Number.");
       return;
     }
 
@@ -1223,13 +1239,21 @@ const UserManagement = () => {
                 label="Phone Number *" 
                 placeholder="+91 XXX XXX XXXX" 
                 value={editingBrand ? brandForm.phoneNumber : companyForm.phoneNumber} 
-                onChange={(v) => editingBrand ? setBrandForm({ ...brandForm, phoneNumber: v }) : setCompanyForm({ ...companyForm, phoneNumber: v })} 
+                onChange={(v) => {
+                  const clean = v.replace(/[^0-9]/g, '');
+                  if (editingBrand) setBrandForm({ ...brandForm, phoneNumber: clean });
+                  else setCompanyForm({ ...companyForm, phoneNumber: clean });
+                }} 
               />
               <InputGroup 
                 label="Support Number" 
                 placeholder="1800-XXX-XXXX" 
                 value={editingBrand ? brandForm.supportNumber : companyForm.supportNumber} 
-                onChange={(v) => editingBrand ? setBrandForm({ ...brandForm, supportNumber: v }) : setCompanyForm({ ...companyForm, supportNumber: v })} 
+                onChange={(v) => {
+                  const clean = v.replace(/[^0-9]/g, '');
+                  if (editingBrand) setBrandForm({ ...brandForm, supportNumber: clean });
+                  else setCompanyForm({ ...companyForm, supportNumber: clean });
+                }} 
                 required={false} 
               />
               <InputGroup 
@@ -1625,6 +1649,7 @@ const UserManagement = () => {
                               <th className="px-8 py-4">Name</th>
                               <th className="px-6 py-4">Email</th>
                               <th className="px-6 py-4">{roleTab === 'company' ? 'Legal Entity' : 'Company'}</th>
+                              {roleTab === 'user' && <th className="px-6 py-4">Joined At</th>}
                               <th className="px-6 py-4">Role / Status</th>
                               <th className="px-6 py-4 text-right">Actions</th>
                             </>
@@ -1773,6 +1798,11 @@ const UserManagement = () => {
                                       <td className="px-6 py-4 text-sm text-gray-700">
                                         {roleTab === 'company' ? item.legalEntity : getCompanyName(item.companyId || item.company)}
                                       </td>
+                                      {roleTab === 'user' && (
+                                        <td className="px-6 py-4 text-sm text-gray-600 font-medium">
+                                          {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '-'}
+                                        </td>
+                                      )}
                                       <td className="px-6 py-4">
                                         <span
                                           className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold capitalize tracking-wide shadow-sm ${item.role ? getRoleClass(item.role) : (item.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800')}`}

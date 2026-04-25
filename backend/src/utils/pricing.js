@@ -12,7 +12,7 @@ const calculateQrPrice = async (quantity) => {
     // Default tiers provided by the user if none configured in DB
     if (brackets.length === 0) {
         brackets = [
-            { minQuantity: 500, maxQuantity: 5000, pricePerQr: 3 },
+            { minQuantity: 1000, maxQuantity: 5000, pricePerQr: 3 },
             { minQuantity: 5001, maxQuantity: 50000, pricePerQr: 2 },
             { minQuantity: 50001, maxQuantity: null, pricePerQr: 1 }
         ];

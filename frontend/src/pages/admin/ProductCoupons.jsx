@@ -77,8 +77,9 @@ export default function ProductCoupons() {
             <Gift size={16} className="text-purple-600" />
           </div>
           <div className="min-w-0">
-            <span className="font-mono font-black text-purple-700 text-sm sm:text-base block truncate">{coupon.code}</span>
-            {coupon.description && <span className="text-xs text-slate-500 truncate block">{coupon.description}</span>}
+            <span className="font-bold text-slate-900 text-sm sm:text-base block truncate">{coupon.title || 'Untitled Campaign'}</span>
+            <span className="font-mono font-black text-purple-700 text-xs block truncate">{coupon.code}</span>
+            {coupon.description && <span className="text-[10px] text-slate-500 truncate block mt-0.5">{coupon.description}</span>}
           </div>
         </div>
         {coupon.isActive ? (
@@ -134,7 +135,8 @@ export default function ProductCoupons() {
 
         <div className="grid grid-cols-2 gap-3 mt-3">
           <div className="bg-slate-50 rounded-xl p-2.5 sm:p-3">
-            <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Coupon Code</div>
+            <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Coupon & Reward</div>
+            <span className="text-[10px] font-bold text-slate-600 block truncate">{reward.couponTitle || 'REWARD'}</span>
             <span className="font-mono font-black text-blue-700 text-xs block truncate">{reward.couponCode}</span>
           </div>
           <div className="bg-slate-50 rounded-xl p-2.5 sm:p-3">

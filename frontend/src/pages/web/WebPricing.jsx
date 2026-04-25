@@ -39,102 +39,119 @@ export default function WebPricing() {
         {
             id: 'starter',
             name: 'STARTER',
-            color: 'from-emerald-500 to-emerald-400',
-            borderColor: 'border-emerald-500/20 hover:border-emerald-500/40',
-            bgGlow: 'bg-emerald-500',
-            iconColor: 'text-emerald-400',
-            monthlyRate: 5000,
-            halfYearlyPrice: 30000,
-            yearlyOriginal: 60000,
-            yearlyDiscounted: 50000,
-            yearlySaveAmount: 10000,
-            yearlyBonusQR: 10000,
-            subtitle: 'Start Protecting Your Products from Day One',
-            bestFor: 'Small brands entering authentication',
-            includesPrefix: 'Includes:',
-            features: [
-                'Unique QR for every product unit',
+            color: 'from-green-500 to-emerald-400',
+            borderColor: 'border-green-500/20 hover:border-green-500/40',
+            accentColor: 'text-green-400',
+            bgGlow: 'bg-green-500/20',
+            shadowColor: 'shadow-green-500/10',
+            halfYearlyMonthly: 5000,
+            yearlyMonthly: 4000,
+            bonusQR: 5000,
+            bestFor: 'Small brands starting authentication',
+            includes: [
+                'Unique QR for every product',
                 'First-scan authentication',
                 'Basic scan tracking',
                 'Dashboard access'
             ],
-            highlights: [
-                'Prevent fake products',
-                'Start tracking real customer scans'
+            sections: [
+                {
+                    title: '🔒 Privacy-first analytics',
+                    color: 'text-green-400',
+                    features: [
+                        'No personal user data',
+                        'City-level scan insights'
+                    ]
+                }
             ]
         },
         {
             id: 'growth',
             name: 'GROWTH',
             isPopular: true,
-            color: 'from-blue-500 to-cyan-400',
+            color: 'from-blue-600 to-indigo-400',
             borderColor: 'border-blue-500/30 shadow-[0_0_40px_rgba(59,130,246,0.15)] ring-1 ring-blue-500/20 hover:border-blue-500/50',
-            bgGlow: 'bg-blue-500',
-            iconColor: 'text-blue-400',
-            monthlyRate: 10000,
-            halfYearlyPrice: 60000,
-            yearlyOriginal: 120000,
-            yearlyDiscounted: 100000,
-            yearlySaveAmount: 20000,
-            yearlyBonusQR: 20000,
-            subtitle: 'Drive Repeat Sales & Own Your Customers',
-            bestFor: 'Growing brands needing direct engagement',
-            includesPrefix: 'Everything in Starter, plus:',
-            features: [
+            accentColor: 'text-blue-400',
+            bgGlow: 'bg-blue-500/20',
+            shadowColor: 'shadow-blue-500/20',
+            halfYearlyMonthly: 10000,
+            yearlyMonthly: 8000,
+            bonusQR: 10000,
+            bestFor: 'Brands building customer engagement',
+            includes: [
+                'Includes everything in Starter +',
                 'Coupon & rewards engine',
-                'Customer data capture',
-                'Redirect traffic to your website',
-                'Location-based scan insights'
+                'Customer data capture (consent-based)',
+                'Redirect to website',
+                'Counterfeit alerts',
+                'Advanced scan analytics'
             ],
-            highlights: [
-                'Convert scans into customers',
-                'Reduce dependency on marketplaces',
-                'Build your own customer database'
+            sections: [
+                {
+                    title: '✨ AI Pulse Insights',
+                    color: 'text-blue-400',
+                    features: [
+                        'Customer behavior analysis',
+                        'Scan trends & patterns',
+                        'Actionable growth suggestions'
+                    ]
+                },
+                {
+                    title: '📊 Smart data access (consent-driven)',
+                    color: 'text-blue-400',
+                    features: [
+                        'Name & Age Group',
+                        'Gender & Contact Number',
+                        'Exportable reports'
+                    ]
+                }
             ]
         },
         {
             id: 'enterprise',
             name: 'ENTERPRISE',
-            color: 'from-red-500 to-orange-400',
-            borderColor: 'border-red-500/20 hover:border-red-500/40',
-            bgGlow: 'bg-red-500',
-            iconColor: 'text-red-400',
-            monthlyRate: 20000,
-            halfYearlyPrice: 120000,
-            yearlyOriginal: 240000,
-            yearlyDiscounted: 200000,
-            yearlySaveAmount: 40000,
-            yearlyBonusQR: 40000,
-            subtitle: 'Gain Complete Control Over Your Market',
-            bestFor: 'Large operations scaling supply chain',
-            includesPrefix: 'Everything in Growth, plus:',
-            features: [
+            color: 'from-purple-600 to-fuchsia-400',
+            borderColor: 'border-purple-500/20 hover:border-purple-500/40',
+            accentColor: 'text-purple-400',
+            bgGlow: 'bg-purple-500/20',
+            shadowColor: 'shadow-purple-500/10',
+            halfYearlyMonthly: 20000,
+            yearlyMonthly: 16000,
+            bonusQR: 20000,
+            bestFor: 'Large brands & scale operations',
+            includes: [
+                'Includes everything in Growth +',
                 'Real-time counterfeit alerts',
                 'Advanced analytics & insights',
                 'Batch-level tracking',
-                'Geo heatmaps & fraud detection',
                 'API integrations',
                 'Priority support'
             ],
-            highlights: [
-                'Detect fake products instantly',
-                'Track product movement across regions',
-                'Make data-driven business decisions'
+            sections: [
+                {
+                    title: '🚀 Advanced AI Pulse',
+                    color: 'text-purple-400',
+                    features: [
+                        'Predictive demand insights',
+                        'Fraud detection patterns',
+                        'Region-wise performance tracking',
+                        'Automated growth recommendations'
+                    ]
+                }
             ]
         }
     ];
 
     const comparisonFeatures = [
-        { name: "Unique QR per unit", starter: "✅", growth: "✅", enterprise: "✅" },
-        { name: "Authentication", starter: "✅", growth: "✅", enterprise: "✅" },
-        { name: "Scan tracking", starter: "✅", growth: "✅", enterprise: "✅" },
-        { name: "Coupons & rewards", starter: "❌", growth: "✅", enterprise: "✅" },
-        { name: "Customer data capture", starter: "❌", growth: "✅", enterprise: "✅" },
-        { name: "Website redirection", starter: "❌", growth: "✅", enterprise: "✅" },
-        { name: "AI Pulse (Weekly Intelligence)", starter: "❌", growth: "✅", enterprise: "✅" },
-        { name: "Counterfeit alerts", starter: "❌", starterClass: "text-gray-600", growth: "Limited", enterprise: "✅" },
-        { name: "Geo-location", starter: "❌", starterClass: "text-gray-600", growth: "Limited", enterprise: "✅" },
-        { name: "API integration", starter: "❌", starterClass: "text-gray-600", growth: "❌", growthClass: "text-gray-600", enterprise: "✅" }
+        { name: "Authentication & Tracking", starter: "Basic", growth: "Advanced", enterprise: "Advanced" },
+        { name: "Analytics & Insights", starter: "Basic", growth: "Advanced", enterprise: "Advanced" },
+        { name: "Location Insights", starter: "City", growth: "Detailed", enterprise: "Detailed" },
+        { name: "Engagement (Coupons, Redirects)", starter: "❌", growth: "Full", enterprise: "Full" },
+        { name: "Data Export", starter: "❌", growth: "Full", enterprise: "Full" },
+        { name: "Customer Data (Consent)", starter: "❌", growth: "Full", enterprise: "Full" },
+        { name: "Counterfeit Detection", starter: "❌", growth: "Alerts", enterprise: "Real-time" },
+        { name: "AI Pulse", starter: "❌", growth: "Insights", enterprise: "Predictive" },
+        { name: "Advanced Capabilities (Batch, API, Support)", starter: "❌", growth: "❌", enterprise: "Full" }
     ];
 
     return (
@@ -192,10 +209,10 @@ export default function WebPricing() {
                     <div className="text-center mb-16">
                         <SectionTitle>Choose Your Plan</SectionTitle>
 
-                        {/* Billing Toggle: Half-Yearly / Yearly */}
+                        {/* Billing Toggle: Half-Yearly | Yearly */}
                         <div className="inline-flex items-center p-1.5 bg-white/5 rounded-full border border-white/10 relative mt-4">
                             <div
-                                className={`absolute inset-y-1.5 w-1/2 rounded-full transition-all duration-300 shadow-md ${billingCycle === 'halfYearly' ? 'left-1.5 bg-white' : 'left-[calc(50%-6px)] bg-gradient-to-r from-amber-400 to-orange-500'}`}
+                                className={`absolute inset-y-1.5 w-[calc(50%-6px)] rounded-full transition-all duration-300 shadow-md bg-white ${billingCycle === 'halfYearly' ? 'left-1.5' : 'left-[calc(50%+4.5px)]'}`}
                             />
                             <button
                                 onClick={() => setBillingCycle('halfYearly')}
@@ -207,121 +224,125 @@ export default function WebPricing() {
                                 onClick={() => setBillingCycle('yearly')}
                                 className={`relative z-10 px-8 py-3 rounded-full font-black uppercase tracking-widest text-xs transition-colors flex items-center gap-2 ${billingCycle === 'yearly' ? 'text-black' : 'text-gray-400 hover:text-white'}`}
                             >
-                                <Crown size={14} /> Yearly
-                                {billingCycle === 'halfYearly' && <span className="bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded text-[9px] border border-amber-500/30 animate-pulse">BEST VALUE</span>}
+                                Yearly (Save 20%)
                             </button>
                         </div>
-
-                        {billingCycle === 'yearly' && (
-                            <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-black uppercase tracking-widest animate-in fade-in duration-500">
-                                <Sparkles size={14} /> Yearly plans include discounts + bonus QR credits!
-                            </div>
-                        )}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
                         {pricingDisplayData.map((plan, idx) => {
                             const isYearly = billingCycle === 'yearly';
-                            const displayPrice = isYearly ? plan.yearlyDiscounted : plan.halfYearlyPrice;
-                            const originalPrice = isYearly ? plan.yearlyOriginal : null;
-                            const perMonth = isYearly ? Math.round(plan.yearlyDiscounted / 12) : Math.round(plan.halfYearlyPrice / 6);
+                            const monthlyPrice = isYearly ? plan.yearlyMonthly : plan.halfYearlyMonthly;
+                            const cycleText = isYearly ? '(Yearly)' : '(Half-Yearly)';
+                            const saveLabel = isYearly ? `Save 20% with yearly` : null;
 
                             return (
-                                <div key={idx} className={`glass-effect rounded-[2.5rem] p-8 md:p-10 border relative overflow-hidden transition-all duration-500 hover:-translate-y-2 group flex flex-col ${plan.borderColor} ${isYearly ? 'ring-1 ring-amber-500/10' : ''}`}>
+                                <div key={idx} className={`glass-effect rounded-[2.5rem] p-8 md:p-10 border relative transition-all duration-500 hover:-translate-y-2 group flex flex-col ${plan.borderColor} ${plan.shadowColor} ${isYearly ? 'ring-1 ring-white/10' : ''}`}>
                                     {plan.isPopular && (
-                                        <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-blue-500 to-cyan-400" />
+                                        <>
+                                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+                                                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[10px] font-black uppercase tracking-[0.2em] px-6 py-2 rounded-full shadow-[0_10px_25px_-5px_rgba(37,99,235,0.5)] flex items-center gap-2 border border-blue-400/30">
+                                                    <Star size={12} fill="currentColor" />
+                                                    Most Popular
+                                                    <Star size={12} fill="currentColor" />
+                                                </div>
+                                            </div>
+                                        </>
                                     )}
 
-                                    <div className={`absolute -top-20 -right-20 w-40 h-40 rounded-full blur-[80px] opacity-20 pointer-events-none transition-opacity group-hover:opacity-40 ${plan.bgGlow}`} />
+                                    {/* Background Glow Container (clipped) */}
+                                    <div className="absolute inset-0 rounded-[2.5rem] overflow-hidden pointer-events-none">
+                                        <div className={`absolute -top-20 -right-20 w-40 h-40 rounded-full blur-[80px] opacity-20 transition-opacity group-hover:opacity-40 ${plan.bgGlow}`} />
+                                    </div>
 
-                                    <div className="mb-8">
+                                    <div className="mb-8 mt-4">
                                         <div className="flex items-center justify-between mb-2">
-                                            <h3 className="text-xl font-black text-white uppercase tracking-wider">{plan.name}</h3>
-                                            <div className="flex items-center gap-2">
-                                                {plan.isPopular && <span className="text-[10px] font-black uppercase text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20 tracking-widest">Most Popular</span>}
-                                            </div>
+                                            <h3 className={`text-xl font-black uppercase tracking-wider ${plan.accentColor}`}>{plan.name}</h3>
                                         </div>
 
-                                        <p className="text-sm font-bold text-gray-400 mb-6 min-h-[40px] opacity-80 leading-relaxed border-b border-white/5 pb-4">
-                                            {plan.subtitle}
-                                        </p>
-
                                         {/* Price display */}
-                                        <div className="flex flex-col gap-1">
-                                            {isYearly && originalPrice && (
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-lg text-gray-500 font-bold line-through">₹{originalPrice.toLocaleString()}</span>
-                                                </div>
-                                            )}
+                                        <div className="flex flex-col gap-1 mt-6">
                                             <div className="flex items-baseline gap-1">
                                                 <span className="text-4xl md:text-5xl font-black text-white tracking-tighter">
-                                                    ₹{displayPrice.toLocaleString()}
+                                                    ₹{monthlyPrice.toLocaleString()}
                                                 </span>
-                                                <span className="text-gray-500 font-bold text-sm tracking-widest uppercase">
-                                                    /{isYearly ? 'year' : '6 months'}
+                                                <span className="text-gray-400 font-bold text-sm tracking-widest uppercase">
+                                                    / month
                                                 </span>
                                             </div>
                                             <div className="text-sm font-bold text-gray-500 mt-1">
-                                                ≈ ₹{perMonth.toLocaleString()}/month
+                                                {cycleText}
                                             </div>
                                         </div>
 
                                         {/* Yearly benefits badges */}
                                         {isYearly && (
-                                            <div className="mt-4 flex flex-col gap-2">
-                                                <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-2 rounded-lg w-fit animate-in slide-in-from-left duration-300">
-                                                    <Sparkles size={12} /> Save ₹{plan.yearlySaveAmount.toLocaleString()} Discount
+                                            <div className="mt-6 flex flex-col gap-3">
+                                                <div className={`inline-flex items-center gap-2 text-sm font-black animate-in slide-in-from-left duration-300 ${plan.accentColor}`}>
+                                                    {plan.id === 'starter' ? '🟢' : plan.id === 'growth' ? '🔵' : '🟣'} {saveLabel}
                                                 </div>
-                                                <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-purple-400 bg-purple-500/10 border border-purple-500/20 px-3 py-2 rounded-lg w-fit animate-in slide-in-from-left duration-300" style={{ animationDelay: '100ms' }}>
-                                                    <Gift size={12} /> + ₹{plan.yearlyBonusQR.toLocaleString()} Free QR Credits
-                                                </div>
-                                                <div className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-2 rounded-lg w-fit animate-in slide-in-from-left duration-300" style={{ animationDelay: '200ms' }}>
-                                                    <Crown size={12} /> Total Value: ₹{(plan.yearlySaveAmount + plan.yearlyBonusQR).toLocaleString()}
+                                                <div className="inline-flex items-center gap-2 text-sm font-black text-white/90 animate-in slide-in-from-left duration-300" style={{ animationDelay: '100ms' }}>
+                                                    <span className={plan.accentColor}>+</span> ₹{plan.bonusQR.toLocaleString()} QR Credits Included
                                                 </div>
                                             </div>
                                         )}
                                     </div>
 
-                                    <div className="mb-8 bg-white/[0.02] rounded-2xl p-4 border border-white/5">
-                                        <p className="text-xs font-black text-gray-500 uppercase tracking-widest mb-1">Best For:</p>
-                                        <p className="text-sm font-bold text-white">{plan.bestFor}</p>
+                                    <div className="mb-8 bg-white/[0.03] rounded-2xl p-5 border border-white/5">
+                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">Best For:</p>
+                                        <p className="text-sm font-bold text-white leading-relaxed">{plan.bestFor}</p>
                                     </div>
 
                                     <div className="flex-grow">
-                                        <p className="text-xs font-black text-gray-500 uppercase tracking-widest mb-4">
-                                            {plan.includesPrefix}
+                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4">
+                                            Includes:
                                         </p>
                                         <ul className="space-y-3 mb-8">
-                                            {plan.features.map((f, i) => (
+                                            {plan.includes.map((f, i) => (
                                                 <li key={i} className="flex items-start gap-3 text-sm font-bold text-gray-300">
-                                                    <div className={`mt-0.5 shrink-0 w-4 h-4 rounded-full flex items-center justify-center bg-white/10 text-white`}>•</div>
+                                                    <div className={`mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full ${plan.accentColor.replace('text-', 'bg-')}/40`} />
                                                     <span className="leading-tight">{f}</span>
                                                 </li>
                                             ))}
                                         </ul>
 
-                                        <div className="space-y-2 mt-auto mb-8 border-l-2 border-indigo-500/30 pl-4 py-1">
-                                            {plan.highlights.map((h, i) => (
-                                                <li key={i} className="flex items-start gap-3 text-sm font-black text-white italic list-none">
-                                                    <Check size={16} className={plan.iconColor + " shrink-0 mt-0.5"} />
-                                                    <span className="leading-tight">{h}</span>
-                                                </li>
-                                            ))}
-                                        </div>
+                                        {plan.sections && plan.sections.map((section, si) => (
+                                            <div key={si} className="mb-8 last:mb-0">
+                                                <p className={`text-sm font-black mb-4 flex items-center gap-2 ${section.color}`}>
+                                                    {section.title}
+                                                </p>
+                                                <ul className="space-y-3">
+                                                    {section.features.map((f, fi) => (
+                                                        <li key={fi} className="flex items-start gap-3 text-sm font-bold text-gray-400">
+                                                            <div className={`mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full ${plan.accentColor.replace('text-', 'bg-')}/20`} />
+                                                            <span className="leading-tight">{f}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        ))}
                                     </div>
 
                                     <button
                                         onClick={() => { setSelectedPlanName(plan.name); setContactOpen(true); }}
-                                        className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-xs transition-all active:scale-95 ${plan.isPopular
-                                            ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg shadow-blue-500/25 hover:brightness-110'
-                                            : 'bg-white text-black hover:bg-gray-200 shadow-md shadow-white/5'
+                                        className={`w-full py-4 mt-8 rounded-xl font-black uppercase tracking-widest text-xs transition-all active:scale-95 flex items-center justify-center gap-2 ${plan.isPopular
+                                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 hover:brightness-110'
+                                            : `bg-white/5 text-white border border-white/10 hover:bg-white/10 hover:border-${plan.accentColor.split('-')[1]}-500/50`
                                             }`}
                                     >
-                                        Get Started
+                                        👉 Contact Sales
                                     </button>
                                 </div>
                             );
                         })}
+                    </div>
+
+                    {/* ⚡ TRUST LINE */}
+                    <div className="mt-20 text-center max-w-3xl mx-auto">
+                        <div className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-white/[0.03] border border-white/5 text-sm font-bold text-gray-400">
+                            <span className="text-xl">⚡</span>
+                            “Customer data is shared only with user consent to ensure privacy and compliance.”
+                        </div>
                     </div>
                 </div>
             </section>
@@ -339,9 +360,9 @@ export default function WebPricing() {
                             <thead>
                                 <tr className="border-b border-white/10">
                                     <th className="p-6 text-sm font-black text-white uppercase tracking-widest w-1/3">Features</th>
-                                    <th className="p-6 text-sm font-black text-emerald-400 uppercase tracking-widest w-[22%] text-center">Starter</th>
-                                    <th className="p-6 text-sm font-black text-blue-400 uppercase tracking-widest w-[22%] text-center">Growth</th>
-                                    <th className="p-6 text-sm font-black text-red-400 uppercase tracking-widest w-[22%] text-center">Enterprise</th>
+                                    <th className="p-6 text-sm font-black text-green-400 uppercase tracking-widest w-[22%] text-center">🟢 Starter</th>
+                                    <th className="p-6 text-sm font-black text-blue-400 uppercase tracking-widest w-[22%] text-center">🔵 Growth ⭐</th>
+                                    <th className="p-6 text-sm font-black text-purple-400 uppercase tracking-widest w-[22%] text-center">🟣 Enterprise</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5 font-bold">

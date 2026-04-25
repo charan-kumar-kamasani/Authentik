@@ -202,9 +202,11 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       variants: variants || [],
       productImage: productImage || null,
       // Coupon data (if provided)
-      coupon: (req.body.coupon && req.body.coupon.code) ? {
-        code: req.body.coupon.code,
+      coupon: (req.body.coupon && req.body.coupon.title) ? {
+        title: req.body.coupon.title,
+        code: req.body.coupon.code || '',
         description: req.body.coupon.description || '',
+        websiteLink: req.body.coupon.websiteLink || '',
         expiryDate: req.body.coupon.expiryDate || null,
       } : undefined,
       // Calculate and save pricing
@@ -448,17 +450,19 @@ router.put('/:id/authorize', protect, authorize('company', 'authorizer'), async 
     if (!company) {
       return res.status(400).json({ message: 'Company not found' });
     }
+    
     const required = order.quantity || 0;
     const available = company.qrCredits || 0;
     if (available < required) {
       const shortfall = required - available;
+      const pricing = await calculateQrPrice(shortfall);
       return res.status(400).json({
         insufficientCredits: true,
         required,
         available,
         shortfall,
-        topupCostPerQr: 5,
-        topupTotalCost: shortfall * 5,
+        topupCostPerQr: pricing.pricePerQr,
+        topupTotalCost: pricing.subtotal,
         companyId: company._id,
         companyName: company.companyName,
         message: `Insufficient QR credits. Need ${required}, have ${available}. ${shortfall} more needed.`
@@ -468,8 +472,6 @@ router.put('/:id/authorize', protect, authorize('company', 'authorizer'), async 
     // Deduct credits
     company.qrCredits -= required;
     await company.save({ validateModifiedOnly: true });
-
-    // Record spend transaction
     await CreditTransaction.create({
       companyId: company._id,
       type: 'spend',
@@ -606,12 +608,14 @@ router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req
     await order.save();
 
     // Create ProductCoupon entries if order has coupon data
-    if (order.coupon && order.coupon.code) {
+    if (order.coupon && order.coupon.title) {
       try {
         const createdProducts = await Product.find({ orderId: order._id }).select('_id').lean();
         const couponDocs = createdProducts.map(p => ({
-          code: order.coupon.code,
+          title: order.coupon.title,
+          code: order.coupon.code || '',
           description: order.coupon.description || '',
+          websiteLink: order.coupon.websiteLink || '',
           expiryDate: order.coupon.expiryDate || null,
           productId: p._id,
           orderId: order._id,

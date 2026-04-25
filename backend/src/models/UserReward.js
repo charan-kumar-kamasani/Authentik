@@ -7,8 +7,10 @@ const userRewardSchema = new mongoose.Schema({
   scanId:            { type: mongoose.Schema.Types.ObjectId, ref: 'Scan', default: null },
   reviewId:          { type: mongoose.Schema.Types.ObjectId, ref: 'Review', default: null },
   // Denormalized coupon info for quick display
-  couponCode:        { type: String, required: true },
+  couponTitle:       { type: String, trim: true },
+  couponCode:        { type: String },
   couponDescription: { type: String, default: '' },
+  websiteLink:       { type: String, trim: true },
   couponExpiry:      { type: Date, default: null },
   // Denormalized product info
   productName:       { type: String, default: '' },

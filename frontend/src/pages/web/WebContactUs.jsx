@@ -31,6 +31,13 @@ export default function WebContactUs() {
             return;
         }
 
+        // Phone validation: must be exactly 10 digits
+        const phoneClean = form.phone.replace(/[^0-9]/g, '');
+        if (phoneClean.length !== 10) {
+            setErrorMsg('Please enter a valid 10-digit phone number');
+            return;
+        }
+
         setStatus('loading');
         setErrorMsg('');
 
@@ -143,7 +150,7 @@ export default function WebContactUs() {
                                                         <input
                                                             type="tel"
                                                             value={form.phone}
-                                                            onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                                                            onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/[^0-9]/g, '') })}
                                                             placeholder="+91 12345 67890"
                                                             required
                                                             className="w-full pl-12 pr-4 py-4 bg-slate-800/50 border border-white/10 rounded-2xl text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/40 transition-all font-bold text-sm"

@@ -101,7 +101,9 @@ export default function RewardDetail() {
           {/* Coupon Code */}
           <div className="p-6">
             <div className="border-[2px] border-dashed border-[#2CA4D6]/40 rounded-[28px] p-6 bg-gradient-to-b from-[#F0F7FF] to-[#E8F4F9] text-center shadow-inner relative overflow-hidden">
-              <p className="text-[11px] text-[#1a5fa8] font-black uppercase tracking-[0.25em] mb-4">Your Coupon Code</p>
+              <p className="text-[11px] text-[#1a5fa8] font-black uppercase tracking-[0.25em] mb-2">
+                {reward.couponTitle || 'Your Coupon Code'}
+              </p>
               <div className="flex items-center justify-center gap-4 w-full px-2">
                 <span className="text-[24px] sm:text-[32px] font-black text-[#0D4E96] tracking-[0.1em] drop-shadow-sm flex-1 break-all text-center">
                   {reward.couponCode}
@@ -118,6 +120,16 @@ export default function RewardDetail() {
                 </button>
               </div>
             </div>
+
+            {reward.websiteLink && (
+              <button
+                onClick={() => window.open(reward.websiteLink, '_blank')}
+                className="w-full bg-[#0D4E96] text-white font-bold text-[16px] py-4 rounded-2xl shadow-lg mt-6 active:scale-[0.97] transition-all flex items-center justify-center gap-2"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                Redeem Now
+              </button>
+            )}
 
             {reward.couponDescription && (
               <p className="text-[#1e3a5f]/80 text-[15px] text-center mt-6 font-medium leading-relaxed px-2">

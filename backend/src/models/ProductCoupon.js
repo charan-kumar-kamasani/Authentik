@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
 
 const productCouponSchema = new mongoose.Schema({
-  code:        { type: String, required: true, trim: true, uppercase: true },
+  title:       { type: String, trim: true },
+  code:        { type: String, trim: true, uppercase: true },
   description: { type: String, default: '' },
+  websiteLink: { type: String, trim: true },
   expiryDate:  { type: Date, default: null },
   // Links
   productId:   { type: mongoose.Schema.Types.ObjectId, ref: 'Product', default: null },

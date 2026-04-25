@@ -131,7 +131,10 @@ export default function Rewards() {
                     {/* Coupon Code Row */}
                     <div className="flex items-center gap-2 mt-3">
                       <div className="bg-gradient-to-r from-[#F0F7FF] to-[#E8F4F9] border border-dashed border-[#2CA4D6]/40 rounded-[14px] px-3 py-1.5 flex-1 min-w-0 shadow-inner">
-                        <p className="text-[#1a5fa8] font-black text-[14px] tracking-[0.1em] truncate text-center">
+                        <p className="text-[#1a5fa8] font-black text-[12px] tracking-tight truncate text-center mb-0.5">
+                          {reward.couponTitle || 'REWARD'}
+                        </p>
+                        <p className="text-[#0D4E96] font-bold text-[14px] tracking-[0.1em] truncate text-center">
                           {reward.couponCode}
                         </p>
                       </div>

@@ -108,8 +108,14 @@ export default function Login() {
                 className="flex-1 outline-none text-[#333] text-[15px] placeholder:text-gray-400 placeholder:italic bg-transparent font-medium"
               />
             </div>
-            {/* Input shadow effect/styling could be added here if needed to match exact shadow styles */}
           </div>
+
+          {/* Validation Message */}
+          {mobile.length > 0 && mobile.length < 10 && (
+            <p className="text-red-500 text-[11px] font-bold mt-1 ml-4 animate-pulse">
+              * Please enter exactly 10 digits
+            </p>
+          )}
 
           {/* Get OTP Button */}
           <button

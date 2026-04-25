@@ -22,6 +22,13 @@ export default function ContactFormModal({ isOpen, onClose, planName = '' }) {
       return;
     }
 
+    // Phone validation: must be exactly 10 digits
+    const phoneClean = form.phone.replace(/[^0-9]/g, '');
+    if (phoneClean.length !== 10) {
+      setErrorMsg('Please enter a valid 10-digit phone number');
+      return;
+    }
+
     setStatus('loading');
     setErrorMsg('');
 
@@ -100,7 +107,7 @@ export default function ContactFormModal({ isOpen, onClose, planName = '' }) {
                   <input
                     type="tel"
                     value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    onChange={(e) => setForm({ ...form, phone: e.target.value.replace(/[^0-9]/g, '') })}
                     placeholder="+91 93425 01819"
                     required
                     className="w-full px-4 py-3 bg-slate-800/80 border border-white/10 rounded-xl text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-medium text-sm"

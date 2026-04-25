@@ -473,7 +473,7 @@ const OrderManagement = () => {
     setCreditCouponCode('');
     setCreditCouponApplied(null);
     setCreditCouponError('');
-    const baseAmt = (creditModal?.shortfall || 0) * 5;
+    const baseAmt = creditModal?.topupTotalCost || ((creditModal?.shortfall || 0) * (creditModal?.topupCostPerQr || 5));
     await fetchCreditPriceBreakdown(baseAmt, '');
   };
 
@@ -490,7 +490,7 @@ const OrderManagement = () => {
   const handleApplyCreditCoupon = async () => {
     if (!creditCouponCode.trim()) return;
     setCreditCouponError('');
-    const baseAmt = selectedCreditPlan ? selectedCreditPlan.price : (creditModal?.shortfall || 0) * 5;
+    const baseAmt = selectedCreditPlan ? selectedCreditPlan.price : (creditModal?.topupTotalCost || ((creditModal?.shortfall || 0) * (creditModal?.topupCostPerQr || 5)));
     try {
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       const result = await validateCoupon(creditCouponCode, baseAmt, token);
@@ -506,7 +506,7 @@ const OrderManagement = () => {
     setCreditCouponCode('');
     setCreditCouponApplied(null);
     setCreditCouponError('');
-    const baseAmt = selectedCreditPlan ? selectedCreditPlan.price : (creditModal?.shortfall || 0) * 5;
+    const baseAmt = selectedCreditPlan ? selectedCreditPlan.price : (creditModal?.topupTotalCost || ((creditModal?.shortfall || 0) * (creditModal?.topupCostPerQr || 5)));
     await fetchCreditPriceBreakdown(baseAmt, '');
   };
 
@@ -967,7 +967,7 @@ const OrderManagement = () => {
                                   if (manualMap[lowerK]) return manualMap[lowerK];
                                   if (k.includes(' ')) return k.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
                                   if (k !== k.toUpperCase()) {
-                                    const result = k.replace(/([A-Z])/g, " $1");
+                                    const result = k.replace(/[A-Z]/g, (match) => ` ${match}`);
                                     return result.charAt(0).toUpperCase() + result.slice(1).trim();
                                   }
                                   return k.charAt(0).toUpperCase() + k.slice(1).toLowerCase();
@@ -984,13 +984,14 @@ const OrderManagement = () => {
                         )}
 
                         {/* Coupon / Reward Details */}
-                        {order.coupon && order.coupon.code && (
+                        {order.coupon && order.coupon.title && (
                           <div className="mt-4 pt-4 border-t border-slate-100">
-                            <h4 className="text-xs font-black text-purple-500 uppercase tracking-wider mb-2 flex items-center gap-1.5"><Gift size={14} /> Coupon / Reward</h4>
+                            <h4 className="text-xs font-black text-purple-500 uppercase tracking-wider mb-2 flex items-center gap-1.5"><Gift size={14} /> Coupon / Reward: <span className="text-slate-700 ml-1">{order.coupon.title}</span></h4>
                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 bg-purple-50 p-3 rounded-xl border border-purple-100">
                               <div className="text-sm"><span className="font-bold text-slate-600">Code:</span> <span className="font-black text-purple-700 tracking-wider bg-white px-2 py-0.5 rounded border border-purple-200">{order.coupon.code}</span></div>
                               <div className="text-sm"><span className="font-bold text-slate-600">Expiry:</span> <span className="text-slate-800">{order.coupon.expiryDate ? fmt(order.coupon.expiryDate) : 'No expiry'}</span></div>
-                              {order.coupon.description && <div className="text-sm col-span-2 lg:col-span-2"><span className="font-bold text-slate-600">Description:</span> <span className="text-slate-800">{order.coupon.description}</span></div>}
+                              {order.coupon.websiteLink && <div className="text-sm col-span-2 lg:col-span-1"><span className="font-bold text-slate-600">Link:</span> <span className="text-blue-600 truncate block">{order.coupon.websiteLink}</span></div>}
+                              {order.coupon.description && <div className="text-sm col-span-2 lg:col-span-1"><span className="font-bold text-slate-600">Description:</span> <span className="text-slate-800">{order.coupon.description}</span></div>}
                             </div>
                           </div>
                         )}
@@ -1355,9 +1356,9 @@ const OrderManagement = () => {
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-bold text-slate-800 text-sm">QR Top-up</div>
-                          <div className="text-xs text-slate-500">{creditModal.shortfall?.toLocaleString()} credits × ₹5</div>
+                          <div className="text-xs text-slate-500">{creditModal.shortfall?.toLocaleString()} credits × ₹{creditModal.topupCostPerQr || 5}</div>
                         </div>
-                        <div className="font-black text-slate-800">₹{((creditModal.shortfall || 0) * 5).toLocaleString()}</div>
+                        <div className="font-black text-slate-800">₹{creditModal.topupTotalCost?.toLocaleString() || ((creditModal.shortfall || 0) * 5).toLocaleString()}</div>
                       </div>
                     )}
                   </div>
@@ -1620,7 +1621,6 @@ const OrderManagement = () => {
 
             <div className="w-full flex flex-col pb-6">
               {/* Authentic Status Card */}
-              <div className="bg-[#2CA4D6] p-3 text-center text-white relative shadow-sm z-10 mx-3 mt-3 rounded-t-[14px]">
                 <div className="flex flex-row justify-center items-center gap-3">
                   <div className="bg-white rounded-full p-1.5">
                     <ShieldCheck size={24} className="text-[#2CA4D6] fill-white" />
@@ -1699,10 +1699,10 @@ const OrderManagement = () => {
                                 return key.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
                               }
 
-                              if (key !== key.toUpperCase()) {
-                                const result = key.replace(/([A-Z])/g, " $1");
-                                return result.charAt(0).toUpperCase() + result.slice(1).trim();
-                              }
+                                if (key !== key.toUpperCase()) {
+                                  const result = key.replace(/[A-Z]/g, (match) => ` ${match}`);
+                                  return result.charAt(0).toUpperCase() + result.slice(1).trim();
+                                }
 
                               return key.charAt(0).toUpperCase() + key.slice(1).toLowerCase();
                             };
@@ -1728,7 +1728,7 @@ const OrderManagement = () => {
               </div>
             </div>
           </div>
-        </div>
+       
       )}
     </div>
   );

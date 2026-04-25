@@ -22,7 +22,7 @@ export default function GenerateQrs() {
   const [calculatedExpiry, setCalculatedExpiry] = useState('');
 
   // Coupon fields
-  const [coupon, setCoupon] = useState({ code: '', description: '', expiryDate: '' });
+  const [coupon, setCoupon] = useState({ title: '', code: '', description: '', websiteLink: '', expiryDate: '' });
 
   // Dynamic fields
   const [dynamicFieldValues, setDynamicFieldValues] = useState({});
@@ -74,7 +74,18 @@ export default function GenerateQrs() {
           variantLabel: v.variantName, // fallback
           inputType: 'text' // fallback, synced later
         })));
+        if (order.coupon) {
+        setCoupon({
+          title: order.coupon.title || '',
+          code: order.coupon.code || '',
+          description: order.coupon.description || '',
+          websiteLink: order.coupon.websiteLink || '',
+          expiryDate: order.coupon.expiryDate || '',
+          _expiryMonth: order.coupon.expiryDate ? new Date(order.coupon.expiryDate).getMonth() + 1 : '',
+          _expiryYear: order.coupon.expiryDate ? new Date(order.coupon.expiryDate).getFullYear() : ''
+        });
       }
+    }
     }
   }, [location.state]);
 
@@ -194,14 +205,32 @@ export default function GenerateQrs() {
     setSubmitting(true);
     const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
 
-    // Validate mandatory fields from form config
+    // Validate mandatory fields and phone fields from form config
     if (formConfig?.customFields) {
       for (const field of formConfig.customFields) {
-        if (field.isMandatory && !dynamicFieldValues[field.fieldName]) {
+        const val = dynamicFieldValues[field.fieldName];
+        if (field.isMandatory && !val) {
           alert(`${field.fieldLabel} is required`);
           setSubmitting(false);
           return;
         }
+        // Phone validation for dynamic fields of type 'phone'
+        if (field.fieldType === 'phone' && val) {
+          const phoneClean = String(val).replace(/[^0-9]/g, '');
+          if (phoneClean.length !== 10) {
+            alert(`${field.fieldLabel} must be exactly 10 digits`);
+            setSubmitting(false);
+            return;
+          }
+        }
+      }
+    }
+    // Coupon Validation: If title is present, other fields are mandatory
+    if (coupon.title) {
+      if (!coupon.code || !coupon.expiryDate || !coupon.description || !coupon.websiteLink) {
+        alert('All coupon fields (Title, Code, Expiry, Description, Website Link) are mandatory if you provide a title.');
+        setSubmitting(false);
+        return;
       }
     }
 
@@ -342,9 +371,11 @@ export default function GenerateQrs() {
         // Dynamic fields (all custom field values)
         dynamicFields: uploadedDynamicFields,
         // Coupon (if provided)
-        coupon: coupon.code ? {
+        coupon: coupon.title ? {
+          title: coupon.title,
           code: coupon.code,
           description: coupon.description,
+          websiteLink: coupon.websiteLink,
           expiryDate: coupon.expiryDate || null,
         } : undefined,
       };
@@ -540,7 +571,7 @@ export default function GenerateQrs() {
             label={field.fieldLabel}
             placeholder={field.placeholder || ''}
             value={value}
-            onChange={(v) => handleDynamicFieldChange(field.fieldName, v)}
+            onChange={(v) => handleDynamicFieldChange(field.fieldName, field.fieldType === 'phone' ? v.replace(/[^0-9]/g, '') : v)}
             type={field.fieldType === 'number' ? 'number' : field.fieldType === 'email' ? 'email' : field.fieldType === 'phone' ? 'tel' : 'text'}
             required={field.isMandatory}
             helpText={field.isQuantity ? "This field determines the number of QRs to be generated." : null}
@@ -1020,9 +1051,37 @@ export default function GenerateQrs() {
           </div>
         </div>
 
+        {/* Coupon Title */}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-slate-700 ml-1">
-            Coupon Code
+            Coupon Title {coupon.title && <span className="text-red-500">*</span>}
+          </label>
+          <input
+            type="text"
+            placeholder="e.g. Special Offer"
+            value={coupon.title}
+            onChange={(e) => setCoupon({ ...coupon, title: e.target.value })}
+            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all font-medium"
+          />
+        </div>
+
+        {/* Website Link */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-slate-700 ml-1">
+            Website Link {coupon.title && <span className="text-red-500">*</span>}
+          </label>
+          <input
+            type="url"
+            placeholder="e.g. https://brand.com/redeem"
+            value={coupon.websiteLink}
+            onChange={(e) => setCoupon({ ...coupon, websiteLink: e.target.value })}
+            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all font-medium"
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-slate-700 ml-1">
+            Coupon Code {coupon.title && <span className="text-red-500">*</span>}
           </label>
           <input
             type="text"
@@ -1035,7 +1094,7 @@ export default function GenerateQrs() {
 
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-slate-700 ml-1">
-            Coupon Expiry Date
+            Coupon Expiry Date {coupon.title && <span className="text-red-500">*</span>}
           </label>
           <div className="flex gap-2">
             <select
@@ -1072,7 +1131,7 @@ export default function GenerateQrs() {
 
         <div className="col-span-2 flex flex-col gap-1.5">
           <label className="text-sm font-medium text-slate-700 ml-1">
-            Coupon Description
+            Coupon Description {coupon.title && <span className="text-red-500">*</span>}
           </label>
           <textarea
             placeholder="e.g. Get 20% off on your next purchase..."

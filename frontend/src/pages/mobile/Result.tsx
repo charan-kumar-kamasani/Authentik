@@ -549,8 +549,12 @@ function ResultAuthentic({ data }: { data: any }) {
               {/* Header */}
               <div className="bg-gradient-to-br from-[#0D4E96] via-[#1565B8] to-[#2CA4D6] px-6 py-7 text-center relative">
                 <span className="text-[40px] block mb-2">🎉</span>
-                <h2 className="text-white text-[22px] font-black tracking-tight leading-tight">You Earned a Reward!</h2>
-                <p className="text-white/70 text-[13px] mt-1.5 font-semibold uppercase tracking-widest">Thank you for your review</p>
+                <h2 className="text-white text-[22px] font-black tracking-tight leading-tight">
+                  {awardedCoupon.title || "You Earned a Reward!"}
+                </h2>
+                <p className="text-white/70 text-[13px] mt-1.5 font-semibold uppercase tracking-widest">
+                  Thank you for your review
+                </p>
                 {/* Close button */}
                 <button
                   onClick={() => setShowCouponReveal(false)}
@@ -591,6 +595,16 @@ function ResultAuthentic({ data }: { data: any }) {
 
                 {awardedCoupon.description && (
                   <p className="text-[#1e3a5f]/70 text-[14px] text-center mb-4 font-medium leading-relaxed">{awardedCoupon.description}</p>
+                )}
+
+                {awardedCoupon.websiteLink && (
+                  <button
+                    onClick={() => window.open(awardedCoupon.websiteLink, '_blank')}
+                    className="w-full bg-[#E8F4F9] text-[#0D4E96] font-bold text-[15px] py-3.5 rounded-2xl border border-[#2CA4D6]/20 active:scale-[0.97] transition-all mb-3 flex items-center justify-center gap-2"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    Redeem Now
+                  </button>
                 )}
 
                 {awardedCoupon.expiryDate && (
