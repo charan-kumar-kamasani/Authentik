@@ -8,6 +8,7 @@ export default function Rewards() {
   const [rewards, setRewards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState(null);
+  const [activeTab, setActiveTab] = useState('active'); // 'active' or 'expired'
 
   useEffect(() => {
     const fetchRewards = async () => {
@@ -32,147 +33,155 @@ export default function Rewards() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-[#FFFFFF] to-[#E8F4F9] flex items-center justify-center">
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 border-4 border-[#2CA4D6]/30 border-t-[#0D4E96] rounded-full animate-spin" />
-          <p className="text-[#1a5fa8] text-sm font-bold">Loading rewards...</p>
+          <p className="text-[#0D4E96] text-sm font-bold">Loading rewards...</p>
         </div>
       </div>
     );
   }
 
+  const currentDate = new Date();
+  
+  const filteredRewards = rewards.filter(reward => {
+    const isExpired = reward.couponExpiry && new Date(reward.couponExpiry) < currentDate;
+    if (activeTab === 'active') return !isExpired;
+    return isExpired;
+  });
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-[#FFFFFF] to-[#E8F4F9] font-sans pb-28 flex flex-col">
+    <div className="min-h-screen bg-[#F8FAFC] font-sans pb-28 flex flex-col">
       <MobileHeader
+        title="Authentiks"
         onLeftClick={() => navigate("/profile")}
-        leftIcon={
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        }
+        onNotificationClick={() => {}}
+        rightIcon={<div className="w-10" />}
       />
 
       <div className="px-5 mt-4">
-        {/* Title Area */}
+        {/* Title & Toggle Area */}
         <div className="mb-6">
-          <h1 className="text-[28px] font-black tracking-tight bg-gradient-to-r from-[#0D4E96] via-[#1a5fa8] to-[#2CA4D6] bg-clip-text text-transparent">
-            My Rewards
+          <h1 className="text-[20px] font-bold text-[#2CA4D6] mb-4">
+            Rewards
           </h1>
-          <p className="text-[#1e3a5f]/60 text-[14px] font-medium mt-1">
-            {rewards.length > 0 
-              ? `You have ${rewards.length} reward${rewards.length > 1 ? 's' : ''} earned!`
-              : 'Scan & review products to earn rewards'
-            }
-          </p>
-        </div>
-        {rewards.length === 0 && (
-          <div className="bg-white/80 backdrop-blur-md rounded-[32px] border-[2px] border-white shadow-[0_12px_40px_rgba(13,78,150,0.1)] p-8 text-center flex flex-col items-center justify-center my-8">
-            <div className="w-24 h-24 bg-gradient-to-br from-[#E8F4F9] to-[#F0F7FF] rounded-full flex items-center justify-center mb-6 shadow-inner">
-              <span className="text-5xl drop-shadow-md">🎁</span>
-            </div>
-            <h3 className="text-[#0D4E96] font-black text-[22px] mb-2 tracking-tight">No Rewards Yet</h3>
-            <p className="text-[#1e3a5f]/70 text-[14px] font-medium leading-relaxed mb-8 px-2">
-              Scan authentic products and leave a review to earn exclusive coupons and rewards!
-            </p>
+          
+          {/* Custom Toggle Switch */}
+          <div className="bg-white p-1 rounded-full shadow-sm flex items-center border border-gray-100">
             <button
-              onClick={() => navigate('/scan')}
-              className="bg-gradient-to-r from-[#0D4E96] via-[#1a5fa8] to-[#2CA4D6] text-white font-black text-[16px] px-10 py-3.5 rounded-[30px] shadow-[0_8px_24px_rgba(13,78,150,0.4)] hover:shadow-[0_12px_32px_rgba(13,78,150,0.5)] active:scale-[0.96] transition-all w-full leading-none"
+              onClick={() => setActiveTab('active')}
+              className={`flex-1 py-2.5 rounded-full text-[14px] font-bold transition-colors ${
+                activeTab === 'active' 
+                  ? 'bg-[#1F2642] text-white shadow-md' 
+                  : 'text-[#64748B] hover:bg-gray-50'
+              }`}
             >
-              Start Scanning
+              Active
             </button>
+            <button
+              onClick={() => setActiveTab('expired')}
+              className={`flex-1 py-2.5 rounded-full text-[14px] font-bold transition-colors ${
+                activeTab === 'expired' 
+                  ? 'bg-[#1F2642] text-white shadow-md' 
+                  : 'text-[#64748B] hover:bg-gray-50'
+              }`}
+            >
+              Expired
+            </button>
+          </div>
+        </div>
+
+        {filteredRewards.length === 0 && (
+          <div className="bg-white rounded-3xl shadow-sm p-8 text-center flex flex-col items-center justify-center my-8 border border-gray-100">
+            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+              <span className="text-4xl">🎁</span>
+            </div>
+            <h3 className="text-[#1F2642] font-bold text-[18px] mb-2">No {activeTab} rewards</h3>
+            <p className="text-gray-500 text-[13px] mb-6">
+              {activeTab === 'active' 
+                ? "Scan products and leave reviews to earn exclusive coupons!" 
+                : "You don't have any expired rewards."}
+            </p>
+            {activeTab === 'active' && (
+              <button
+                onClick={() => navigate('/scan')}
+                className="bg-[#2CA4D6] text-white font-bold text-[15px] px-8 py-3 rounded-full shadow-lg active:scale-95 transition-all"
+              >
+                Start Scanning
+              </button>
+            )}
           </div>
         )}
 
         {/* Rewards List */}
-        <div className="space-y-3">
-          {rewards.map((reward) => {
-            const isExpired = reward.couponExpiry && new Date(reward.couponExpiry) < new Date();
-            
-            return (
-              <div
-                key={reward._id}
-                onClick={() => navigate(`/rewards/${reward._id}`)}
-                className={`bg-white/90 backdrop-blur-md rounded-[28px] border-[2px] border-white shadow-[0_8px_24px_rgba(13,78,150,0.08)] overflow-hidden active:scale-[0.98] transition-all cursor-pointer ${isExpired ? 'opacity-60 grayscale-[30%]' : ''}`}
-              >
-                <div className="flex p-4 gap-4">
-                  {/* Product Image */}
-                  <div className="w-[84px] h-[100px] bg-gradient-to-br from-[#F0F7FF] to-[#E8F4F9] rounded-[20px] flex-shrink-0 flex items-center justify-center overflow-hidden border border-white shadow-inner">
-                    {reward.productImage ? (
-                      <img src={reward.productImage} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-3xl drop-shadow-sm">🎁</span>
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0 flex flex-col justify-center py-1">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <div className="min-w-0">
-                        <h3 className="text-[#0D4E96] font-black text-[15px] truncate leading-tight tracking-tight">
-                          {reward.productName || 'Product'}
-                        </h3>
-                        <p className="text-[#1a5fa8]/60 text-[12px] font-bold mt-0.5 tracking-wide uppercase">
-                          {reward.brand || 'Brand'}
-                        </p>
-                      </div>
-                      {isExpired ? (
-                        <span className="bg-[#FFE8E8] text-[#C41E3A] text-[9px] font-black px-2.5 py-1 rounded-full flex-shrink-0 border border-[#FFCACA]">
-                          EXPIRED
-                        </span>
-                      ) : (
-                        <span className="bg-[#E8F8F0] text-[#059669] text-[9px] font-black px-2.5 py-1 rounded-full flex-shrink-0 border border-[#A7F3D0]">
-                          ACTIVE
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Coupon Code Row */}
-                    <div className="flex items-center gap-2 mt-3">
-                      <div className="bg-gradient-to-r from-[#F0F7FF] to-[#E8F4F9] border border-dashed border-[#2CA4D6]/40 rounded-[14px] px-3 py-1.5 flex-1 min-w-0 shadow-inner">
-                        <p className="text-[#1a5fa8] font-black text-[12px] tracking-tight truncate text-center mb-0.5">
-                          {reward.couponTitle || 'REWARD'}
-                        </p>
-                        <p className="text-[#0D4E96] font-bold text-[14px] tracking-[0.1em] truncate text-center">
-                          {reward.couponCode}
-                        </p>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          copyCode(reward.couponCode, reward._id);
-                        }}
-                        className="w-9 h-9 bg-gradient-to-br from-[#0D4E96] to-[#2CA4D6] rounded-[12px] flex-shrink-0 flex items-center justify-center shadow-[0_4px_12px_rgba(13,78,150,0.3)] active:scale-90 transition-transform"
-                      >
-                        {copiedId === reward._id ? (
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>
-                        ) : (
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-                        )}
-                      </button>
-                    </div>
-
-                    {/* Bottom row */}
-                    <div className="flex items-center justify-between mt-2">
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: 5 }).map((_, i) => (
-                          <svg key={i} width="12" height="12" viewBox="0 0 24 24" fill={i < reward.reviewRating ? '#F2C94C' : '#E8F4F9'}>
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                          </svg>
-                        ))}
-                      </div>
-                      {reward.couponExpiry && (
-                        <p className="text-[#1a5fa8]/50 text-[11px] font-bold">
-                          Exp: {new Date(reward.couponExpiry).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
+        <div className="space-y-4">
+          {filteredRewards.map((reward) => (
+            <div key={reward._id} className="w-full relative shadow-[0_4px_15px_rgba(0,0,0,0.05)] rounded-[16px] bg-white border border-gray-100">
+              {/* Top Dark Section */}
+              <div className="bg-[#1F2642] rounded-t-[16px] pt-6 pb-5 px-5 text-center relative overflow-hidden">
+                <p className="text-white/80 text-[12px] font-semibold tracking-wider uppercase mb-1">
+                  {reward.brand || 'Brand'}
+                </p>
+                <h3 className="text-white text-[20px] font-black uppercase tracking-wide leading-tight">
+                  {reward.couponTitle || 'REWARD UNLOCKED'}
+                </h3>
               </div>
-            );
-          })}
+
+              {/* Middle Light Blue Section */}
+              <div className="bg-[#2CA4D6] py-3 px-5 relative flex items-center justify-center gap-3">
+                {/* Left Cutout */}
+                <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#F8FAFC] rounded-full border-r border-gray-100/50"></div>
+                {/* Right Cutout */}
+                <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#F8FAFC] rounded-full border-l border-gray-100/50"></div>
+                
+                <span className="text-white text-[16px] font-black tracking-widest uppercase">
+                  {reward.couponCode}
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    copyCode(reward.couponCode, reward._id);
+                  }}
+                  className="w-7 h-7 flex items-center justify-center active:scale-90 transition-transform ml-2"
+                >
+                  {copiedId === reward._id ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                  )}
+                </button>
+              </div>
+
+              {/* Bottom White Section */}
+              <div className="bg-white rounded-b-[16px] p-4 flex items-center justify-between">
+                <div>
+                  {reward.couponExpiry ? (
+                    <p className="text-[#64748B] text-[12px] font-bold">
+                      Validity: <span className="text-[#1F2642]">{new Date(reward.couponExpiry).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}</span>
+                    </p>
+                  ) : (
+                    <p className="text-[#64748B] text-[12px] font-bold">No expiry</p>
+                  )}
+                </div>
+                
+                <button
+                  onClick={() => {
+                    if (reward.websiteLink) {
+                      window.open(reward.websiteLink, '_blank');
+                    }
+                  }}
+                  disabled={activeTab === 'expired'}
+                  className={`px-5 py-2 rounded-full text-[13px] font-bold shadow-sm transition-transform ${
+                    activeTab === 'expired'
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                      : 'bg-[#1F2642] text-white hover:bg-[#151a2e] active:scale-95'
+                  }`}
+                >
+                  Redeem Now
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

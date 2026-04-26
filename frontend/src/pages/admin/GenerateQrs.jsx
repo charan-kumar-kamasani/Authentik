@@ -385,7 +385,7 @@ export default function GenerateQrs() {
         if (editingOrder) {
           await updateOrder(editingOrder._id, orderData);
           alert('Order updated and re-submitted! Authorizer will review it again.');
-          navigate('/admin/orders');
+          navigate('/orders');
         } else {
           await createOrder(orderData, token);
           alert('Order created. Admin will process it to generate QRs.');
@@ -417,7 +417,7 @@ export default function GenerateQrs() {
       }
     } catch (err) {
       console.error(err);
-      alert('Failed to create QR');
+      alert(err.message || 'Failed to create QR');
     } finally {
       setSubmitting(false);
     }

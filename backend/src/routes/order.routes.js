@@ -841,6 +841,40 @@ router.put('/:id/reject', protect, async (req, res) => {
       return res.status(400).json({ message: 'Cannot reject a completed order' });
     }
 
+    // --- Refund credits if order was already authorized (credits were deducted) ---
+    const creditsWereDeducted = ['Authorized', 'Order Processing', 'Dispatching', 'Dispatched'].includes(order.status);
+    if (creditsWereDeducted && order.quantity > 0) {
+      try {
+        // Find company via brand
+        const brand = order.brandId ? await Brand.findById(order.brandId) : null;
+        const refundCompanyId = brand?.companyId || order.companyId;
+        if (refundCompanyId) {
+          const company = await Company.findById(refundCompanyId);
+          if (company) {
+            const refundAmount = order.quantity;
+            company.qrCredits = (company.qrCredits || 0) + refundAmount;
+            await company.save({ validateModifiedOnly: true });
+
+            await CreditTransaction.create({
+              companyId: company._id,
+              type: 'refund',
+              amount: refundAmount,
+              balanceAfter: company.qrCredits,
+              orderId: order._id,
+              performedBy: req.user._id,
+              note: `Refund: Order ${order.orderId} rejected — ${refundAmount} QR credits returned`
+            });
+
+            console.log(`💰 Refunded ${refundAmount} credits to ${company.companyName} for rejected order ${order.orderId}`);
+          }
+        }
+      } catch (refundErr) {
+        console.error('Credit refund error during rejection:', refundErr);
+        // Don't block rejection if refund fails, but log it
+      }
+    }
+    // --- End credit refund ---
+
     // When rejected, move to 'Rejected' status so it's clearly visible and can be edited/fixed
     order.status = 'Rejected';
     order.history.push({

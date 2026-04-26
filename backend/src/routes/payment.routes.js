@@ -115,7 +115,10 @@ router.post('/initiate', protect, async (req, res) => {
         } else {
             topupQty = parseInt(quantity) || 0;
             if (topupQty <= 0) return res.status(400).json({ message: 'Invalid quantity' });
-            baseAmount = topupQty * QR_TOPUP_PRICE;
+            // Use volume-based pricing (same as order credit check) instead of hardcoded QR_TOPUP_PRICE
+            const { calculateQrPrice } = require('../utils/pricing');
+            const topupPricing = await calculateQrPrice(topupQty);
+            baseAmount = topupPricing.amount; // subtotal (qty × pricePerQr), before GST
         }
 
         const breakdown = await calculateBreakdown(baseAmount, couponCode);
@@ -348,7 +351,7 @@ async function addCreditsFromPayment(payment, company, user) {
         type: payment.type === 'plan' ? 'purchase_plan' : 'purchase_topup',
         amount: creditsToAdd,
         balanceAfter: newBalance,
-        unitPrice: payment.type === 'topup' ? QR_TOPUP_PRICE : (payment.planId ? (payment.baseAmount / creditsToAdd) : 0),
+        unitPrice: payment.type === 'topup' ? (creditsToAdd > 0 ? payment.baseAmount / creditsToAdd : 0) : (payment.planId ? (payment.baseAmount / creditsToAdd) : 0),
         totalPaid: payment.finalAmount,
         planId: payment.planId || null,
         planName: payment.type === 'plan' && payment.planId ? (await PricePlan.findById(payment.planId))?.name : null,

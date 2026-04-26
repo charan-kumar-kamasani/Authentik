@@ -86,7 +86,6 @@ function ResultAuthentic({ data }: { data: any }) {
   const [showMore, setShowMore] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState("");
   const [optIn, setOptIn] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [isReviewed, setIsReviewed] = useState(data.alreadyReviewed || false);
@@ -384,63 +383,52 @@ function ResultAuthentic({ data }: { data: any }) {
               </button>
 
               {/* Product Hero */}
-              <div className="px-6 pt-5 sm:pt-7 pb-5 text-center">
+              <div className="px-6 pt-8 pb-5 text-center">
                 {productImage ? (
-                  <div className="w-[72px] h-[72px] rounded-2xl overflow-hidden mx-auto mb-4 shadow-lg shadow-blue-500/10 border-2 border-white ring-2 ring-[#E8F4F9]">
-                    <img src={productImage} alt="" className="w-full h-full object-cover" />
+                  <div className="w-[80px] h-[80px] rounded-[24px] overflow-hidden mx-auto mb-5 shadow-[0_8px_24px_rgba(13,78,150,0.15)] bg-white p-1">
+                    <img src={productImage} alt="" className="w-full h-full object-cover rounded-[20px]" />
                   </div>
                 ) : (
-                  <div className="w-[72px] h-[72px] rounded-2xl bg-gradient-to-br from-[#F0F7FF] to-[#E8F4F9] mx-auto mb-4 flex items-center justify-center shadow-inner border-2 border-white ring-2 ring-[#E8F4F9]">
+                  <div className="w-[80px] h-[80px] rounded-[24px] bg-gradient-to-br from-[#F0F7FF] to-[#E8F4F9] mx-auto mb-5 flex items-center justify-center shadow-[0_8px_24px_rgba(13,78,150,0.15)] bg-white p-1">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2CA4D6" strokeWidth="1.5"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                   </div>
                 )}
-                <h2 className="text-[20px] font-black text-[#0D4E96] tracking-tight leading-tight mb-1">{productName}</h2>
-                <p className="text-[13px] font-semibold text-[#1a5fa8]/50 uppercase tracking-wider">{companyName}</p>
+                <h2 className="text-[22px] font-black text-[#0D4E96] tracking-tight leading-tight mb-1.5">{productName}</h2>
+                <p className="text-[13px] font-bold text-[#8ba2be] uppercase tracking-[0.1em]">{companyName}</p>
               </div>
 
-              {/* Divider */}
-              <div className="mx-6 h-px bg-gradient-to-r from-transparent via-[#E8F4F9] to-transparent" />
-
               {/* Rating Section */}
-              <div className="px-6 py-6">
-                <p className="text-[15px] font-bold text-[#1e3a5f] text-center mb-1">How was your experience?</p>
-                <p className="text-[12px] text-[#1a5fa8]/40 text-center mb-5 font-medium">Tap a star to rate this product</p>
+              <div className="px-6 py-6 mt-2">
+                <p className="text-[18px] font-black text-[#1F2642] text-center mb-1.5 tracking-tight">How was your experience?</p>
+                <p className="text-[14px] text-[#2CA4D6]/70 text-center mb-6 font-bold tracking-wide">Tap a star to rate this product</p>
                 
-                <div className="flex justify-center gap-2 mb-2">
+                <div className="flex justify-center gap-2 mb-3">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button 
                       key={star} 
                       onClick={() => setRating(star)} 
                       className="transition-all duration-200 active:scale-75 hover:scale-110"
                       style={{ 
-                        transform: star <= rating ? 'scale(1.1)' : 'scale(1)',
+                        transform: star <= rating ? 'scale(1.15)' : 'scale(1)',
                         transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
                       }}
                     >
-                      <svg width="44" height="44" viewBox="0 0 24 24" fill={star <= rating ? "#F59E0B" : "none"} stroke={star <= rating ? "#F59E0B" : "#D1D5DB"} strokeWidth="1.5">
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill={star <= rating ? "#F59E0B" : "none"} stroke={star <= rating ? "#F59E0B" : "#CBD5E1"} strokeWidth="1.5">
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                       </svg>
                     </button>
                   ))}
                 </div>
-                {rating > 0 && (
-                  <p className="text-center text-[13px] font-bold text-[#F59E0B] mb-1" style={{ animation: 'reviewFadeIn 0.3s ease' }}>
-                    {['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][rating]}
-                  </p>
-                )}
+                <div className="h-6">
+                  {rating > 0 && (
+                    <p className="text-center text-[15px] font-black text-[#F59E0B]" style={{ animation: 'reviewFadeIn 0.3s ease' }}>
+                      {['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][rating]}
+                    </p>
+                  )}
+                </div>
               </div>
 
-              {/* Comment Section */}
-              <div className="px-6 pb-5">
-                <label className="text-[13px] font-bold text-[#1e3a5f]/70 block mb-2">Share your thoughts <span className="text-[#1a5fa8]/30 font-medium">(optional)</span></label>
-                <textarea
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  placeholder="What did you think about this product?"
-                  rows={3}
-                  className="w-full bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl px-4 py-3 text-[14px] text-[#1e3a5f] placeholder-[#94A3B8] font-medium resize-none focus:outline-none focus:ring-2 focus:ring-[#2CA4D6]/30 focus:border-[#2CA4D6]/50 transition-all"
-                />
-              </div>
+
 
               {/* Opt-in & Submit */}
               <div className="px-6 pb-8">
@@ -451,7 +439,7 @@ function ResultAuthentic({ data }: { data: any }) {
                       {optIn && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4"><path d="M20 6L9 17l-5-5"/></svg>}
                     </div>
                   </div>
-                  <span className="text-[12px] font-medium text-[#64748B] leading-relaxed">I'd like to receive exclusive offers and updates from this brand</span>
+                  <span className="text-[12px] font-bold text-[#333] leading-tight mt-0.5">Yes, I would like to receive exclusive offer and discounts from the brand</span>
                 </label>
 
                 <button
@@ -464,7 +452,6 @@ function ResultAuthentic({ data }: { data: any }) {
                       const result = await submitReview({
                         productId: data.productId?._id || data.productId,
                         rating,
-                        comment,
                         optIn
                       }, token);
                       setIsReviewed(true);
@@ -521,126 +508,106 @@ function ResultAuthentic({ data }: { data: any }) {
           </div>
         )}
 
-        {/* Coupon Reveal Dialog */}
+        {/* Coupon Reveal Dialog - Full Screen */}
         {showCouponReveal && awardedCoupon && (
-          <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm" style={{ animation: 'couponFadeIn 0.25s ease' }}>
-            {/* Confetti particles */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              {Array.from({ length: 24 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="absolute rounded-full"
-                  style={{
-                    width: `${4 + Math.random() * 6}px`,
-                    height: `${4 + Math.random() * 6}px`,
-                    left: `${Math.random() * 100}%`,
-                    top: `-5%`,
-                    backgroundColor: ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96E6A1', '#DDA0DD', '#F0E68C'][i % 7],
-                    animation: `couponConfetti ${2 + Math.random() * 3}s linear ${Math.random() * 1.5}s infinite`,
-                  }}
-                />
-              ))}
-            </div>
+          <div className="fixed inset-0 z-[200] bg-white flex flex-col font-sans overflow-y-auto" style={{ animation: 'couponFadeIn 0.3s ease' }}>
+            <MobileHeader
+              title="Authentiks"
+              onLeftClick={() => setShowCouponReveal(false)}
+              onNotificationClick={handleNotificationClick}
+              rightIcon={<div className="w-10" />}
+            />
+            
+            <div className="flex-1 px-5 py-8 flex flex-col items-center">
+              <h2 className="text-[#0D4E96] text-[22px] font-bold text-center leading-tight mb-10 max-w-[280px]">
+                Congratulations,<br />You've Unlocked a Reward!
+              </h2>
 
-            <div 
-              className="bg-white rounded-t-[28px] sm:rounded-[28px] w-full sm:max-w-[380px] sm:mx-6 overflow-hidden shadow-[0_-8px_40px_rgba(0,0,0,0.15)] sm:shadow-[0_20px_60px_rgba(13,78,150,0.35)]"
-              style={{ animation: 'couponSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
-            >
-              {/* Header */}
-              <div className="bg-gradient-to-br from-[#0D4E96] via-[#1565B8] to-[#2CA4D6] px-6 py-7 text-center relative">
-                <span className="text-[40px] block mb-2">🎉</span>
-                <h2 className="text-white text-[22px] font-black tracking-tight leading-tight">
-                  {awardedCoupon.title || "You Earned a Reward!"}
-                </h2>
-                <p className="text-white/70 text-[13px] mt-1.5 font-semibold uppercase tracking-widest">
-                  Thank you for your review
-                </p>
-                {/* Close button */}
-                <button
-                  onClick={() => setShowCouponReveal(false)}
-                  className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/15 flex items-center justify-center active:bg-white/30 transition-colors"
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                </button>
-              </div>
-
-              {/* Body */}
-              <div className="px-6 py-6">
-                {/* Coupon Code Box */}
-                <div className="bg-[#F0F7FF] border-2 border-dashed border-[#2CA4D6]/30 rounded-2xl p-5 mb-5">
-                  <p className="text-[10px] text-[#1a5fa8]/70 font-black uppercase tracking-[0.2em] text-center mb-3">Your Coupon Code</p>
-                  <div className="flex items-center justify-center gap-3">
-                    <span className="text-[22px] sm:text-[26px] font-black text-[#0D4E96] tracking-[0.12em] break-all text-center leading-tight">
-                      {awardedCoupon.code}
-                    </span>
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(awardedCoupon.code);
-                        setCouponCopied(true);
-                        setTimeout(() => setCouponCopied(false), 2000);
-                      }}
-                      className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-[#0D4E96] to-[#2CA4D6] rounded-xl active:scale-90 transition-transform flex items-center justify-center shadow-md"
-                    >
-                      {couponCopied ? (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>
-                      ) : (
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-                      )}
-                    </button>
-                  </div>
-                  {couponCopied && (
-                    <p className="text-[#059669] text-[11px] font-bold text-center mt-2 animate-pulse">Copied to clipboard!</p>
-                  )}
+              {/* Ticket Card */}
+              <div className="w-full max-w-sm relative mt-6 shadow-[0_15px_40px_rgba(0,0,0,0.1)] rounded-[20px] bg-white border border-gray-100">
+                
+                {/* Gift Icon overlapping top */}
+                <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 bg-[#2CA4D6] rounded-full border-[6px] border-white flex items-center justify-center z-10 shadow-sm">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 12 20 22 4 22 4 12"></polyline>
+                    <rect x="2" y="7" width="20" height="5"></rect>
+                    <line x1="12" y1="22" x2="12" y2="7"></line>
+                    <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+                    <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+                  </svg>
                 </div>
 
-                {awardedCoupon.description && (
-                  <p className="text-[#1e3a5f]/70 text-[14px] text-center mb-4 font-medium leading-relaxed">{awardedCoupon.description}</p>
-                )}
+                {/* Top Dark Section */}
+                <div className="bg-[#1F2642] rounded-t-[20px] pt-14 pb-8 px-6 text-center relative overflow-hidden">
+                  <h3 className="text-white text-[24px] font-black uppercase tracking-wide">
+                    {awardedCoupon.title || "REWARD UNLOCKED"}
+                  </h3>
+                </div>
 
-                {awardedCoupon.websiteLink && (
+                {/* Middle Light Blue Section */}
+                <div className="bg-[#2CA4D6] py-4 px-6 relative flex items-center justify-center gap-3">
+                  {/* Left Cutout */}
+                  <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full"></div>
+                  {/* Right Cutout */}
+                  <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full"></div>
+                  
+                  <span className="text-white text-[20px] font-black tracking-widest uppercase">
+                    {awardedCoupon.code}
+                  </span>
                   <button
-                    onClick={() => window.open(awardedCoupon.websiteLink, '_blank')}
-                    className="w-full bg-[#E8F4F9] text-[#0D4E96] font-bold text-[15px] py-3.5 rounded-2xl border border-[#2CA4D6]/20 active:scale-[0.97] transition-all mb-3 flex items-center justify-center gap-2"
+                    onClick={() => {
+                      navigator.clipboard.writeText(awardedCoupon.code);
+                      setCouponCopied(true);
+                      setTimeout(() => setCouponCopied(false), 2000);
+                    }}
+                    className="w-8 h-8 flex items-center justify-center active:scale-90 transition-transform"
                   >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    {couponCopied ? (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    )}
+                  </button>
+                </div>
+
+                {/* Bottom White Section */}
+                <div className="bg-white rounded-b-[20px] p-6 text-center">
+                  {awardedCoupon.expiryDate && (
+                    <p className="text-[#333] text-[14px] font-bold mb-4">
+                      Valid till: {new Date(awardedCoupon.expiryDate).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}
+                    </p>
+                  )}
+                  
+                  {awardedCoupon.description && (
+                    <div className="text-left mb-6">
+                      <p className="text-[#666] text-[12px] font-bold uppercase mb-1">Coupon Details:</p>
+                      <p className="text-[#666] text-[13px] leading-relaxed">
+                        {awardedCoupon.description}
+                      </p>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      if (awardedCoupon.websiteLink) {
+                        window.open(awardedCoupon.websiteLink, '_blank');
+                      } else {
+                        navigate('/rewards');
+                      }
+                    }}
+                    className="w-full bg-[#1F2642] text-white font-bold text-[16px] py-4 rounded-[30px] shadow-lg active:scale-95 transition-transform"
+                  >
                     Redeem Now
                   </button>
-                )}
-
-                {awardedCoupon.expiryDate && (
-                  <p className="text-[#1a5fa8]/40 text-[12px] font-bold text-center mb-5">
-                    Valid until {new Date(awardedCoupon.expiryDate).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
-                  </p>
-                )}
-
-                <button
-                  onClick={() => navigate('/rewards')}
-                  className="w-full bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] text-white font-bold text-[15px] py-3.5 rounded-2xl shadow-lg shadow-blue-500/20 active:scale-[0.97] transition-all mb-2"
-                >
-                  View My Rewards
-                </button>
-                <button
-                  onClick={() => setShowCouponReveal(false)}
-                  className="w-full text-[#1e3a5f]/40 font-semibold text-[13px] py-2.5 active:bg-gray-50 rounded-xl transition-colors"
-                >
-                  Close
-                </button>
+                </div>
               </div>
             </div>
 
             {/* CSS for animations */}
             <style>{`
-              @keyframes couponConfetti {
-                0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
-                100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
-              }
               @keyframes couponFadeIn {
-                from { opacity: 0; }
-                to { opacity: 1; }
-              }
-              @keyframes couponSlideUp {
-                from { transform: translateY(100%); opacity: 0; }
-                to { transform: translateY(0); opacity: 1; }
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
               }
             `}</style>
           </div>

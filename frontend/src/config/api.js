@@ -878,7 +878,7 @@ export const deleteProductTemplate = async (templateId) => {
 export const rejectOrder = async (orderId, reason) => {
   try {
     const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-    const res = await fetch(`${API_BASE_URL}/admin/orders/${orderId}/reject`, {
+    const res = await fetch(`${API_BASE_URL}/orders/${orderId}/reject`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -899,7 +899,7 @@ export const rejectOrder = async (orderId, reason) => {
 export const updateOrder = async (orderId, updates) => {
   try {
     const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-    const res = await fetch(`${API_BASE_URL}/admin/orders/${orderId}`, {
+    const res = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

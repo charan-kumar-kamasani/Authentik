@@ -18,12 +18,6 @@ router.post('/', protect, async (req, res) => {
       return res.status(400).json({ error: 'Product ID and rating are required' });
     }
 
-    // Check if user already reviewed this product
-    const existingReview = await Review.findOne({ productId, userId: req.user._id });
-    if (existingReview && productId !== '00000000000000000000demo') {
-      return res.status(400).json({ error: 'You have already reviewed this product' });
-    }
-
     // --- DEMO INTERCEPTOR ---
     if (productId === '00000000000000000000demo') {
       const awardedCoupon = {
@@ -37,12 +31,17 @@ router.post('/', protect, async (req, res) => {
         productId,
         userId: req.user._id,
         rating,
-        comment,
         optIn,
         coupon: awardedCoupon 
       });
     }
     // ------------------------
+
+    // Check if user already reviewed this product
+    const existingReview = await Review.findOne({ productId, userId: req.user._id });
+    if (existingReview) {
+      return res.status(400).json({ error: 'You have already reviewed this product' });
+    }
 
     const review = await Review.create({
       productId,
