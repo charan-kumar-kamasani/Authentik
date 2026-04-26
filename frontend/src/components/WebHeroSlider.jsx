@@ -29,12 +29,13 @@ export default function WebHeroSlider({ slides, onCTA, onSlideChange }) {
   const slide = slides[activeSlide];
 
   return (
-    <div className="container mx-auto text-center relative z-10 ">
-      {/* Banner Image Carousel */}
-      <div
-        onClick={onCTA}
-        className="hero-slide-enter relative w-[94%] mx-auto mb-10 rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
-      >
+    <div className="container mx-auto text-center relative z-10">
+      {/* Banner Image Carousel Wrapper */}
+      <div className="relative w-[94%] mx-auto mb-10">
+        <div
+          onClick={onCTA}
+          className="hero-slide-enter relative w-full rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
+        >
         <div className="relative w-full" style={{ aspectRatio: '1672/741' }}>
           {slides.map((s, i) => (
             <img
@@ -50,23 +51,24 @@ export default function WebHeroSlider({ slides, onCTA, onSlideChange }) {
         <div className="absolute inset-0 bg-white/0 group-hover:bg-white-[0.02] transition-colors z-20 pointer-events-none" />
       </div>
 
-      {/* Slide Navigation Dots */}
-      <div className="flex items-center justify-center gap-4 mb-10 relative z-30">
-        <button onClick={(e) => { e.stopPropagation(); prevSlide(); }} className="p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+      {/* Slide Navigation Dots (Absolutely positioned to not affect flex height) */}
+      <div className="absolute -bottom-14 left-1/2 -translate-x-1/2 flex items-center justify-center gap-4 w-full z-30 pointer-events-auto">
+        <button onClick={(e) => { e.stopPropagation(); prevSlide(); }} className="p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all shadow-lg backdrop-blur-md">
           <ChevronLeft size={18} />
         </button>
         {slides.map((_, i) => (
           <button
             key={i}
             onClick={(e) => { e.stopPropagation(); goToSlide(i); }}
-            className={`h-2 rounded-full transition-all duration-500 ${i === activeSlide ? 'w-10 bg-white' : 'w-2 bg-white/20 hover:bg-white/40'
+            className={`h-2 rounded-full transition-all duration-500 shadow-lg ${i === activeSlide ? 'w-10 bg-white' : 'w-2 bg-white/30 hover:bg-white/60'
               }`}
           />
         ))}
-        <button onClick={(e) => { e.stopPropagation(); nextSlide(); }} className="p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+        <button onClick={(e) => { e.stopPropagation(); nextSlide(); }} className="p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all shadow-lg backdrop-blur-md">
           <ChevronRight size={18} />
         </button>
       </div>
+    </div>
 
       {/* Global CTA Button */}
       {/* <div className="hero-slide-enter-delay-2 flex flex-col items-center gap-6 mb-8 relative z-30">
