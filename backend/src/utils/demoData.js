@@ -5,7 +5,7 @@ const DEMO_PRODUCT = {
     "size": "Size",
     "model_series": "Model / Series",
     "sku": "SKU/Model Number",
-    "mrp": "MRP (Maximum Retail Price)",
+    "mrp": "",
     "countryOfOrigin": "Country of Origin",
     "manufacturedBy": "Manufactured by",
     "website": "Website",

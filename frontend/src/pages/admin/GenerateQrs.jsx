@@ -380,17 +380,18 @@ export default function GenerateQrs() {
         } : undefined,
       };
 
-      if (role === 'creator') {
-        // Creators create or Update an Order
-        if (editingOrder) {
-          await updateOrder(editingOrder._id, orderData);
+      if (editingOrder) {
+        await updateOrder(editingOrder._id, orderData);
+        if (role === 'creator') {
           alert('Order updated and re-submitted! Authorizer will review it again.');
-          navigate('/orders');
         } else {
-          await createOrder(orderData, token);
-          alert('Order created. Admin will process it to generate QRs.');
-          resetForm();
+          alert('Order updated successfully!');
         }
+        navigate('/orders');
+      } else if (role === 'creator') {
+        await createOrder(orderData, token);
+        alert('Order created. Admin will process it to generate QRs.');
+        resetForm();
       } else {
         const res = await fetch(`${API_BASE_URL}/admin/create-qr`, {
           method: 'POST',
@@ -984,22 +985,20 @@ export default function GenerateQrs() {
           </label>
           <div className="grid grid-cols-2 gap-2">
             <input
-              type="number"
+              type="text"
               placeholder="MM"
               value={mfdOn.month}
-              onChange={(e) => setMfdOn({ ...mfdOn, month: e.target.value })}
-              min="1"
-              max="12"
+              onChange={(e) => setMfdOn({ ...mfdOn, month: e.target.value.replace(/\D/g, '') })}
+              maxLength="2"
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium"
  
             />
             <input
-              type="number"
+              type="text"
               placeholder="YYYY"
               value={mfdOn.year}
-              onChange={(e) => setMfdOn({ ...mfdOn, year: e.target.value })}
-              min="2000"
-              max="2099"
+              onChange={(e) => setMfdOn({ ...mfdOn, year: e.target.value.replace(/\D/g, '') })}
+              maxLength="4"
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium"
     
             />
@@ -1013,11 +1012,11 @@ export default function GenerateQrs() {
           </label>
           <div className="grid grid-cols-2 gap-2">
             <input
-              type="number"
+              type="text"
               placeholder="Duration"
               value={bestBefore.value}
-              onChange={(e) => setBestBefore({ ...bestBefore, value: e.target.value })}
-              min="1"
+              onChange={(e) => setBestBefore({ ...bestBefore, value: e.target.value.replace(/\D/g, '') })}
+              maxLength="4"
               className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium"
          
             />
@@ -1169,10 +1168,14 @@ function InputGroup({ label, placeholder, value, onChange, type = 'text', requir
         {label} {required && <span className="text-indigo-600">*</span>}
       </label>
       <input
-        type={type}
+        type={type === 'number' ? 'text' : type}
         placeholder={placeholder}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => {
+          let val = e.target.value;
+          if (type === 'number') val = val.replace(/\D/g, '');
+          onChange(val);
+        }}
         className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium"
         required={required}
       />

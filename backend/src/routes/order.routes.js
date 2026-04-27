@@ -905,7 +905,7 @@ router.put('/:id/reject', protect, async (req, res) => {
 });
 
 // 9b. EDIT ORDER (Can be done by Authorizer or Company when Pending)
-router.put('/:id', protect, authorize('company', 'authorizer', 'creator'), async (req, res) => {
+router.put('/:id', protect, authorize('company', 'authorizer', 'creator', 'admin', 'superadmin'), async (req, res) => {
   try {
     const { 
       productName, 

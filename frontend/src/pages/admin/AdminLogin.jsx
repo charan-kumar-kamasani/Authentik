@@ -50,7 +50,7 @@ export default function AdminLogin() {
       if (["company", "authorizer", "creator"].includes(data.role)) {
         navigate("/orders", { replace: true });
       } else {
-        navigate("/admin/dashboard", { replace: true });
+        navigate("/admin/analytics", { replace: true });
       }
     } catch (err) {
       setError("Login failed. Please try again.");

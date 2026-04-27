@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
     AlertTriangle, TrendingDown, Users, EyeOff, PackageX, Link2Off,
-    Newspaper, Activity, IndianRupee, ArrowRight, ShieldCheck, Zap
+    Newspaper, Activity, IndianRupee, ArrowRight, ShieldCheck, Zap, PlayCircle
 } from "lucide-react";
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
@@ -50,23 +50,6 @@ export default function WebProblem() {
                         </div>
                         <div className="absolute inset-0 pointer-events-none rounded-[2rem] ring-1 ring-inset ring-white/10 z-20" />
                         <div className="absolute inset-0 bg-white/0 group-hover:bg-white-[0.02] transition-colors z-20 pointer-events-none" />
-                    </div>
-                </div>
-            </section>
-
-            {/* ═══════════════ INTRO ═══════════════ */}
-            <section className="py-16 px-6 border-t border-white/5 bg-white/[0.02] relative">
-                <div className="container mx-auto max-w-4xl text-center">
-                    <h2 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400 mb-6">
-                        You’re Losing More Than You Think
-                    </h2>
-                    <p className="text-xl text-gray-300 font-bold mb-8">
-                        Counterfeits, lost customers, and zero visibility — most brands are leaking revenue and don’t even realize it.
-                    </p>
-                    <div className="p-6 rounded-2xl bg-red-500/10 border border-red-500/20 inline-block">
-                        <p className="text-red-400 font-black italic flex items-center gap-2">
-                            <ArrowRight size={20} /> If you can’t track your product, you can’t control your business.
-                        </p>
                     </div>
                 </div>
             </section>
@@ -230,18 +213,63 @@ export default function WebProblem() {
                         <SectionTitle>Real Incidents Happening Now</SectionTitle>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
                         {[
-                            { source: "The Economic Times", title: "Do you use ENO or Nescafé coffee? Delhi Police seizes over 2 lakh fake sachets; What you need to know right now", time: "4 days ago" },
-                            { source: "The Times of India", title: "Spurious medicines racket busted, multiple distributors charged", time: "2 days ago" },
-                            { source: "The Times of India", title: "1 lakh fake ENOs and 50,000 coffee sachets seized: FSSAI's 2 simple tests to check coffee purity at home", time: "5 days ago" },
-                            { source: "The Economic Times", title: "After Gurgaon's Rs 70 lakh fake Mounjaro seizure, more stocks found in Hyderabad; Racket may span multiple states", time: "2 days ago" }
-                        ].map((news, i) => (
-                            <div key={i} className="glass-effect p-8 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-colors">
-                                <p className="text-xs text-indigo-400 font-black uppercase tracking-widest mb-3">{news.source}</p>
-                                <h4 className="text-lg font-bold text-white mb-4 leading-snug">{news.title}</h4>
-                                <p className="text-sm text-gray-500 font-bold">{news.time}</p>
-                            </div>
+                            {
+                                title: "Fake Dairy Floods India: Counterfeit Milk, Ghee and Paneer Cases Surge 2.5X, Raising Safety Fears",
+                                videoId: "vZy6e458f_4"
+                            },
+                            {
+                                title: "Delhi Police Busts Fake Consumer Goods Racket in Burari | India Today News",
+                                videoId: "N0ZTMju6DNY"
+                            },
+                            {
+                                title: "India Today Probe: Killer Syrup Plant Exposed; Fake Medicine Racket Uncovered",
+                                videoId: "t4sDzmRKkNE"
+                            },
+                            {
+                                title: "Undercover in India's Most Notorious Black Market",
+                                videoId: "NXnh4Obknvo"
+                            },
+                            {
+                                title: "Counterfeit Mafia Exposed: Fake Scotch, Medicines & $24M Bank Heist | BODY TO BEIING",
+                                videoId: "nv9Ov_KJLpg"
+                            },
+                            {
+                                title: "India Today Exposes Fake Ghee Scam: Adulterated Products Sold In Branded Packaging",
+                                videoId: "kOlaUqvE5hQ"
+                            },
+                            {
+                                title: "Fake Nescafe ENO Coffee: 20 लाख की नकली NesCafe Eno पकड़ी",
+                                videoId: "rK1ums7QxxU"
+                            }
+                        ].map((video, i) => (
+                            <a
+                                key={i}
+                                href={`https://www.youtube.com/watch?v=${video.videoId}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="glass-effect rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all duration-300 group overflow-hidden flex flex-col hover:-translate-y-1 shadow-lg shadow-black/20"
+                            >
+                                <div className="relative aspect-video w-full overflow-hidden bg-black/50">
+                                    <img
+                                        src={`https://img.youtube.com/vi/${video.videoId}/hqdefault.jpg`}
+                                        alt={video.title}
+                                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                                    />
+                                    <div className="absolute inset-0 flex items-center justify-center">
+                                        <div className="w-12 h-12 bg-red-600/90 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(220,38,38,0.5)] group-hover:scale-110 transition-transform duration-300">
+                                            <PlayCircle className="text-white fill-white" size={24} />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="p-5 flex-grow flex flex-col">
+                                    <p className="text-[10px] text-red-400 font-black uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" /> Watch Now
+                                    </p>
+                                    <h4 className="text-sm font-bold text-gray-200 leading-snug line-clamp-3 group-hover:text-white transition-colors">{video.title}</h4>
+                                </div>
+                            </a>
                         ))}
                     </div>
 

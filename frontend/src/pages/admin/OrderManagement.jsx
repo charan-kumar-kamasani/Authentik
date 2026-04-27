@@ -218,6 +218,15 @@ const OrderManagement = () => {
   useEffect(() => {
     fetchOrders();
     fetchFormConfigLabels();
+
+    // Check for payment success return
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('payment_success') === 'true') {
+      const oid = params.get('orderId');
+      alert('Payment successful! Your order has been automatically authorized.');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
     const adminRole = localStorage.getItem('adminRole');
     if (adminRole) { setRole(adminRole); return; }
     const userStr = localStorage.getItem('userInfo');
@@ -518,6 +527,8 @@ const OrderManagement = () => {
         type: selectedCreditPlan ? 'plan' : 'topup',
         ...(selectedCreditPlan ? { planId: selectedCreditPlan._id } : { quantity: creditModal?.shortfall || 0 }),
         ...(creditCouponApplied ? { couponCode: creditCouponApplied.code } : {}),
+        orderId: creditModal?.orderId,
+        redirectUrl: `${window.location.origin}/admin/orders?payment_success=true&orderId=${creditModal?.orderId}`
       };
       
       const result = await initiatePayment(payload, token);
@@ -572,13 +583,15 @@ const OrderManagement = () => {
     setGlobalLoading(true);
     try {
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      const order = orders.find(o => o._id === orderId);
+      const safeProductName = order && order.productName ? order.productName.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'order';
       let blob, filename;
       if (format === 'pdf') {
         blob = await downloadOrderPdf(orderId, token);
-        filename = `order_${orderId}_qrs.pdf`;
+        filename = `${safeProductName}_${orderId}_qrs.pdf`;
       } else {
         blob = await downloadOrderImages(orderId, token, format);
-        filename = `order_${orderId}_qr_images.zip`;
+        filename = `${safeProductName}_${orderId}_qr_images.zip`;
       }
       
       const url = window.URL.createObjectURL(blob);
@@ -826,12 +839,13 @@ const OrderManagement = () => {
                         (order.status === 'Pending Authorization' && ['authorizer', 'company'].includes(role))) && (
                         <ActionBtn onClick={() => handleRejectOrder(order._id)} icon={XCircle} label="Reject" color="red" />
                       )}
-                      {/* Edit — allowed for superadmin/admin if not processed, company ONLY if Pending, creator ONLY if Rejected */}
-                      {((['Pending Authorization', 'Authorized', 'Rejected'].includes(order.status) && ['admin', 'superadmin'].includes(role)) || 
+                      {/* Edit — allowed for superadmin always, admin if not processed, company ONLY if Pending, creator ONLY if Rejected */}
+                      {(role === 'superadmin' || 
+                        (['Pending Authorization', 'Authorized', 'Rejected'].includes(order.status) && role === 'admin') || 
                         (order.status === 'Pending Authorization' && ['company'].includes(role)) ||
                         (order.status === 'Rejected' && role === 'creator')) && (
                         <ActionBtn onClick={() => {
-                          if (role === 'creator') {
+                          if (role === 'creator' || role === 'superadmin') {
                             navigate('/generate-qrs', { state: { editOrder: order } });
                           } else {
                             setEditOrderModal({ isOpen: true, data: order });

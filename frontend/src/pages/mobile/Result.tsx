@@ -92,6 +92,12 @@ function ResultAuthentic({ data }: { data: any }) {
   const [awardedCoupon, setAwardedCoupon] = useState<any>(null);
   const [showCouponReveal, setShowCouponReveal] = useState(false);
   const [couponCopied, setCouponCopied] = useState(false);
+  const [showProfilePrompt, setShowProfilePrompt] = useState(false);
+
+  const handleSkipProfile = () => {
+    setShowProfilePrompt(false);
+    setShowReviewModal(true); // Continue to review if they skip
+  };
 
   // Determine colors
   const productName = data.productName || data.productId?.productName || "Product Info";
@@ -351,7 +357,24 @@ function ResultAuthentic({ data }: { data: any }) {
 
         {/* Review Button */}
         <button 
-          onClick={() => setShowReviewModal(true)}
+          onClick={async () => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+              setShowReviewModal(true);
+              return;
+            }
+            try {
+              const { getProfile } = await import("../../config/api");
+              const profileData = await getProfile(token);
+              if (profileData && !profileData.name) {
+                setShowProfilePrompt(true);
+              } else {
+                setShowReviewModal(true);
+              }
+            } catch (e) {
+              setShowReviewModal(true);
+            }
+          }}
           disabled={isReviewed}
           className={`w-full ${isReviewed ? 'bg-gray-400' : 'bg-gradient-to-r from-[#0E5CAB] to-[#1F2642]'} text-white font-bold text-[18px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(14,92,171,0.3)] mt-4`}
         >
@@ -608,6 +631,82 @@ function ResultAuthentic({ data }: { data: any }) {
               @keyframes couponFadeIn {
                 from { opacity: 0; transform: translateY(20px); }
                 to { opacity: 1; transform: translateY(0); }
+              }
+            `}</style>
+          </div>
+        )}
+
+        {/* ===== Profile Completion Modal ===== */}
+        {showProfilePrompt && (
+          <div className="fixed inset-0 z-[200] flex items-end justify-center">
+            {/* Backdrop */}
+            <div
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={handleSkipProfile}
+            />
+
+            {/* Bottom Sheet */}
+            <div
+              className="relative w-full bg-white rounded-t-[32px] px-6 pt-8 pb-10 shadow-[0_-10px_40px_rgba(0,0,0,0.15)] animate-slide-up"
+              style={{ animation: "slideUp 0.4s ease-out forwards" }}
+            >
+              {/* Drag Handle */}
+              <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-6" />
+
+              {/* Illustration */}
+              <div className="flex justify-center mb-5">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#2CA4D6] to-[#0D4E96] flex items-center justify-center shadow-lg">
+                  <svg
+                    width="40"
+                    height="40"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Heading */}
+              <h3 className="text-center text-[#0D4E96] font-extrabold text-[22px] mb-2">
+                Complete Your Profile
+              </h3>
+
+              {/* Description */}
+              <p className="text-center text-[#777] text-[14px] font-medium mb-8 leading-relaxed">
+                Add your name and details to personalize
+                <br />
+                your Authentiks experience
+              </p>
+
+              {/* Update Profile Button */}
+              <button
+                onClick={() => {
+                  setShowProfilePrompt(false);
+                  navigate("/edit-profile");
+                }}
+                className="w-full bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] text-white font-bold py-4 rounded-[30px] text-[18px] shadow-[0_8px_24px_rgba(13,78,150,0.35)] active:scale-[0.97] transition-all mb-4"
+              >
+                Update Profile
+              </button>
+
+              {/* Skip Button */}
+              <button
+                onClick={handleSkipProfile}
+                className="w-full text-[#999] font-bold text-[15px] py-3 active:text-[#666] transition-colors"
+              >
+                Skip for now
+              </button>
+            </div>
+            <style>{`
+              @keyframes slideUp {
+                from { transform: translateY(100%); opacity: 0; }
+                to { transform: translateY(0); opacity: 1; }
               }
             `}</style>
           </div>

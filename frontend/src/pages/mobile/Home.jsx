@@ -29,9 +29,6 @@ export default function Home() {
     counterfeit: 0,
     alert: 0,
   });
-  const [showProfilePrompt, setShowProfilePrompt] = useState(false);
-  const [isProfileIncomplete, setIsProfileIncomplete] = useState(false);
-
   const [currentSlide, setCurrentSlide] = useState(0);
   const banners = [banner1, banner2, banner3];
 
@@ -61,16 +58,6 @@ export default function Home() {
           }),
           getProfile(token).catch(() => null),
         ]);
-
-        // Check if user has completed their profile
-        if (profileData && !profileData.name) {
-          setIsProfileIncomplete(true);
-          
-          const promptShown = localStorage.getItem("profilePromptShown");
-          if (!promptShown) {
-            setShowProfilePrompt(true);
-          }
-        }
 
         // Handle stats
         if (statsRes.ok) {
@@ -148,11 +135,6 @@ export default function Home() {
   }, []);
 
   console.log("Home stats:", recentScans);
-
-  const handleSkipProfile = () => {
-    localStorage.setItem("profilePromptShown", "true");
-    setShowProfilePrompt(false);
-  };
 
   const handleRecentScanClick = (scan) => {
     // Determine the path based on the scan status
@@ -573,76 +555,6 @@ export default function Home() {
         )}
       </div>
 
-      {/* ===== Profile Completion Modal ===== */}
-      {showProfilePrompt && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={handleSkipProfile}
-          />
-
-          {/* Bottom Sheet */}
-          <div
-            className="relative w-full bg-white rounded-t-[32px] px-6 pt-8 pb-10 shadow-[0_-10px_40px_rgba(0,0,0,0.15)] animate-slide-up"
-            style={{ animation: "slideUp 0.4s ease-out forwards" }}
-          >
-            {/* Drag Handle */}
-            <div className="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-6" />
-
-            {/* Illustration */}
-            <div className="flex justify-center mb-5">
-              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#2CA4D6] to-[#0D4E96] flex items-center justify-center shadow-lg">
-                <svg
-                  width="40"
-                  height="40"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </svg>
-              </div>
-            </div>
-
-            {/* Heading */}
-            <h3 className="text-center text-[#0D4E96] font-extrabold text-[22px] mb-2">
-              Complete Your Profile
-            </h3>
-
-            {/* Description */}
-            <p className="text-center text-[#777] text-[14px] font-medium mb-8 leading-relaxed">
-              Add your name and details to personalize
-              <br />
-              your Authentiks experience
-            </p>
-
-            {/* Update Profile Button */}
-            <button
-              onClick={() => {
-                localStorage.setItem("profilePromptShown", "true");
-                setShowProfilePrompt(false);
-                navigate("/edit-profile");
-              }}
-              className="w-full bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] text-white font-bold py-4 rounded-[30px] text-[18px] shadow-[0_8px_24px_rgba(13,78,150,0.35)] active:scale-[0.97] transition-all mb-4"
-            >
-              Update Profile
-            </button>
-
-            {/* Skip Button */}
-            <button
-              onClick={handleSkipProfile}
-              className="w-full text-[#999] font-bold text-[15px] py-3 active:text-[#666] transition-colors"
-            >
-              Skip for now
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

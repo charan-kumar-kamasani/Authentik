@@ -120,20 +120,6 @@ export default function WebFooter() {
         </div>
       </div>
 
-      {/* Floating WhatsApp Chat Widget */}
-      <a
-        href="https://wa.me/919342501819?text=Hi%2C%20I%20would%20like%20to%20know%20more%20about%20Authentiks."
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-[100] bg-[#25D366] text-white p-4 rounded-full shadow-[0_4px_14px_rgba(37,211,102,0.4)] hover:scale-110 hover:shadow-[0_6px_20px_rgba(37,211,102,0.6)] transition-all duration-300 flex items-center justify-center group"
-        aria-label="Chat on WhatsApp"
-      >
-        <MessageCircle size={28} />
-        {/* Tooltip */}
-        <span className="absolute right-full mr-4 bg-[#020617] text-white text-xs font-black uppercase tracking-widest px-4 py-2 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-white/10 shadow-xl">
-          Chat with Support
-        </span>
-      </a>
     </footer>
   );
 }

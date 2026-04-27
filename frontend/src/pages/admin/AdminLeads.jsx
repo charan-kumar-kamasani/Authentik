@@ -36,17 +36,16 @@ const AdminLeads = () => {
         const prevLeads = [...leads];
         setLeads(leads.map(l => l._id === id ? { ...l, status: newStatus } : l));
 
-        setGlobalLoading(true);
         try {
             const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
             await updateLeadStatus(id, newStatus, undefined, token);
-            // Re-fetch to ensure sync with server
-            await fetchLeadsData();
+            // Re-fetch silently to ensure sync with server
+            const data = await getLeads(page, limit, statusFilter === 'All' ? '' : statusFilter, token);
+            setLeads(data.leads || []);
+            setTotal(data.total || 0);
         } catch (e) {
             setLeads(prevLeads); // Rollback
             alert('Failed: ' + e.message);
-        } finally {
-            setGlobalLoading(false);
         }
     };
 

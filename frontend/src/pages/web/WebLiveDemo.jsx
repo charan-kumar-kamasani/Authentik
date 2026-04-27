@@ -247,7 +247,7 @@ export default function WebLiveDemo() {
                                               { l: "Mfd on", v: "Feb 2026" },
                                               { l: "Color", v: "Black" },
                                               { l: "Size", v: "10 UK" },
-                                              { l: "MRP (Maximum Retail Price)", v: "₹36,999.00" },
+                                              { l: "MRP", v: "₹36,999.00" },
                                               { l: "Model / Series", v: "Panther" },
                                               { l: "SKU/Model Number", v: "AL2468" },
                                               { l: "Material", v: "High-density mesh" }

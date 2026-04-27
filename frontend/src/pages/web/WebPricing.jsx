@@ -45,6 +45,7 @@ export default function WebPricing() {
             accentColor: 'text-green-400',
             bgGlow: 'bg-green-500/20',
             shadowColor: 'shadow-green-500/10',
+            headerStyle: 'bg-green-500/10 border-green-500/20 shadow-[0_0_30px_rgba(34,197,94,0.15)]',
             halfYearlyMonthly: 5000,
             yearlyMonthly: 4000,
             bonusQR: 5000,
@@ -75,6 +76,7 @@ export default function WebPricing() {
             accentColor: 'text-blue-400',
             bgGlow: 'bg-blue-500/20',
             shadowColor: 'shadow-blue-500/20',
+            headerStyle: 'bg-blue-500/10 border-blue-500/20 shadow-[0_0_30px_rgba(59,130,246,0.15)]',
             halfYearlyMonthly: 10000,
             yearlyMonthly: 8000,
             bonusQR: 10000,
@@ -116,6 +118,7 @@ export default function WebPricing() {
             accentColor: 'text-purple-400',
             bgGlow: 'bg-purple-500/20',
             shadowColor: 'shadow-purple-500/10',
+            headerStyle: 'bg-purple-500/10 border-purple-500/20 shadow-[0_0_30px_rgba(168,85,247,0.15)]',
             halfYearlyMonthly: 20000,
             yearlyMonthly: 16000,
             bonusQR: 20000,
@@ -235,29 +238,29 @@ export default function WebPricing() {
                                         <div className={`absolute -top-20 -right-20 w-40 h-40 rounded-full blur-[80px] opacity-20 transition-opacity group-hover:opacity-40 ${plan.bgGlow}`} />
                                     </div>
 
-                                    <div className="mb-8 mt-4">
-                                        <div className="flex items-center justify-between mb-2">
+                                    <div className={`mb-8 mt-2 p-6 rounded-3xl border relative overflow-hidden ${plan.headerStyle}`}>
+                                        <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+                                        <div className="flex items-center justify-between mb-2 relative z-10">
                                             <h3 className={`text-xl font-black uppercase tracking-wider ${plan.accentColor}`}>{plan.name}</h3>
                                         </div>
 
                                         {/* Price display */}
-                                        <div className="flex flex-col gap-1 mt-6">
+                                        <div className="flex flex-col gap-1 mt-6 relative z-10">
                                             <div className="flex items-baseline gap-1">
-                                                <span className="text-4xl md:text-5xl font-black text-white tracking-tighter">
+                                                <span className="text-4xl md:text-5xl font-black text-white tracking-tighter drop-shadow-md">
                                                     ₹{monthlyPrice.toLocaleString()}
                                                 </span>
                                                 <span className="text-gray-400 font-bold text-sm tracking-widest uppercase">
                                                     / month
                                                 </span>
                                             </div>
-                                            <div className="text-sm font-bold text-gray-500 mt-1">
+                                            <div className="text-sm font-bold text-gray-400 mt-1">
                                                 {cycleText}
                                             </div>
                                         </div>
-
                                         {/* Yearly benefits badges */}
                                         {isYearly && (
-                                            <div className="mt-6 flex flex-col gap-3">
+                                            <div className="mt-6 flex flex-col gap-3 relative z-10">
                                                 <div className={`inline-flex items-center gap-2 text-sm font-black animate-in slide-in-from-left duration-300 ${plan.accentColor}`}>
                                                     {plan.id === 'starter' ? '🟢' : plan.id === 'growth' ? '🔵' : '🟣'} {saveLabel}
                                                 </div>

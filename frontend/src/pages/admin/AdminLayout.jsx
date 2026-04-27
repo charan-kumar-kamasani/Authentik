@@ -360,12 +360,14 @@ export default function AdminLayout({ children }) {
                 icon={Star}
                 isActive={activePath === "/admin/reviews"}
               />
-              <SidebarItemCollapse
-                label="QR Inventory"
-                onClick={() => navigate("/admin/dashboard")}
-                icon={Package}
-                isActive={activePath === "/admin/dashboard"}
-              />
+              {role !== 'superadmin' && (
+                <SidebarItemCollapse
+                  label="QR Inventory"
+                  onClick={() => navigate("/admin/dashboard")}
+                  icon={Package}
+                  isActive={activePath === "/admin/dashboard"}
+                />
+              )}
               <SidebarItemCollapse
                 label="Coupons & Rewards"
                 onClick={() => navigate("/admin/coupons")}
