@@ -23,14 +23,19 @@ export default function WebFooter() {
           </div>
 
           {/* Quick Links */}
-          <div>
+          <div className="lg:col-span-1">
             <h4 className="text-white font-black text-sm uppercase tracking-wider mb-6">Quick Links</h4>
-            <ul className="space-y-3">
+            <ul className="grid grid-cols-2 gap-y-3 gap-x-4">
               {[
                 { name: 'Home', path: '/' },
+                { name: 'Problem', path: '/problem' },
                 { name: 'Product', path: '/product' },
+                { name: 'AI Pulse', path: '/ai-pulse' },
                 { name: 'How It Works', path: '/how-it-works' },
+                { name: 'Industries', path: '/industries' },
                 { name: 'Pricing', path: '/pricing' },
+                { name: 'About Us', path: '/about-us' },
+                { name: 'FAQs', path: '/faqs' },
                 { name: 'Contact Us', path: '/contact-us' },
               ].map((link) => (
                 <li key={link.path}>

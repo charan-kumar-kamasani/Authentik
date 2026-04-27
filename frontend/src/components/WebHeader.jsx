@@ -32,14 +32,12 @@ export default function WebHeader() {
         <nav className="hidden lg:flex items-center gap-8">
           {[
             { name: "Home", path: "/" },
+            { name: "Problem", path: "/problem" },
             { name: "Product", path: "/product" },
             { name: "AI Pulse", path: "/ai-pulse", isButton: true },
             { name: "How it works", path: "/how-it-works" },
             { name: "Industries", path: "/industries" },
             { name: "Pricing", path: "/pricing" },
-            { name: "About us", path: "/about-us" },
-            { name: "FAQs", path: "/faqs" },
-            { name: "Contact Us", path: "/contact-us" },
           ].map((item) => {
             const isActive = location.pathname === item.path;
 

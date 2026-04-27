@@ -18,6 +18,7 @@ import WebPrivacyPolicy from "./pages/web/WebPrivacyPolicy";
 import WebTermsConditions from "./pages/web/WebTermsConditions";
 import WebLiveDemo from "./pages/web/WebLiveDemo";
 import WebAIPulse from "./pages/web/WebAIPulse";
+import WebProblem from "./pages/web/WebProblem";
 import Scan from "./pages/mobile/scan";
 import Result from "./pages/mobile/Result";
 import Profile from "./pages/mobile/profile";
@@ -117,6 +118,7 @@ export default function App() {
             <Routes>
             {/* Public Website */}
             <Route path="/" element={<LandingPage />} />
+            <Route path="/problem" element={<WebProblem />} />
             <Route path="/product" element={<WebProduct />} />
             <Route path="/ai-pulse" element={<WebAIPulse />} />
             <Route path="/how-it-works" element={<WebHowItWorks />} />

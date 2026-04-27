@@ -8,7 +8,7 @@ import {
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
-import aiPulseBanner from "../../assets/ai_pulse/ai_pulse.jpg";
+import aiPulseBanner from "../../assets/banners/AI Pulse.jpg";
 
 // Reusable styling components
 const Glow = ({ color, className }) => (

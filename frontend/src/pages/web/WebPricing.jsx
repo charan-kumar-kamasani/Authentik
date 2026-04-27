@@ -8,6 +8,7 @@ import {
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
+import pricingBanner from "../../assets/banners/Pricing.jpg";
 
 /* ═══════════════════════ REUSABLE COMPONENTS ═══════════════════════ */
 
@@ -159,46 +160,25 @@ export default function WebPricing() {
             <WebHeader />
 
             {/* ═══════════════ HERO SECTION ═══════════════ */}
-            <section className="relative pt-10 md:pt-10 pb-20 px-6 overflow-hidden">
+            <section className="relative pt-12 px-6 min-h-[85vh] flex items-center overflow-hidden">
                 <Glow color="bg-indigo-600" className="-top-32 -left-32 opacity-20" />
                 <Glow color="bg-cyan-600" className="top-1/2 -right-32 opacity-15" />
 
-                <div className="container mx-auto text-center relative z-10 max-w-5xl">
-                    <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 text-[11px] font-black uppercase tracking-[0.2em] mb-8 hero-slide-enter">
-                        🔥 High Impact ROI
-                    </div>
-
-                    <h1 className="hero-slide-enter text-4xl md:text-7xl font-black tracking-tighter text-white mb-8 leading-[1.05]">
-                        Turn Every Product Into <span className="gradient-text">Revenue</span>,<br />
-                        Not Just Inventory
-                    </h1>
-
-                    <p className="hero-slide-enter-delay max-w-3xl mx-auto text-lg md:text-2xl font-bold text-gray-400 mb-10 leading-relaxed">
-                        Protect your products, capture customers, and drive repeat sales — with one complete solution delivered to your doorstep.
-                    </p>
-
-                    <div className="hero-slide-enter-delay flex flex-col items-center mb-12">
-                        <div className="glass-effect rounded-2xl px-8 py-5 border-emerald-500/30 relative overflow-hidden group mb-8">
-                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 opacity-50 block" />
-                            <h3 className="relative z-10 text-xl md:text-2xl font-black text-white mb-2 tracking-tight">
-                                Get ₹60,000 Worth of Premium Features — <span className="text-emerald-400 tracking-tighter">Complimentary for 90 Days</span>
-                            </h3>
-                            <p className="relative z-10 text-sm font-bold text-gray-300 flex items-center justify-center gap-2">
-                                <ArrowRight size={16} className="text-emerald-400" />
-                                No commitment. Experience full impact before you pay.
-                            </p>
+                <div className="container mx-auto text-center relative z-10 ">
+                    <div
+                        onClick={() => setContactOpen(true)}
+                        className="hero-slide-enter relative w-[94%] mx-auto mb-10 rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
+                    >
+                        <div className="relative w-full" style={{ aspectRatio: '1672/741' }}>
+                            <img
+                                src={pricingBanner}
+                                alt="Pricing banner"
+                                className="absolute inset-0 w-full h-full object-contain transition-all duration-1000 ease-in-out group-hover:scale-[1.01]"
+                            />
                         </div>
-
-                        <button
-                            onClick={() => setContactOpen(true)}
-                            className="px-12 py-5 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-[0_0_60px_rgba(255,255,255,0.15)] hover:scale-105 active:scale-95 text-sm flex items-center gap-3"
-                        >
-                            Start 90-Day Experience
-                            <ArrowRight size={18} />
-                        </button>
+                        <div className="absolute inset-0 pointer-events-none rounded-[2rem] ring-1 ring-inset ring-white/10 z-20" />
+                        <div className="absolute inset-0 bg-white/0 group-hover:bg-white-[0.02] transition-colors z-20 pointer-events-none" />
                     </div>
-
-
                 </div>
             </section>
 
