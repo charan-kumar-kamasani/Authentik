@@ -128,7 +128,8 @@ const buildQrPdf = async (products, options = {}) => {
       doc.rect(x, qrY, cellWidth, qrAreaHeight).fill("#FFFFFF");
 
       // Generate QR code with full URL including the code parameter
-      const qrUrl = `https://authentiks.in/scan?code=${encodeURIComponent(
+      const baseUrl = process.env.FRONTEND_URL || 'https://authentiks.in';
+      const qrUrl = `${baseUrl}/scan?code=${encodeURIComponent(
         products[i].qrCode || ""
       )}`;
 

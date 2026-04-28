@@ -56,15 +56,7 @@ export default function OTP() {
       if (res.ok) {
         const data = await res.json();
         localStorage.setItem("token", data.token);
-        
-        // Check if there's a saved redirect path (for Google Lens links, etc.)
-        const redirectPath = sessionStorage.getItem("redirectAfterLogin");
-        if (redirectPath) {
-          sessionStorage.removeItem("redirectAfterLogin");
-          nav(redirectPath);
-        } else {
-          nav("/home");
-        }
+        nav("/home");
       } else {
         alert("Invalid OTP. Please try again.");
         setOtp("");

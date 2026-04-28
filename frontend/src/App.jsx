@@ -64,9 +64,10 @@ function PrivateRoute({ children }) {
   
   if (!token) {
     // Save the intended destination (including query params) for redirect after login
+    // Even though we force /home after login, we keep this for potential future use
     const redirectPath = `${location.pathname}${location.search}`;
     sessionStorage.setItem("redirectAfterLogin", redirectPath);
-    return <Navigate to="/" replace />;
+    return <Navigate to="/login" replace />;
   }
   
   return children;
@@ -77,12 +78,7 @@ function PublicRoute({ children }) {
   const token = localStorage.getItem("token");
   
   if (token) {
-    // Check if there's a saved redirect path
-    const redirectPath = sessionStorage.getItem("redirectAfterLogin");
-    if (redirectPath) {
-      sessionStorage.removeItem("redirectAfterLogin");
-      return <Navigate to={redirectPath} replace />;
-    }
+    // Always land on home tab after login as requested
     return <Navigate to="/home" replace />;
   }
   
@@ -231,9 +227,24 @@ export default function App() {
       <ConfirmProvider>
         <BrowserRouter>
           <Routes>
-          {/* Public */}
+          {/* Public Website (Shared with Web) */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/problem" element={<WebProblem />} />
+          <Route path="/product" element={<WebProduct />} />
+          <Route path="/ai-pulse" element={<WebAIPulse />} />
+          <Route path="/how-it-works" element={<WebHowItWorks />} />
+          <Route path="/industries" element={<WebIndustries />} />
+          <Route path="/pricing" element={<WebPricing />} />
+          <Route path="/about-us" element={<WebAboutUs />} />
+          <Route path="/faqs" element={<WebFAQs />} />
+          <Route path="/contact-us" element={<WebContactUs />} />
+          <Route path="/privacy-policy" element={<WebPrivacyPolicy />} />
+          <Route path="/terms-conditions" element={<WebTermsConditions />} />
+          <Route path="/live-demo" element={<WebLiveDemo />} />
+
+          {/* User Protected with Global Navbar */}
           <Route
-            path="/"
+            path="/login"
             element={
               <PublicRoute>
                 <Login />

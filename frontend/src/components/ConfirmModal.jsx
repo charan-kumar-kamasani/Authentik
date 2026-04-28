@@ -29,8 +29,10 @@ export function ConfirmProvider({ children }) {
               <p className="text-sm text-slate-600">{dialog.description}</p>
             </div>
             <div className="p-4 flex gap-3 justify-end bg-slate-50">
-              <button onClick={() => handleClose(false)} className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold">{dialog.cancelText}</button>
-              <button onClick={() => handleClose(true)} className="px-4 py-2 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 text-white font-bold">{dialog.confirmText}</button>
+              {dialog.cancelText && (
+                <button onClick={() => handleClose(false)} className="px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold">{dialog.cancelText}</button>
+              )}
+              <button onClick={() => handleClose(true)} className="px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold">{dialog.confirmText}</button>
             </div>
           </div>
         </div>

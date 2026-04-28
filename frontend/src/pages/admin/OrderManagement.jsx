@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { getOrders, createOrder, updateOrderStatus, downloadOrderPdf, downloadOrderImages, checkOrderCredits, getPlans, calculatePrice, validateCoupon, initiatePayment, updateOrder, getOrderPrice } from '../../config/api';
+import { getOrders, createOrder, updateOrderStatus, downloadOrderPdf, downloadOrderImages, checkOrderCredits, getPlans, calculatePrice, validateCoupon, initiatePayment, updateOrder, getOrderPrice, checkPaymentStatus } from '../../config/api';
 import { useNavigate } from 'react-router-dom';
 import { useLoading } from '../../context/LoadingContext';
 import { useConfirm } from '../../components/ConfirmModal';
@@ -215,16 +215,58 @@ const OrderManagement = () => {
   const [paymentOverview, setPaymentOverview] = useState(null); // { order, priceData }
   const [payingOrder, setPayingOrder] = useState(false);
 
+  // Use a ref to prevent double execution in StrictMode
+  const paymentProcessed = useRef(false);
+
   useEffect(() => {
+    // Only run payment check once
+    if (paymentProcessed.current) return;
+
     fetchOrders();
     fetchFormConfigLabels();
 
-    // Check for payment success return
     const params = new URLSearchParams(window.location.search);
-    if (params.get('payment_success') === 'true') {
-      const oid = params.get('orderId');
-      alert('Payment successful! Your order has been automatically authorized.');
-      window.history.replaceState({}, document.title, window.location.pathname);
+    const paymentId = params.get('payment');
+    const paymentSuccess = params.get('payment_success') === 'true';
+
+    if (paymentId || paymentSuccess) {
+      paymentProcessed.current = true;
+      (async () => {
+        setLoading(true); // Show loader while verifying payment and updating status
+        let successMessage = '';
+        try {
+          if (paymentId) {
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+            const status = await checkPaymentStatus(paymentId, token);
+            if (status.status === 'completed') {
+              // Refresh orders immediately before the blocking alert
+              await fetchOrders();
+              successMessage = 'Payment successful! Your order has been automatically authorized.';
+            } else if (status.status === 'failed') {
+              alert('Payment failed. Please try again.');
+            }
+          } else if (paymentSuccess) {
+            await fetchOrders();
+            successMessage = 'Payment successful! Your order has been automatically authorized.';
+          }
+        } catch (e) {
+          console.error('Status check failed:', e);
+          if (paymentSuccess) {
+            await fetchOrders();
+            successMessage = 'Payment successful! Your order has been automatically authorized.';
+          }
+        } finally {
+          setLoading(false);
+        }
+        
+        // Clear the URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Show alert after UI has updated (if possible, though alert is blocking)
+        if (successMessage) {
+          alert(successMessage);
+        }
+      })();
     }
 
     const adminRole = localStorage.getItem('adminRole');
@@ -377,7 +419,12 @@ const OrderManagement = () => {
         reject: 'Order rejected successfully.'
       };
 
-      alert(successMessages[action] || 'Action completed successfully!');
+      await confirm({
+        title: 'Success!',
+        description: successMessages[action] || 'Action completed successfully!',
+        confirmText: 'Done',
+        cancelText: null
+      });
       
       if (action === 'dispatch') setShowDispatchModal(null);
       if (action === 'process') setProcessModal({ isOpen: false, order: null, bonusQuantity: 0 });
@@ -528,7 +575,7 @@ const OrderManagement = () => {
         ...(selectedCreditPlan ? { planId: selectedCreditPlan._id } : { quantity: creditModal?.shortfall || 0 }),
         ...(creditCouponApplied ? { couponCode: creditCouponApplied.code } : {}),
         orderId: creditModal?.orderId,
-        redirectUrl: `${window.location.origin}/admin/orders?payment_success=true&orderId=${creditModal?.orderId}`
+        redirectUrl: `${window.location.origin}/orders?payment_success=true&orderId=${creditModal?.orderId}`
       };
       
       const result = await initiatePayment(payload, token);
@@ -584,14 +631,15 @@ const OrderManagement = () => {
     try {
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       const order = orders.find(o => o._id === orderId);
-      const safeProductName = order && order.productName ? order.productName.replace(/[^a-z0-9]/gi, '_').toLowerCase() : 'order';
+      const displayId = order?.orderId || orderId;
+      const safeId = displayId.replace(/[^a-z0-9]/gi, '_').toLowerCase();
       let blob, filename;
       if (format === 'pdf') {
         blob = await downloadOrderPdf(orderId, token);
-        filename = `${safeProductName}_${orderId}_qrs.pdf`;
+        filename = `${safeId}_qrs.pdf`;
       } else {
         blob = await downloadOrderImages(orderId, token, format);
-        filename = `${safeProductName}_${orderId}_qr_images.zip`;
+        filename = `${safeId}_qr_images.zip`;
       }
       
       const url = window.URL.createObjectURL(blob);

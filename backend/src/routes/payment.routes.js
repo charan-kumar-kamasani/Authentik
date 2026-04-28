@@ -174,7 +174,11 @@ if (client && actualPaymentAmount > 0) {
             throw new Error('Minimum amount is ₹1');
         }
 
-        const redirectUrl = customRedirectUrl || `${process.env.FRONTEND_URL}/admin/billing?payment=${merchantOrderId}`;
+        let redirectUrl = customRedirectUrl || `${process.env.FRONTEND_URL}/admin/billing`;
+        
+        // Always append payment=merchantOrderId for status tracking on return
+        const separator = redirectUrl.includes('?') ? '&' : '?';
+        redirectUrl = `${redirectUrl}${separator}payment=${merchantOrderId}`;
 
         console.log("🔵 Initiating PhonePe Payment:", {
             merchantOrderId,
@@ -306,6 +310,13 @@ async function addCreditsFromPayment(payment, company, user) {
         }
     } else if (payment.type === 'topup') {
         creditsToAdd = payment.quantity || 0;
+    } else if (payment.type === 'order' && payment.orderId) {
+        // Direct order payment: the payment amount covers the quantity of the order
+        const Order = require('../models/Order');
+        const order = await Order.findById(payment.orderId);
+        if (order) {
+            creditsToAdd = order.quantity || 0;
+        }
     }
 
     // Common logic for adding purchased credits to balance
@@ -372,9 +383,11 @@ async function addCreditsFromPayment(payment, company, user) {
                     status: 'Authorized',
                     changedBy: user._id,
                     role: user.role,
-                    comment: `Automatically authorized after successful payment of ₹${payment.finalAmount}.`
+                    comment: `Automatically authorized after successful payment ${payment.merchantOrderId}`
                 });
+
                 await order.save();
+                console.log(`✅ Order ${order.orderId} successfully auto-authorized.`);
 
                 // Record the spend transaction
                 await CreditTransaction.create({
@@ -387,22 +400,8 @@ async function addCreditsFromPayment(payment, company, user) {
                     note: `Auto-authorized order ${order.orderId} — spend credits`
                 });
 
-                console.log(`✅ Order ${order.orderId} auto-authorized via payment ${payment.merchantOrderId}`);
                 return { orderAuthorized: true, creditsAdded: creditsToAdd, qrCredits: company.qrCredits };
             }
-        }
-    }
-
-    if (payment.type === 'order' && payment.orderId) {
-        // ... (This block is now mostly redundant if the above catch-all works, 
-        // but kept for safety if order.status was something else or if no credits were added)
-        const Order = require('../models/Order');
-        const order = await Order.findById(payment.orderId);
-        if (order && order.paymentStatus !== 'paid') {
-            // Already handled above if status was Pending Authorization
-            // But if it was just a direct order payment without credit deduction logic
-            // (e.g. for companies that don't use credit system but pay per order)
-            // ... (rest of existing logic)
         }
     }
 
@@ -590,7 +589,7 @@ router.get('/status/:merchantOrderId', protect, async (req, res) => {
             if (client) {
                 try {
                     const statusResp = await client.getOrderStatus(req.params.merchantOrderId);
-                    if (statusResp && (statusResp.state === 'COMPLETED' || statusResp.state === 'SUCCESS')) {
+                    if (statusResp && (statusResp.state === 'COMPLETED' || statusResp.state === 'SUCCESS' || statusResp.state === 'PAYMENT_SUCCESS')) {
                         payment.status = 'completed';
                         payment.phonePeTransactionId = statusResp.transactionId || null;
                         await payment.save();

@@ -382,16 +382,22 @@ export default function GenerateQrs() {
 
       if (editingOrder) {
         await updateOrder(editingOrder._id, orderData);
-        if (role === 'creator') {
-          alert('Order updated and re-submitted! Authorizer will review it again.');
-        } else {
-          alert('Order updated successfully!');
-        }
+        await confirm({
+          title: 'Success!',
+          description: role === 'creator' ? 'Order updated and re-submitted! Authorizer will review it again.' : 'Order updated successfully!',
+          confirmText: 'Done',
+          cancelText: null
+        });
         navigate('/orders');
       } else if (role === 'creator') {
         await createOrder(orderData, token);
-        alert('Order created. Admin will process it to generate QRs.');
-        resetForm();
+        await confirm({
+          title: 'Success!',
+          description: 'Order created successfully. The authorizer will process it to generate QRs.',
+          confirmText: 'Done',
+          cancelText: null
+        });
+        navigate('/orders');
       } else {
         const res = await fetch(`${API_BASE_URL}/admin/create-qr`, {
           method: 'POST',
@@ -401,16 +407,24 @@ export default function GenerateQrs() {
           },
           body: JSON.stringify(orderData)
         });
-
+ 
         if (res.ok) {
           const result = await res.json();
+          let msg = `Successfully created ${result.count || 1} QRs!`;
           if (result.pdfBase64) {
-            alert(`Successfully created ${result.count || 1} QRs! Your PDF download will start now.`);
+            msg += ' Your PDF download will start now.';
             downloadPdf(result.pdfBase64, 'products_qr_codes.pdf');
           } else {
-            alert(`Successfully created ${result.count || 1} QRs! (Note: PDF was too large for instant download; please use the streaming 'PDF' button in Order Management for this batch).`);
+            msg += ' (Note: PDF was too large for instant download; please use the streaming \'PDF\' button in Order Management for this batch).';
           }
-          resetForm();
+          
+          await confirm({
+            title: 'Success!',
+            description: msg,
+            confirmText: 'Done',
+            cancelText: null
+          });
+          navigate('/orders');
         } else {
           const d = await res.json().catch(() => ({}));
           alert(d.error || 'Failed to create QR');

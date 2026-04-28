@@ -44,7 +44,8 @@ export default function Profile() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/enterprise");
+    localStorage.removeItem("userInfo");
+    navigate("/");
   };
 
   return (
