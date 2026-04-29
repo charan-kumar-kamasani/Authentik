@@ -141,6 +141,41 @@ function ResultAuthentic({ data }: { data: any }) {
   const handledKeys = new Set<string>();
   const fieldLabels = data.fieldLabels || data.productId?.fieldLabels || {};
 
+  const formatMonthYear = (v: any) => {
+    if (!v) return null;
+
+    const capitalize = (s: string) => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : '';
+
+    if (typeof v === 'object' && v.month && v.year) {
+      const mInt = parseInt(v.month);
+      if (!isNaN(mInt) && mInt >= 1 && mInt <= 12) {
+        const monthStr = new Date(2000, mInt - 1, 1).toLocaleDateString('en-GB', { month: 'short' });
+        return `${capitalize(monthStr)} ${v.year}`;
+      }
+      return `${capitalize(String(v.month))} ${v.year}`;
+    } else if (typeof v === 'string') {
+      const parts = v.split(/[\/\-]/);
+      if (parts.length === 2 || parts.length === 3) {
+        const m = parseInt(parts.length === 3 ? parts[1] : parts[0]);
+        let y = parseInt(parts.length === 3 ? parts[2] : parts[1]);
+        if (y < 100) y += 2000;
+        if (!isNaN(m) && !isNaN(y) && m >= 1 && m <= 12 && y >= 1000) {
+          const monthStr = new Date(2000, m - 1, 1).toLocaleDateString('en-GB', { month: 'short' });
+          return `${capitalize(monthStr)} ${y}`;
+        }
+      }
+
+      const d = new Date(v);
+      if (!isNaN(d.getTime()) && v.length >= 8 && !/^\d+$/.test(v)) {
+        const formatted = d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+        return formatted.split(' ').map(capitalize).join(' ');
+      }
+      
+      return v.split(' ').map(capitalize).join(' ');
+    }
+    return String(v);
+  };
+
   technicalFields.forEach(({ key, label }) => {
     let val = data[key] || data.productId?.[key];
     
@@ -153,24 +188,6 @@ function ResultAuthentic({ data }: { data: any }) {
       const variant = vArr.find((v: any) => v.variantName?.toLowerCase() === key.toLowerCase());
       if (variant) val = variant.value;
     }
-
-    const formatMonthYear = (v: any) => {
-      if (!v) return null;
-      if (typeof v === 'object' && v.month && v.year) {
-        const mInt = parseInt(v.month);
-        if (!isNaN(mInt) && mInt >= 1 && mInt <= 12) {
-          return `${new Date(2000, mInt - 1, 1).toLocaleDateString('en-GB', { month: 'short' }).toLowerCase()} ${v.year}`;
-        }
-        return `${v.month} ${v.year}`.toLowerCase();
-      } else if (typeof v === 'string') {
-        const d = new Date(v);
-        if (!isNaN(d.getTime()) && v.length >= 8) {
-          return d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }).toLowerCase();
-        }
-        return v.toLowerCase();
-      }
-      return String(v).toLowerCase();
-    };
 
     if (key === "mfdOn") {
       const mfd = val || data.mfdOn || data.productId?.mfdOn;
@@ -194,7 +211,8 @@ function ResultAuthentic({ data }: { data: any }) {
     }
 
     if (val && val !== "-") {
-      blueFields.push({ label: fieldLabels[key] || label, value: String(val) });
+      const finalLabel = key === "mrp" ? "MRP" : (fieldLabels[key] || label);
+      blueFields.push({ label: finalLabel, value: String(val) });
       handledKeys.add(key);
     }
   });
@@ -260,12 +278,9 @@ function ResultAuthentic({ data }: { data: any }) {
       let val = combinedDynamicFields[key];
       if (val && val !== "-") {
         if (typeof val === 'object' && val.month && val.year) {
-           const mInt = parseInt(val.month);
-           if (!isNaN(mInt) && mInt >= 1 && mInt <= 12) {
-             val = `${new Date(2000, mInt - 1, 1).toLocaleDateString('en-GB', { month: 'short' })} ${val.year}`;
-           } else {
-             val = `${val.month} ${val.year}`;
-           }
+           val = formatMonthYear(val);
+        } else if (typeof val === 'string' && /^\d{1,2}[\/\-]\d{4}$/.test(val)) {
+           val = formatMonthYear(val);
         }
         
         if (typeof val !== 'object') {

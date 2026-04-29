@@ -70,7 +70,7 @@ const getDemoResult = (qrCode, userId, latitude, longitude, place) => {
         place,
         scannedAt,
         originalScan: {
-          scannedBy: '98***123',
+          scannedBy: '98*****123',
           scannedAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
           place: "Mumbai, Maharashtra"
         }
