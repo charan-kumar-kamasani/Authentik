@@ -110,7 +110,7 @@ const ProductManager = () => {
 
       const productInfoWords = formData.productInfo.trim().split(/\s+/).filter(Boolean).length;
       if (productInfoWords > 250) {
-        alert('Product description cannot exceed 250 words.');
+        await confirm({ title: 'Limit Exceeded', description: 'Product description cannot exceed 250 words.', cancelText: null });
         setSubmitting(false);
         return;
       }
@@ -131,17 +131,17 @@ const ProductManager = () => {
           productPayload.productImage = '';
         }
         await updateProductTemplate(editProductId, productPayload);
-        alert('Product updated successfully!');
+        await confirm({ title: 'Updated', description: 'Product updated successfully!', cancelText: null });
       } else {
         await createProductTemplate(productPayload);
-        alert('Product created successfully!');
+        await confirm({ title: 'Created', description: 'Product created successfully!', cancelText: null });
       }
 
       resetForm();
       setActiveTab('list');
       fetchInitialData();
     } catch (err) {
-      alert('Failed to save product: ' + err.message);
+      await confirm({ title: 'Error', description: 'Failed to save product: ' + err.message, cancelText: null });
     } finally {
       setSubmitting(false);
     }
@@ -174,7 +174,7 @@ const ProductManager = () => {
       await deleteProductTemplate(id);
       fetchInitialData();
     } catch (err) {
-      alert('Failed to delete product');
+      await confirm({ title: 'Error', description: 'Failed to delete product', cancelText: null });
     }
   };
 

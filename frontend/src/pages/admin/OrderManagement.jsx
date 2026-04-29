@@ -7,7 +7,7 @@ import TablePagination from '../../components/TablePagination';
 import {
   Package, Search, Filter, X, Plus, Truck, CheckCircle2, Clock, Settings, ShieldCheck,
   FileDown, PackageCheck, AlertTriangle, ArrowRight, Hash, Calendar, ChevronRight, XCircle, Send,
-  CreditCard, Zap, Coins, ShoppingCart, Loader2, Percent, IndianRupee, Gift, Receipt, AlertCircle, Tag, Eye, ChevronDown, User, Edit, Smartphone
+  CreditCard, Zap, Coins, ShoppingCart, Loader2, Percent, IndianRupee, Gift, Receipt, AlertCircle, Tag, Eye, ChevronDown, User, Edit, Smartphone, Activity
 } from 'lucide-react';
 
 
@@ -181,6 +181,7 @@ const OrderManagement = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [sortBy, setSortBy] = useState('updatedAt');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newOrder, setNewOrder] = useState({ productName: '', brand: '', batchNo: '', manufactureDate: '', expiryDate: '', quantity: '', description: '' });
   const [newQr, setNewQr] = useState({ productName: '', brand: '', batchNo: '', manufactureDate: '', expiryDate: '', quantity: 1, description: '' });
@@ -243,7 +244,7 @@ const OrderManagement = () => {
             if (status.status === 'completed') {
               isPaymentSuccessful = true;
             } else if (status.status === 'failed') {
-              alert('Payment failed. Please try again.');
+              await confirm({ title: 'Payment Failed', description: 'Payment failed. Please try again.', cancelText: null });
             }
           } else if (paymentSuccess) {
             isPaymentSuccessful = true;
@@ -253,11 +254,11 @@ const OrderManagement = () => {
              if (returnedOrderId) {
                  try {
                      await updateOrderStatus(returnedOrderId, 'authorize', {}, token);
-                     successMessage = 'Payment successful! Your order has been automatically authorized.';
+                     successMessage = 'PPayment received. Your QR order is being printed, secured, and prepared for delivery. We will keep you informed on the progress.';
                  } catch (authErr) {
                      console.error('Auto authorize failed:', authErr);
                      if (authErr.message && authErr.message.includes('cannot be authorized in its current state')) {
-                         successMessage = 'Payment successful! Your order has been authorized.';
+                         successMessage = 'Payment received. Your QR order is being printed, secured, and prepared for delivery. We will keep you informed on the progress.';
                      } else {
                          successMessage = 'Payment successful! But auto-authorization failed: ' + authErr.message;
                      }
@@ -269,7 +270,7 @@ const OrderManagement = () => {
           }
         } catch (e) {
           console.error('Status check or authorize failed:', e);
-          alert('An error occurred during payment verification: ' + e.message);
+          await confirm({ title: 'Error', description: 'An error occurred during payment verification: ' + e.message, cancelText: null });
         } finally {
           setLoading(false);
         }
@@ -279,7 +280,7 @@ const OrderManagement = () => {
         
         // Show alert after UI has updated (if possible, though alert is blocking)
         if (successMessage) {
-          alert(successMessage);
+          await confirm({ title: 'Order Status', description: successMessage, cancelText: null, confirmText: 'Great!' });
         }
       })();
     } else {
@@ -352,7 +353,7 @@ const OrderManagement = () => {
     try {
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       setOrders(await getOrders(token));
-    } catch (e) { alert('Failed to load orders: ' + e.message); }
+    } catch (e) { await confirm({ title: 'Error', description: 'Failed to load orders: ' + e.message, cancelText: null }); }
     finally { setLoading(false); }
   };
 
@@ -366,7 +367,7 @@ const OrderManagement = () => {
       setShowCreateModal(false);
       setNewOrder({ productName: '', brand: '', batchNo: '', manufactureDate: '', expiryDate: '', quantity: '', description: '' });
       fetchOrders();
-    } catch (e) { alert('Failed to create order: ' + e.message); }
+    } catch (e) { await confirm({ title: 'Error', description: 'Failed to create order: ' + e.message, cancelText: null }); }
   };
 
   const handleCreatorOrder = async (e) => {
@@ -381,16 +382,16 @@ const OrderManagement = () => {
       // Check for minimum quantity if plan allows it
       const minQty = userPlan?.minQuantity || 1;
       if (newQr.quantity < minQty) {
-        alert(`Minimum quantity for your plan is ${minQty}. Please increase the quantity.`);
+        await confirm({ title: 'Minimum Quantity', description: `Minimum quantity for your plan is ${minQty}. Please increase the quantity.`, cancelText: null });
         setCreatorSubmitting(false);
         return;
       }
 
       await createOrder({ ...newQr, quantity: Number(newQr.quantity) || 1 }, token);
-      alert('Order created! Admin will process it to generate QR codes.');
+      await confirm({ title: 'Success', description: 'Order created! Admin will process it to generate QR codes.', cancelText: null });
       setNewQr({ productName: '', brand: '', batchNo: '', manufactureDate: '', expiryDate: '', quantity: 1, description: '' });
       fetchOrders();
-    } catch (e) { alert('Error: ' + e.message); }
+    } catch (e) { await confirm({ title: 'Error', description: 'Error: ' + e.message, cancelText: null }); }
     finally { setCreatorSubmitting(false); }
   };
 
@@ -451,7 +452,7 @@ const OrderManagement = () => {
         setCreditModal({ orderId, ...e.creditData });
         setCreditView('choice');
       } else {
-        alert('Failed: ' + e.message);
+        await confirm({ title: 'Action Failed', description: 'Failed: ' + e.message, cancelText: null });
       }
     } finally {
       setGlobalLoading(false);
@@ -471,10 +472,10 @@ const OrderManagement = () => {
       if (res.redirectUrl) {
         window.location.href = res.redirectUrl;
       } else {
-        alert('Payment initiated! You will be redirected.');
+        await confirm({ title: 'Payment', description: 'Payment initiated! You will be redirected.', cancelText: null });
       }
     } catch (err) {
-      alert('Payment failed: ' + err.message);
+      await confirm({ title: 'Payment Error', description: 'Payment failed: ' + err.message, cancelText: null });
     } finally {
       setPayingOrder(false);
     }
@@ -495,7 +496,7 @@ const OrderManagement = () => {
     const reason = window.prompt('Please enter a rejection reason (this will be seen by the creator/authorizer):');
     if (reason === null) return;
     if (!reason.trim()) {
-      alert('Rejection reason is required.');
+      await confirm({ title: 'Requirement', description: 'Rejection reason is required.', cancelText: null });
       return;
     }
 
@@ -503,10 +504,10 @@ const OrderManagement = () => {
       setGlobalLoading(true);
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       await updateOrderStatus(orderId, 'reject', { reason: reason.trim() }, token);
-      alert('Order rejected and moved back to Pending Authorization.');
+      await confirm({ title: 'Order Rejected', description: 'Order rejected and moved back to Pending Authorization.', cancelText: null });
       fetchOrders();
     } catch (e) {
-      alert('Failed: ' + e.message);
+      await confirm({ title: 'Failed', description: 'Failed: ' + e.message, cancelText: null });
     } finally {
       setGlobalLoading(false);
     }
@@ -525,7 +526,7 @@ const OrderManagement = () => {
       await fetchOrders();
       setEditOrderModal({ isOpen: false, data: null });
     } catch (err) {
-      alert(err.message || 'Failed to edit order');
+      await confirm({ title: 'Edit Failed', description: err.message || 'Failed to edit order', cancelText: null });
     } finally {
       setEditing(false);
     }
@@ -608,17 +609,17 @@ const OrderManagement = () => {
         setCreditModal(null);
         resetCreditCheckout();
         fetchOrders();
-        alert('Credits purchased & order authorized successfully!');
+        await confirm({ title: 'Success', description: 'Credits purchased & order authorized successfully!', cancelText: null });
       } else {
-        alert('Payment initiated! You will be redirected.');
+        await confirm({ title: 'Redirecting', description: 'Payment initiated! You will be redirected.', cancelText: null });
       }
     } catch (e) {
       if (e.creditData) {
         setCreditModal({ orderId: creditModal.orderId, ...e.creditData });
         setCreditView('choice');
-        alert('Payment completed but still insufficient credits. Please buy more.');
+        await confirm({ title: 'Insufficient Credits', description: 'Payment completed but still insufficient credits. Please buy more.', cancelText: null });
       } else {
-        alert('Error: ' + e.message);
+        await confirm({ title: 'Error', description: 'Error: ' + e.message, cancelText: null });
       }
     } finally { 
       setCreditProcessing(false); 
@@ -670,7 +671,7 @@ const OrderManagement = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (e) { 
-      alert(e.message || "Failed to download"); 
+      await confirm({ title: 'Download Failed', description: e.message || "Failed to download", cancelText: null }); 
     } finally { 
       setGlobalLoading(false); 
     }
@@ -702,6 +703,10 @@ const OrderManagement = () => {
     if (q && !o.productName?.toLowerCase().includes(q) && !o.brand?.toLowerCase().includes(q) && !o.orderId?.toLowerCase().includes(q)) return false;
     if (statusFilter !== 'All' && o.status !== statusFilter) return false;
     return true;
+  }).sort((a, b) => {
+    const dateA = new Date(a[sortBy] || a.createdAt);
+    const dateB = new Date(b[sortBy] || b.createdAt);
+    return dateB - dateA;
   });
 
   // Pagination
@@ -797,6 +802,12 @@ const OrderManagement = () => {
           className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/30">
           {statuses.map(s => <option key={s} value={s}>{s === 'All' ? 'All Statuses' : s}</option>)}
         </select>
+        
+        <select value={sortBy} onChange={e => setSortBy(e.target.value)}
+          className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/30">
+          <option value="updatedAt">Last Updated First</option>
+          <option value="createdAt">Newest Created First</option>
+        </select>
         {(searchTerm || statusFilter !== 'All') && (
           <button onClick={() => { setSearchTerm(''); setStatusFilter('All'); }}
             className="flex items-center gap-1 px-3 py-2.5 bg-red-50 text-red-600 rounded-xl text-xs font-bold hover:bg-red-100 transition-colors">
@@ -831,7 +842,7 @@ const OrderManagement = () => {
                 <th className="px-6 py-4">Product & Brand</th>
                 <th className="px-6 py-4">Quantity</th>
                 <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Date</th>
+                <th className="px-6 py-4">{sortBy === 'updatedAt' ? 'Last Updated' : 'Created At'}</th>
                 <th className="px-6 py-4 text-right">Total Amount</th>
                 <th className="px-6 py-4">Actions</th>
               </tr>
@@ -867,7 +878,7 @@ const OrderManagement = () => {
                   <td className="px-6 py-4"><StatusBadge status={order.status} /></td>
                   <td className="px-6 py-4">
                     <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5">
-                      <Calendar size={12} /> {fmt(order.createdAt)}
+                      <Calendar size={12} /> {fmt(order[sortBy] || order.createdAt)}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">
@@ -998,6 +1009,37 @@ const OrderManagement = () => {
                             )}
                           </div>
                         </div>
+
+                        {/* Tracking History */}
+                        {order.history && order.history.length > 0 && (
+                          <div className="mt-6 pt-5 border-t border-slate-100">
+                            <h4 className="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5 mb-4">
+                              <Activity size={12} /> Order Tracking History
+                            </h4>
+                            <div className="space-y-4 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
+                              {[...order.history].reverse().map((h, i) => (
+                                <div key={i} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                                  <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-blue-100 text-blue-600 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2">
+                                    <CheckCircle2 size={16} />
+                                  </div>
+                                  <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                                    <div className="flex items-center justify-between space-x-2 mb-1">
+                                      <div className="font-bold text-slate-800 text-sm">{h.status}</div>
+                                      <time className="text-xs font-medium text-slate-500">{fmt(h.date || h.createdAt || order.updatedAt)}</time>
+                                    </div>
+                                    {h.comment && <div className="text-sm text-slate-600 mb-2">{h.comment}</div>}
+                                    {h.changedBy && (
+                                      <div className="text-xs font-semibold text-slate-400 flex items-center gap-1">
+                                        <User size={10} /> {h.changedBy.name || h.changedBy.email || 'System'} 
+                                        {h.role && <span className="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded text-[9px] uppercase ml-1">{h.role}</span>}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
 
                         {/* Variants */}
                         {order.variants && order.variants.length > 0 && (

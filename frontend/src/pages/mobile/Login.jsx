@@ -4,10 +4,12 @@ import API_BASE_URL from "../../config/api";
 import logo from "../../assets/logo.svg";
 import indianIcon from "../../assets/v2/login/indian_icon.png";
 import MobileHeader from "../../components/MobileHeader";
+import { useConfirm } from "../../components/ConfirmModal";
 
 export default function Login() {
   const [mobile, setMobile] = useState("");
   const [loading, setLoading] = useState(false);
+  const confirmModal = useConfirm();
   const nav = useNavigate();
 
   const mobileInputRef = useRef(null);
@@ -44,11 +46,11 @@ export default function Login() {
       if (res.ok) {
         nav("/otp", { state: { mobile } });
       } else {
-        alert(data.message || "Failed to send OTP. Please try again.");
+        await confirmModal({ title: 'Error', description: data.message || "Failed to send OTP. Please try again.", cancelText: null });
       }
     } catch (err) {
       console.error("send-otp error", err);
-      alert("Network error while sending OTP. Please try again.");
+      await confirmModal({ title: 'Error', description: "Network error while sending OTP. Please try again.", cancelText: null });
     } finally {
       setLoading(false);
     }

@@ -24,8 +24,10 @@ import API_BASE_URL from "../../config/api";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { maskPhoneNumber, debounce } from "../../utils/helper";
 import TablePagination from "../../components/TablePagination";
+import { useConfirm } from "../../components/ConfirmModal";
 
 const UserManagement = () => {
+  const confirmModal = useConfirm();
   const navigate = useNavigate();
   // Initialize role from localStorage to avoid setting state synchronously inside useEffect
   const [role, _setRole] = useState(() => {
@@ -299,15 +301,16 @@ const UserManagement = () => {
   const handleToggleBrandStatus = async (item) => {
     const newStatus = item.status === 'blocked' ? 'active' : 'blocked';
     const confirmMsg = `Are you sure you want to ${newStatus === 'blocked' ? 'pause' : 'unpause'} ${item.brandName}?`;
-    if (!window.confirm(confirmMsg)) return;
+    const ok = await confirmModal({ title: 'Update Status', description: confirmMsg });
+    if (!ok) return;
 
     try {
       const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
       await updateBrand(item._id, { status: newStatus }, token);
-      alert(`Brand ${newStatus === 'blocked' ? 'paused' : 'unpaused'} successfully`);
+      await confirmModal({ title: 'Success', description: `Brand ${newStatus === 'blocked' ? 'paused' : 'unpaused'} successfully`, cancelText: null });
       loadBrands();
     } catch (e) {
-      alert("Failed to update brand status: " + e.message);
+      await confirmModal({ title: 'Error', description: "Failed to update brand status: " + e.message, cancelText: null });
     }
   };
 
@@ -606,7 +609,7 @@ const UserManagement = () => {
       if (activeTab === "create" && role === "admin") {
         // Admin creates company
         await createCompanyUser(formData, token);
-        alert("Company Created Successfully");
+        await confirmModal({ title: 'Success', description: "Company Created Successfully", cancelText: null });
       } else if (editingUser) {
         // Update existing user
         const payload = {
@@ -619,7 +622,7 @@ const UserManagement = () => {
         if (formData.password) payload.password = formData.password;
         
         await updateStaffUser(editingUser._id, payload, token);
-        alert("User Updated Successfully");
+        await confirmModal({ title: 'Success', description: "User Updated Successfully", cancelText: null });
         setEditingUser(null);
         setActiveTab("list");
         loadStaff();
@@ -638,7 +641,7 @@ const UserManagement = () => {
         }
         if (selectedCompany) payload.companyId = selectedCompany;
         await createStaffUser(payload, token);
-        alert("User Created Successfully");
+        await confirmModal({ title: 'Success', description: "User Created Successfully", cancelText: null });
         loadStaff();
       }
       setFormData({
@@ -651,7 +654,7 @@ const UserManagement = () => {
         allBrands: false
       });
     } catch (error) {
-      alert("Error: " + error.message);
+      await confirmModal({ title: 'Error', description: "Error: " + error.message, cancelText: null });
     }
   };
 
@@ -664,7 +667,7 @@ const UserManagement = () => {
     if (brandForm.phoneNumber) {
       const phoneClean = brandForm.phoneNumber.replace(/[^0-9]/g, '');
       if (phoneClean.length !== 10) {
-        alert("Please enter a valid 10-digit Phone Number for the brand.");
+        await confirmModal({ title: 'Invalid Phone', description: "Please enter a valid 10-digit Phone Number for the brand.", cancelText: null });
         return;
       }
     }
@@ -682,7 +685,7 @@ const UserManagement = () => {
         payload.supportNumber = brandForm.supportNumber || "";
         if (selectedCompany) payload.companyId = selectedCompany;
         await updateBrand(editingBrand.id, payload, token);
-        alert("Brand Updated Successfully");
+        await confirmModal({ title: 'Success', description: "Brand Updated Successfully", cancelText: null });
         setEditingBrand(null);
         setActiveTab("list");
         loadBrands();
@@ -693,7 +696,7 @@ const UserManagement = () => {
       const rows = companyBrands.filter((b) => b.brandName && b.brandName.trim() !== "");
       if (rows.length > 0) {
         if (!selectedCompany) {
-          alert("Please select a company to associate these brands with.");
+          await confirmModal({ title: 'Required', description: "Please select a company to associate these brands with.", cancelText: null });
           return;
         }
         // create all brands sequentially to avoid race conditions on backend
@@ -712,7 +715,7 @@ const UserManagement = () => {
           const res = await createBrand(payload, token);
           created.push(res);
         }
-        alert(`Created ${created.length} brand(s) successfully`);
+        await confirmModal({ title: 'Success', description: `Created ${created.length} brand(s) successfully`, cancelText: null });
         // reset brand rows
         setCompanyBrands([{ brandName: "", brandLogo: "", logoType: "url", logoFile: null }]);
         setActiveTab("list");
@@ -724,7 +727,7 @@ const UserManagement = () => {
         payload.supportNumber = brandForm.supportNumber || "";
         if (selectedCompany) payload.companyId = selectedCompany;
         await createBrand(payload, token);
-        alert("Brand Created Successfully");
+        await confirmModal({ title: 'Success', description: "Brand Created Successfully", cancelText: null });
         setBrandForm({
           brandName: "",
           legalEntity: "",
@@ -746,7 +749,7 @@ const UserManagement = () => {
         loadBrands();
       }
     } catch (error) {
-      alert("Error: " + error.message);
+      await confirmModal({ title: 'Error', description: "Error: " + error.message, cancelText: null });
     }
   };
 
@@ -761,28 +764,28 @@ const UserManagement = () => {
     const filledCreators = creatorEmails.filter(e => e.value?.trim());
 
     if (filledOfficials.length === 0 && filledAuthorizers.length === 0 && filledCreators.length === 0) {
-      alert('Please add at least one valid official, authorizer, or creator email ID');
+      await confirmModal({ title: 'Required', description: 'Please add at least one valid official, authorizer, or creator email ID', cancelText: null });
       return;
     }
 
     // Validate brands
     const validBrands = companyBrands.filter(b => b.brandName && b.brandName.trim());
     if (validBrands.length === 0) {
-      alert('Please add at least one brand');
+      await confirmModal({ title: 'Required', description: 'Please add at least one brand', cancelText: null });
       return;
     }
 
     // Mandatory Field Validation
     const { companyName, registerOfficeAddress, courierAddress, email, phoneNumber, supportNumber } = companyForm;
     if (!companyName?.trim() || !registerOfficeAddress?.trim() || !courierAddress?.trim() || !email?.trim() || !phoneNumber?.trim()) {
-      alert("Please fill in all required fields: Company Name, Office Address, Courier Address, Support Email, and Phone Number.");
+      await confirmModal({ title: 'Missing Info', description: "Please fill in all required fields: Company Name, Office Address, Courier Address, Support Email, and Phone Number.", cancelText: null });
       return;
     }
 
     // Phone validation: exactly 10 digits
     const phoneClean = phoneNumber.replace(/[^0-9]/g, '');
     if (phoneClean.length !== 10) {
-      alert("Please enter a valid 10-digit Phone Number.");
+      await confirmModal({ title: 'Invalid Phone', description: "Please enter a valid 10-digit Phone Number.", cancelText: null });
       return;
     }
 
@@ -828,12 +831,12 @@ const UserManagement = () => {
       let res;
       if (editingCompany) {
         res = await updateCompany(editingCompany._id, payload, token);
-        alert('Company updated successfully');
+        await confirmModal({ title: 'Success', description: 'Company updated successfully', cancelText: null });
         setEditingCompany(null);
         setActiveTab("list");
       } else {
         res = await createCompany(payload, token);
-        alert('Company created successfully');
+        await confirmModal({ title: 'Success', description: 'Company created successfully', cancelText: null });
         // Reset form after successful creation
         setCompanyForm(resetData);
         setOfficialEmails([{ value: "", otpSent: false, otp: "", verified: false, sending: false, verifying: false }]);
@@ -846,7 +849,7 @@ const UserManagement = () => {
       const targetCompanyId = editingCompany?._id || res?.company?._id || res?._id;
       if (targetCompanyId) loadBrandsForCompany(targetCompanyId);
     } catch (err) {
-      alert(`Error ${editingCompany ? 'updating' : 'creating'} company: ` + (err.message || err));
+      await confirmModal({ title: 'Error', description: `Error ${editingCompany ? 'updating' : 'creating'} company: ` + (err.message || err), cancelText: null });
     }
   };
 
@@ -864,11 +867,11 @@ const UserManagement = () => {
       if (data.success) {
         listSetter(prev => prev.map((e, i) => i === index ? { ...e, otpSent: true, sending: false } : e));
       } else {
-        alert(data.message || 'Failed to send OTP');
+        await confirmModal({ title: 'OTP Failed', description: data.message || 'Failed to send OTP', cancelText: null });
         listSetter(prev => prev.map((e, i) => i === index ? { ...e, sending: false } : e));
       }
     } catch (err) {
-      alert('Failed to send OTP');
+      await confirmModal({ title: 'Error', description: 'Failed to send OTP', cancelText: null });
       listSetter(prev => prev.map((e, i) => i === index ? { ...e, sending: false } : e));
     }
   };
@@ -886,11 +889,11 @@ const UserManagement = () => {
       if (data.success) {
         listSetter(prev => prev.map((e, i) => i === index ? { ...e, verified: true, verifying: false } : e));
       } else {
-        alert(data.message || 'Invalid OTP');
+        await confirmModal({ title: 'Invalid OTP', description: data.message || 'Invalid OTP', cancelText: null });
         listSetter(prev => prev.map((e, i) => i === index ? { ...e, verifying: false } : e));
       }
     } catch (err) {
-      alert('Verification failed');
+      await confirmModal({ title: 'Error', description: 'Verification failed', cancelText: null });
       listSetter(prev => prev.map((e, i) => i === index ? { ...e, verifying: false } : e));
     }
   };

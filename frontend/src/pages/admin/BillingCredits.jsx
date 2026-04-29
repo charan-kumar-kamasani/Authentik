@@ -114,9 +114,8 @@ const BillingCredits = () => {
   };
 
   const handleBuyTopup = async () => {
-    const qty = parseInt(topupQty, 10);
     if (!qty || qty < 1) {
-      alert("Enter a valid quantity");
+      await confirm({ title: 'Required', description: "Enter a valid quantity", cancelText: null });
       return;
     }
     setSelectedPlan(null);
@@ -194,9 +193,9 @@ const BillingCredits = () => {
       setShowBuyModal(false);
       resetCheckout();
       fetchData();
-      alert(`Purchase successful! ${result.creditsAdded || 0} credits added.`);
+      await confirm({ title: 'Success', description: `Purchase successful! ${result.creditsAdded || 0} credits added.`, cancelText: null });
     } catch (e) {
-      alert("Payment failed: " + e.message);
+      await confirm({ title: 'Error', description: "Payment failed: " + e.message, cancelText: null });
     } finally {
       setProcessing(false);
     }
@@ -239,9 +238,9 @@ const BillingCredits = () => {
         try {
           const status = await checkPaymentStatus(paymentId, token);
           if (status.status === "completed") {
-            alert("Payment successful! Credits have been added.");
+            await confirm({ title: 'Success', description: "Payment successful! Credits have been added.", cancelText: null });
           } else if (status.status === "failed") {
-            alert("Payment failed. Please try again.");
+            await confirm({ title: 'Payment Failed', description: "Payment failed. Please try again.", cancelText: null });
           }
         } catch {}
         window.history.replaceState({}, "", window.location.pathname);

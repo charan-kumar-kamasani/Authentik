@@ -210,7 +210,7 @@ export default function GenerateQrs() {
       for (const field of formConfig.customFields) {
         const val = dynamicFieldValues[field.fieldName];
         if (field.isMandatory && !val) {
-          alert(`${field.fieldLabel} is required`);
+          await confirm({ title: 'Required Field', description: `${field.fieldLabel} is required`, cancelText: null });
           setSubmitting(false);
           return;
         }
@@ -218,7 +218,7 @@ export default function GenerateQrs() {
         if (field.fieldType === 'phone' && val) {
           const phoneClean = String(val).replace(/[^0-9]/g, '');
           if (phoneClean.length !== 10) {
-            alert(`${field.fieldLabel} must be exactly 10 digits`);
+            await confirm({ title: 'Invalid Phone', description: `${field.fieldLabel} must be exactly 10 digits`, cancelText: null });
             setSubmitting(false);
             return;
           }
@@ -228,7 +228,7 @@ export default function GenerateQrs() {
     // Coupon Validation: If title is present, other fields are mandatory
     if (coupon.title) {
       if (!coupon.code || !coupon.expiryDate || !coupon.description || !coupon.websiteLink) {
-        alert('All coupon fields (Title, Code, Expiry, Description, Website Link) are mandatory if you provide a title.');
+        await confirm({ title: 'Missing Info', description: 'All coupon fields (Title, Code, Expiry, Description, Website Link) are mandatory if you provide a title.', cancelText: null });
         setSubmitting(false);
         return;
       }
@@ -312,7 +312,7 @@ export default function GenerateQrs() {
 
       // Hard minimum: 1000 units required
       if (quantity < 1000) {
-        alert(`Minimum order quantity is 1000 units. You entered ${quantity}.`);
+        await confirm({ title: 'Quantity Alert', description: `Minimum order quantity is 1000 units. You entered ${quantity}.`, cancelText: null });
         setSubmitting(false);
         return;
       }
@@ -322,7 +322,7 @@ export default function GenerateQrs() {
       if (descText) {
         const wordCount = descText.split(/\s+/).filter(Boolean).length;
         if (wordCount > 200) {
-          alert(`Product description cannot exceed 200 words. Current: ${wordCount} words.`);
+          await confirm({ title: 'Limit Exceeded', description: `Product description cannot exceed 200 words. Current: ${wordCount} words.`, cancelText: null });
           setSubmitting(false);
           return;
         }
@@ -334,7 +334,7 @@ export default function GenerateQrs() {
         const minStr = activePlan.minQrPerOrder || activePlan.minQr || '';
         const planMin = Number(String(minStr).replace(/[^\d]/g, '') || 0);
         if (planMin > 0 && quantity < planMin) {
-          alert(`Minimum quantity for your plan (${activePlan.name}) is ${planMin} units.`);
+          await confirm({ title: 'Plan Restriction', description: `Minimum quantity for your plan (${activePlan.name}) is ${planMin} units.`, cancelText: null });
           setSubmitting(false);
           return;
         }
@@ -343,7 +343,7 @@ export default function GenerateQrs() {
       // Minimum quantity check (Field based)
       if (quantityField && quantityField.validation?.min) {
         if (quantity < quantityField.validation.min) {
-          alert(`Minimum quantity allowed is ${quantityField.validation.min} units.`);
+          await confirm({ title: 'Validation Failed', description: `Minimum quantity allowed is ${quantityField.validation.min} units.`, cancelText: null });
           setSubmitting(false);
           return;
         }
@@ -427,12 +427,12 @@ export default function GenerateQrs() {
           navigate('/orders');
         } else {
           const d = await res.json().catch(() => ({}));
-          alert(d.error || 'Failed to create QR');
+          await confirm({ title: 'Error', description: d.error || 'Failed to create QR', cancelText: null });
         }
       }
     } catch (err) {
       console.error(err);
-      alert(err.message || 'Failed to create QR');
+      await confirm({ title: 'Error', description: err.message || 'Failed to create QR', cancelText: null });
     } finally {
       setSubmitting(false);
     }

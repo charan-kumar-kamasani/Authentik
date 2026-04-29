@@ -300,6 +300,7 @@ router.get('/', protect, async (req, res) => {
 
     let orders = await Order.find(query)
       .populate('createdBy', 'name email role')
+      .populate('history.changedBy', 'name email mobile')
       .populate({
         path: 'brandId',
         select: 'brandName companyId',
@@ -308,7 +309,7 @@ router.get('/', protect, async (req, res) => {
           select: 'companyName'
         }
       })
-      .sort({ createdAt: -1 })
+      .sort({ updatedAt: -1 })
       .lean();
 
     // N+1 Fix: Fetch pricing configs ONCE for all orders

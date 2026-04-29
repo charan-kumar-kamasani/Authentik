@@ -8,10 +8,12 @@ import fakeIcon from "../../assets/v2/home/header/dangerous.svg"; // Red X
 
 import MobileHeader from "../../components/MobileHeader";
 import { maskPhoneNumber } from "../../utils/helper";
+import { useConfirm } from "../../components/ConfirmModal";
 
 export default function Result() {
   const { status } = useParams();
   const navigate = useNavigate();
+  const confirmModal = useConfirm();
   const { state } = useLocation();
 
   const validStatuses = ["ORIGINAL", "ALREADY_USED", "ALREADY_SCANNED", "DUPLICATE", "FAKE", "INACTIVE"];
@@ -152,24 +154,42 @@ function ResultAuthentic({ data }: { data: any }) {
       if (variant) val = variant.value;
     }
 
-    const isDateObject = (v: any) => v && typeof v === 'object' && v.month && v.year;
+    const formatMonthYear = (v: any) => {
+      if (!v) return null;
+      if (typeof v === 'object' && v.month && v.year) {
+        const mInt = parseInt(v.month);
+        if (!isNaN(mInt) && mInt >= 1 && mInt <= 12) {
+          return `${new Date(2000, mInt - 1, 1).toLocaleDateString('en-GB', { month: 'short' }).toLowerCase()} ${v.year}`;
+        }
+        return `${v.month} ${v.year}`.toLowerCase();
+      } else if (typeof v === 'string') {
+        const d = new Date(v);
+        if (!isNaN(d.getTime()) && v.length >= 8) {
+          return d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }).toLowerCase();
+        }
+        return v.toLowerCase();
+      }
+      return String(v).toLowerCase();
+    };
 
     if (key === "mfdOn") {
-      if (isDateObject(val)) {
-        val = `${val.month} ${val.year}`;
-      } else if (!val) {
-        const mfd = data.mfdOn || data.productId?.mfdOn;
-        if (isDateObject(mfd)) val = `${mfd.month} ${mfd.year}`;
-      }
+      const mfd = val || data.mfdOn || data.productId?.mfdOn;
+      if (mfd) val = formatMonthYear(mfd);
     }
 
     if (key === "expiryDate") {
-      if (isDateObject(val)) {
-        val = `${val.month} ${val.year}`;
-      } else if (!val) {
-        const exp = data.expiryDate || data.expiry || data.calculatedExpiryDate || data.productId?.expiryDate || data.productId?.expiry || data.productId?.calculatedExpiryDate;
-        if (isDateObject(exp)) val = `${exp.month} ${exp.year}`;
-        else if (typeof exp === 'string') val = exp;
+      const exp = val || data.expiryDate || data.expiry || data.calculatedExpiryDate || data.productId?.expiryDate || data.productId?.expiry || data.productId?.calculatedExpiryDate;
+      if (exp) val = formatMonthYear(exp);
+    }
+
+    if (key === "mrp") {
+      if (val) {
+        const num = String(val).replace(/[^0-9.]/g, '');
+        if (num && !isNaN(Number(num))) {
+          val = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(Number(num));
+        } else {
+          val = val.toString().startsWith('₹') ? val : `₹${val}`;
+        }
       }
     }
 
@@ -240,7 +260,12 @@ function ResultAuthentic({ data }: { data: any }) {
       let val = combinedDynamicFields[key];
       if (val && val !== "-") {
         if (typeof val === 'object' && val.month && val.year) {
-           val = `${val.month} ${val.year}`;
+           const mInt = parseInt(val.month);
+           if (!isNaN(mInt) && mInt >= 1 && mInt <= 12) {
+             val = `${new Date(2000, mInt - 1, 1).toLocaleDateString('en-GB', { month: 'short' })} ${val.year}`;
+           } else {
+             val = `${val.month} ${val.year}`;
+           }
         }
         
         if (typeof val !== 'object') {
@@ -467,7 +492,10 @@ function ResultAuthentic({ data }: { data: any }) {
 
                 <button
                   onClick={async () => {
-                    if (rating === 0) return alert("Please select a rating");
+                    if (rating === 0) {
+                      await confirmModal({ title: 'Required', description: "Please select a rating", cancelText: null });
+                      return;
+                    }
                     setSubmitting(true);
                     try {
                       const { submitReview } = await import("../../config/api");
@@ -481,14 +509,24 @@ function ResultAuthentic({ data }: { data: any }) {
                       setShowReviewModal(false);
                       
                       // Check if a coupon was awarded
-                      if (result.coupon) {
-                        setAwardedCoupon(result.coupon);
+                      let couponToAward = result.coupon;
+                      if (!couponToAward && data.isDemo) {
+                        couponToAward = { 
+                          title: "DEMO REWARD", 
+                          code: "WELCOME50", 
+                          description: "Get 50% off on your next order!", 
+                          websiteLink: "https://authentiks.in" 
+                        };
+                      }
+
+                      if (couponToAward) {
+                        setAwardedCoupon(couponToAward);
                         setTimeout(() => setShowCouponReveal(true), 300);
                       } else {
-                        alert("Thank you for your review!");
+                        await confirmModal({ title: 'Success', description: "Thank you for your review!", cancelText: null });
                       }
                     } catch (error: any) {
-                      alert(error.message || "Failed to submit review");
+                      await confirmModal({ title: 'Error', description: error.message || "Failed to submit review", cancelText: null });
                       if (error.message && error.message.includes("already reviewed")) {
                         setIsReviewed(true);
                         setShowReviewModal(false);
@@ -696,12 +734,12 @@ function ResultAuthentic({ data }: { data: any }) {
               </button>
 
               {/* Skip Button */}
-              <button
+              {/* <button
                 onClick={handleSkipProfile}
                 className="w-full text-[#999] font-bold text-[15px] py-3 active:text-[#666] transition-colors"
               >
                 Skip for now
-              </button>
+              </button> */}
             </div>
             <style>{`
               @keyframes slideUp {

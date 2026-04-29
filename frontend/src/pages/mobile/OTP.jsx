@@ -3,10 +3,12 @@ import { useLocation, useNavigate } from "react-router-dom";
 import API_BASE_URL from "../../config/api";
 import logo from "../../assets/logo.svg";
 import MobileHeader from "../../components/MobileHeader";
+import { useConfirm } from "../../components/ConfirmModal";
 
 export default function OTP() {
   const { state } = useLocation();
   const nav = useNavigate();
+  const confirmModal = useConfirm();
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
@@ -41,7 +43,7 @@ export default function OTP() {
 
   async function login() {
     if (otp.length !== 4) {
-      alert("Please enter the 4-digit OTP");
+      await confirmModal({ title: 'Required', description: "Please enter the 4-digit OTP", cancelText: null });
       return;
     }
 
@@ -58,19 +60,22 @@ export default function OTP() {
         localStorage.setItem("token", data.token);
         nav("/home");
       } else {
-        alert("Invalid OTP. Please try again.");
+        await confirmModal({ title: 'Invalid OTP', description: "Invalid OTP. Please try again.", cancelText: null });
         setOtp("");
       }
     } catch (error) {
       console.error("Login failed:", error);
-      alert("Login failed due to network error.");
+      await confirmModal({ title: 'Error', description: "Login failed due to network error.", cancelText: null });
     } finally {
       setLoading(false);
     }
   }
 
   const resendOtp = async () => {
-    if (!state?.mobile) return alert('Missing mobile number');
+    if (!state?.mobile) {
+      await confirmModal({ title: 'Error', description: 'Missing mobile number', cancelText: null });
+      return;
+    }
     if (resendCooldown > 0) return;
     setResendLoading(true);
     try {
@@ -82,13 +87,13 @@ export default function OTP() {
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         setResendCooldown(30); // 30s cooldown
-        alert(data.message || 'OTP resent');
+        await confirmModal({ title: 'Success', description: data.message || 'OTP resent', cancelText: null });
       } else {
-        alert(data.message || 'Failed to resend OTP');
+        await confirmModal({ title: 'Error', description: data.message || 'Failed to resend OTP', cancelText: null });
       }
     } catch (err) {
       console.error('resend otp error', err);
-      alert('Network error while resending OTP');
+      await confirmModal({ title: 'Error', description: 'Network error while resending OTP', cancelText: null });
     } finally {
       setResendLoading(false);
     }

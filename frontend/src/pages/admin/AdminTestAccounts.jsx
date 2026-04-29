@@ -52,7 +52,7 @@ export default function AdminTestAccounts() {
       await fetchData();
       handleCloseModal();
     } catch (error) {
-      alert(error.response?.data?.message || 'Error saving test account');
+      await confirm({ title: 'Error', description: error.response?.data?.message || 'Error saving test account', cancelText: null });
     }
   };
 
@@ -73,7 +73,7 @@ export default function AdminTestAccounts() {
       await deleteTestAccount(id);
       await fetchData();
     } catch (error) {
-      alert(error.response?.data?.message || 'Error deleting test account');
+      await confirm({ title: 'Error', description: error.response?.data?.message || 'Error deleting test account', cancelText: null });
     }
   };
 
@@ -82,7 +82,7 @@ export default function AdminTestAccounts() {
       await updateTestAccount(account._id, { isActive: !account.isActive });
       await fetchData();
     } catch (error) {
-      alert(error.response?.data?.message || 'Error updating test account');
+      await confirm({ title: 'Error', description: error.response?.data?.message || 'Error updating test account', cancelText: null });
     }
   };
 

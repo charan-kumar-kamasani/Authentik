@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom";
 import UserAvatar from "../../assets/v2/profile/Group (2).svg";
 import { getProfile, updateProfile } from "../../config/api";
 import MobileHeader from "../../components/MobileHeader";
+import { useConfirm } from "../../components/ConfirmModal";
 
 const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "your-cloud-name";
 const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "your-preset";
 
 export default function EditProfile() {
   const navigate = useNavigate();
+  const confirmModal = useConfirm();
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -46,7 +48,7 @@ export default function EditProfile() {
     const img = new Image();
     img.onload = async () => {
       if (img.width !== img.height) {
-        alert("Please upload a square image (1:1 aspect ratio).");
+        await confirmModal({ title: 'Aspect Ratio', description: "Please upload a square image (1:1 aspect ratio).", cancelText: null });
         e.target.value = "";
         return;
       }
@@ -69,13 +71,12 @@ export default function EditProfile() {
           throw new Error("Image upload failed");
         }
 
-        const data = await response.json();
         // Store the Cloudinary URL in formData
         setFormData((prev) => ({ ...prev, profileImage: data.secure_url }));
-        alert("Image uploaded successfully!");
+        await confirmModal({ title: 'Success', description: "Image uploaded successfully!", cancelText: null });
       } catch (error) {
         console.error("Image upload error:", error);
-        alert("Failed to upload image. Please try again.");
+        await confirmModal({ title: 'Error', description: "Failed to upload image. Please try again.", cancelText: null });
       } finally {
         setUploadingImage(false);
       }
@@ -115,10 +116,10 @@ export default function EditProfile() {
         localStorage.removeItem("profilePromptDismissCount");
       }
 
-      alert("Profile updated successfully!");
+      await confirmModal({ title: 'Success', description: "Profile updated successfully!", cancelText: null });
       navigate(-1);
     } catch (error) {
-      alert("Failed to update profile.");
+      await confirmModal({ title: 'Error', description: "Failed to update profile.", cancelText: null });
     } finally {
       setLoading(false);
     }

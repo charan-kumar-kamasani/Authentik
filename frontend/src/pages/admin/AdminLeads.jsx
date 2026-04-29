@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getLeads, updateLeadStatus } from '../../config/api';
 import { CheckCircle2, XCircle, Clock, PackageCheck, AlertTriangle, User, Briefcase, Mail, Phone, Calendar } from 'lucide-react';
 import TablePagination from '../../components/TablePagination';
+import { useConfirm } from '../../components/ConfirmModal';
 import { useLoading } from '../../context/LoadingContext';
 
 const AdminLeads = () => {
@@ -11,6 +12,7 @@ const AdminLeads = () => {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(20);
     const [statusFilter, setStatusFilter] = useState('');
+    const confirm = useConfirm();
     const { setLoading: setGlobalLoading } = useLoading();
 
     const fetchLeadsData = async () => {
@@ -45,7 +47,7 @@ const AdminLeads = () => {
             setTotal(data.total || 0);
         } catch (e) {
             setLeads(prevLeads); // Rollback
-            alert('Failed: ' + e.message);
+            await confirm({ title: 'Error', description: 'Failed: ' + e.message, cancelText: null });
         }
     };
 

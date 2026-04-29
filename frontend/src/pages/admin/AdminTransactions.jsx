@@ -8,8 +8,10 @@ import {
 import { getCreditTransactions, downloadInvoice } from '../../config/api';
 import TablePagination from '../../components/TablePagination';
 import { maskPhoneNumber } from '../../utils/helper';
+import { useConfirm } from '../../components/ConfirmModal';
 
 export default function AdminTransactions() {
+  const confirm = useConfirm();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tableLoading, setTableLoading] = useState(false);
@@ -83,7 +85,7 @@ export default function AdminTransactions() {
       if (dateFrom && new Date(t.createdAt) < new Date(dateFrom)) return false;
       if (dateTo && new Date(t.createdAt) > new Date(dateTo + 'T23:59:59')) return false;
       return true;
-    });
+    }).sort((a, b) => new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime());
   }, [transactions, searchTerm, typeFilter, dateFrom, dateTo]);
 
   // Paginated data
@@ -194,7 +196,7 @@ export default function AdminTransactions() {
       await downloadInvoice(token, transactionId);
     } catch (error) {
       console.error('Failed to download invoice:', error);
-      alert('Failed to download invoice. Please try again.');
+      await confirm({ title: 'Download Failed', description: 'Failed to download invoice. Please try again.', cancelText: null });
     }
   };
 
@@ -641,6 +643,18 @@ export default function AdminTransactions() {
                                   </div>
                                   <p className="text-sm font-bold text-blue-600">{(t.balanceAfter || 0).toLocaleString()}</p>
                                 </div>
+
+                                {/* Who Paid / Performed By */}
+                                {t.performedBy && (
+                                  <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <UserPlus size={13} className="text-slate-400" />
+                                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Performed By</span>
+                                    </div>
+                                    <p className="text-sm font-bold text-slate-800">{t.performedBy.name || 'N/A'}</p>
+                                    <p className="text-xs text-slate-500">{t.performedBy.email || t.performedBy.mobile || ''}</p>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           )}

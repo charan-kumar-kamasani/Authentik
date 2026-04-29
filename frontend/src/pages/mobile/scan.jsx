@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import jsQR from "jsqr";
 import API_BASE_URL from "../../config/api";
 import MobileHeader from "../../components/MobileHeader";
+import { useConfirm } from "../../components/ConfirmModal";
 
 export default function Scan() {
   const videoRef = useRef(null);
@@ -11,6 +12,7 @@ export default function Scan() {
   const [locationPermission, setLocationPermission] = useState('pending'); // 'granted', 'denied', 'pending'
   const coordsRef = useRef(null);
   const [locationCoords, setLocationCoords] = useState(null);
+  const confirmModal = useConfirm();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   let animationId = useRef(null);
@@ -110,7 +112,7 @@ export default function Scan() {
 
       // Check location permission before proceeding
       if (!coordsRef.current) {
-        alert("Location is required for scanning. Please enable location permissions.");
+        await confirmModal({ title: 'Location Required', description: "Location is required for scanning. Please enable location permissions.", cancelText: null });
         setScanning(true);
         return;
       }
@@ -154,11 +156,16 @@ export default function Scan() {
 
       const res = await scanResRaw.json();
       const finalStatus = res.status;
+      
+      const navData = { ...res.data };
+      if (qrCode === 'DEMO-GENUINE-QR') {
+        navData.isDemo = true;
+      }
 
-      navigate(`/result/${finalStatus}`, { state: res.data });
+      navigate(`/result/${finalStatus}`, { state: navData });
     } catch (err) {
       console.error("Scan error:", err);
-      alert(err.message || "Scan failed. Please try again.");
+      await confirmModal({ title: 'Scan Error', description: err.message || "Scan failed. Please try again.", cancelText: null });
       setScanning(true);
       requestLocation(true); // Retry location just in case
     }
@@ -266,7 +273,7 @@ export default function Scan() {
       }
 
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        alert("Camera API not supported in this browser.");
+        await confirmModal({ title: 'Browser Error', description: "Camera API not supported in this browser.", cancelText: null });
         navigate("/");
         return;
       }
@@ -316,7 +323,7 @@ export default function Scan() {
       } catch (error) {
         if (!ignore) {
           console.error("Camera error:", error);
-          alert(`Cannot access camera: ${error.name} - ${error.message}`);
+          await confirmModal({ title: 'Camera Error', description: `Cannot access camera: ${error.name} - ${error.message}`, cancelText: null });
           navigate("/");
         }
       }

@@ -351,6 +351,7 @@ export default function AdminSettings() {
 
 // ── Coupon Form Modal ──
 function CouponFormModal({ coupon, onSave, onClose, saving }) {
+  const confirm = useConfirm();
   const [form, setForm] = useState({
     code: coupon?.code || '',
     description: coupon?.description || '',
@@ -365,10 +366,16 @@ function CouponFormModal({ coupon, onSave, onClose, saving }) {
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.code.trim()) return alert('Coupon code is required');
-    if (form.discountValue <= 0) return alert('Discount value must be greater than 0');
+    if (!form.code.trim()) {
+      await confirm({ title: 'Required', description: 'Coupon code is required', cancelText: null });
+      return;
+    }
+    if (form.discountValue <= 0) {
+      await confirm({ title: 'Invalid Value', description: 'Discount value must be greater than 0', cancelText: null });
+      return;
+    }
     onSave({
       ...(coupon?._id ? { _id: coupon._id } : {}),
       ...form,

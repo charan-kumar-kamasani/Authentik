@@ -262,9 +262,9 @@ export default function QrManagement() {
                           </button>
                           {p.qrCode && (
                             <button
-                              onClick={() => { navigator.clipboard.writeText(p.qrCode); }}
+                              onClick={() => { navigator.clipboard.writeText(`https://authentiks.in/scan?code=${p.qrCode}`); }}
                               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all border-2 cursor-pointer select-none active:scale-95 bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 shadow-sm">
-                              <QrCode size={14} strokeWidth={2.5} /> Copy QR
+                              <QrCode size={14} strokeWidth={2.5} /> Copy Link
                             </button>
                           )}
                         </div>

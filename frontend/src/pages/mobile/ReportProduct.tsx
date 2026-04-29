@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import MobileHeader from "../../components/MobileHeader";
+import { useConfirm } from "../../components/ConfirmModal";
 
 import warningIcon from "../../assets/v2/home/header/warning.svg";
 import fakeIcon from "../../assets/v2/home/header/dangerous.svg";
@@ -43,6 +44,7 @@ const THEMES = {
 export default function ReportProduct() {
   const location = useLocation();
   const navigate = useNavigate();
+  const confirmModal = useConfirm();
   const { qrCode, reportType: passedType, productName: passedName, brand } =
     (location.state as any) || {};
 
@@ -101,7 +103,7 @@ export default function ReportProduct() {
     }
 
     if (hasNonSquare) {
-      alert("Only square images (1:1 aspect ratio) are accepted. Non-square images were skipped.");
+      await confirmModal({ title: 'Aspect Ratio', description: "Only square images (1:1 aspect ratio) are accepted. Non-square images were skipped.", cancelText: null });
     }
 
     if (!files.length) {
@@ -236,14 +238,14 @@ export default function ReportProduct() {
 
       if (!res.ok) {
         if (data.error === "Profile incomplete") {
-          alert(data.message);
+          await confirmModal({ title: 'Profile Incomplete', description: data.message, cancelText: null });
           navigate("/edit-profile");
           return;
         }
         throw new Error(data.message || data.error || "Failed to submit report");
       }
 
-      alert("Complaint submitted successfully! Our team will investigate.");
+      await confirmModal({ title: 'Success', description: "Complaint submitted successfully! Our team will investigate.", cancelText: null });
       navigate("/my-reports");
     } catch (err: any) {
       setError(err.message);
