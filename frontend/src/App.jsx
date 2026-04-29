@@ -227,22 +227,15 @@ export default function App() {
       <ConfirmProvider>
         <BrowserRouter>
           <Routes>
-          {/* Public Website (Shared with Web) */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/problem" element={<WebProblem />} />
-          <Route path="/product" element={<WebProduct />} />
-          <Route path="/ai-pulse" element={<WebAIPulse />} />
-          <Route path="/how-it-works" element={<WebHowItWorks />} />
-          <Route path="/industries" element={<WebIndustries />} />
-          <Route path="/pricing" element={<WebPricing />} />
-          <Route path="/about-us" element={<WebAboutUs />} />
-          <Route path="/faqs" element={<WebFAQs />} />
-          <Route path="/contact-us" element={<WebContactUs />} />
-          <Route path="/privacy-policy" element={<WebPrivacyPolicy />} />
-          <Route path="/terms-conditions" element={<WebTermsConditions />} />
-          <Route path="/live-demo" element={<WebLiveDemo />} />
-
-          {/* User Protected with Global Navbar */}
+          {/* Mobile Specific Public Routes */}
+          <Route
+            path="/"
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            }
+          />
           <Route
             path="/login"
             element={
@@ -260,6 +253,11 @@ export default function App() {
             }
           />
 
+          {/* Publicly accessible Mobile Information Pages */}
+          <Route path="/about-us" element={<AboutUs />} />
+          <Route path="/terms-conditions" element={<TermsConditions />} />
+          <Route path="/privacy-policy" element={<Policies />} />
+
           {/* User Protected with Global Navbar */}
           <Route element={<PrivateRoute><MobileLayout /></PrivateRoute>}>
             <Route path="/home" element={<Home />} />
@@ -269,104 +267,14 @@ export default function App() {
             <Route path="/scan-history" element={<ScanHistory />} />
             <Route path="/rewards" element={<Rewards />} />
             <Route path="/rewards/:id" element={<RewardDetail />} />
-            <Route path="/about-us" element={<AboutUs />} />
-            <Route path="/terms-conditions" element={<TermsConditions />} />
-            <Route path="/policies" element={<Policies />} />
             <Route path="/result/:status" element={<Result />} />
             <Route path="/report" element={<ReportProduct />} />
             <Route path="/my-reports" element={<MyReports />} />
             <Route path="/notifications" element={<Notifications />} />
           </Route>
 
-          {/* Admin (mobile access optional) */}
-          <Route path="/enterprise" element={<AdminLogin />} />
-          <Route
-            path="/admin/dashboard"
-            element={
-              <AdminRoute>
-                <AdminLayout>
-                  <AdminDashboard />
-                </AdminLayout>
-              </AdminRoute>
-            }
-          />
-
-          <Route
-            path="/orders"
-            element={
-              <AdminRoute>
-                <AdminLayout>
-                  <OrderManagement />
-                </AdminLayout>
-              </AdminRoute>
-            }
-          />
-
-          <Route
-            path="/generate-qrs"
-            element={
-              <AdminRoute>
-                <AdminLayout>
-                  <GenerateQrs />
-                </AdminLayout>
-              </AdminRoute>
-            }
-          />
-
-          <Route
-            path="/qr-management"
-            element={
-              <AdminRoute>
-                <AdminLayout>
-                  <QrManagement />
-                </AdminLayout>
-              </AdminRoute>
-            }
-          />
-
-          <Route path="/admin/scanned-qrs" element={<AdminRoute><AdminLayout><AdminScannedQrs /></AdminLayout></AdminRoute>} />
-          <Route path="/admin/reports" element={<AdminRoute><AdminLayout><AdminReports /></AdminLayout></AdminRoute>} />
-          <Route path="/admin/transactions" element={<AdminRoute><AdminLayout><AdminTransactions /></AdminLayout></AdminRoute>} />
-          <Route path="/admin/price-plans" element={<AdminRoute><AdminLayout><AdminPricePlans /></AdminLayout></AdminRoute>} />
-          <Route path="/admin/billing" element={<AdminRoute><AdminLayout><BillingCredits /></AdminLayout></AdminRoute>} />
-          <Route path="/admin/leads" element={<AdminRoute><AdminLayout><AdminLeads /></AdminLayout></AdminRoute>} />
-          <Route path="/admin/qr-pricing" element={<AdminRoute><AdminLayout><QrPricingManagement /></AdminLayout></AdminRoute>} />
-          <Route path="/admin/analytics" element={<AdminRoute><AdminLayout><AuthDashboard /></AdminLayout></AdminRoute>} />
-          <Route path="/admin/ai-pulse" element={<AdminRoute><AdminLayout><AIPulseDashboard /></AdminLayout></AdminRoute>} />
-          <Route path="/admin/reviews" element={<AdminRoute><AdminLayout><AdminReviews /></AdminLayout></AdminRoute>} />
-          <Route path="/admin/coupons" element={<AdminRoute><AdminLayout><ProductCoupons /></AdminLayout></AdminRoute>} />
-
-          <Route
-            path="/users"
-            element={
-              <AdminRoute>
-                <AdminLayout>
-                  <UserManagement />
-                </AdminLayout>
-              </AdminRoute>
-            }
-          />
-
-          <Route
-            path="/product-manager"
-            element={
-              <AdminRoute>
-                <AdminLayout>
-                  <ProductManager />
-                </AdminLayout>
-              </AdminRoute>
-            }
-          />
-
           {/* Smart fallback */}
-          <Route
-            path="*"
-            element={
-              window.location.pathname.startsWith("/enterprise")
-                ? <Navigate to="/enterprise" replace />
-                : <Navigate to="/" replace />
-            }
-          />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         </BrowserRouter>
       </ConfirmProvider>
