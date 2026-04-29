@@ -222,12 +222,12 @@ const OrderManagement = () => {
     // Only run payment check once
     if (paymentProcessed.current) return;
 
-    fetchOrders();
     fetchFormConfigLabels();
 
     const params = new URLSearchParams(window.location.search);
     const paymentId = params.get('payment');
     const paymentSuccess = params.get('payment_success') === 'true';
+    const returnedOrderId = params.get('orderId');
 
     if (paymentId || paymentSuccess) {
       paymentProcessed.current = true;
@@ -235,26 +235,41 @@ const OrderManagement = () => {
         setLoading(true); // Show loader while verifying payment and updating status
         let successMessage = '';
         try {
+          const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+          let isPaymentSuccessful = false;
+
           if (paymentId) {
-            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
             const status = await checkPaymentStatus(paymentId, token);
             if (status.status === 'completed') {
-              // Refresh orders immediately before the blocking alert
-              await fetchOrders();
-              successMessage = 'Payment successful! Your order has been automatically authorized.';
+              isPaymentSuccessful = true;
             } else if (status.status === 'failed') {
               alert('Payment failed. Please try again.');
             }
           } else if (paymentSuccess) {
-            await fetchOrders();
-            successMessage = 'Payment successful! Your order has been automatically authorized.';
+            isPaymentSuccessful = true;
+          }
+
+          if (isPaymentSuccessful) {
+             if (returnedOrderId) {
+                 try {
+                     await updateOrderStatus(returnedOrderId, 'authorize', {}, token);
+                     successMessage = 'Payment successful! Your order has been automatically authorized.';
+                 } catch (authErr) {
+                     console.error('Auto authorize failed:', authErr);
+                     if (authErr.message && authErr.message.includes('cannot be authorized in its current state')) {
+                         successMessage = 'Payment successful! Your order has been authorized.';
+                     } else {
+                         successMessage = 'Payment successful! But auto-authorization failed: ' + authErr.message;
+                     }
+                 }
+             } else {
+                 successMessage = 'Payment successful!';
+             }
+             await fetchOrders();
           }
         } catch (e) {
-          console.error('Status check failed:', e);
-          if (paymentSuccess) {
-            await fetchOrders();
-            successMessage = 'Payment successful! Your order has been automatically authorized.';
-          }
+          console.error('Status check or authorize failed:', e);
+          alert('An error occurred during payment verification: ' + e.message);
         } finally {
           setLoading(false);
         }
@@ -267,6 +282,8 @@ const OrderManagement = () => {
           alert(successMessage);
         }
       })();
+    } else {
+      fetchOrders();
     }
 
     const adminRole = localStorage.getItem('adminRole');
