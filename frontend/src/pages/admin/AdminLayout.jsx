@@ -32,6 +32,7 @@ import {
 import GenerateQrs from "./GenerateQrs";
 import QrManagement from "./QrManagement";
 import API_BASE_URL, { getCreditsBalance } from "../../config/api";
+import { startLeadNotifications, stopLeadNotifications } from "../../utils/leadNotifications";
 
 // Sidebar item component
 function SidebarItem({ label, onClick, icon: Icon, isActive, hasSubmenu }) {
@@ -129,6 +130,7 @@ export default function AdminLayout({ children }) {
   const activePath = location.pathname;
 
   const handleLogout = () => {
+    stopLeadNotifications();
     localStorage.removeItem("adminToken");
     localStorage.removeItem("adminRole");
     localStorage.removeItem("adminEmail");
@@ -179,6 +181,14 @@ export default function AdminLayout({ children }) {
       mounted = false;
     };
   }, [role, token]);
+
+  // Start browser push notifications for new leads (superadmin only)
+  useEffect(() => {
+    if (role === 'superadmin') {
+      startLeadNotifications();
+    }
+    return () => stopLeadNotifications();
+  }, [role]);
 
   // Sidebar item component WITH collapse support
   const SidebarItemCollapse = ({ label, onClick, icon: Icon, isActive, hasSubmenu }) => {

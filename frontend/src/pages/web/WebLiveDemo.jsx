@@ -70,84 +70,93 @@ export default function WebLiveDemo() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
 
                         {/* 1. GENUINE PRODUCT */}
-                        <div className="glass-effect rounded-[2.5rem] p-8 border border-emerald-500/30 relative overflow-hidden group hover:-translate-y-2 transition-all duration-300 ring-1 ring-emerald-500/10 hover:ring-emerald-500/40">
-                            <div className="absolute -top-20 -right-20 w-40 h-40 bg-emerald-500 rounded-full blur-[80px] opacity-20" />
-
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400">
-                                    <CheckCircle2 size={24} />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-black text-white">Genuine Product</h3>
-                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">First-time Scan</p>
-                                </div>
-                            </div>
-
-                            <div className="bg-white p-2 rounded-3xl mx-auto w-fit mb-8 shadow-xl relative group-hover:scale-105 transition-transform overflow-hidden">
+                        <div className="glass-effect rounded-[2.5rem] overflow-hidden border border-emerald-500/30 relative flex flex-col group hover:-translate-y-2 transition-all duration-300 bg-white/5 ring-1 ring-emerald-500/10 hover:ring-emerald-500/40">
+                            <div className="h-72 overflow-hidden bg-slate-950 flex items-center justify-center relative p-2">
+                                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-50" />
                                 <img
                                     src={authenticImg}
                                     alt="Genuine QR"
-                                    className="w-[220px] h-[220px] object-contain rounded-2xl"
+                                    className="max-w-[90%] max-h-[90%] object-contain rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 group-hover:scale-110 transition-transform duration-700"
                                 />
+                                <div className="absolute top-6 left-6 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-2xl bg-emerald-500/10 text-emerald-400 border border-white/10 backdrop-blur-xl z-20">
+                                    Genuine
+                                </div>
                             </div>
 
-                            <p className="text-sm font-bold text-gray-400 text-center leading-relaxed">
-                                Experience the seamless verification, detailed product specs, and customer reward capture flow.
-                            </p>
+                            <div className="p-10 flex flex-col flex-grow">
+                                <h3 className="text-xl font-black text-white mb-4 leading-tight">Genuine Product</h3>
+                                <p className="text-gray-400 font-bold text-sm leading-relaxed mb-6 flex-grow">
+                                    Experience the seamless verification, detailed product specs, and customer reward capture flow.
+                                </p>
+                                
+                                <div className="space-y-3 pt-6 border-t border-white/5">
+                                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Status:</p>
+                                    <div className="flex items-center gap-2 text-xs font-bold text-gray-300">
+                                        <CheckCircle2 size={14} className="text-emerald-400" />
+                                        First-time Scan
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         {/* 2. DUPLICATE PRODUCT */}
-                        <div className="glass-effect rounded-[2.5rem] p-8 border border-amber-500/30 relative overflow-hidden group hover:-translate-y-2 transition-all duration-300 ring-1 ring-amber-500/10 hover:ring-amber-500/40">
-                            <div className="absolute -top-20 -right-20 w-40 h-40 bg-amber-500 rounded-full blur-[80px] opacity-20" />
-
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-400">
-                                    <AlertTriangle size={24} />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-black text-white">Duplicate Scan</h3>
-                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Already Verified</p>
-                                </div>
-                            </div>
-
-                            <div className="bg-white p-2 rounded-3xl mx-auto w-fit mb-8 shadow-xl relative group-hover:scale-105 transition-transform overflow-hidden">
+                        <div className="glass-effect rounded-[2.5rem] overflow-hidden border border-amber-500/30 relative flex flex-col group hover:-translate-y-2 transition-all duration-300 bg-white/5 ring-1 ring-amber-500/10 hover:ring-amber-500/40">
+                            <div className="h-72 overflow-hidden bg-slate-950 flex items-center justify-center relative p-2">
+                                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-50" />
                                 <img
                                     src={alertImg}
                                     alt="Duplicate QR"
-                                    className="w-[220px] h-[220px] object-contain rounded-2xl"
+                                    className="max-w-[90%] max-h-[90%] object-contain rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 group-hover:scale-110 transition-transform duration-700"
                                 />
+                                <div className="absolute top-6 left-6 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-2xl bg-amber-500/10 text-amber-400 border border-white/10 backdrop-blur-xl z-20">
+                                    Duplicate
+                                </div>
                             </div>
 
-                            <p className="text-sm font-bold text-gray-400 text-center leading-relaxed">
-                                See how we instantly warn consumers if a QR code has already been scanned previously.
-                            </p>
+                            <div className="p-10 flex flex-col flex-grow">
+                                <h3 className="text-xl font-black text-white mb-4 leading-tight">Duplicate Scan</h3>
+                                <p className="text-gray-400 font-bold text-sm leading-relaxed mb-6 flex-grow">
+                                    See how we instantly warn consumers if a QR code has already been scanned previously.
+                                </p>
+                                
+                                <div className="space-y-3 pt-6 border-t border-white/5">
+                                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Status:</p>
+                                    <div className="flex items-center gap-2 text-xs font-bold text-gray-300">
+                                        <AlertTriangle size={14} className="text-amber-400" />
+                                        Already Verified
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         {/* 3. FAKE PRODUCT */}
-                        <div className="glass-effect rounded-[2.5rem] p-8 border border-red-500/30 relative overflow-hidden group hover:-translate-y-2 transition-all duration-300 ring-1 ring-red-500/10 hover:ring-red-500/40">
-                            <div className="absolute -top-20 -right-20 w-40 h-40 bg-red-500 rounded-full blur-[80px] opacity-20" />
-
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center text-red-400">
-                                    <ShieldAlert size={24} />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-black text-white">Fake Product</h3>
-                                    <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Non-Authentiks QR</p>
-                                </div>
-                            </div>
-
-                            <div className="bg-white p-2 rounded-3xl mx-auto w-fit mb-8 shadow-xl relative group-hover:scale-105 transition-transform overflow-hidden">
+                        <div className="glass-effect rounded-[2.5rem] overflow-hidden border border-red-500/30 relative flex flex-col group hover:-translate-y-2 transition-all duration-300 bg-white/5 ring-1 ring-red-500/10 hover:ring-red-500/40">
+                            <div className="h-72 overflow-hidden bg-slate-950 flex items-center justify-center relative p-2">
+                                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-50" />
                                 <img
                                     src={fraudImg}
                                     alt="Fake QR"
-                                    className="w-[220px] h-[220px] object-contain rounded-2xl"
+                                    className="max-w-[90%] max-h-[90%] object-contain rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 group-hover:scale-110 transition-transform duration-700"
                                 />
+                                <div className="absolute top-6 left-6 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-2xl bg-red-500/10 text-red-400 border border-white/10 backdrop-blur-xl z-20">
+                                    Fake
+                                </div>
                             </div>
 
-                            <p className="text-sm font-bold text-gray-400 text-center leading-relaxed border-t border-red-500/20 pt-3 mt-1">
-                                <span className="text-white">Instruction:</span> Scan this QR code, then use the Web Scanner on the homepage to detect that it's unrecognized.
-                            </p>
+                            <div className="p-10 flex flex-col flex-grow">
+                                <h3 className="text-xl font-black text-white mb-4 leading-tight">Fake Product</h3>
+                                <p className="text-gray-400 font-bold text-sm leading-relaxed mb-6 flex-grow">
+                                    Instruction: Scan this QR code, then use the Web Scanner on the homepage to detect that it's unrecognized.
+                                </p>
+                                
+                                <div className="space-y-3 pt-6 border-t border-white/5">
+                                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Status:</p>
+                                    <div className="flex items-center gap-2 text-xs font-bold text-gray-300">
+                                        <ShieldAlert size={14} className="text-red-400" />
+                                        Non-Authentiks QR
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

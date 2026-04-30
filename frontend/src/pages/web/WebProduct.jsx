@@ -256,14 +256,13 @@ export default function WebProduct() {
                             }
                         ].map((item, i) => (
                             <div key={i} className={`glass-effect rounded-[2.5rem] overflow-hidden border ${item.borderColor} flex flex-col group hover:-translate-y-2 transition-all duration-300 bg-white/5`}>
-                                <div className="h-80 flex items-center justify-center relative p-6">
-                                    <div className="bg-white p-2 mt-24 rounded-3xl shadow-2xl relative group-hover:scale-105 transition-all duration-500 overflow-hidden">
-                                        <img 
-                                            src={item.img} 
-                                            alt={item.title} 
-                                            className="w-[220px] h-[220px] object-contain rounded-2xl" 
-                                        />
-                                    </div>
+                              <div className="h-72 overflow-hidden bg-slate-950 flex items-center justify-center relative p-2">
+                                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-50" />
+                                    <img 
+                                        src={item.img} 
+                                        alt={item.title} 
+                                        className="max-w-[90%] max-h-[90%] object-contain rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 group-hover:scale-110 transition-transform duration-700" 
+                                    />
                                     <div className={`absolute top-6 left-6 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-2xl ${item.tagColor} border border-white/10 backdrop-blur-xl z-20`}>
                                         {item.step}
                                     </div>
