@@ -97,9 +97,9 @@ export default function WebHowItWorks() {
                             <div className="container mx-auto text-center relative z-10 ">
                                 <div
                                     onClick={() => setContactOpen(true)}
-                                    className="hero-slide-enter relative w-[94%] mx-auto mb-10 rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
+                                    className="hero-slide-enter relative w-[88%] mx-auto mb-10 rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
                                 >
-                                    <div className="relative w-full" style={{ aspectRatio: '1672/741' }}>
+                                    <div className="relative w-full" style={{ aspectRatio: '1672/800' }}>
                                         <img
                                             src={howItWorksBanner}
                                             alt="Product Page banner"

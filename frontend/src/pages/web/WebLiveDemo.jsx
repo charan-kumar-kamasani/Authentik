@@ -12,6 +12,7 @@ import {
 import authenticImg from '../../assets/demo_qrs/authentic.jpg';
 import alertImg from '../../assets/demo_qrs/alert.jpg';
 import fraudImg from '../../assets/demo_qrs/fraud.jpg';
+import liveDemoBanner from '../../assets/banners/live_emo.jpg';
 
 const Glow = ({ color, className }) => (
     <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
@@ -41,31 +42,24 @@ export default function WebLiveDemo() {
             <WebHeader />
 
             {/* ═══════════════ HERO SECTION ═══════════════ */}
-            <section className="relative pt-12 md:pt-12 pb-20 px-6 overflow-hidden">
+            <section className="relative pt-12 px-6 min-h-[85vh] flex items-center overflow-hidden">
                 <Glow color="bg-indigo-600" className="-top-32 -left-32 opacity-20" />
-                <Glow color="bg-teal-600" className="top-1/2 -right-32 opacity-15" />
+                <Glow color="bg-cyan-600" className="top-1/2 -right-32 opacity-15" />
 
-                <div className="container mx-auto text-center relative z-10 max-w-5xl">
-                    <SectionTag className="bg-indigo-500/10 border-indigo-500/20 text-indigo-400 hero-slide-enter">
-                        <ScanLine size={14} /> Interactive Experience
-                    </SectionTag>
-
-                    <h1 className="hero-slide-enter text-4xl md:text-7xl font-black tracking-tighter text-white mb-8 leading-[1.05]">
-                        Experience <span className="gradient-text">Authentiks</span> Live
-                    </h1>
-
-                    <p className="hero-slide-enter-delay max-w-3xl mx-auto text-lg md:text-2xl font-bold text-gray-400 mb-10 leading-relaxed">
-                        Scan the codes below using your smartphone's camera to see exactly what your customers will see.
-                    </p>
-
-                    <div className="hero-slide-enter-delay flex justify-center mb-4">
-                        <button
-                            onClick={() => setContactOpen(true)}
-                            className="px-12 py-5 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-[0_0_60px_rgba(255,255,255,0.15)] hover:scale-105 active:scale-95 text-sm flex items-center gap-3"
-                        >
-                            Start 90-Day Free Trial
-                            <ArrowRight size={18} />
-                        </button>
+                <div className="container mx-auto text-center relative z-10 ">
+                    <div
+                        onClick={() => setContactOpen(true)}
+                        className="hero-slide-enter relative w-[88%] mx-auto mb-10 rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
+                    >
+                        <div className="relative w-full" style={{ aspectRatio: '1672/800' }}>
+                            <img
+                                src={liveDemoBanner}
+                                alt="Live Demo banner"
+                                className="absolute inset-0 w-full h-full object-contain transition-all duration-1000 ease-in-out group-hover:scale-[1.01]"
+                            />
+                        </div>
+                        <div className="absolute inset-0 pointer-events-none rounded-[2rem] ring-1 ring-inset ring-white/10 z-20" />
+                        <div className="absolute inset-0 bg-white/0 group-hover:bg-white-[0.02] transition-colors z-20 pointer-events-none" />
                     </div>
                 </div>
             </section>
