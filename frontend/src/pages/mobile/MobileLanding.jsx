@@ -1,5 +1,6 @@
 import React from 'react';
 import logo from '../../assets/logo.svg';
+import { QrCode } from 'lucide-react';
 
 export default function MobileLanding({ onSelectMode }) {
   return (
@@ -37,8 +38,9 @@ export default function MobileLanding({ onSelectMode }) {
           
           <button 
             onClick={() => onSelectMode('product')}
-            className="w-full bg-gradient-to-b from-[#1c55a5] to-[#0e3b7b] text-white font-bold py-[18px] rounded-[18px] text-[19px] shadow-[0_8px_20px_rgba(13,78,150,0.3)] active:scale-[0.97] transition-all tracking-wide"
+            className="w-full bg-gradient-to-b from-[#1c55a5] to-[#0e3b7b] text-white font-bold py-[18px] rounded-[18px] text-[19px] shadow-[0_8px_20px_rgba(13,78,150,0.3)] active:scale-[0.97] transition-all tracking-wide flex items-center justify-center gap-3"
           >
+            <QrCode size={24} className="shrink-0" />
             Verify Your Product
           </button>
           
@@ -46,7 +48,7 @@ export default function MobileLanding({ onSelectMode }) {
             onClick={() => onSelectMode('brand')}
             className="w-full bg-white text-[#0e3b7b] font-bold py-[18px] rounded-[18px] text-[19px] active:scale-[0.97] transition-all border-[2.5px] border-[#0e3b7b] shadow-sm tracking-wide"
           >
-            Protect Your Brand
+            Visit Website
           </button>
           
         </div>

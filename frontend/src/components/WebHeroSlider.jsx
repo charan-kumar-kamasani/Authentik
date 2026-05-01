@@ -30,56 +30,83 @@ export default function WebHeroSlider({ slides, onCTA, onSlideChange }) {
 
   return (
     <div className="container mx-auto text-center relative z-10">
-      {/* Banner Image Carousel Wrapper */}
-      <div className="relative w-full lg:w-[94%] mx-auto mb-6 md:mb-10">
+      {/* ═══════════════ DESKTOP SLIDER ═══════════════ */}
+      <div className="hidden md:block relative w-full lg:w-[94%] mx-auto mb-6 md:mb-10">
         <div
           onClick={onCTA}
-          className="hero-slide-enter relative w-full rounded-2xl md:rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
+          className="hero-slide-enter relative w-full rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
         >
-        <div className="relative w-full bg-[#020617]/50" style={{ aspectRatio: '1672/741' }}>
+          <div className="relative w-full bg-[#020617]/50" style={{ aspectRatio: '1672/741' }}>
+            {slides.map((s, i) => (
+              <img
+                key={i}
+                src={s.banner}
+                alt={`Banner ${i + 1}`}
+                className={`absolute inset-0 w-full h-full object-contain transition-all duration-1000 ease-in-out group-hover:scale-[1.01] ${i === activeSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+              />
+            ))}
+          </div>
+          <div className="absolute inset-0 pointer-events-none rounded-[2rem] ring-1 ring-inset ring-white/10 z-20" />
+          <div className="absolute inset-0 bg-white/0 group-hover:bg-white-[0.02] transition-colors z-20 pointer-events-none" />
+        </div>
+
+        {/* Desktop Slide Navigation Dots */}
+        <div className="absolute -bottom-8 md:-bottom-14 left-1/2 -translate-x-1/2 flex items-center justify-center gap-3 md:gap-4 w-full z-30 pointer-events-auto">
+          <button onClick={(e) => { e.stopPropagation(); prevSlide(); }} className="p-1.5 md:p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all shadow-lg backdrop-blur-md">
+            <ChevronLeft size={16} className="md:w-[18px] md:h-[18px]" />
+          </button>
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              onClick={(e) => { e.stopPropagation(); goToSlide(i); }}
+              className={`h-2 rounded-full transition-all duration-500 shadow-lg ${i === activeSlide ? 'w-10 bg-white' : 'w-2 bg-white/30 hover:bg-white/60'}`}
+            />
+          ))}
+          <button onClick={(e) => { e.stopPropagation(); nextSlide(); }} className="p-1.5 md:p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all shadow-lg backdrop-blur-md">
+            <ChevronRight size={16} className="md:w-[18px] md:h-[18px]" />
+          </button>
+        </div>
+      </div>
+
+      {/* ═══════════════ MOBILE SLIDER ═══════════════ */}
+      <div className="block md:hidden relative w-[94%] mx-auto mb-8">
+        <div className="relative w-full rounded-2xl overflow-hidden shadow-xl border border-white/10 mb-5 bg-[#020617]/50" style={{ aspectRatio: '1/1' }}>
           {slides.map((s, i) => (
             <img
               key={i}
-              src={s.banner}
-              alt={`Banner ${i + 1}`}
-              className={`absolute inset-0 w-full h-full object-contain transition-all duration-1000 ease-in-out group-hover:scale-[1.01] ${i === activeSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
-                }`}
+              src={s.mobileBanner || s.banner}
+              alt={`Mobile Banner ${i + 1}`}
+              className={`absolute inset-0 w-full h-full object-contain transition-all duration-1000 ease-in-out ${i === activeSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
             />
           ))}
         </div>
-        <div className="absolute inset-0 pointer-events-none rounded-[2rem] ring-1 ring-inset ring-white/10 z-20" />
-        <div className="absolute inset-0 bg-white/0 group-hover:bg-white-[0.02] transition-colors z-20 pointer-events-none" />
-      </div>
 
-      {/* Slide Navigation Dots (Absolutely positioned to not affect flex height) */}
-      <div className="absolute -bottom-8 md:-bottom-14 left-1/2 -translate-x-1/2 flex items-center justify-center gap-3 md:gap-4 w-full z-30 pointer-events-auto">
-        <button onClick={(e) => { e.stopPropagation(); prevSlide(); }} className="p-1.5 md:p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all shadow-lg backdrop-blur-md">
-          <ChevronLeft size={16} className="md:w-[18px] md:h-[18px]" />
-        </button>
-        {slides.map((_, i) => (
-          <button
-            key={i}
-            onClick={(e) => { e.stopPropagation(); goToSlide(i); }}
-            className={`h-2 rounded-full transition-all duration-500 shadow-lg ${i === activeSlide ? 'w-10 bg-white' : 'w-2 bg-white/30 hover:bg-white/60'
-              }`}
-          />
-        ))}
-        <button onClick={(e) => { e.stopPropagation(); nextSlide(); }} className="p-1.5 md:p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all shadow-lg backdrop-blur-md">
-          <ChevronRight size={16} className="md:w-[18px] md:h-[18px]" />
-        </button>
-      </div>
-    </div>
+        {/* Mobile Slide Navigation Dots */}
+        <div className="flex items-center justify-center gap-3 mb-6">
+          <button onClick={(e) => { e.stopPropagation(); prevSlide(); }} className="p-1.5 rounded-full bg-white/5 border border-white/10 text-gray-400">
+            <ChevronLeft size={16} />
+          </button>
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              onClick={(e) => { e.stopPropagation(); goToSlide(i); }}
+              className={`h-1.5 rounded-full transition-all duration-500 ${i === activeSlide ? 'w-6 bg-white' : 'w-1.5 bg-white/30'}`}
+            />
+          ))}
+          <button onClick={(e) => { e.stopPropagation(); nextSlide(); }} className="p-1.5 rounded-full bg-white/5 border border-white/10 text-gray-400">
+            <ChevronRight size={16} />
+          </button>
+        </div>
 
-      {/* Global CTA Button */}
-      {/* <div className="hero-slide-enter-delay-2 flex flex-col items-center gap-6 mb-8 relative z-30">
+        {/* Button below banner for mobile */}
         <button
           onClick={onCTA}
-          className="group px-10 md:px-14 py-5 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-[0_0_60px_rgba(255,255,255,0.15)] hover:shadow-[0_0_80px_rgba(255,255,255,0.25)] hover:scale-[1.02] active:scale-95 text-sm flex items-center gap-3"
+          className="group w-full px-8 py-5 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-lg hover:scale-[1.02] active:scale-95 text-xs flex items-center justify-center gap-3"
         >
           Start Your 90-Day Free Trial
-          <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+          <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
         </button>
-      </div> */}
+      </div>
     </div>
   );
 }

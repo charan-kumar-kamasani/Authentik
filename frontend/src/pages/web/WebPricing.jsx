@@ -9,6 +9,7 @@ import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
 import pricingBanner from "../../assets/banners/Pricing.jpg";
+import mobilePricingBanner from '../../assets/banners/Mobile banner authentiks/Pricing.png';
 
 /* ═══════════════════════ REUSABLE COMPONENTS ═══════════════════════ */
 
@@ -163,14 +164,15 @@ export default function WebPricing() {
             <WebHeader />
 
             {/* ═══════════════ HERO SECTION ═══════════════ */}
-            <section className="relative pt-12 px-6 min-h-[85vh] flex items-center overflow-hidden">
+            <section className="relative pt-8 md:pt-12 px-4 md:px-6 md:min-h-[85vh] flex items-center overflow-hidden">
                 <Glow color="bg-indigo-600" className="-top-32 -left-32 opacity-20" />
                 <Glow color="bg-cyan-600" className="top-1/2 -right-32 opacity-15" />
 
                 <div className="container mx-auto text-center relative z-10 ">
+                    {/* Desktop Banner */}
                     <div
                         onClick={() => setContactOpen(true)}
-                        className="hero-slide-enter relative w-[88%] mx-auto mb-10 rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
+                        className="hidden md:block hero-slide-enter relative w-[88%] mx-auto mb-10 rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
                     >
                         <div className="relative w-full" style={{ aspectRatio: '1672/800' }}>
                             <img
@@ -181,6 +183,24 @@ export default function WebPricing() {
                         </div>
                         <div className="absolute inset-0 pointer-events-none rounded-[2rem] ring-1 ring-inset ring-white/10 z-20" />
                         <div className="absolute inset-0 bg-white/0 group-hover:bg-white-[0.02] transition-colors z-20 pointer-events-none" />
+                    </div>
+
+                    {/* Mobile Banner & CTA */}
+                    <div className="block md:hidden hero-slide-enter relative w-[94%] mx-auto mb-8">
+                        <div className="relative w-full rounded-2xl overflow-hidden shadow-xl border border-white/10 mb-5">
+                            <img 
+                                src={mobilePricingBanner} 
+                                alt="Pricing Page banner" 
+                                className="w-full h-auto object-contain"
+                            />
+                        </div>
+                        <button
+                            onClick={() => setContactOpen(true)}
+                            className="group w-full px-8 py-5 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-lg hover:scale-[1.02] active:scale-95 text-xs flex items-center justify-center gap-3 mx-auto"
+                        >
+                            Start Your 90-Day Free Trial
+                            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                        </button>
                     </div>
                 </div>
             </section>

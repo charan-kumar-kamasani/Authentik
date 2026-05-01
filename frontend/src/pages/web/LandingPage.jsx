@@ -12,6 +12,9 @@ import heroImage from '../../assets/web/image 1.png';
 import banner1 from '../../assets/banners/banner_1.jpg';
 import banner2 from '../../assets/banners/banner_2.jpg';
 import banner3 from '../../assets/banners/banner_3.jpg';
+import mobileBanner1 from '../../assets/banners/Mobile banner authentiks/Home 1.png';
+import mobileBanner2 from '../../assets/banners/Mobile banner authentiks/Home 2.png';
+import mobileBanner3 from '../../assets/banners/Mobile banner authentiks/Home 3.png';
 import WebHeroSlider from '../../components/WebHeroSlider';
 
 /* ═══════════════════════ HERO SLIDES ═══════════════════════ */
@@ -25,6 +28,7 @@ const heroSlides = [
     subtitle: 'Give every product a unique, secure identity with ready-to-use QR labels — no tech, no complexity.',
     cta: 'Start Your 90-Day Free Trial',
     banner: banner1,
+    mobileBanner: mobileBanner1,
   },
   {
     tag: 'BANNER 2',
@@ -36,6 +40,7 @@ const heroSlides = [
     highlight: 'Your product is now your marketing channel',
     cta: 'Start Your 90-Day Free Trial',
     banner: banner2,
+    mobileBanner: mobileBanner2,
   },
   {
     tag: 'BANNER 3',
@@ -47,6 +52,7 @@ const heroSlides = [
     highlight: 'Know where your products go — and where they leak',
     cta: 'Start Your 90-Day Free Trial',
     banner: banner3,
+    mobileBanner: mobileBanner3,
   },
 ];
 
@@ -82,7 +88,7 @@ export default function LandingPage() {
       <WebHeader />
 
       {/* ═══════════════ HERO SECTION (Dynamic Slider) ═══════════════ */}
-      <section className="relative pt-12 md:pt-16 px-4 md:px-6 min-h-[40vh] md:min-h-[85vh] flex items-center overflow-hidden">
+      <section className="relative pt-8 md:pt-16 px-4 md:px-6 md:min-h-[85vh] flex items-center overflow-hidden">
         {/* Animated glows */}
         <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] ${slide.glowColor} rounded-full blur-[180px] opacity-15 transition-all duration-1000`} />
         <div className="absolute top-20 right-[10%] w-64 h-64 bg-purple-600 rounded-full blur-[140px] opacity-10 animate-pulse-slow" />
