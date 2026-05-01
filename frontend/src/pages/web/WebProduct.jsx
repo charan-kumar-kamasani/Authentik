@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { 
     ShieldCheck, QrCode, Lock, Globe, Server, AlertTriangle, 
     Smartphone, BarChart3, TrendingUp, Cpu, Workflow, ArrowRight,
@@ -61,7 +62,7 @@ export default function WebProduct() {
                     </div>
 
                     {/* Mobile Banner & CTA */}
-                    <div className="block md:hidden hero-slide-enter relative w-[94%] mx-auto mb-2">
+                    <div className="block md:hidden hero-slide-enter relative w-[94%] mx-auto mb-8">
                         <div className="relative w-full rounded-2xl overflow-hidden shadow-xl border border-white/10 mb-5">
                             <img 
                                 src={mobileProductBanner} 
@@ -69,19 +70,20 @@ export default function WebProduct() {
                                 className="w-full h-auto object-contain"
                             />
                         </div>
-                        <button
-                            onClick={() => setContactOpen(true)}
-                            className="group w-full px-8 py-5 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-lg hover:scale-[1.02] active:scale-95 text-xs flex items-center justify-center gap-3 mx-auto"
-                        >
-                            Start Your 90-Day Free Trial
-                            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                        </button>
+                        <Link to="/live-demo" className="w-full">
+                            <button
+                                className="group w-full px-8 py-5 bg-indigo-600 text-white rounded-full font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg hover:scale-[1.02] active:scale-95 text-xs flex items-center justify-center gap-3 mx-auto"
+                            >
+                                Live Demo
+                                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                            </button>
+                        </Link>
                     </div>
                 </div>
             </section>
 
             {/* ═══════════════ WHAT IS AUTHENTIKS? ═══════════════ */}
-            <section className="py-24 px-6 border-t border-white/5 bg-white/[0.02]">
+            <section className="py-12 md:py-12 px-6 border-t border-white/5 bg-white/[0.02]">
                 <div className="container mx-auto max-w-6xl">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                         <div>

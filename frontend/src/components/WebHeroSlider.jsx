@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 
 export default function WebHeroSlider({ slides, onCTA, onSlideChange }) {
@@ -81,31 +82,14 @@ export default function WebHeroSlider({ slides, onCTA, onSlideChange }) {
           ))}
         </div>
 
-        {/* Mobile Slide Navigation Dots */}
-        <div className="flex items-center justify-center gap-3 mb-6">
-          <button onClick={(e) => { e.stopPropagation(); prevSlide(); }} className="p-1.5 rounded-full bg-white/5 border border-white/10 text-gray-400">
-            <ChevronLeft size={16} />
+        <Link to="/live-demo" className="w-full">
+          <button
+            className="group w-full px-8 py-5 bg-indigo-600 text-white rounded-full font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg hover:scale-[1.02] active:scale-95 text-xs flex items-center justify-center gap-3"
+          >
+            Live Demo
+            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </button>
-          {slides.map((_, i) => (
-            <button
-              key={i}
-              onClick={(e) => { e.stopPropagation(); goToSlide(i); }}
-              className={`h-1.5 rounded-full transition-all duration-500 ${i === activeSlide ? 'w-6 bg-white' : 'w-1.5 bg-white/30'}`}
-            />
-          ))}
-          <button onClick={(e) => { e.stopPropagation(); nextSlide(); }} className="p-1.5 rounded-full bg-white/5 border border-white/10 text-gray-400">
-            <ChevronRight size={16} />
-          </button>
-        </div>
-
-        {/* Button below banner for mobile */}
-        <button
-          onClick={onCTA}
-          className="group w-full px-8 py-5 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-lg hover:scale-[1.02] active:scale-95 text-xs flex items-center justify-center gap-3"
-        >
-          Start Your 90-Day Free Trial
-          <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-        </button>
+        </Link>
       </div>
     </div>
   );

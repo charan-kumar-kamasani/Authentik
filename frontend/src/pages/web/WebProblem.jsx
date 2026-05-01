@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import {
     AlertTriangle, TrendingDown, Users, EyeOff, PackageX, Link2Off,
     Newspaper, Activity, IndianRupee, ArrowRight, ShieldCheck, Zap, PlayCircle
@@ -63,19 +64,20 @@ export default function WebProblem() {
                                 className="w-full h-auto object-contain"
                             />
                         </div>
-                        <button
-                            onClick={() => setContactOpen(true)}
-                            className="group w-full px-8 py-5 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-lg hover:scale-[1.02] active:scale-95 text-xs flex items-center justify-center gap-3 mx-auto"
-                        >
-                            Start Your 90-Day Free Trial
-                            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                        </button>
+                        <Link to="/live-demo" className="w-full">
+                            <button
+                                className="group w-full px-8 py-5 bg-indigo-600 text-white rounded-full font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg hover:scale-[1.02] active:scale-95 text-xs flex items-center justify-center gap-3 mx-auto"
+                            >
+                                Live Demo
+                                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                            </button>
+                        </Link>
                     </div>
                 </div>
             </section>
 
             {/* ═══════════════ THE REALITY (DATA-DRIVEN) ═══════════════ */}
-            <section className="py-24 px-6 relative">
+            <section className="py-12 md:py-12 px-6 relative">
                 <Glow color="bg-red-600" className="top-0 left-1/4 opacity-10" />
                 <div className="container mx-auto max-w-6xl">
                     <div className="text-center mb-16">

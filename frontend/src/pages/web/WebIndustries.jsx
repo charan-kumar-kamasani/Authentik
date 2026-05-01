@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import {
     Factory, Sparkles, Shirt, Pill, Monitor, Wine, Rocket,
     CheckCircle2, ArrowRight, Activity, Building2
@@ -63,19 +64,20 @@ export default function WebIndustries() {
                                 className="w-full h-auto object-contain"
                             />
                         </div>
-                        <button
-                            onClick={() => setContactOpen(true)}
-                            className="group w-full px-8 py-5 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-lg hover:scale-[1.02] active:scale-95 text-xs flex items-center justify-center gap-3 mx-auto"
-                        >
-                            Start Your 90-Day Free Trial
-                            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                        </button>
+                        <Link to="/live-demo" className="w-full">
+                            <button
+                                className="group w-full px-8 py-5 bg-indigo-600 text-white rounded-full font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg hover:scale-[1.02] active:scale-95 text-xs flex items-center justify-center gap-3 mx-auto"
+                            >
+                                Live Demo
+                                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                            </button>
+                        </Link>
                     </div>
                 </div>
             </section>
 
             {/* ═══════════════ OVERVIEW ═══════════════ */}
-            <section className="py-20 px-6 border-t border-white/5 bg-white/[0.02]">
+            <section className="py-12 md:py-12 px-6 border-t border-white/5 bg-white/[0.02]">
                 <div className="container mx-auto max-w-4xl text-center">
                     <SectionTag><Building2 size={14} /> Global Application</SectionTag>
                     <SectionTitle>If You Make It, We Make It Smart</SectionTitle>

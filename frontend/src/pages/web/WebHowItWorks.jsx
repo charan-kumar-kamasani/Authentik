@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { 
     Workflow, QrCode, ShieldCheck, Printer, Package, Smartphone, 
     BarChart3, AlertTriangle, CheckCircle2, Zap, Clock, HelpCircle, ArrowRight,
@@ -8,6 +9,7 @@ import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
 import howItWorksBanner from "../../assets/banners/how_it_works_banner.jpg";
+import mobileHIWBanner from "../../assets/banners/Mobile banner authentiks/HIW.png";
 
 const Glow = ({ color, className }) => (
   <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
@@ -90,14 +92,15 @@ export default function WebHowItWorks() {
                 </div>
             </section> */}
 
-                  <section className="relative pt-12 px-6 min-h-[85vh] flex items-center overflow-hidden">
+                  <section className="relative pt-8 md:pt-12 px-4 md:px-6 md:min-h-[85vh] flex items-center overflow-hidden">
                             <Glow color="bg-indigo-600" className="-top-32 -left-32 opacity-20" />
                             <Glow color="bg-blue-600" className="top-1/2 -right-32 opacity-15" />
             
                             <div className="container mx-auto text-center relative z-10 ">
+                                {/* Desktop Banner */}
                                 <div
                                     onClick={() => setContactOpen(true)}
-                                    className="hero-slide-enter relative w-[88%] mx-auto mb-10 rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
+                                    className="hidden md:block hero-slide-enter relative w-[88%] mx-auto mb-10 rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
                                 >
                                     <div className="relative w-full" style={{ aspectRatio: '1672/800' }}>
                                         <img
@@ -109,11 +112,30 @@ export default function WebHowItWorks() {
                                     <div className="absolute inset-0 pointer-events-none rounded-[2rem] ring-1 ring-inset ring-white/10 z-20" />
                                     <div className="absolute inset-0 bg-white/0 group-hover:bg-white-[0.02] transition-colors z-20 pointer-events-none" />
                                 </div>
+
+                                {/* Mobile Banner & CTA */}
+                                <div className="block md:hidden hero-slide-enter relative w-[94%] mx-auto mb-8">
+                                    <div className="relative w-full rounded-2xl overflow-hidden shadow-xl border border-white/10 mb-5">
+                                        <img 
+                                            src={mobileHIWBanner} 
+                                            alt="How It Works Page banner" 
+                                            className="w-full h-auto object-contain"
+                                        />
+                                    </div>
+                                    <Link to="/live-demo" className="w-full">
+                                        <button
+                                            className="group w-full px-8 py-5 bg-indigo-600 text-white rounded-full font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg hover:scale-[1.02] active:scale-95 text-xs flex items-center justify-center gap-3 mx-auto"
+                                        >
+                                            Live Demo
+                                            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                                        </button>
+                                    </Link>
+                                </div>
                             </div>
                         </section>
 
             {/* ═══════════════ OVERVIEW ═══════════════ */}
-            <section className="py-16 px-6 border-t border-white/5 bg-white/[0.02]">
+            <section className="py-12 md:py-12 px-6 border-t border-white/5 bg-white/[0.02]">
                 <div className="container mx-auto max-w-5xl text-center">
                     <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-4">One Platform. Complete Control.</h3>
                     <p className="text-gray-400 font-bold mb-8">From the moment your product is created to when it reaches the customer — Authentiks ensures:</p>
