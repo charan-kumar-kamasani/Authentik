@@ -82,7 +82,7 @@ export default function LandingPage() {
       <WebHeader />
 
       {/* ═══════════════ HERO SECTION (Dynamic Slider) ═══════════════ */}
-      <section className="relative pt-12 px-6 min-h-[85vh] flex items-center overflow-hidden">
+      <section className="relative pt-12 md:pt-16 px-4 md:px-6 min-h-[40vh] md:min-h-[85vh] flex items-center overflow-hidden">
         {/* Animated glows */}
         <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] ${slide.glowColor} rounded-full blur-[180px] opacity-15 transition-all duration-1000`} />
         <div className="absolute top-20 right-[10%] w-64 h-64 bg-purple-600 rounded-full blur-[140px] opacity-10 animate-pulse-slow" />

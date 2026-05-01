@@ -31,12 +31,12 @@ export default function WebHeroSlider({ slides, onCTA, onSlideChange }) {
   return (
     <div className="container mx-auto text-center relative z-10">
       {/* Banner Image Carousel Wrapper */}
-      <div className="relative w-[94%] mx-auto mb-10">
+      <div className="relative w-full lg:w-[94%] mx-auto mb-6 md:mb-10">
         <div
           onClick={onCTA}
-          className="hero-slide-enter relative w-full rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
+          className="hero-slide-enter relative w-full rounded-2xl md:rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
         >
-        <div className="relative w-full" style={{ aspectRatio: '1672/741' }}>
+        <div className="relative w-full bg-[#020617]/50" style={{ aspectRatio: '1672/741' }}>
           {slides.map((s, i) => (
             <img
               key={i}
@@ -52,9 +52,9 @@ export default function WebHeroSlider({ slides, onCTA, onSlideChange }) {
       </div>
 
       {/* Slide Navigation Dots (Absolutely positioned to not affect flex height) */}
-      <div className="absolute -bottom-14 left-1/2 -translate-x-1/2 flex items-center justify-center gap-4 w-full z-30 pointer-events-auto">
-        <button onClick={(e) => { e.stopPropagation(); prevSlide(); }} className="p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all shadow-lg backdrop-blur-md">
-          <ChevronLeft size={18} />
+      <div className="absolute -bottom-8 md:-bottom-14 left-1/2 -translate-x-1/2 flex items-center justify-center gap-3 md:gap-4 w-full z-30 pointer-events-auto">
+        <button onClick={(e) => { e.stopPropagation(); prevSlide(); }} className="p-1.5 md:p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all shadow-lg backdrop-blur-md">
+          <ChevronLeft size={16} className="md:w-[18px] md:h-[18px]" />
         </button>
         {slides.map((_, i) => (
           <button
@@ -64,8 +64,8 @@ export default function WebHeroSlider({ slides, onCTA, onSlideChange }) {
               }`}
           />
         ))}
-        <button onClick={(e) => { e.stopPropagation(); nextSlide(); }} className="p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all shadow-lg backdrop-blur-md">
-          <ChevronRight size={18} />
+        <button onClick={(e) => { e.stopPropagation(); nextSlide(); }} className="p-1.5 md:p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all shadow-lg backdrop-blur-md">
+          <ChevronRight size={16} className="md:w-[18px] md:h-[18px]" />
         </button>
       </div>
     </div>

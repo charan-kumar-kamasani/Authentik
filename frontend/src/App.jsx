@@ -30,6 +30,7 @@ import Policies from "./pages/mobile/Policies";
 import Rewards from "./pages/mobile/Rewards";
 import RewardDetail from "./pages/mobile/RewardDetail";
 import MobileLayout from "./components/MobileLayout";
+import MobileLanding from "./pages/mobile/MobileLanding";
 
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -97,6 +98,7 @@ export default function App() {
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth < 768 : false
   );
+  const [appMode, setAppMode] = useState(() => sessionStorage.getItem('appMode') || null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -104,9 +106,19 @@ export default function App() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  /* ================= DESKTOP (WEBSITE + ADMIN) ================= */
+  /* ================= APP MODE SELECTION (MOBILE ONLY) ================= */
 
-  if (!isMobile) {
+  // If on mobile and no mode selected, show landing screen
+  if (isMobile && !appMode) {
+    return <MobileLanding onSelectMode={(mode) => {
+      sessionStorage.setItem('appMode', mode);
+      setAppMode(mode);
+    }} />;
+  }
+
+  /* ================= DESKTOP (WEBSITE + ADMIN) OR "BRAND" MODE ON MOBILE ================= */
+
+  if (!isMobile || appMode === 'brand') {
     return (
       <LoadingProvider>
         <ConfirmProvider>
@@ -220,7 +232,7 @@ export default function App() {
     );
   }
 
-  /* ================= MOBILE APP ================= */
+  /* ================= MOBILE APP (PRODUCT MODE) ================= */
 
   return (
     <LoadingProvider>
