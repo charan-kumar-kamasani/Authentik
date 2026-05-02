@@ -15,11 +15,13 @@ export default function WebHeader() {
     { name: "Home", path: "/" },
     { name: "Problem", path: "/problem" },
     { name: "Product", path: "/product" },
-    { name: "AI Pulse", path: "/ai-pulse", isButton: true },
     { name: "How it works", path: "/how-it-works" },
+    { name: "AI Pulse", path: "/ai-pulse", isButton: true },
+    { name: "Verified", path: "/verified" },
     { name: "Industries", path: "/industries" },
     { name: "Pricing", path: "/pricing" },
   ];
+
 
   return (
     <header className="flex items-center justify-between px-6 md:px-12 py-4 bg-[#020617]/80 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50">

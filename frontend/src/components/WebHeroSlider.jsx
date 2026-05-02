@@ -82,14 +82,13 @@ export default function WebHeroSlider({ slides, onCTA, onSlideChange }) {
           ))}
         </div>
 
-        <Link to="/live-demo" className="w-full">
-          <button
-            className="group w-full px-8 py-5 bg-indigo-600 text-white rounded-full font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg hover:scale-[1.02] active:scale-95 text-xs flex items-center justify-center gap-3"
-          >
-            Live Demo
-            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-          </button>
-        </Link>
+        <button
+          onClick={onCTA}
+          className="group w-full px-8 py-6 bg-indigo-600 text-white rounded-full font-[900] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg hover:scale-[1.02] active:scale-95 text-xl flex items-center justify-center gap-3"
+        >
+          Book a Demo
+          <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+        </button>
       </div>
     </div>
   );

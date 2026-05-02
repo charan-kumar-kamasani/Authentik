@@ -8,7 +8,7 @@ import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
 import industriesBanner from '../../assets/banners/industries_banner.jpg';
-import mobileIndustriesBanner from '../../assets/banners/Mobile banner authentiks/Industries.png';
+import mobileIndustriesBanner from '../../assets/banners/Mobile banner authentiks/Industries.jpg';
 
 const Glow = ({ color, className }) => (
     <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
@@ -64,14 +64,13 @@ export default function WebIndustries() {
                                 className="w-full h-auto object-contain"
                             />
                         </div>
-                        <Link to="/live-demo" className="w-full">
-                            <button
-                                className="group w-full px-8 py-5 bg-indigo-600 text-white rounded-full font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg hover:scale-[1.02] active:scale-95 text-xs flex items-center justify-center gap-3 mx-auto"
-                            >
-                                Live Demo
-                                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                            </button>
-                        </Link>
+                        <button
+                            onClick={() => setContactOpen(true)}
+                            className="group w-full px-8 py-6 bg-indigo-600 text-white rounded-full font-[900] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg hover:scale-[1.02] active:scale-95 text-xl flex items-center justify-center gap-3 mx-auto"
+                        >
+                            Book a Demo
+                            <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                        </button>
                     </div>
                 </div>
             </section>

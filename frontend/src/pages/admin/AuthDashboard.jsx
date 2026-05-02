@@ -176,6 +176,161 @@ export default function AuthDashboard({ role: propRole }) {
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
+  const [isDemoMode, setIsDemoMode] = useState(false);
+
+  const loadDemoData = () => {
+    setIsDemoMode(true);
+    setStats({
+      totalScans: 15420,
+      authenticScans: 12540,
+      suspiciousScans: 1430,
+      duplicateAlerts: 1450,
+      totalProducts: 45,
+      totalOrders: 112,
+      totalCompanies: 28,
+      totalReports: 14,
+    });
+    setScanTrend([
+      { date: '2026-04-20', authentic: 210, suspicious: 12, duplicate: 15 },
+      { date: '2026-04-21', authentic: 245, suspicious: 8, duplicate: 11 },
+      { date: '2026-04-22', authentic: 190, suspicious: 14, duplicate: 9 },
+      { date: '2026-04-23', authentic: 280, suspicious: 22, duplicate: 18 },
+      { date: '2026-04-24', authentic: 320, suspicious: 10, duplicate: 14 },
+      { date: '2026-04-25', authentic: 290, suspicious: 11, duplicate: 10 },
+      { date: '2026-04-26', authentic: 340, suspicious: 15, duplicate: 21 },
+      { date: '2026-04-27', authentic: 410, suspicious: 9, duplicate: 13 },
+      { date: '2026-04-28', authentic: 380, suspicious: 12, duplicate: 16 },
+      { date: '2026-04-29', authentic: 450, suspicious: 28, duplicate: 31 },
+      { date: '2026-04-30', authentic: 520, suspicious: 14, duplicate: 22 },
+      { date: '2026-05-01', authentic: 490, suspicious: 18, duplicate: 19 },
+      { date: '2026-05-02', authentic: 550, suspicious: 25, duplicate: 24 },
+    ]);
+    setDuplicateTrend([
+      { date: '2026-04-25', count: 12 },
+      { date: '2026-04-26', count: 18 },
+      { date: '2026-04-27', count: 15 },
+      { date: '2026-04-28', count: 22 },
+      { date: '2026-04-29', count: 31 },
+      { date: '2026-04-30', count: 24 },
+      { date: '2026-05-01', count: 28 },
+      { date: '2026-05-02', count: 33 },
+    ]);
+    setHighRiskSkus([
+      { productName: 'Vitapur+ Tablets v2', riskPercent: 68 },
+      { productName: 'Skin Glow Serum Deluxe', riskPercent: 42 },
+      { productName: 'Pure Omega3 Gold', riskPercent: 29 },
+      { productName: 'Alpha Men Daily Multivitamin', riskPercent: 18 },
+      { productName: 'Herbal Essence Shampoo', riskPercent: 12 },
+    ]);
+    setBatchRisk([
+      { batchNo: 'B26-VIT99', riskPercent: 78, region: 'Mumbai' },
+      { batchNo: 'B26-GLW04', riskPercent: 44, region: 'Delhi NCR' },
+      { batchNo: 'B26-OMG21', riskPercent: 28, region: 'Bangalore' },
+      { batchNo: 'B26-ALP12', riskPercent: 19, region: 'Hyderabad' },
+      { batchNo: 'B26-HBL08', riskPercent: 11, region: 'Chennai' },
+    ]);
+    setGeoData([
+      { place: 'Mumbai', total: 3420, authentic: 2910, suspicious: 310, duplicate: 200, lat: 19.0760, lng: 72.8777 },
+      { place: 'Delhi', total: 2980, authentic: 2450, suspicious: 340, duplicate: 190, lat: 28.6139, lng: 77.2090 },
+      { place: 'Bangalore', total: 2540, authentic: 2180, suspicious: 190, duplicate: 170, lat: 12.9716, lng: 77.5946 },
+      { place: 'Hyderabad', total: 1950, authentic: 1680, suspicious: 140, duplicate: 130, lat: 17.3850, lng: 78.4867 },
+      { place: 'Chennai', total: 1430, authentic: 1220, suspicious: 110, duplicate: 100, lat: 13.0827, lng: 80.2707 },
+      { place: 'Kolkata', total: 1120, authentic: 920, suspicious: 120, duplicate: 80, lat: 22.5726, lng: 88.3639 },
+      { place: 'Pune', total: 980, authentic: 850, suspicious: 70, duplicate: 60, lat: 18.5204, lng: 73.8567 },
+      { place: 'Ahmedabad', total: 850, authentic: 730, suspicious: 80, duplicate: 40, lat: 23.0225, lng: 72.5714 },
+    ]);
+    setGeoMarkers([
+      { productName: 'Vitapur+ Tablets v2', status: 'ORIGINAL', place: 'Mumbai', lat: 19.0760, lng: 72.8777, createdAt: '2026-05-02' },
+      { productName: 'Skin Glow Serum Deluxe', status: 'FAKE', place: 'Delhi', lat: 28.6139, lng: 77.2090, createdAt: '2026-05-02' },
+      { productName: 'Pure Omega3 Gold', status: 'ALREADY_USED', place: 'Bangalore', lat: 12.9716, lng: 77.5946, createdAt: '2026-05-02' }
+    ]);
+    setGeoAnomalies([
+      { place: 'Mumbai', fake: 310, duplicate: 200, anomalyScore: 5 },
+      { place: 'Delhi', fake: 340, duplicate: 190, anomalyScore: 4 },
+      { place: 'Bangalore', fake: 190, duplicate: 170, anomalyScore: 3 },
+      { place: 'Hyderabad', fake: 140, duplicate: 130, anomalyScore: 2 },
+    ]);
+    setRecentActivity([
+      { productName: 'Vitapur+ Tablets v2', brand: 'Authentiks Wellness', status: 'ORIGINAL', place: 'Mumbai', user: 'Amit Sharma', createdAt: '2026-05-02T12:34:00Z' },
+      { productName: 'Skin Glow Serum Deluxe', brand: 'Radiance Inc', status: 'FAKE', place: 'Delhi NCR', user: 'Priya Verma', createdAt: '2026-05-02T11:20:00Z' },
+      { productName: 'Pure Omega3 Gold', brand: 'Pure Life', status: 'ALREADY_USED', place: 'Bangalore', user: 'Ramesh Babu', createdAt: '2026-05-02T10:15:00Z' },
+      { productName: 'Alpha Men Multivitamin', brand: 'Optimum Health', status: 'ORIGINAL', place: 'Hyderabad', user: 'Suresh Kumar', createdAt: '2026-05-02T09:45:00Z' },
+      { productName: 'Herbal Essence Shampoo', brand: 'Clean & Clear', status: 'ORIGINAL', place: 'Chennai', user: 'Meena Iyer', createdAt: '2026-05-02T08:12:00Z' },
+    ]);
+    setConsumerInsights({
+      totalConsumers: 14210,
+      repeatUsers: 3450,
+      engagementRate: 24,
+      avgRating: 4.8,
+      ageGenderBreakdown: [
+        { label: '18-24', Male: 1450, Female: 1680, Other: 120 },
+        { label: '25-34', Male: 2410, Female: 2540, Other: 180 },
+        { label: '35-44', Male: 1380, Female: 1450, Other: 90 },
+        { label: '45+',   Male: 850,  Female: 910,  Other: 60 }
+      ],
+      genders: [
+        { label: 'Male', count: 6090 },
+        { label: 'Female', count: 6580 },
+        { label: 'Other', count: 450 }
+      ],
+      topStates: [
+        { label: 'Maharashtra', count: 4210 },
+        { label: 'Karnataka', count: 3450 },
+        { label: 'Delhi', count: 2980 },
+        { label: 'Telangana', count: 2150 },
+        { label: 'Tamil Nadu', count: 1850 },
+        { label: 'Gujarat', count: 1420 },
+        { label: 'West Bengal', count: 1120 },
+        { label: 'Rajasthan', count: 950 }
+      ]
+    });
+    setProductPerf({
+      topSku: 'B26-VIT99',
+      topSkuScans: 4210,
+      avgBatchVelocity: 12,
+      skuPerformance: [
+        { name: 'Vitapur+ Tablets', total: 4210, authentic: 3680, suspicious: 310, duplicate: 220 },
+        { name: 'Skin Glow Serum', total: 3140, authentic: 2680, suspicious: 280, duplicate: 180 },
+        { name: 'Pure Omega3 Gold', total: 2450, authentic: 2180, suspicious: 140, duplicate: 130 },
+        { name: 'Alpha Men Daily', total: 1890, authentic: 1650, suspicious: 130, duplicate: 110 },
+        { name: 'Herbal Shampoo', total: 1280, authentic: 1120, suspicious: 90, duplicate: 70 }
+      ],
+      batchMovement: [
+        {
+          batch: 'B26-VIT99',
+          data: [
+            { date: '2026-04-20', count: 120 },
+            { date: '2026-04-22', count: 185 },
+            { date: '2026-04-24', count: 145 },
+            { date: '2026-04-26', count: 210 },
+            { date: '2026-04-28', count: 195 },
+            { date: '2026-04-30', count: 245 },
+            { date: '2026-05-02', count: 280 }
+          ]
+        },
+        {
+          batch: 'B26-GLW04',
+          data: [
+            { date: '2026-04-20', count: 95 },
+            { date: '2026-04-22', count: 130 },
+            { date: '2026-04-24', count: 115 },
+            { date: '2026-04-26', count: 160 },
+            { date: '2026-04-28', count: 145 },
+            { date: '2026-04-30', count: 190 },
+            { date: '2026-05-02', count: 220 }
+          ]
+        }
+      ]
+    });
+    setSkuMetrics([
+      { productName: 'Vitapur+ Tablets v2', skuNumber: 'SKU-VT-001', totalScans: 4210, authentic: 3680, suspicious: 310, duplicate: 220, regionsReached: 28 },
+      { productName: 'Skin Glow Serum Deluxe', skuNumber: 'SKU-SG-003', totalScans: 3140, authentic: 2680, suspicious: 280, duplicate: 180, regionsReached: 24 },
+      { productName: 'Pure Omega3 Gold', skuNumber: 'SKU-PO-005', totalScans: 2450, authentic: 2180, suspicious: 140, duplicate: 130, regionsReached: 18 },
+      { productName: 'Alpha Men Multivitamin', skuNumber: 'SKU-AM-007', totalScans: 1890, authentic: 1650, suspicious: 130, duplicate: 110, regionsReached: 14 },
+      { productName: 'Herbal Essence Shampoo', skuNumber: 'SKU-HE-009', totalScans: 1280, authentic: 1120, suspicious: 90, duplicate: 70, regionsReached: 9 },
+    ]);
+  };
+
   /* ─── derived ─── */
   const genuinePercent   = stats.totalScans > 0 ? Math.round((stats.authenticScans / stats.totalScans) * 100) : 0;
   const suspiciousPercent = stats.totalScans > 0 ? Math.round((stats.suspiciousScans / stats.totalScans) * 100) : 0;
@@ -286,6 +441,13 @@ export default function AuthDashboard({ role: propRole }) {
             className="p-2 border border-slate-200 rounded-xl text-slate-500 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all disabled:opacity-50 shadow-sm bg-white">
             <RefreshCw size={18} className={refreshing ? 'animate-spin text-blue-600' : ''} />
           </button>
+          {role === 'superadmin' && (
+            <button onClick={loadDemoData}
+              className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:from-emerald-600 hover:to-teal-700 transition-all shadow-md shadow-emerald-500/20">
+              <Zap size={14} className="fill-white" />
+              Demo Mode
+            </button>
+          )}
         </div>
       </div>
 
@@ -1020,42 +1182,300 @@ export default function AuthDashboard({ role: propRole }) {
         </div>
       )}
       {activeTab === 'batch' && (
-        <div className="bg-white rounded-2xl p-12 border border-slate-200 text-center">
-          <BarChart2 size={48} className="mx-auto text-slate-300 mb-4" />
-          <h2 className="text-xl font-black text-slate-700">Batch Analytics</h2>
-          <p className="text-slate-500 mt-2">Correlate scans across specific production batches. Available soon.</p>
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <ChartCard title="Batch Authentication Rate" className="lg:col-span-2">
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={[
+                  { batch: 'B26-VIT99', Genuine: 3680, Suspicious: 310, Duplicate: 220 },
+                  { batch: 'B26-GLW04', Genuine: 2680, Suspicious: 280, Duplicate: 180 },
+                  { batch: 'B26-OMG21', Genuine: 2180, Suspicious: 140, Duplicate: 130 },
+                  { batch: 'B26-ALP12', Genuine: 1650, Suspicious: 130, Duplicate: 110 },
+                  { batch: 'B26-HBL08', Genuine: 1120, Suspicious: 90, Duplicate: 70 },
+                ]}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="batch" />
+                  <YAxis />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="Genuine" fill={COLORS.green} stackId="a" />
+                  <Bar dataKey="Suspicious" fill={COLORS.red} stackId="a" />
+                  <Bar dataKey="Duplicate" fill={COLORS.orange} stackId="a" />
+                  <Legend />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Batch Health Status">
+              <div className="space-y-4">
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex justify-between items-center">
+                  <div>
+                    <span className="text-xs font-bold text-slate-400">OPTIMAL HEALTH</span>
+                    <p className="text-sm font-black text-emerald-800">4 Batches</p>
+                  </div>
+                  <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2 py-1 rounded-lg">80% of total</span>
+                </div>
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex justify-between items-center">
+                  <div>
+                    <span className="text-xs font-bold text-slate-400">HIGH RISK EXPOSURE</span>
+                    <p className="text-sm font-black text-red-800">1 Batch</p>
+                  </div>
+                  <span className="text-xs font-bold text-red-700 bg-red-100 px-2 py-1 rounded-lg">20% of total</span>
+                </div>
+              </div>
+            </ChartCard>
+          </div>
+
+          <ChartCard title="Production Batches Performance Details">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    <th className="text-left py-2.5 px-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Batch No</th>
+                    <th className="text-left py-2.5 px-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Product Name</th>
+                    <th className="text-center py-2.5 px-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Total Scans</th>
+                    <th className="text-center py-2.5 px-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Authentic</th>
+                    <th className="text-center py-2.5 px-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Risk Level</th>
+                    <th className="text-right py-2.5 px-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { id: 'B26-VIT99', product: 'Vitapur+ Tablets v2', scans: 4210, auth: 3680, risk: 'High', status: 'Active' },
+                    { id: 'B26-GLW04', product: 'Skin Glow Serum Deluxe', scans: 3140, auth: 2680, risk: 'Medium', status: 'Active' },
+                    { id: 'B26-OMG21', product: 'Pure Omega3 Gold', scans: 2450, auth: 2180, risk: 'Low', status: 'Active' },
+                    { id: 'B26-ALP12', product: 'Alpha Men Multivitamin', scans: 1890, auth: 1650, risk: 'Low', status: 'Closed' },
+                    { id: 'B26-HBL08', product: 'Herbal Essence Shampoo', scans: 1280, auth: 1120, risk: 'Low', status: 'Closed' },
+                  ].map((b, i) => (
+                    <tr key={i} className="border-b border-slate-50 hover:bg-slate-50/50 transition-all">
+                      <td className="py-3 px-3 font-semibold text-slate-700 text-xs">{b.id}</td>
+                      <td className="py-3 px-3 text-xs text-slate-600">{b.product}</td>
+                      <td className="py-3 px-3 text-center text-xs font-bold text-slate-700">{formatNum(b.scans)}</td>
+                      <td className="py-3 px-3 text-center text-xs font-semibold text-emerald-600">{formatNum(b.auth)}</td>
+                      <td className="py-3 px-3 text-center">
+                        <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${
+                          b.risk === 'High' ? 'bg-red-100 text-red-700' : b.risk === 'Medium' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
+                        }`}>{b.risk}</span>
+                      </td>
+                      <td className="py-3 px-3 text-right text-xs">
+                        <span className={`px-2 py-1 rounded-lg font-bold text-[10px] ${b.status === 'Active' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600'}`}>{b.status}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </ChartCard>
         </div>
       )}
 
       {activeTab === 'activity' && (
-        <div className="bg-white rounded-2xl p-12 border border-slate-200 text-center">
-          <Activity size={48} className="mx-auto text-slate-300 mb-4" />
-          <h2 className="text-xl font-black text-slate-700">Live Activity Feed</h2>
-          <p className="text-slate-500 mt-2">Real-time stream of all system events. Available soon.</p>
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            <StatCard icon={Activity} label="Events Scanned" value={154} color="blue" />
+            <StatCard icon={Zap} label="Average Velocity" value="34 Events/Min" color="purple" renderValue={c => <p className={`text-2xl font-black ${c.text}`}>34 / Min</p>} />
+            <StatCard icon={ShieldCheck} label="Valid Scans" value={138} color="green" />
+            <StatCard icon={AlertTriangle} label="Incident Alerts" value={16} color="red" />
+          </div>
+
+          <ChartCard title="Live Activity Real-Time Stream">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    <th className="text-left py-2.5 px-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Event / Action</th>
+                    <th className="text-left py-2.5 px-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Product</th>
+                    <th className="text-center py-2.5 px-3 text-xs font-bold text-slate-400 uppercase tracking-wider">User Node</th>
+                    <th className="text-center py-2.5 px-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                    <th className="text-right py-2.5 px-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { ev: 'Consumer Scan', prod: 'Vitapur+ Tablets v2', user: 'Delhi NCR Node', status: 'ORIGINAL', time: 'Just now' },
+                    { ev: 'Duplicate Scan Detected', prod: 'Vitapur+ Tablets v2', user: 'Mumbai Node', status: 'ALREADY_USED', time: '2 mins ago' },
+                    { ev: 'Consumer Scan', prod: 'Skin Glow Serum Deluxe', user: 'Bangalore Node', status: 'ORIGINAL', time: '5 mins ago' },
+                    { ev: 'Counterfeit Scan Warning', prod: 'Skin Glow Serum Deluxe', user: 'Kolkata Node', status: 'FAKE', time: '12 mins ago' },
+                    { ev: 'Consumer Scan', prod: 'Pure Omega3 Gold', user: 'Chennai Node', status: 'ORIGINAL', time: '18 mins ago' },
+                    { ev: 'Consumer Scan', prod: 'Alpha Men Daily', user: 'Hyderabad Node', status: 'ORIGINAL', time: '25 mins ago' },
+                  ].map((e, i) => {
+                    const sc = { ORIGINAL:'bg-emerald-100 text-emerald-700', FAKE:'bg-red-100 text-red-700', ALREADY_USED:'bg-amber-100 text-amber-700' };
+                    return (
+                      <tr key={i} className="border-b border-slate-50 hover:bg-slate-50/50 transition-all">
+                        <td className="py-3 px-3 font-semibold text-slate-700 text-xs flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 animate-pulse" /> {e.ev}
+                        </td>
+                        <td className="py-3 px-3 text-xs text-slate-600">{e.prod}</td>
+                        <td className="py-3 px-3 text-center text-xs text-slate-500 font-medium">{e.user}</td>
+                        <td className="py-3 px-3 text-center">
+                          <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${sc[e.status]||'bg-slate-100 text-slate-600'}`}>{e.status.replace('_',' ')}</span>
+                        </td>
+                        <td className="py-3 px-3 text-right text-xs text-slate-400 font-medium">{e.time}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </ChartCard>
         </div>
       )}
 
       {activeTab === 'anomalies' && (
-        <div className="bg-white rounded-2xl p-12 border border-slate-200 text-center">
-          <ShieldAlert size={48} className="mx-auto text-slate-300 mb-4" />
-          <h2 className="text-xl font-black text-slate-700">Anomaly Detection</h2>
-          <p className="text-slate-500 mt-2">AI-driven fraud detection patterns and alerts. Available soon.</p>
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <ChartCard title="AI Threat Risk Scores" className="md:col-span-2">
+              <ResponsiveContainer width="100%" height={280}>
+                <LineChart data={[
+                  { hour: '00:00', ThreatScore: 12 },
+                  { hour: '04:00', ThreatScore: 18 },
+                  { hour: '08:00', ThreatScore: 35 },
+                  { hour: '12:00', ThreatScore: 58 },
+                  { hour: '16:00', ThreatScore: 42 },
+                  { hour: '20:00', ThreatScore: 28 },
+                ]}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="hour" />
+                  <YAxis />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Line type="monotone" dataKey="ThreatScore" stroke={COLORS.red} strokeWidth={3} dot={{ r: 5 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <div className="bg-white rounded-2xl border border-slate-200/60 p-5 flex flex-col justify-between">
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Threat Detection Insights</h3>
+              <div className="space-y-3">
+                <div className="p-3 bg-red-50 border border-red-100 rounded-xl">
+                  <p className="text-xs font-black text-red-800">2 HIGH RISK THREATS</p>
+                  <p className="text-[11px] text-slate-600 font-medium mt-1">Multi-scan attack detected on a specific QR batch in Delhi NCR.</p>
+                </div>
+                <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl">
+                  <p className="text-xs font-black text-amber-800">4 MEDIUM ANOMALIES</p>
+                  <p className="text-[11px] text-slate-600 font-medium mt-1">Out-of-region scans recorded for localized production lots.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <ChartCard title="Incident Details and Machine Learning Insights">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    <th className="text-left py-2.5 px-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Detection Details</th>
+                    <th className="text-left py-2.5 px-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Associated SKU</th>
+                    <th className="text-center py-2.5 px-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Anomaly Level</th>
+                    <th className="text-center py-2.5 px-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Risk Index</th>
+                    <th className="text-right py-2.5 px-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { det: 'Cloned QR - 24 scans in 5m', sku: 'Vitapur+ Tablets v2', level: 'Critical', score: 92, stat: 'Investigating' },
+                    { det: 'Cross-Border Supply Chain leak', sku: 'Skin Glow Serum', level: 'Warning', score: 64, stat: 'Mitigated' },
+                    { det: 'Out-of-Region scan activity', sku: 'Pure Omega3 Gold', level: 'Info', score: 35, stat: 'Logged' },
+                    { det: 'High Velocity IP scanning', sku: 'Alpha Men Daily', level: 'Critical', score: 88, stat: 'Blocked' },
+                  ].map((a, i) => (
+                    <tr key={i} className="border-b border-slate-50 hover:bg-slate-50/50 transition-all">
+                      <td className="py-3 px-3 font-semibold text-slate-700 text-xs flex items-center gap-2">
+                        <ShieldAlert size={14} className={a.level==='Critical'?'text-red-500':a.level==='Warning'?'text-amber-500':'text-blue-500'} /> {a.det}
+                      </td>
+                      <td className="py-3 px-3 text-xs text-slate-600">{a.sku}</td>
+                      <td className="py-3 px-3 text-center">
+                        <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${
+                          a.level === 'Critical' ? 'bg-red-100 text-red-700' : a.level === 'Warning' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
+                        }`}>{a.level}</span>
+                      </td>
+                      <td className="py-3 px-3 text-center text-xs font-bold text-slate-700">{a.score}/100</td>
+                      <td className="py-3 px-3 text-right">
+                        <span className={`px-2 py-1 rounded-lg font-bold text-[10px] ${a.stat === 'Investigating' ? 'bg-red-50 text-red-600 border border-red-100' : a.stat === 'Blocked' ? 'bg-slate-100 text-slate-700' : 'bg-emerald-50 text-emerald-600'}`}>{a.stat}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </ChartCard>
         </div>
       )}
 
       {activeTab === 'brand' && (
-        <div className="bg-white rounded-2xl p-12 border border-slate-200 text-center">
-          <Shield size={48} className="mx-auto text-slate-300 mb-4" />
-          <h2 className="text-xl font-black text-slate-700">Brand Protection</h2>
-          <p className="text-slate-500 mt-2">Manage grey-market tracking and IP protection alerts. Available soon.</p>
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <StatCard icon={Shield} label="Protected Brands" value={12} color="blue" />
+            <StatCard icon={ShieldAlert} label="Fraud Rate" value="1.2%" color="red" renderValue={c => <p className={`text-3xl font-black ${c.text}`}>1.2%</p>} />
+            <StatCard icon={Lock} label="Suppressed Risks" value={34} color="green" />
+            <StatCard icon={Globe} label="Region Alerts" value={5} color="orange" />
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <ChartCard title="Brand Protection Action Funnel" className="xl:col-span-2">
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={[
+                  { metric: 'Counterfeits Blocked', value: 850 },
+                  { metric: 'Rogue Retailers Notified', value: 124 },
+                  { metric: 'Legal Actions Taken', value: 18 },
+                ]}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <XAxis dataKey="metric" />
+                  <YAxis />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="value" fill={COLORS.purple} radius={[4, 4, 0, 0]} maxBarSize={40} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartCard>
+
+            <ChartCard title="Grey Market Alerts by Product">
+              <div className="space-y-3">
+                {[
+                  { p: 'Vitapur+ Tablets v2', rate: 76, color: COLORS.red },
+                  { p: 'Skin Glow Serum', rate: 42, color: COLORS.orange },
+                  { p: 'Pure Omega3 Gold', rate: 18, color: COLORS.green },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-center justify-between py-2.5 border-b border-slate-50 last:border-0">
+                    <span className="text-xs font-semibold text-slate-700 truncate max-w-[150px]">{item.p}</span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-black text-white`} style={{ backgroundColor: item.color }}>{item.rate}% Exposure</span>
+                  </div>
+                ))}
+              </div>
+            </ChartCard>
+          </div>
         </div>
       )}
 
       {activeTab === 'reports' && (
-        <div className="bg-white rounded-2xl p-12 border border-slate-200 text-center">
-          <FileDown size={48} className="mx-auto text-slate-300 mb-4" />
-          <h2 className="text-xl font-black text-slate-700">System Reports</h2>
-          <p className="text-slate-500 mt-2">Use the Export Excel button in the top right to download dashboard data.</p>
+        <div className="space-y-6">
+          <div className="bg-white rounded-2xl p-6 border border-slate-200/60 shadow-sm">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                <FileDown size={24} />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Reports & Data Downloads</h2>
+                <p className="text-xs font-medium text-slate-400">Generate instantly downloadable reports for compliance and auditing.</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="p-4 bg-slate-50/70 border border-slate-200/50 rounded-xl flex flex-col justify-between h-full hover:shadow-md transition-all">
+                <div>
+                  <h4 className="text-xs font-black text-slate-700 uppercase tracking-wide">Excel Master Report</h4>
+                  <p className="text-xs text-slate-500 font-medium mt-1">Full, detailed logs of authentication, scans, regions, and high-risk SKUs.</p>
+                </div>
+                <button onClick={handleExport} className="mt-4 flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-indigo-700 transition-all self-start">
+                  <FileDown size={14} /> Download Excel Data
+                </button>
+              </div>
+              <div className="p-4 bg-slate-50/70 border border-slate-200/50 rounded-xl flex flex-col justify-between h-full hover:shadow-md transition-all">
+                <div>
+                  <h4 className="text-xs font-black text-slate-700 uppercase tracking-wide">Threat Report Summary</h4>
+                  <p className="text-xs text-slate-500 font-medium mt-1">A curated security summary of anomaly checks and gray market tracing.</p>
+                </div>
+                <button onClick={() => alert('Demo Threat Summary Report Generated Successfully.')} className="mt-4 flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-blue-700 transition-all self-start">
+                  <FileDown size={14} /> Download Threat Report
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

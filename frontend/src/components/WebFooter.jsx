@@ -32,6 +32,7 @@ export default function WebFooter() {
                 { name: 'Product', path: '/product' },
                 { name: 'AI Pulse', path: '/ai-pulse' },
                 { name: 'How It Works', path: '/how-it-works' },
+                { name: 'Verified', path: '/verified' },
                 { name: 'Industries', path: '/industries' },
                 { name: 'Pricing', path: '/pricing' },
                 { name: 'About Us', path: '/about-us' },

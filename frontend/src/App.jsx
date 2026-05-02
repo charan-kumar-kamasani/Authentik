@@ -19,6 +19,7 @@ import WebTermsConditions from "./pages/web/WebTermsConditions";
 import WebLiveDemo from "./pages/web/WebLiveDemo";
 import WebAIPulse from "./pages/web/WebAIPulse";
 import WebProblem from "./pages/web/WebProblem";
+import WebVerified from "./pages/web/WebVerified";
 import Scan from "./pages/mobile/scan";
 import Result from "./pages/mobile/Result";
 import Profile from "./pages/mobile/profile";
@@ -108,12 +109,10 @@ export default function App() {
 
   /* ================= APP MODE SELECTION (MOBILE ONLY) ================= */
 
-  // If on mobile and no mode selected, show landing screen
+  // If on mobile and no mode selected, directly select product mode to show login
   if (isMobile && !appMode) {
-    return <MobileLanding onSelectMode={(mode) => {
-      sessionStorage.setItem('appMode', mode);
-      setAppMode(mode);
-    }} />;
+    sessionStorage.setItem('appMode', 'product');
+    setAppMode('product');
   }
 
   /* ================= DESKTOP (WEBSITE + ADMIN) OR "BRAND" MODE ON MOBILE ================= */
@@ -130,6 +129,7 @@ export default function App() {
             <Route path="/product" element={<WebProduct />} />
             <Route path="/ai-pulse" element={<WebAIPulse />} />
             <Route path="/how-it-works" element={<WebHowItWorks />} />
+            <Route path="/verified" element={<WebVerified />} />
             <Route path="/industries" element={<WebIndustries />} />
             <Route path="/pricing" element={<WebPricing />} />
             <Route path="/about-us" element={<WebAboutUs />} />

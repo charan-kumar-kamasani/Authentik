@@ -13,7 +13,7 @@ import authenticImg from '../../assets/demo_qrs/authentic.jpg';
 import alertImg from '../../assets/demo_qrs/alert.jpg';
 import fraudImg from '../../assets/demo_qrs/fraud.jpg';
 import liveDemoBanner from '../../assets/banners/live_emo.jpg';
-import mobileLiveDemoBanner from '../../assets/banners/Mobile banner authentiks/Live Demo.png';
+import mobileLiveDemoBanner from '../../assets/banners/Mobile banner authentiks/Live Demo.jpg';
 
 const Glow = ({ color, className }) => (
     <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
@@ -75,10 +75,10 @@ export default function WebLiveDemo() {
                         </div>
                         <button
                             onClick={() => setContactOpen(true)}
-                            className="group w-full px-8 py-5 bg-indigo-600 text-white rounded-full font-black uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg hover:scale-[1.02] active:scale-95 text-xs flex items-center justify-center gap-3 mx-auto"
+                            className="group w-full px-8 py-6 bg-indigo-600 text-white rounded-full font-[900] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg hover:scale-[1.02] active:scale-95 text-xl flex items-center justify-center gap-3 mx-auto"
                         >
-                            Live Demo
-                            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                            Book a Demo
+                            <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                         </button>
                     </div>
                 </div>

@@ -12,9 +12,9 @@ import heroImage from '../../assets/web/image 1.png';
 import banner1 from '../../assets/banners/banner_1.jpg';
 import banner2 from '../../assets/banners/banner_2.jpg';
 import banner3 from '../../assets/banners/banner_3.jpg';
-import mobileBanner1 from '../../assets/banners/Mobile banner authentiks/Home 1.png';
-import mobileBanner2 from '../../assets/banners/Mobile banner authentiks/Home 2.png';
-import mobileBanner3 from '../../assets/banners/Mobile banner authentiks/Home 3.png';
+import mobileBanner1 from '../../assets/banners/Mobile banner authentiks/H1.jpg';
+import mobileBanner2 from '../../assets/banners/Mobile banner authentiks/H2.jpg';
+import mobileBanner3 from '../../assets/banners/Mobile banner authentiks/H3.jpg';
 import WebHeroSlider from '../../components/WebHeroSlider';
 
 /* ═══════════════════════ HERO SLIDES ═══════════════════════ */
