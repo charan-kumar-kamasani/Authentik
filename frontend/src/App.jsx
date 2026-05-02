@@ -99,21 +99,25 @@ export default function App() {
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth < 768 : false
   );
-  const [appMode, setAppMode] = useState(() => sessionStorage.getItem('appMode') || null);
+  const [appMode, setAppMode] = useState(() => {
+    let mode = sessionStorage.getItem('appMode') || null;
+    if (!mode && typeof window !== 'undefined' && window.innerWidth < 768) {
+      if (window.location.pathname.startsWith('/scan')) {
+        sessionStorage.setItem('appMode', 'product');
+        mode = 'product';
+      } else if (localStorage.getItem('token')) {
+        sessionStorage.setItem('appMode', 'product');
+        mode = 'product';
+      }
+    }
+    return mode;
+  });
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
-  /* ================= APP MODE SELECTION (MOBILE ONLY) ================= */
-
-  // If on mobile and no mode selected, directly select product mode to show login
-  if (isMobile && !appMode) {
-    sessionStorage.setItem('appMode', 'product');
-    setAppMode('product');
-  }
 
   /* ================= DESKTOP (WEBSITE + ADMIN) OR "BRAND" MODE ON MOBILE ================= */
 
@@ -243,9 +247,16 @@ export default function App() {
           <Route
             path="/"
             element={
-              <PublicRoute>
-                <Login />
-              </PublicRoute>
+              !appMode ? (
+                <MobileLanding onSelectMode={(mode) => {
+                  sessionStorage.setItem('appMode', mode);
+                  setAppMode(mode);
+                }} />
+              ) : (
+                <PublicRoute>
+                  <Login />
+                </PublicRoute>
+              )
             }
           />
           <Route
