@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import MobileHeader from "../../components/MobileHeader";
-import { Phone, MessageCircle } from "lucide-react";
+import { Phone, MessageCircle, Mail } from "lucide-react";
 
 export default function Support() {
     const navigate = useNavigate();
@@ -27,22 +27,24 @@ export default function Support() {
                 </p>
 
                 <div className="w-full space-y-4">
-                    <a 
-                        href="tel:+919884139144"
-                        className="flex items-center justify-center gap-3 bg-white border-2 border-[#0D4E96] text-[#0D4E96] py-4 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-all w-full"
-                    >
-                        <Phone size={20} />
-                        +91 98841 39144
-                    </a>
+                   
 
                     <a 
-                        href="https://wa.me/919884139144"
+                        href="https://wa.me/919342501819"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center justify-center gap-3 bg-gradient-to-r from-[#25D366] to-[#128C7E] text-white py-4 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-all w-full"
                     >
                         <MessageCircle size={20} />
                         WhatsApp Us
+                    </a>
+
+                    <a 
+                        href="mailto:support@authentiks.in"
+                        className="flex items-center justify-center gap-3 bg-indigo-50 border-2 border-indigo-200 text-indigo-800 py-4 rounded-2xl font-black text-lg shadow-sm active:scale-95 transition-all w-full"
+                    >
+                        <Mail size={20} />
+                        Email Support
                     </a>
                 </div>
 

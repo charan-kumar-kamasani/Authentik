@@ -60,6 +60,15 @@ import AdminLeads from "./pages/admin/AdminLeads";
 import QrPricingManagement from "./pages/admin/QrPricingManagement";
 import AIPulseDashboard from "./pages/admin/AIPulseDashboard";
 
+// Scroll to top on navigation
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
+
 // Token verification hook
 function useTokenVerification(tokenKey) {
   const [status, setStatus] = useState("loading"); // "loading", "verified", "unauthorized", "server_error"
@@ -200,6 +209,7 @@ export default function App() {
       <LoadingProvider>
         <ConfirmProvider>
           <BrowserRouter>
+            <ScrollToTop />
             <Routes>
             {/* Public Website */}
             <Route path="/" element={<LandingPage />} />
@@ -316,6 +326,7 @@ export default function App() {
     <LoadingProvider>
       <ConfirmProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <Routes>
           {/* Mobile Specific Public Routes */}
           <Route

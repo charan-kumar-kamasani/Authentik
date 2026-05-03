@@ -135,7 +135,7 @@ export default function Profile() {
           ],
           [
             { icon: IconTerms, text: "Terms & Conditions", action: () => navigate("/terms-conditions") },
-            { icon: IconPolicies, text: "Policies", action: () => navigate("/policies") }
+            { icon: IconPolicies, text: "Policies", action: () => navigate("/privacy-policy") }
           ]
         ].map((group, groupIndex) => (
           <div 

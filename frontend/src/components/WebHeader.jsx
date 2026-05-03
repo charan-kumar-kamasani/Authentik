@@ -142,7 +142,7 @@ export default function WebHeader() {
 
       {/* Mobile Navigation Menu */}
       {isMobileMenuOpen && (
-        <div className="absolute top-full left-0 w-full bg-[#020617]/95 backdrop-blur-2xl border-b border-white/10 shadow-2xl lg:hidden flex flex-col py-6 px-6 gap-6 z-40 overflow-y-auto max-h-[calc(100vh-80px)]">
+        <div className="absolute top-full left-0 w-full bg-[#020617]/98 backdrop-blur-2xl border-b border-white/10 shadow-2xl lg:hidden flex flex-col py-4 px-6 gap-3 z-40 overflow-y-auto max-h-[calc(100vh-80px)]">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             
@@ -152,15 +152,15 @@ export default function WebHeader() {
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`relative text-[16px] font-bold transition-all duration-300 flex items-center gap-3 px-5 py-3 rounded-2xl border w-fit
+                  className={`relative text-[15px] font-bold transition-all duration-300 flex items-center gap-3 px-4 py-2.5 rounded-xl border w-fit
                     ${isActive
-                      ? "bg-cyan-500/20 border-cyan-500/50 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
-                      : "bg-white/5 border-white/10 text-cyan-400"
+                      ? "bg-cyan-500/20 border-cyan-500/50 text-white shadow-[0_0_15px_rgba(6,182,212,0.3)]"
+                      : "bg-white/5 border-white/10 text-white"
                     }`}
                 >
-                  <span className="relative flex h-2.5 w-2.5">
+                  <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-500"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
                   </span>
                   {item.name}
                 </Link>
@@ -172,37 +172,37 @@ export default function WebHeader() {
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`text-[18px] font-semibold transition-all duration-300 border-b border-white/5 pb-4
-                  ${isActive ? "text-indigo-400" : "text-gray-300 hover:text-white"}`}
+                className={`text-[17px] font-bold transition-all duration-300 border-b border-white/5 pb-2.5
+                  ${isActive ? "text-white" : "text-white hover:text-white/80"}`}
               >
                 {item.name}
               </Link>
             );
           })}
           
-          <Link to="/live-demo" onClick={() => setIsMobileMenuOpen(false)} className="mt-2 w-full">
-            <button className="w-full bg-indigo-600/20 text-indigo-400 px-6 py-4 rounded-2xl font-bold text-lg hover:bg-indigo-600 hover:text-white border border-indigo-500/30 transition-all">
-              Live Demo
-            </button>
-          </Link>
+          <div className="grid grid-cols-2 gap-3 mt-1">
+            <Link to="/live-demo" onClick={() => setIsMobileMenuOpen(false)}>
+              <button className="w-full bg-indigo-600/20 text-white py-3 rounded-xl font-bold text-[14px] border border-indigo-500/30">
+                Live Demo
+              </button>
+            </Link>
 
-          {token && (
-            <button 
-              onClick={handleGoToApp}
-              className="w-full bg-cyan-600/20 text-cyan-400 px-6 py-4 rounded-2xl font-bold text-lg hover:bg-cyan-600 hover:text-white border border-cyan-500/30 transition-all mt-2"
-            >
-              Go to App
-            </button>
-          )}
-
-          {adminToken && !token && (
-            <button 
-              onClick={handleGoToAdmin}
-              className="w-full bg-cyan-600/20 text-cyan-400 px-6 py-4 rounded-2xl font-bold text-lg hover:bg-cyan-600 hover:text-white border border-cyan-500/30 transition-all mt-2"
-            >
-              Dashboard
-            </button>
-          )}
+            {token ? (
+              <button 
+                onClick={handleGoToApp}
+                className="w-full bg-cyan-600/20 text-white py-3 rounded-xl font-bold text-[14px] border border-cyan-500/30"
+              >
+                Go to App
+              </button>
+            ) : adminToken ? (
+              <button 
+                onClick={handleGoToAdmin}
+                className="w-full bg-cyan-600/20 text-white py-3 rounded-xl font-bold text-[14px] border border-cyan-500/30"
+              >
+                Dashboard
+              </button>
+            ) : null}
+          </div>
         </div>
       )}
     </header>
