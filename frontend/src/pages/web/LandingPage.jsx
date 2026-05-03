@@ -16,6 +16,7 @@ import mobileBanner1 from '../../assets/banners/Mobile banner authentiks/H1.jpg'
 import mobileBanner2 from '../../assets/banners/Mobile banner authentiks/H2.jpg';
 import mobileBanner3 from '../../assets/banners/Mobile banner authentiks/H3.jpg';
 import WebHeroSlider from '../../components/WebHeroSlider';
+import AnimatedCTA from '../../components/AnimatedCTA';
 
 /* ═══════════════════════ HERO SLIDES ═══════════════════════ */
 const heroSlides = [
@@ -300,12 +301,10 @@ export default function LandingPage() {
                   ))}
                 </div>
 
-                <button
+                <AnimatedCTA 
                   onClick={() => setShowContactForm(true)}
-                  className="w-full py-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-2xl font-black uppercase tracking-widest hover:brightness-110 transition-all hover:scale-[1.02] active:scale-[0.98] text-sm shadow-lg shadow-emerald-500/25"
-                >
-                  Start Free Trial
-                </button>
+                  className="w-full"
+                />
               </div>
             </div>
           </div>
@@ -473,13 +472,10 @@ export default function LandingPage() {
                   ))}
                 </div>
 
-                <button
+                <AnimatedCTA 
                   onClick={() => setShowContactForm(true)}
-                  className={`w-full py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-sm bg-gradient-to-r ${plan.color} text-white hover:brightness-110 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg flex items-center justify-center gap-3`}
-                >
-                  Contact Sales
-                  <ArrowRight size={18} />
-                </button>
+                  className="w-full"
+                />
               </div>
             ))}
           </div>
@@ -680,13 +676,10 @@ export default function LandingPage() {
                 Start building your own customer channel.
               </p>
 
-              <button
+              <AnimatedCTA 
                 onClick={() => setShowContactForm(true)}
-                className="group px-12 md:px-16 py-6 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-[0_0_80px_rgba(255,255,255,0.15)] hover:shadow-[0_0_120px_rgba(255,255,255,0.25)] hover:scale-105 active:scale-95 text-base flex items-center gap-3 mx-auto"
-              >
-                Start Your 90-Day Free Trial
-                <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-              </button>
+                className="w-full max-w-md mx-auto"
+              />
             </div>
           </div>
         </div>

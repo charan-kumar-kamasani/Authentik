@@ -7,6 +7,7 @@ import {
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
+import AnimatedCTA from "../../components/AnimatedCTA";
 import problemBanner from "../../assets/banners/Problem.jpg";
 import mobileProblemBanner from '../../assets/banners/Mobile banner authentiks/Problem.jpg';
 
@@ -64,13 +65,10 @@ export default function WebProblem() {
                                 className="w-full h-auto object-contain"
                             />
                         </div>
-                        <button
+                        <AnimatedCTA 
                             onClick={() => setContactOpen(true)}
-                            className="group w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full font-[900] tracking-widest transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 text-base flex items-center justify-center gap-3 mx-auto"
-                        >
-                            Start Your Free Trial
-                            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                        </button>
+                            className="w-full mx-auto"
+                        />
                     </div>
                 </div>
             </section>

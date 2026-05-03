@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
 import {
     CheckCircle2, AlertTriangle, ShieldAlert, ArrowRight,
     ScanLine, Smartphone, Link, TrendingUp, Users, RefreshCw,
-    ChevronLeft
+    ChevronLeft, MapPin, Activity
 } from 'lucide-react';
+
+import AnimatedCTA from '../../components/AnimatedCTA';
 
 // Demo QR Images
 import authenticImg from '../../assets/demo_qrs/authentic.jpg';
@@ -25,18 +29,35 @@ const SectionTag = ({ children, className = '' }) => (
     </div>
 );
 
+// Map Focus Component
+function MapFocus({ center, zoom }) {
+    const map = useMap();
+    map.setView(center, zoom);
+    return null;
+}
+
 export default function WebLiveDemo() {
     const [contactOpen, setContactOpen] = useState(false);
+    const [selectedMapFilter, setSelectedMapFilter] = useState('ALL');
 
-    // Dynamic URLs based on environment (fallback to production for demo)
-    const baseUrl = import.meta.env.VITE_WEBSITE_URL || 'https://authentiks.in';
+    // REAL MAP DATA
+    const mapMarkers = [
+        { coords: [19.0760, 72.8777], type: 'AUTHENTIC', location: 'Mumbai, IN', time: 'Just now', device: 'iPhone 15 Pro', color: '#10b981', radius: 10 },
+        { coords: [28.6139, 77.2090], type: 'SUSPICIOUS', location: 'Delhi, IN', time: '5m ago', device: 'Android 14', color: '#ef4444', radius: 12 },
+        { coords: [12.9716, 77.5946], type: 'DUPLICATE', location: 'Bangalore, IN', time: '12m ago', device: 'iPhone 13', color: '#f59e0b', radius: 8 },
+        { coords: [17.3850, 78.4867], type: 'AUTHENTIC', location: 'Hyderabad, IN', time: '15m ago', device: 'Pixel 8', color: '#10b981', radius: 9 },
+        { coords: [22.5726, 88.3639], type: 'AUTHENTIC', location: 'Kolkata, IN', time: '20m ago', device: 'Samsung S24', color: '#10b981', radius: 7 },
+        { coords: [13.0827, 80.2707], type: 'SUSPICIOUS', location: 'Chennai, IN', time: '25m ago', device: 'iPhone 12', color: '#ef4444', radius: 14 },
+        { coords: [23.0225, 72.5714], type: 'DUPLICATE', location: 'Ahmedabad, IN', time: '30m ago', device: 'OnePlus 12', color: '#f59e0b', radius: 11 },
+        { coords: [26.8467, 80.9462], type: 'AUTHENTIC', location: 'Lucknow, IN', time: '45m ago', device: 'Redmi Note 13', color: '#10b981', radius: 6 },
+        { coords: [21.1702, 72.8311], type: 'SUSPICIOUS', location: 'Surat, IN', time: '1h ago', device: 'Vivo V30', color: '#ef4444', radius: 15 },
+        { coords: [18.5204, 73.8567], type: 'SUSPICIOUS', location: 'Pune, IN', time: '2h ago', device: 'Realme GT', color: '#ef4444', radius: 13 },
+    ];
 
-    // DEMO DATA
-    // Standard scanner will pick up these simple IDs, and the backend interceptor
-    // will mock the response without requiring a complex URL redirect scheme.
-    const genuineUrl = `DEMO-GENUINE-QR`;
-    const duplicateUrl = `DEMO-DUPLICATE-QR`;
-    const fakeUrl = `DEMO-FAKE-QR`;
+    const filteredMarkers = useMemo(() => {
+        if (selectedMapFilter === 'ALL') return mapMarkers;
+        return mapMarkers.filter(m => m.type === selectedMapFilter);
+    }, [selectedMapFilter]);
 
     return (
         <div className="min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden flex flex-col">
@@ -73,13 +94,10 @@ export default function WebLiveDemo() {
                                 className="w-full h-auto object-contain"
                             />
                         </div>
-                        <button
+                        <AnimatedCTA 
                             onClick={() => setContactOpen(true)}
-                            className="group w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full font-[900] tracking-widest transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 text-base flex items-center justify-center gap-3 mx-auto"
-                        >
-                            Start Your Free Trial
-                            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                        </button>
+                            className="w-full mx-auto"
+                        />
                     </div>
                 </div>
             </section>
@@ -175,6 +193,143 @@ export default function WebLiveDemo() {
                                         <ShieldAlert size={14} className="text-red-400" />
                                         Non-Authentiks QR
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* ═══════════════ LIVE GLOBAL PULSE (MAP SECTION) ═══════════════ */}
+            <section className="py-24 px-6 bg-slate-950/50 border-y border-white/5 relative overflow-hidden">
+                <Glow color="bg-blue-600" className="top-1/4 -right-32 opacity-10" />
+                <Glow color="bg-indigo-600" className="bottom-1/4 -left-32 opacity-10" />
+
+                <div className="container mx-auto max-w-7xl">
+                    <div className="text-center mb-16">
+                        <SectionTag className="bg-blue-500/10 border-blue-500/20 text-blue-400">Live Global Pulse</SectionTag>
+                        <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tighter leading-[1.05]">
+                            Real-Time Scan Intelligence
+                        </h2>
+                        <p className="text-gray-400 font-bold max-w-2xl mx-auto text-lg">
+                            Track every interaction across the globe. See how Authentiks detects and flags activity instantly.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                        {/* Map Area */}
+                        <div className="lg:col-span-3 glass-effect rounded-[3rem] p-4 border border-white/10 relative min-h-[550px] overflow-hidden flex flex-col">
+                            {/* Map Container */}
+                            <div className="flex-1 relative rounded-[2.5rem] overflow-hidden border border-white/5 bg-slate-900/50">
+                                <MapContainer 
+                                    center={[20.5937, 78.9629]} 
+                                    zoom={5} 
+                                    style={{ height: '100%', width: '100%', background: '#020617' }} 
+                                    scrollWheelZoom={false}
+                                    zoomControl={false}
+                                >
+                                    <TileLayer
+                                        url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                                    />
+                                    <MapFocus center={[20.5937, 78.9629]} zoom={5} />
+                                    
+                                    {filteredMarkers.map((marker, i) => (
+                                        <CircleMarker
+                                            key={i}
+                                            center={marker.coords}
+                                            radius={marker.radius}
+                                            pathOptions={{ 
+                                                fillColor: marker.color, 
+                                                color: 'white', 
+                                                weight: 2, 
+                                                fillOpacity: 0.8 
+                                            }}
+                                        >
+                                            <Popup className="custom-popup">
+                                                <div className="p-2 min-w-[150px]">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: marker.color }} />
+                                                        <span className="text-[10px] font-black uppercase text-slate-500">{marker.type}</span>
+                                                    </div>
+                                                    <h4 className="text-sm font-black text-slate-800">{marker.location}</h4>
+                                                    <p className="text-[10px] text-slate-500 font-bold mt-1">{marker.time} • {marker.device}</p>
+                                                </div>
+                                            </Popup>
+                                        </CircleMarker>
+                                    ))}
+                                </MapContainer>
+
+                                {/* Legend Overlay */}
+                                <div className="absolute bottom-6 left-6 z-[1000] flex items-center gap-6 bg-slate-950/80 backdrop-blur-xl px-6 py-4 rounded-2xl border border-white/10 shadow-2xl">
+                                    {[
+                                        { id: 'AUTHENTIC', label: 'Authentic', color: 'bg-emerald-500' },
+                                        { id: 'SUSPICIOUS', label: 'Suspicious', color: 'bg-red-500' },
+                                        { id: 'DUPLICATE', label: 'Duplicate', color: 'bg-amber-500' }
+                                    ].map(item => (
+                                        <button 
+                                            key={item.id}
+                                            onClick={() => setSelectedMapFilter(prev => prev === item.id ? 'ALL' : item.id)}
+                                            className={`flex items-center gap-2 transition-all hover:scale-105 active:scale-95 ${selectedMapFilter !== 'ALL' && selectedMapFilter !== item.id ? 'opacity-30' : 'opacity-100'}`}
+                                        >
+                                            <div className={`w-3 h-3 rounded-full ${item.color} shadow-[0_0_8px_rgba(255,255,255,0.2)]`} />
+                                            <span className={`text-[11px] font-black uppercase tracking-wider ${selectedMapFilter === item.id ? 'text-white' : 'text-white/80'}`}>
+                                                {item.label}
+                                            </span>
+                                        </button>
+                                    ))}
+                                    <div className="hidden sm:block border-l border-white/10 h-4 mx-2" />
+                                    <button 
+                                        onClick={() => setSelectedMapFilter('ALL')}
+                                        className={`text-[10px] font-bold uppercase transition-colors ${selectedMapFilter === 'ALL' ? 'text-blue-400' : 'text-white/40 hover:text-white/60'}`}
+                                    >
+                                        Show All
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Sidebar */}
+                        <div className="glass-effect rounded-[3rem] p-8 border border-white/10 flex flex-col gap-8 h-full">
+                            <div>
+                                <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                    <Activity size={14} className="text-blue-400" /> Distributor Analytics
+                                </h3>
+                                <div className="space-y-6">
+                                    {[
+                                        { l: 'Mumbai', s: 'Healthy', r: 'low' },
+                                        { l: 'Delhi', s: 'Risk Detected', r: 'high' },
+                                        { l: 'Bangalore', s: 'Warning', r: 'medium' },
+                                        { l: 'Hyderabad', s: 'Healthy', r: 'low' }
+                                    ].map((loc, i) => (
+                                        <div key={i} className="flex items-center justify-between group cursor-default">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-white/20 group-hover:bg-blue-400 transition-colors" />
+                                                <span className="text-sm font-black text-white/90">{loc.l}</span>
+                                            </div>
+                                            <div className={`w-2 h-2 rounded-full ${loc.r === 'high' ? 'bg-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.5)]' : loc.r === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="mt-auto pt-8 border-t border-white/5">
+                                <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mb-4">Quick Filters</h3>
+                                <div className="grid grid-cols-1 gap-2">
+                                    {[
+                                        { id: 'ALL', label: 'All Activity', color: 'bg-white/5' },
+                                        { id: 'AUTHENTIC', label: 'Only Authentic', color: 'bg-emerald-500/10 text-emerald-400' },
+                                        { id: 'SUSPICIOUS', label: 'Only Suspicious', color: 'bg-red-500/10 text-red-400' },
+                                        { id: 'DUPLICATE', label: 'Only Duplicate', color: 'bg-amber-500/10 text-amber-400' }
+                                    ].map(f => (
+                                        <button
+                                            key={f.id}
+                                            onClick={() => setSelectedMapFilter(f.id)}
+                                            className={`px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-left transition-all border ${selectedMapFilter === f.id ? 'border-white/20 bg-white/10 text-white' : `border-transparent ${f.color} opacity-60 hover:opacity-100`}`}
+                                        >
+                                            {f.label}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
                         </div>
@@ -298,16 +453,16 @@ export default function WebLiveDemo() {
                                                         <p className="text-[#333] text-[10px] font-black uppercase tracking-wider opacity-60 mb-2">Key Benefits</p>
                                                         <div className="space-y-3">
                                                             <div>
-                                                                <p className="text-[#444] text-[12px] font-bold">Design & Aesthetics</p>
-                                                                <p className="text-[#666] text-[11px] font-medium leading-relaxed">A sleek, low-top aerodynamic profile finished in a deep carbon black.</p>
+                                                                 <p className="text-[#444] text-[12px] font-bold">Design & Aesthetics</p>
+                                                                 <p className="text-[#666] text-[11px] font-medium leading-relaxed">A sleek, low-top aerodynamic profile finished in a deep carbon black.</p>
                                                             </div>
                                                             <div>
-                                                                <p className="text-[#444] text-[12px] font-bold">Smart Midsole</p>
-                                                                <p className="text-[#666] text-[11px] font-medium leading-relaxed">Features integrated neon-blue electroluminescent piping along the midsole, providing a signature "glow".</p>
+                                                                 <p className="text-[#444] text-[12px] font-bold">Smart Midsole</p>
+                                                                 <p className="text-[#666] text-[11px] font-medium leading-relaxed">Features integrated neon-blue electroluminescent piping along the midsole, providing a signature "glow".</p>
                                                             </div>
                                                             <div>
-                                                                <p className="text-[#444] text-[12px] font-bold">Breathable Mesh</p>
-                                                                <p className="text-[#666] text-[11px] font-medium leading-relaxed">Constructed with a high-density engineered mesh upper for maximum breathability.</p>
+                                                                 <p className="text-[#444] text-[12px] font-bold">Breathable Mesh</p>
+                                                                 <p className="text-[#666] text-[11px] font-medium leading-relaxed">Constructed with a high-density engineered mesh upper for maximum breathability.</p>
                                                             </div>
                                                         </div>
                                                     </div>

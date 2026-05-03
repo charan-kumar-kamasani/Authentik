@@ -4,6 +4,7 @@ import { ShieldCheck, CheckCircle2, ArrowRight, Zap, Award, ExternalLink } from 
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
+import AnimatedCTA from "../../components/AnimatedCTA";
 
 // Product and Banner Images
 import allicinImg from "../../assets/Verified Products/Allicin.jpg";
@@ -189,13 +190,10 @@ export default function WebVerified() {
                                 className="w-full h-auto object-contain"
                             />
                         </div>
-                        <button
+                        <AnimatedCTA 
                             onClick={() => setContactOpen(true)}
-                            className="group w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full font-[900] tracking-widest transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 text-base flex items-center justify-center gap-3 mx-auto"
-                        >
-                            Start Your Free Trial
-                            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                        </button>
+                            className="w-full mx-auto"
+                        />
                     </div>
                 </div>
             </section>
@@ -308,13 +306,10 @@ export default function WebVerified() {
                             <p className="text-gray-400 font-bold mb-10 text-lg">
                                 Experience continuous growth, bulletproof authentication, and elevated direct-to-consumer relationship.
                             </p>
-                            <button
+                            <AnimatedCTA 
                                 onClick={() => setContactOpen(true)}
-                                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full font-black tracking-widest transition-all shadow-[0_0_80px_rgba(37,99,235,0.3)] hover:shadow-[0_0_120px_rgba(37,99,235,0.5)] hover:scale-105 active:scale-95 text-sm inline-flex items-center gap-3"
-                            >
-                                Start Your Free Trial
-                                <ArrowRight size={18} />
-                            </button>
+                                className="w-full mx-auto"
+                            />
                         </div>
                     </div>
                 </div>

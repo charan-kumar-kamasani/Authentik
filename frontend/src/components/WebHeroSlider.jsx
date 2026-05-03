@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import AnimatedCTA from './AnimatedCTA';
 
 export default function WebHeroSlider({ slides, onCTA, onSlideChange }) {
   const [activeSlide, setActiveSlide] = useState(0);
@@ -18,16 +19,10 @@ export default function WebHeroSlider({ slides, onCTA, onSlideChange }) {
     goToSlide((activeSlide + 1) % slides.length);
   }, [activeSlide, goToSlide, slides.length]);
 
-  const prevSlide = useCallback(() => {
-    goToSlide((activeSlide - 1 + slides.length) % slides.length);
-  }, [activeSlide, goToSlide, slides.length]);
-
   useEffect(() => {
     const timer = setInterval(nextSlide, 5500);
     return () => clearInterval(timer);
   }, [nextSlide]);
-
-  const slide = slides[activeSlide];
 
   return (
     <div className="container mx-auto text-center relative z-10">
@@ -50,28 +45,11 @@ export default function WebHeroSlider({ slides, onCTA, onSlideChange }) {
           <div className="absolute inset-0 pointer-events-none rounded-[2rem] ring-1 ring-inset ring-white/10 z-20" />
           <div className="absolute inset-0 bg-white/0 group-hover:bg-white-[0.02] transition-colors z-20 pointer-events-none" />
         </div>
-
-        {/* Desktop Slide Navigation Dots */}
-        {/* <div className="absolute -bottom-8 md:-bottom-14 left-1/2 -translate-x-1/2 flex items-center justify-center gap-3 md:gap-4 w-full z-30 pointer-events-auto">
-          <button onClick={(e) => { e.stopPropagation(); prevSlide(); }} className="p-1.5 md:p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all shadow-lg backdrop-blur-md">
-            <ChevronLeft size={16} className="md:w-[18px] md:h-[18px]" />
-          </button>
-          {slides.map((_, i) => (
-            <button
-              key={i}
-              onClick={(e) => { e.stopPropagation(); goToSlide(i); }}
-              className={`h-2 rounded-full transition-all duration-500 shadow-lg ${i === activeSlide ? 'w-10 bg-white' : 'w-2 bg-white/30 hover:bg-white/60'}`}
-            />
-          ))}
-          <button onClick={(e) => { e.stopPropagation(); nextSlide(); }} className="p-1.5 md:p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all shadow-lg backdrop-blur-md">
-            <ChevronRight size={16} className="md:w-[18px] md:h-[18px]" />
-          </button>
-        </div> */}
       </div>
 
       {/* ═══════════════ MOBILE SLIDER ═══════════════ */}
-      <div className="block md:hidden relative w-[94%] mx-auto mb-8">
-        <div className="relative w-full rounded-2xl overflow-hidden shadow-xl border border-white/10 mb-5 bg-[#020617]/50" style={{ aspectRatio: '1/1' }}>
+      <div className="block md:hidden relative w-[96%] mx-auto mb-6">
+        <div className="relative w-full rounded-2xl overflow-hidden shadow-xl border border-white/10 mb-4 bg-[#020617]/50" style={{ aspectRatio: '1.2/1' }}>
           {slides.map((s, i) => (
             <img
               key={i}
@@ -82,13 +60,7 @@ export default function WebHeroSlider({ slides, onCTA, onSlideChange }) {
           ))}
         </div>
 
-        <button
-          onClick={onCTA}
-          className="group w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full font-[900] tracking-widest transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 text-base flex items-center justify-center gap-3"
-        >
-          Start Your Free Trial
-          <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-        </button>
+        <AnimatedCTA onClick={onCTA} className="w-full" />
       </div>
     </div>
   );

@@ -8,6 +8,7 @@ import {
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
+import AnimatedCTA from "../../components/AnimatedCTA";
 import howItWorksBanner from "../../assets/banners/how_it_works_banner.jpg";
 import mobileHIWBanner from "../../assets/banners/Mobile banner authentiks/HIW.jpg";
 
@@ -122,13 +123,10 @@ export default function WebHowItWorks() {
                                             className="w-full h-auto object-contain"
                                         />
                                     </div>
-                                    <button
+                                    <AnimatedCTA 
                                         onClick={() => setContactOpen(true)}
-                                        className="group w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full font-[900] tracking-widest transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 text-base flex items-center justify-center gap-3 mx-auto"
-                                    >
-                                        Start Your Free Trial
-                                        <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                                    </button>
+                                        className="w-full"
+                                    />
                                 </div>
                             </div>
                         </section>
@@ -317,13 +315,10 @@ export default function WebHowItWorks() {
                             <p className="text-gray-400 font-bold mb-10 text-lg">
                                 Start with zero complexity and full control over your products.
                             </p>
-                            <button
+                            <AnimatedCTA 
                                 onClick={() => setContactOpen(true)}
-                                className="px-12 py-6 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-[0_0_80px_rgba(255,255,255,0.15)] hover:scale-105 active:scale-95 text-sm inline-flex items-center gap-3"
-                            >
-                                Start Your 90-Day Free Trial
-                                <ArrowRight size={18} />
-                            </button>
+                                className="w-full mx-auto"
+                            />
                         </div>
                     </div>
                 </div>
