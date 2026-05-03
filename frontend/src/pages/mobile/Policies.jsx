@@ -25,142 +25,73 @@ export default function Policies() {
         </button>
       </div>
 
-      <div className="w-full max-w-md px-5 flex-1 pb-10 overflow-y-auto">
-        <h1 className="text-[#0D4E96] text-[24px] font-black mb-6 mt-4">Policies</h1>
+      <div className="w-full max-w-md px-5 flex-1 pb-10 overflow-y-auto no-scrollbar">
+        <h1 className="text-[#0D4E96] text-[24px] font-black mb-6 mt-4 uppercase tracking-tighter">Privacy Policy</h1>
         
         <div className="bg-white rounded-[24px] p-6 shadow-[0_8px_32px_rgba(13,78,150,0.12)] border-2 border-white text-[#1e3a5f] text-[14px] leading-relaxed space-y-6">
             <div>
-                <h2 className="font-black text-[17px] text-[#0D4E96]">Authentiks – Policies</h2>
-                <p className="opacity-75">Last updated: [01/01/2026]</p>
+                <p className="font-bold text-[#0D4E96]">Effective Date: [1/4/2026]</p>
+                <p className="mt-2">Authentiks (“we”, “our”, “us”) is a product of Recomm Innovations Private Limited. We are committed to protecting your privacy and ensuring transparency in how your data is collected, used and safeguarded.</p>
             </div>
-            
-            <p>These policies govern the use of Authentiks’ mobile application, QR authentication services, enterprise dashboard, and related systems. By using Authentiks, users and enterprise clients agree to the policies outlined below.</p>
 
-            <div>
-                <h3 className="font-black text-[16px] mb-2 text-[#0D4E96]">Privacy Policy</h3>
-                
-                <h4 className="font-bold mb-1">1. Information We Collect</h4>
-                <p className="mb-2">Authentiks may collect the following information:</p>
-                <ul className="list-disc pl-5 mb-4 space-y-1">
-                    <li>Personal information (name, phone number, email – if provided)</li>
-                    <li>Device and app information</li>
-                    <li>QR scan data (product ID, location, time, device type)</li>
-                    <li>Enterprise account and order data</li>
+            <section>
+                <h2 className="font-black text-[16px] text-[#0D4E96] uppercase mb-2">1. INFORMATION WE COLLECT</h2>
+                <p><strong>A. Brands / Businesses:</strong> Name, Brand name, Email, Phone, Billing details, SKU info.</p>
+                <p className="mt-2"><strong>B. End Users (via QR Scans):</strong> Device type, Location (approximate), Scan time, Interaction data. Optional (with consent): Name, Phone, Demographics.</p>
+                <p className="mt-2"><strong>C. Automatically Collected:</strong> IP address, Browser type, Device info.</p>
+            </section>
+
+            <section>
+                <h2 className="font-black text-[16px] text-[#0D4E96] uppercase mb-2">2. HOW WE USE YOUR INFORMATION</h2>
+                <ul className="list-disc pl-5 space-y-1">
+                    <li>Provide product authentication services</li>
+                    <li>Manage QR codes and deliver analytics</li>
+                    <li>Detect duplicate or suspicious scans</li>
+                    <li>Communicate support and updates</li>
                 </ul>
+            </section>
 
-                <h4 className="font-bold mb-1">2. How We Use Information</h4>
-                <p className="mb-2">Information is used to:</p>
-                <ul className="list-disc pl-5 mb-4 space-y-1">
-                    <li>Verify product authenticity</li>
-                    <li>Detect duplicate scans and counterfeit activity</li>
-                    <li>Improve system performance and fraud detection</li>
-                    <li>Communicate service updates and alerts</li>
-                </ul>
+            <section>
+                <h2 className="font-black text-[16px] text-[#0D4E96] uppercase mb-2">3. DATA SHARING & DISCLOSURE</h2>
+                <p>Shared only with service providers (hosting, analytics, delivery) or to comply with legal obligations. We do not sell your personal data.</p>
+            </section>
 
-                <h4 className="font-bold mb-1">3. Data Sharing</h4>
-                <p className="mb-2">Authentiks may share data with:</p>
-                <ul className="list-disc pl-5 mb-4 space-y-1">
-                    <li>Participating brands/manufacturers</li>
-                    <li>Logistics or printing partners (limited to operational needs)</li>
-                    <li>Legal or regulatory authorities if required by law</li>
-                </ul>
+            <section>
+                <h2 className="font-black text-[16px] text-[#0D4E96] uppercase mb-2">4. DATA SECURITY</h2>
+                <p>We implement secure servers and controlled access measures to protect your data. No system is 100% secure.</p>
+            </section>
 
-                <h4 className="font-bold mb-1">4. Data Security</h4>
-                <p className="mb-4">We implement reasonable technical and organizational measures to protect data. However, no digital system is completely secure.</p>
+            <section>
+                <h2 className="font-black text-[16px] text-[#0D4E96] uppercase mb-2">5. DATA RETENTION</h2>
+                <p>Retained as long as necessary for service provision, legal compliance, and business operations.</p>
+            </section>
 
-                <h4 className="font-bold mb-1">5. Data Retention</h4>
-                <p>Data is retained only as long as necessary for verification, compliance, and audit purposes.</p>
+            <section>
+                <h2 className="font-black text-[16px] text-[#0D4E96] uppercase mb-2">6. COOKIES & TRACKING</h2>
+                <p>Used to improve experience and analyze performance. Control via browser settings.</p>
+            </section>
+
+            <section>
+                <h2 className="font-black text-[16px] text-[#0D4E96] uppercase mb-2">7. YOUR RIGHTS</h2>
+                <p>Right to access, correct, or delete your data and withdraw consent.</p>
+            </section>
+
+            <section>
+                <h2 className="font-black text-[16px] text-[#0D4E96] uppercase mb-2">8. CONTACT FOR PRIVACY REQUESTS</h2>
+                <p>Email: support@authentiks.in<br/>Company: Recomm Innovations Private Limited<br/>Location: Chennai, Tamil Nadu, India</p>
+            </section>
+
+            <div className="pt-6 border-t border-[#E8F4F9] text-center">
+                <p className="italic font-bold text-[#0D4E96]">At Authentiks, protecting your data is as important as protecting your products.</p>
             </div>
-
-            <div>
-                <h3 className="font-black text-[16px] mb-2 text-[#0D4E96]">QR Code Usage Policy</h3>
-                
-                <h4 className="font-bold mb-1">6. QR Code Rules</h4>
-                <ul className="list-disc pl-5 mb-4 space-y-1">
-                    <li>Each QR code is unique and single-use per product</li>
-                    <li>QR codes must not be copied, cloned, or reused</li>
-                    <li>QR codes remain inactive until officially activated</li>
-                </ul>
-
-                <h4 className="font-bold mb-1">7. Misuse & Deactivation</h4>
-                <p>Authentiks reserves the right to deactivate QR codes if misuse, duplication, or suspicious activity is detected.</p>
-            </div>
-            
-            <div>
-                 <h3 className="font-bold text-[15px] mb-2 text-[#0F4160]">Fake Product & Fraud Policy</h3>
-                 <h4 className="font-bold mb-1">8. Reporting Counterfeit Products</h4>
-                 <p className="mb-4">Users may report suspected fake products through the app. Reports are reviewed and may be shared with brands or authorities.</p>
-
-                 <h4 className="font-bold mb-1">9. Investigation Process</h4>
-                 <p className="mb-2">Authentiks may:</p>
-                 <ul className="list-disc pl-5 mb-2 space-y-1">
-                    <li>Analyze scan patterns</li>
-                    <li>Temporarily flag QR codes</li>
-                    <li>Suspend enterprise accounts in serious cases</li>
-                </ul>
-                <p>Authentiks does not guarantee enforcement outcomes.</p>
-            </div>
-
-            <div>
-                 <h3 className="font-bold text-[15px] mb-2 text-[#0F4160]">Enterprise Data & Responsibility Policy</h3>
-                 <h4 className="font-bold mb-1">10. Enterprise Obligations</h4>
-                 <p className="mb-2">Enterprise clients are responsible for:</p>
-                 <ul className="list-disc pl-5 mb-4 space-y-1">
-                    <li>Correct product and order data</li>
-                    <li>Internal approvals before QR requests</li>
-                    <li>Secure handling of printed QR codes</li>
-                </ul>
-
-                 <h4 className="font-bold mb-1">11. Activation Policy</h4>
-                 <p className="mb-2">QR codes become active only after:</p>
-                 <ul className="list-disc pl-5 mb-2 space-y-1">
-                    <li>Successful dispatch</li>
-                    <li>Receipt confirmation</li>
-                    <li>Final activation approval</li>
-                </ul>
-            </div>
-
-             <div>
-                 <h3 className="font-bold text-[15px] mb-2 text-[#0F4160]">Payment & Billing Policy (Enterprise)</h3>
-                 <h4 className="font-bold mb-1">12. Fees</h4>
-                 <p className="mb-4">All fees, pricing, and billing cycles are governed by separate commercial agreements.</p>
-                 <h4 className="font-bold mb-1">13. Non-Payment</h4>
-                 <p>Authentiks may suspend services in case of delayed or failed payments.</p>
-            </div>
-
-            <div>
-                 <h3 className="font-bold text-[15px] mb-2 text-[#0F4160]">Service Availability Policy</h3>
-                 <h4 className="font-bold mb-1">14. Uptime</h4>
-                 <p className="mb-4">Authentiks strives for high availability but does not guarantee uninterrupted access.</p>
-                 <h4 className="font-bold mb-1">15. Maintenance</h4>
-                 <p>Planned maintenance may cause temporary service disruption.</p>
-            </div>
-
-             <div>
-                 <h3 className="font-bold text-[15px] mb-2 text-[#0F4160]">Cancellation & Refund Policy</h3>
-                 <h4 className="font-bold mb-1">16. Enterprise Orders</h4>
-                 <p className="mb-4">Once QR codes are printed or dispatched, cancellations or refunds are not permitted unless agreed in writing.</p>
-                 <h4 className="font-bold mb-1">17. App Users</h4>
-                 <p>No monetary transactions occur with app users; refunds do not apply.</p>
-            </div>
-
-             <div>
-                 <h3 className="font-bold text-[15px] mb-2 text-[#0F4160]">Compliance & Legal Policy</h3>
-                 <h4 className="font-bold mb-1">18. Governing Law</h4>
-                 <p className="mb-4">All policies are governed by the laws of India.</p>
-                 <h4 className="font-bold mb-1">19. Policy Updates</h4>
-                 <p>Authentiks may update these policies periodically. Continued use implies acceptance.</p>
-            </div>
-            
-            <div className="bg-white/50 p-4 rounded-lg">
-                <h3 className="font-bold text-[15px] mb-1">📩 Contact</h3>
-                <p>For policy-related queries:</p>
-                <p className="text-[#32ADD8] font-bold">support@authentiks.in</p>
-            </div>
-
-            <p className="text-center italic opacity-80 pb-6">By using Authentiks, you acknowledge and agree to these policies.</p>
         </div>
       </div>
+      <style>
+        {`
+          .no-scrollbar::-webkit-scrollbar { display: none; }
+          .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        `}
+      </style>
     </div>
   );
 }

@@ -43,6 +43,27 @@ export default function Profile() {
     fetchProfileData();
   }, []);
 
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Authentiks',
+          text: 'Protect your brand with Authentiks - The most intelligent product authentication platform.',
+          url: window.location.origin,
+        });
+      } catch (error) {
+        console.error("Error sharing:", error);
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(window.location.origin);
+        alert("Link copied to clipboard!");
+      } catch (err) {
+        console.error("Failed to copy:", err);
+      }
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("userInfo");
@@ -50,88 +71,53 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-[#FFFFFF] to-[#E8F4F9] font-sans flex flex-col pb-10">
+    <div className="h-screen bg-gradient-to-br from-[#F0F7FF] via-[#FFFFFF] to-[#E8F4F9] font-sans flex flex-col overflow-hidden">
 
       {/* Header */}
-      <MobileHeader
-        onLeftClick={() => navigate("/profile")}
-        leftIcon={
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        }
-      />
+      <div className="shrink-0">
+        <MobileHeader
+          onLeftClick={() => navigate("/profile")}
+          leftIcon={
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          }
+        />
+      </div>
 
-      {/* User Card - Blue & White Premium Design */}
-      <div className="mx-5 mt-2 mb-6 relative">
-        {/* Soft Blue Glow Effect */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0D4E96] via-[#2CA4D6] to-[#0D4E96] rounded-[32px] blur-3xl opacity-20 animate-pulse" />
-        
-        {/* Card */}
-        <div className="relative bg-gradient-to-br from-[#0D4E96] via-[#1a5fa8] to-[#2CA4D6] rounded-[32px] p-8 shadow-[0_12px_40px_rgba(13,78,150,0.3)] flex flex-col items-center justify-center min-h-[200px] overflow-hidden border-2 border-white/30">
-          {/* Animated shimmer overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
+      {/* User Card - Compact */}
+      <div className="mx-5 mt-1 mb-2 relative shrink-0">
+        <div className="relative bg-gradient-to-br from-[#0D4E96] via-[#1a5fa8] to-[#2CA4D6] rounded-[24px] p-4 shadow-xl flex flex-col items-center justify-center min-h-[130px] overflow-hidden border border-white/20">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
           
-          {/* Decorative soft circles */}
-          <div className="absolute top-6 right-8 w-28 h-28 rounded-full bg-gradient-to-br from-white/10 to-transparent blur-3xl" />
-          <div className="absolute bottom-8 left-10 w-24 h-24 rounded-full bg-gradient-to-br from-[#2CA4D6]/20 to-transparent blur-2xl" />
-          
-          {/* Blue sparkle dots */}
-          <div className="absolute top-12 left-12 w-2 h-2 rounded-full bg-white opacity-60 animate-pulse" />
-          <div className="absolute bottom-14 right-14 w-1.5 h-1.5 rounded-full bg-white opacity-60 animate-pulse" style={{ animationDelay: '0.5s' }} />
-          <div className="absolute top-20 right-20 w-1 h-1 rounded-full bg-white opacity-60 animate-pulse" style={{ animationDelay: '1s' }} />
-          
-          {/* Avatar Container */}
-          <div className="relative mb-5 z-10">
-            <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-[0_12px_40px_rgba(0,0,0,0.2)] relative">
-              {/* Blue gradient ring */}
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#2CA4D6] via-[#1a5fa8] to-[#0D4E96] p-[3px]">
-                <div className="w-full h-full bg-white rounded-full flex items-center justify-center shadow-inner overflow-hidden">
-                  {profileData.profileImage ? (
-                    <img
-                      src={profileData.profileImage}
-                      alt="Profile"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <img
-                      src={UserAvatar}
-                      alt="Profile"
-                      className="w-16 h-16 object-contain"
-                      style={{ filter: 'brightness(0) saturate(100%) invert(42%) sepia(77%) saturate(496%) hue-rotate(166deg) brightness(93%) contrast(92%)' }}
-                    />
-                  )}
-                </div>
+          <div className="relative mb-2 z-10">
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg relative p-[2px]">
+              <div className="w-full h-full bg-white rounded-full flex items-center justify-center overflow-hidden">
+                {profileData.profileImage ? (
+                  <img src={profileData.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <img src={UserAvatar} alt="Profile" className="w-8 h-8 object-contain opacity-80" />
+                )}
               </div>
             </div>
-            
-            {/* Blue pulsing dot indicator */}
-            <div className="absolute bottom-3 right-3 w-4 h-4 bg-gradient-to-br from-[#4ADE80] to-[#22C55E] rounded-full border-[3px] border-white shadow-lg animate-pulse" />
+            <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#4ADE80] rounded-full border-2 border-white shadow-sm" />
           </div>
 
-          {/* Edit Profile Button */}
           <button
             onClick={() => navigate("/edit-profile")}
-            className="relative z-20 bg-white px-12 py-2.5 rounded-[30px] font-black text-[15px] shadow-[0_8px_24px_rgba(255,255,255,0.4)] hover:shadow-[0_12px_32px_rgba(255,255,255,0.5)] active:scale-[0.96] transition-all"
+            className="relative z-20 bg-white px-6 py-1.5 rounded-full font-black text-[12px] shadow-md active:scale-95 transition-all"
           >
-            <span className="bg-gradient-to-r from-[#0D4E96] via-[#1a5fa8] to-[#2CA4D6] bg-clip-text text-transparent">
-              Profile
+            <span className="bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] bg-clip-text text-transparent uppercase tracking-tight">
+              {profileData.name || "Edit Profile"}
             </span>
           </button>
         </div>
       </div>
 
-      {/* Menu List */}
-      <div className="flex flex-col pb-8"
-           style={{
-             animation: 'fadeSlideUp 0.6s ease-out forwards',
-             animationDelay: '0.2s',
-             opacity: 0
-           }}>
-
-        {/* Render Menu Groups */}
+      {/* Menu List - Tight Layout to fit screen */}
+      <div className="flex-1 flex flex-col px-5 pb-20 overflow-y-auto no-scrollbar">
         {[
           [
             { icon: IconScanHistory, text: "Scan History", action: () => navigate("/scan-history") },
@@ -140,8 +126,8 @@ export default function Profile() {
           ],
           [
             { icon: IconAboutUs, text: "About Us", action: () => navigate("/about-us") },
-            { icon: IconHelp, text: "Help & Support", action: () => { } },
-            { icon: IconShare, text: "Share", action: () => { } },
+            { icon: IconHelp, text: "Help & Support", action: () => navigate("/support") },
+            { icon: IconShare, text: "Share", action: handleShare },
             { icon: Globe, text: "Go to Website", isLucide: true, action: () => {
                 sessionStorage.setItem('appMode', 'brand');
                 window.location.href = '/'; 
@@ -154,12 +140,7 @@ export default function Profile() {
         ].map((group, groupIndex) => (
           <div 
             key={groupIndex} 
-            className="mx-5 mb-4 flex flex-col shadow-[0_6px_24px_rgba(13,78,150,0.12)] rounded-[28px] overflow-hidden border-2 border-white bg-white backdrop-blur-sm"
-            style={{
-              animation: `fadeSlideUp 0.5s ease-out forwards`,
-              animationDelay: `${0.3 + groupIndex * 0.1}s`,
-              opacity: 0
-            }}
+            className="mb-1.5 flex flex-col shadow-md rounded-[18px] overflow-hidden border border-white/20 bg-gradient-to-br from-[#0D4E96] to-[#1a5fa8]"
           >
             {group.map((item, index) => {
               const isLast = index === group.length - 1;
@@ -168,32 +149,22 @@ export default function Profile() {
                 <div
                   key={index}
                   onClick={item.action}
-                  className={`flex items-center justify-between py-4 px-6 bg-gradient-to-r from-white to-[#F9FCFF] cursor-pointer hover:from-[#E8F4F9] hover:to-[#F0F7FF] active:scale-[0.98] transition-all h-[60px] group
-                    ${!isLast ? "border-b-[2px] border-[#F0F7FF]" : ""}
+                  className={`flex items-center justify-between py-2 px-5 cursor-pointer active:scale-[0.99] transition-all h-[44px] group
+                    ${!isLast ? "border-b border-white/10" : ""}
                   `}
                 >
-                  <div className="flex items-center gap-4">
-                    {/* Icon with blue gradient background */}
-                    <div className="w-11 h-11 rounded-[14px] bg-gradient-to-br from-[#0D4E96] via-[#1a5fa8] to-[#2CA4D6] flex justify-center items-center shadow-[0_4px_12px_rgba(13,78,150,0.25)] group-hover:shadow-[0_6px_16px_rgba(13,78,150,0.35)] group-hover:scale-110 transition-all">
+                  <div className="flex items-center gap-3">
+                    <div className="w-7 h-7 rounded-[8px] bg-white/10 flex justify-center items-center">
                       {item.isLucide ? (
-                        <item.icon size={20} className="text-white" />
+                        <item.icon size={14} className="text-white" />
                       ) : (
-                        <img src={item.icon} alt={item.text} className="w-5 h-5 object-contain brightness-0 invert" />
+                        <img src={item.icon} alt={item.text} className="w-4 h-4 object-contain brightness-0 invert" />
                       )}
                     </div>
-                    <span className="text-[#1e3a5f] text-[15px] font-black group-hover:text-[#0D4E96] transition-colors">{item.text}</span>
+                    <span className="text-white text-[13px] font-black tracking-tight">{item.text}</span>
                   </div>
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#E8F4F9] to-[#D1E8F5] flex items-center justify-center group-hover:scale-110 group-hover:translate-x-1 transition-all shadow-sm">
-                    <svg 
-                      width="18" 
-                      height="18" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      stroke="#0D4E96" 
-                      strokeWidth="3" 
-                      strokeLinecap="round" 
-                      strokeLinejoin="round"
-                    >
+                  <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M9 18l6-6-6-6" />
                     </svg>
                   </div>
@@ -203,65 +174,34 @@ export default function Profile() {
           </div>
         ))}
 
-        {/* Logout - Premium Design */}
+        {/* Logout */}
         <div
           onClick={handleLogout}
-          className="flex items-center justify-between py-4 px-6  mb-10 bg-gradient-to-r from-[#FFE8E8] via-[#FFF0F0] to-[#FFE8E8] cursor-pointer hover:from-[#FFD5D5] hover:to-[#FFE0E0] active:scale-[0.98] transition-all rounded-[28px] shadow-[0_6px_24px_rgba(227,2,17,0.15)] mx-5 h-[60px] border-2 border-[#FFCACA] mt-2 group"
-          style={{
-            animation: `fadeSlideUp 0.5s ease-out forwards`,
-            animationDelay: '0.6s',
-            opacity: 0
-          }}
+          className="flex items-center justify-between py-2 px-5 mt-1 bg-white border-2 border-red-100 cursor-pointer active:scale-[0.99] transition-all rounded-[18px] shadow-sm h-[44px] group"
         >
-          <div className="flex items-center gap-4">
-            {/* Icon with soft red gradient background */}
-            <div className="w-11 h-11 rounded-[14px] bg-gradient-to-br from-[#FFB5B5] via-[#FF9999] to-[#FF8888] flex justify-center items-center shadow-[0_4px_12px_rgba(227,2,17,0.2)] group-hover:shadow-[0_6px_16px_rgba(227,2,17,0.3)] group-hover:scale-110 transition-all">
-              <img src={IconLogout} alt="Logout" className="w-5 h-5 object-contain" />
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7 rounded-[8px] bg-red-50 flex justify-center items-center">
+              <img src={IconLogout} alt="Logout" className="w-4 h-4 object-contain" />
             </div>
-            <span className="text-[#C41E3A] text-[16px] font-black group-hover:text-[#A01C2E] transition-colors">Logout</span>
+            <span className="text-[#C41E3A] text-[13px] font-black uppercase tracking-tight">Logout</span>
           </div>
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FFD5D5] to-[#FFB5B5] flex items-center justify-center group-hover:scale-110 group-hover:translate-x-1 transition-all shadow-sm">
-            <svg 
-              width="18" 
-              height="18" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="#C41E3A" 
-              strokeWidth="2.5" 
-              strokeLinecap="round" 
-              strokeLinejoin="round"
-            >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
+          <div className="w-5 h-5 rounded-full bg-red-50 flex items-center justify-center">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#C41E3A" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
             </svg>
           </div>
         </div>
-
       </div>
 
-      {/* Animations */}
       <style>
         {`
-          @keyframes fadeSlideUp {
-            from {
-              opacity: 0;
-              transform: translateY(20px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          
           @keyframes shimmer {
             0% { background-position: -200% 0; }
             100% { background-position: 200% 0; }
           }
-          
-          .animate-shimmer {
-            animation: shimmer 4s infinite linear;
-          }
+          .animate-shimmer { animation: shimmer 4s infinite linear; }
+          .no-scrollbar::-webkit-scrollbar { display: none; }
+          .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         `}
       </style>
     </div>

@@ -32,6 +32,7 @@ import Rewards from "./pages/mobile/Rewards";
 import RewardDetail from "./pages/mobile/RewardDetail";
 import MobileLayout from "./components/MobileLayout";
 import MobileLanding from "./pages/mobile/MobileLanding";
+import Support from "./pages/mobile/Support";
 
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -353,6 +354,7 @@ export default function App() {
           <Route path="/about-us" element={<AboutUs />} />
           <Route path="/terms-conditions" element={<TermsConditions />} />
           <Route path="/privacy-policy" element={<Policies />} />
+          <Route path="/support" element={<Support />} />
 
           {/* User Protected with Global Navbar */}
           <Route element={<PrivateRoute><MobileLayout /></PrivateRoute>}>
