@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { ShieldCheck, CheckCircle2, ArrowRight, Zap, Award } from "lucide-react";
+import { ShieldCheck, CheckCircle2, ArrowRight, Zap, Award, ExternalLink } from "lucide-react";
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
@@ -211,14 +211,28 @@ export default function WebVerified() {
                             🧱 Verified Products
                         </SectionTag>
                         <SectionTitle>Our Product Suite</SectionTitle>
-                        <p className="text-gray-400 font-bold max-w-2xl mx-auto text-lg leading-relaxed">
+                        <p className="text-gray-400 font-bold max-w-2xl mx-auto text-lg leading-relaxed mb-8">
                             Discover high-quality, securely verified products powered by Authentiks intelligence.
                         </p>
+                        <a 
+                            href="https://fitdnanutrition.com/" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-8 py-3 bg-cyan-500/10 text-cyan-400 rounded-full font-bold hover:bg-cyan-500/20 border border-cyan-500/30 transition-all shadow-[0_0_20px_rgba(6,182,212,0.15)]"
+                        >
+                            Visit FitDNA Nutrition <ExternalLink size={18} />
+                        </a>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-16 justify-center">
                         {verifiedProducts.map((p, i) => (
-                            <div key={i} className="glass-effect rounded-[2.5rem] overflow-hidden border border-white/5 flex flex-col group hover:-translate-y-2 hover:border-indigo-500/40 transition-all duration-500 bg-white/5 shadow-xl hover:shadow-indigo-500/5">
+                            <a 
+                                key={i} 
+                                href="https://fitdnanutrition.com/" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="glass-effect rounded-[2.5rem] overflow-hidden border border-white/5 flex flex-col group hover:-translate-y-2 hover:border-cyan-500/40 transition-all duration-500 bg-white/5 shadow-xl hover:shadow-cyan-500/10 cursor-pointer"
+                            >
                                 <div className="aspect-square bg-slate-950 flex items-center justify-center relative p-6 overflow-hidden">
                                     <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 via-transparent to-black/20 opacity-40 pointer-events-none" />
                                     <img
@@ -230,16 +244,19 @@ export default function WebVerified() {
                                         {p.badge}
                                     </span>
                                 </div>
-                                <div className="p-8 md:p-10 flex flex-col flex-grow">
+                                <div className="p-8 md:p-10 flex flex-col flex-grow relative">
                                     <span className="text-[10px] font-black uppercase tracking-widest text-indigo-400 mb-2">{p.category}</span>
-                                    <h3 className="text-2xl font-black text-white mb-3 tracking-tight leading-snug">{p.name}</h3>
+                                    <h3 className="text-2xl font-black text-white mb-3 tracking-tight leading-snug group-hover:text-cyan-400 transition-colors">{p.name}</h3>
                                     <p className="text-gray-400 font-bold text-sm leading-relaxed flex-grow">{p.desc}</p>
                                     
-                                    <div className="mt-6 pt-6 border-t border-white/5 flex items-center gap-2 text-sm font-black text-white/90">
-                                        <CheckCircle2 size={16} className="text-cyan-400" /> Fully Inspected & Authenticated
+                                    <div className="mt-6 pt-6 border-t border-white/5 flex items-center justify-between text-sm font-black text-white/90">
+                                        <div className="flex items-center gap-2">
+                                            <CheckCircle2 size={16} className="text-cyan-400" /> Inspected & Authenticated
+                                        </div>
+                                        <ExternalLink size={16} className="text-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity transform -translate-x-2 group-hover:translate-x-0" />
                                     </div>
                                 </div>
-                            </div>
+                            </a>
                         ))}
                     </div>
                 </div>
