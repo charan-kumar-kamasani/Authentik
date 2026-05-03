@@ -1,11 +1,24 @@
 import React, { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import logo from "../assets/logo.svg";
 
 export default function WebHeader() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  const token = localStorage.getItem("token");
+  const adminToken = localStorage.getItem("adminToken");
+
+  const handleGoToApp = () => {
+    sessionStorage.setItem("appMode", "product");
+    window.location.href = "/home";
+  };
+
+  const handleGoToAdmin = () => {
+    navigate("/admin/dashboard");
+  };
 
   const isActive = (path) => {
     return location.pathname === path ? "text-[#214B80]" : "text-[#3DA8E4]";
@@ -92,11 +105,31 @@ export default function WebHeader() {
           })}
         </nav>
 
-        <Link to="/live-demo" className="hidden md:block">
-          <button className="bg-indigo-600/20 text-indigo-400 px-6 py-2 rounded-full font-bold text-sm md:text-base hover:bg-indigo-600 hover:text-white border border-indigo-500/30 transition-all shadow-[0_0_20px_rgba(99,102,241,0.2)]">
-            Live Demo
-          </button>
-        </Link>
+        <div className="hidden md:flex items-center gap-4">
+          <Link to="/live-demo">
+            <button className="bg-indigo-600/20 text-indigo-400 px-6 py-2 rounded-full font-bold text-sm md:text-base hover:bg-indigo-600 hover:text-white border border-indigo-500/30 transition-all shadow-[0_0_20px_rgba(99,102,241,0.2)]">
+              Live Demo
+            </button>
+          </Link>
+
+          {token && (
+            <button 
+              onClick={handleGoToApp}
+              className="bg-cyan-600/20 text-cyan-400 px-6 py-2 rounded-full font-bold text-sm md:text-base hover:bg-cyan-600 hover:text-white border border-cyan-500/30 transition-all shadow-[0_0_20px_rgba(6,182,212,0.2)]"
+            >
+              Go to App
+            </button>
+          )}
+
+          {adminToken && !token && (
+            <button 
+              onClick={handleGoToAdmin}
+              className="bg-cyan-600/20 text-cyan-400 px-6 py-2 rounded-full font-bold text-sm md:text-base hover:bg-cyan-600 hover:text-white border border-cyan-500/30 transition-all shadow-[0_0_20px_rgba(6,182,212,0.2)]"
+            >
+              Dashboard
+            </button>
+          )}
+        </div>
         
         {/* Mobile Menu Toggle Button */}
         <button 
@@ -152,6 +185,24 @@ export default function WebHeader() {
               Live Demo
             </button>
           </Link>
+
+          {token && (
+            <button 
+              onClick={handleGoToApp}
+              className="w-full bg-cyan-600/20 text-cyan-400 px-6 py-4 rounded-2xl font-bold text-lg hover:bg-cyan-600 hover:text-white border border-cyan-500/30 transition-all mt-2"
+            >
+              Go to App
+            </button>
+          )}
+
+          {adminToken && !token && (
+            <button 
+              onClick={handleGoToAdmin}
+              className="w-full bg-cyan-600/20 text-cyan-400 px-6 py-4 rounded-2xl font-bold text-lg hover:bg-cyan-600 hover:text-white border border-cyan-500/30 transition-all mt-2"
+            >
+              Dashboard
+            </button>
+          )}
         </div>
       )}
     </header>

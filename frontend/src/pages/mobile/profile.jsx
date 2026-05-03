@@ -16,6 +16,7 @@ import IconTerms from "../../assets/v2/profile/Vector (4).svg"; // Document
 import IconPolicies from "../../assets/v2/profile/Vector.svg"; // Shield
 import IconLogout from "../../assets/v2/profile/Vector (6).svg"; // Power button
 import MobileHeader from "../../components/MobileHeader";
+import { Globe } from "lucide-react";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -140,7 +141,11 @@ export default function Profile() {
           [
             { icon: IconAboutUs, text: "About Us", action: () => navigate("/about-us") },
             { icon: IconHelp, text: "Help & Support", action: () => { } },
-            { icon: IconShare, text: "Share", action: () => { } }
+            { icon: IconShare, text: "Share", action: () => { } },
+            { icon: Globe, text: "Go to Website", isLucide: true, action: () => {
+                sessionStorage.setItem('appMode', 'brand');
+                window.location.href = '/'; 
+            }}
           ],
           [
             { icon: IconTerms, text: "Terms & Conditions", action: () => navigate("/terms-conditions") },
@@ -170,7 +175,11 @@ export default function Profile() {
                   <div className="flex items-center gap-4">
                     {/* Icon with blue gradient background */}
                     <div className="w-11 h-11 rounded-[14px] bg-gradient-to-br from-[#0D4E96] via-[#1a5fa8] to-[#2CA4D6] flex justify-center items-center shadow-[0_4px_12px_rgba(13,78,150,0.25)] group-hover:shadow-[0_6px_16px_rgba(13,78,150,0.35)] group-hover:scale-110 transition-all">
-                      <img src={item.icon} alt={item.text} className="w-5 h-5 object-contain brightness-0 invert" />
+                      {item.isLucide ? (
+                        <item.icon size={20} className="text-white" />
+                      ) : (
+                        <img src={item.icon} alt={item.text} className="w-5 h-5 object-contain brightness-0 invert" />
+                      )}
                     </div>
                     <span className="text-[#1e3a5f] text-[15px] font-black group-hover:text-[#0D4E96] transition-colors">{item.text}</span>
                   </div>

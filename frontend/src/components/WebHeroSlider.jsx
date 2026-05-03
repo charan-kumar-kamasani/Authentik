@@ -52,7 +52,7 @@ export default function WebHeroSlider({ slides, onCTA, onSlideChange }) {
         </div>
 
         {/* Desktop Slide Navigation Dots */}
-        <div className="absolute -bottom-8 md:-bottom-14 left-1/2 -translate-x-1/2 flex items-center justify-center gap-3 md:gap-4 w-full z-30 pointer-events-auto">
+        {/* <div className="absolute -bottom-8 md:-bottom-14 left-1/2 -translate-x-1/2 flex items-center justify-center gap-3 md:gap-4 w-full z-30 pointer-events-auto">
           <button onClick={(e) => { e.stopPropagation(); prevSlide(); }} className="p-1.5 md:p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all shadow-lg backdrop-blur-md">
             <ChevronLeft size={16} className="md:w-[18px] md:h-[18px]" />
           </button>
@@ -66,7 +66,7 @@ export default function WebHeroSlider({ slides, onCTA, onSlideChange }) {
           <button onClick={(e) => { e.stopPropagation(); nextSlide(); }} className="p-1.5 md:p-2 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all shadow-lg backdrop-blur-md">
             <ChevronRight size={16} className="md:w-[18px] md:h-[18px]" />
           </button>
-        </div>
+        </div> */}
       </div>
 
       {/* ═══════════════ MOBILE SLIDER ═══════════════ */}

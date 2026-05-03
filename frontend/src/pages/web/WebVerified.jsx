@@ -6,10 +6,19 @@ import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
 
 // Product and Banner Images
-import vitapurImg from "../../assets/verified_product_vitapur.png";
-import omegaImg from "../../assets/verified_product_omega.png";
-import glowImg from "../../assets/verified_product_glow.png";
-import verifiedBanner from "../../assets/verified_page_banner.png";
+import allicinImg from "../../assets/Verified Products/Allicin.jpg";
+import coralCalciumImg from "../../assets/Verified Products/Coral Calcium.jpg";
+import creatineImg from "../../assets/Verified Products/Creatine.jpg";
+import fvm55Img from "../../assets/Verified Products/FVM-55.jpg";
+import fitMassImg from "../../assets/Verified Products/Fit-Mass.jpg";
+import fitPreImg from "../../assets/Verified Products/Fit-Pre.jpg";
+import fitWheyImg from "../../assets/Verified Products/Fit-Whey.jpg";
+import gvImg from "../../assets/Verified Products/GV.jpg";
+import livGuardImg from "../../assets/Verified Products/Liv Guard.jpg";
+import livPurImg from "../../assets/Verified Products/LivPur+.jpg";
+import multiDetoxImg from "../../assets/Verified Products/Multi Detox.jpg";
+import vitaPurImg from "../../assets/Verified Products/VitaPur+.jpg";
+import verifiedBanner from "../../assets/banners/Verified.jpg";
 import mobileVerifiedBanner from "../../assets/banners/Mobile banner authentiks/Verified.jpg";
 
 const Glow = ({ color, className }) => (
@@ -33,24 +42,87 @@ export default function WebVerified() {
 
     const verifiedProducts = [
         {
-            name: "Vitapur+ Tablets",
-            desc: "Daily Wellness Complex for optimal health",
-            img: vitapurImg,
-            category: "Wellness & Vitamins",
-            badge: "Trusted"
+            name: "Allicin",
+            desc: "Premium Allicin Supplement",
+            img: allicinImg,
+            category: "Wellness & Health",
+            badge: "Verified"
         },
         {
-            name: "Pure Omega3",
-            desc: "High-Potency Fish Oil softgels",
-            img: omegaImg,
+            name: "Coral Calcium",
+            desc: "High-Quality Coral Calcium",
+            img: coralCalciumImg,
             category: "Nutritional Health",
-            badge: "Secure"
+            badge: "Verified"
         },
         {
-            name: "Skin Glow Serum",
-            desc: "Hyaluronic Acid + Vitamin C complex",
-            img: glowImg,
-            category: "Dermal Care",
+            name: "Creatine",
+            desc: "Pure Muscle Recovery",
+            img: creatineImg,
+            category: "Fitness & Training",
+            badge: "Verified"
+        },
+        {
+            name: "FVM-55",
+            desc: "Advanced Formula FVM-55",
+            img: fvm55Img,
+            category: "Wellness & Health",
+            badge: "Verified"
+        },
+        {
+            name: "Fit-Mass",
+            desc: "Maximum Muscle Gainer",
+            img: fitMassImg,
+            category: "Fitness & Training",
+            badge: "Verified"
+        },
+        {
+            name: "Fit-Pre",
+            desc: "Explosive Pre-Workout",
+            img: fitPreImg,
+            category: "Fitness & Training",
+            badge: "Verified"
+        },
+        {
+            name: "Fit-Whey",
+            desc: "Premium Whey Protein",
+            img: fitWheyImg,
+            category: "Fitness & Training",
+            badge: "Verified"
+        },
+        {
+            name: "GV",
+            desc: "Essential Daily Nutrition",
+            img: gvImg,
+            category: "Wellness & Health",
+            badge: "Verified"
+        },
+        {
+            name: "Liv Guard",
+            desc: "Ultimate Liver Protection",
+            img: livGuardImg,
+            category: "Wellness & Health",
+            badge: "Verified"
+        },
+        {
+            name: "LivPur+",
+            desc: "Advanced Liver Detox",
+            img: livPurImg,
+            category: "Wellness & Health",
+            badge: "Verified"
+        },
+        {
+            name: "Multi Detox",
+            desc: "Complete Body Cleanse",
+            img: multiDetoxImg,
+            category: "Wellness & Health",
+            badge: "Verified"
+        },
+        {
+            name: "VitaPur+",
+            desc: "Daily Vitamin Complex",
+            img: vitaPurImg,
+            category: "Wellness & Vitamins",
             badge: "Verified"
         }
     ];
@@ -101,7 +173,7 @@ export default function WebVerified() {
                             <img
                                 src={verifiedBanner}
                                 alt="Verified page banner"
-                                className="absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-in-out group-hover:scale-[1.01]"
+                                className="absolute inset-0 w-full h-full object-fit transition-all duration-1000 ease-in-out group-hover:scale-[1.01]"
                             />
                         </div>
                         <div className="absolute inset-0 pointer-events-none rounded-[2rem] ring-1 ring-inset ring-white/10 z-20" />
