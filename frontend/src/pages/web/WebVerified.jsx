@@ -191,10 +191,10 @@ export default function WebVerified() {
                         </div>
                         <button
                             onClick={() => setContactOpen(true)}
-                            className="group w-full px-8 py-6 bg-indigo-600 text-white rounded-full font-[900] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-lg hover:scale-[1.02] active:scale-95 text-xl flex items-center justify-center gap-3 mx-auto"
+                            className="group w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full font-[900] tracking-widest transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 text-base flex items-center justify-center gap-3 mx-auto"
                         >
-                            Book a Demo
-                            <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                            Start Your Free Trial
+                            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                         </button>
                     </div>
                 </div>
@@ -310,9 +310,9 @@ export default function WebVerified() {
                             </p>
                             <button
                                 onClick={() => setContactOpen(true)}
-                                className="px-12 py-6 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-[0_0_80px_rgba(255,255,255,0.15)] hover:scale-105 active:scale-95 text-sm inline-flex items-center gap-3"
+                                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full font-black tracking-widest transition-all shadow-[0_0_80px_rgba(37,99,235,0.3)] hover:shadow-[0_0_120px_rgba(37,99,235,0.5)] hover:scale-105 active:scale-95 text-sm inline-flex items-center gap-3"
                             >
-                                👉 Book a Demo
+                                Start Your Free Trial
                                 <ArrowRight size={18} />
                             </button>
                         </div>

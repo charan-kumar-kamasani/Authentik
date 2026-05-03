@@ -59,14 +59,79 @@ import AdminLeads from "./pages/admin/AdminLeads";
 import QrPricingManagement from "./pages/admin/QrPricingManagement";
 import AIPulseDashboard from "./pages/admin/AIPulseDashboard";
 
+// Token verification hook
+function useTokenVerification(tokenKey) {
+  const [status, setStatus] = useState("loading"); // "loading", "verified", "unauthorized", "server_error"
+  const token = localStorage.getItem(tokenKey);
+
+  useEffect(() => {
+    if (!token) {
+      setStatus("unauthorized");
+      return;
+    }
+    
+    // Use the API_BASE_URL environment variable correctly
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || "https://authentik-8p39.vercel.app";
+    
+    fetch(`${baseUrl}/auth/profile`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    .then(res => {
+      if (res.ok) {
+        setStatus("verified");
+      } else if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem(tokenKey);
+        if (tokenKey === 'adminToken') {
+            localStorage.removeItem('adminRole');
+            localStorage.removeItem('adminEmail');
+        }
+        setStatus("unauthorized");
+      } else {
+        setStatus("server_error");
+      }
+    })
+    .catch(() => {
+      setStatus("server_error");
+    });
+  }, [token, tokenKey]);
+
+  return { status, token };
+}
+
+// Error Screen Component
+function ServerErrorScreen() {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-center p-6">
+      <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-5">
+         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <h2 className="text-2xl font-black text-slate-800 mb-2">Service Unavailable</h2>
+      <p className="text-slate-500 font-medium max-w-md">We are currently experiencing connection issues with our servers. Please try again in a moment.</p>
+      <button onClick={() => window.location.reload()} className="mt-8 px-6 py-2.5 bg-blue-600 text-white rounded-xl font-bold tracking-wide hover:bg-blue-700 active:scale-95 transition-all shadow-md">
+        Try Again
+      </button>
+    </div>
+  );
+}
+
+// Loading Screen Component
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <div className="animate-spin w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+    </div>
+  );
+}
+
 // User private route
 function PrivateRoute({ children }) {
-  const token = localStorage.getItem("token");
+  const { status, token } = useTokenVerification("token");
   const location = useLocation();
   
-  if (!token) {
-    // Save the intended destination (including query params) for redirect after login
-    // Even though we force /home after login, we keep this for potential future use
+  if (status === "loading") return <LoadingScreen />;
+  if (status === "server_error") return <ServerErrorScreen />;
+
+  if (status === "unauthorized" || !token) {
     const redirectPath = `${location.pathname}${location.search}`;
     sessionStorage.setItem("redirectAfterLogin", redirectPath);
     return <Navigate to="/login" replace />;
@@ -89,8 +154,16 @@ function PublicRoute({ children }) {
 
 // Admin private route
 function AdminRoute({ children }) {
-  const adminToken = localStorage.getItem("adminToken");
-  return adminToken ? children : <Navigate to="/enterprise" replace />;
+  const { status, token } = useTokenVerification("adminToken");
+
+  if (status === "loading") return <LoadingScreen />;
+  if (status === "server_error") return <ServerErrorScreen />;
+
+  if (status === "unauthorized" || !token) {
+    return <Navigate to="/enterprise" replace />;
+  }
+  
+  return children;
 }
 
 /* ================= APP ================= */
