@@ -7,13 +7,14 @@ export default function MobileHeader({
   title,
   rightIcon,
   onNotificationClick,
+  showBack,
+  onBackClick
 }) {
   const navigate = useNavigate();
   const location = useLocation();
 
   const isHome =
-    location.pathname === "/" ||
-    location.pathname === "/home";
+    !showBack && (location.pathname === "/" || location.pathname === "/home");
 
   return (
     <div className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-white via-[#F9FCFF] to-white sticky top-0 z-50 shadow-[0_4px_24px_rgba(13,78,150,0.1)] border-b-2 border-[#E8F4F9] backdrop-blur-sm">
@@ -28,7 +29,7 @@ export default function MobileHeader({
         </button>
       ) : (
         <button
-          onClick={() => navigate(-1)}
+          onClick={onBackClick ? onBackClick : () => navigate(-1)}
           className="p-2.5 text-[#0D4E96] rounded-[12px] hover:bg-[#F0F7FF] active:scale-95 transition-all"
         >
           <ChevronLeft className="w-7 h-7" strokeWidth={2.5} />

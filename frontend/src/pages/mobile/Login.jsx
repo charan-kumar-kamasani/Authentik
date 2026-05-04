@@ -56,9 +56,14 @@ export default function Login() {
     }
   };
 
+  const handleBackToLanding = () => {
+    sessionStorage.removeItem('appMode');
+    window.location.href = '/';
+  };
+
   return (
     <div className="min-h-screen bg-[#F8F9FA] font-sans">
-      <MobileHeader />
+      <MobileHeader showBack={true} onBackClick={handleBackToLanding} />
       
       {/* Content Container */}
       <div className="px-6 pt-6 pb-10 flex flex-col items-center justify-center min-h-[calc(100vh-80px)]">
