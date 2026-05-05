@@ -112,21 +112,19 @@ export default function WebHeader() {
             </button>
           </Link>
 
-          {token && (
-            <button 
-              onClick={handleGoToApp}
-              className="bg-cyan-600/20 text-cyan-400 px-6 py-2 rounded-full font-bold text-sm md:text-base hover:bg-cyan-600 hover:text-white border border-cyan-500/30 transition-all shadow-[0_0_20px_rgba(6,182,212,0.2)]"
-            >
-              Go to App
-            </button>
-          )}
-
-          {adminToken && !token && (
+          {adminToken && !token ? (
             <button 
               onClick={handleGoToAdmin}
               className="bg-cyan-600/20 text-cyan-400 px-6 py-2 rounded-full font-bold text-sm md:text-base hover:bg-cyan-600 hover:text-white border border-cyan-500/30 transition-all shadow-[0_0_20px_rgba(6,182,212,0.2)]"
             >
               Dashboard
+            </button>
+          ) : (
+            <button 
+              onClick={handleGoToApp}
+              className="bg-cyan-600/20 text-cyan-400 px-6 py-2 rounded-full font-bold text-sm md:text-base hover:bg-cyan-600 hover:text-white border border-cyan-500/30 transition-all shadow-[0_0_20px_rgba(6,182,212,0.2)]"
+            >
+              Go to App
             </button>
           )}
         </div>
@@ -187,21 +185,21 @@ export default function WebHeader() {
               </button>
             </Link>
 
-            {token ? (
-              <button 
-                onClick={handleGoToApp}
-                className="w-full bg-cyan-600/20 text-white py-3 rounded-xl font-bold text-[14px] border border-cyan-500/30"
-              >
-                Go to App
-              </button>
-            ) : adminToken ? (
+            {adminToken && !token ? (
               <button 
                 onClick={handleGoToAdmin}
                 className="w-full bg-cyan-600/20 text-white py-3 rounded-xl font-bold text-[14px] border border-cyan-500/30"
               >
                 Dashboard
               </button>
-            ) : null}
+            ) : (
+              <button 
+                onClick={handleGoToApp}
+                className="w-full bg-cyan-600/20 text-white py-3 rounded-xl font-bold text-[14px] border border-cyan-500/30"
+              >
+                Go to App
+              </button>
+            )}
           </div>
         </div>
       )}
