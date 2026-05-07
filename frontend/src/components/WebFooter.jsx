@@ -59,6 +59,7 @@ export default function WebFooter() {
               {[
                 { name: 'Privacy Policy', path: '/privacy-policy' },
                 { name: 'Terms & Conditions', path: '/terms-conditions' },
+                { name: 'Security Policy', path: '/security-policy' },
               ].map((link) => (
                 <li key={link.path}>
                   <Link
@@ -116,6 +117,7 @@ export default function WebFooter() {
           <div className="flex items-center gap-6 text-[11px] font-bold uppercase tracking-widest">
             <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy</Link>
             <Link to="/terms-conditions" className="hover:text-white transition-colors">Terms</Link>
+            <Link to="/security-policy" className="hover:text-white transition-colors">Security</Link>
             <Link to="/contact-us" className="hover:text-white transition-colors">Contact</Link>
           </div>
         </div>

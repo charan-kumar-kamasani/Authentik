@@ -16,6 +16,7 @@ import WebIndustries from "./pages/web/WebIndustries";
 import WebFAQs from "./pages/web/WebFAQs";
 import WebPrivacyPolicy from "./pages/web/WebPrivacyPolicy";
 import WebTermsConditions from "./pages/web/WebTermsConditions";
+import WebSecurityPolicy from "./pages/web/WebSecurityPolicy";
 import WebLiveDemo from "./pages/web/WebLiveDemo";
 import WebAIPulse from "./pages/web/WebAIPulse";
 import WebProblem from "./pages/web/WebProblem";
@@ -225,6 +226,7 @@ export default function App() {
             <Route path="/contact-us" element={<WebContactUs />} />
             <Route path="/privacy-policy" element={<WebPrivacyPolicy />} />
             <Route path="/terms-conditions" element={<WebTermsConditions />} />
+            <Route path="/security-policy" element={<WebSecurityPolicy />} />
             <Route path="/live-demo" element={<WebLiveDemo />} />
 
             {/* Admin */}
