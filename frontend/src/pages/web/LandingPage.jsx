@@ -17,6 +17,7 @@ import mobileBanner2 from '../../assets/banners/Mobile banner authentiks/H2.jpg'
 import mobileBanner3 from '../../assets/banners/Mobile banner authentiks/H3.jpg';
 import WebHeroSlider from '../../components/WebHeroSlider';
 import AnimatedCTA from '../../components/AnimatedCTA';
+import WebSecurityInfrastructure from '../../components/WebSecurityInfrastructure';
 
 /* ═══════════════════════ HERO SLIDES ═══════════════════════ */
 const heroSlides = [
@@ -181,6 +182,8 @@ export default function LandingPage() {
           </p>
         </div>
       </section>
+
+      <WebSecurityInfrastructure />
 
       {/* ═══════════════ HOW IT WORKS ═══════════════ */}
       <section className="py-12 md:py-12 px-6 relative overflow-hidden">
