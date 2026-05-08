@@ -36,7 +36,6 @@ import MobileLanding from "./pages/mobile/MobileLanding";
 import Support from "./pages/mobile/Support";
 import DemoReport from "./pages/mobile/DemoReport";
 import DemoResult from "./pages/mobile/DemoResult";
-import DemoReport from "./pages/mobile/DemoReport";
 
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
