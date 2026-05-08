@@ -24,7 +24,7 @@ export default function Scan() {
       if (!data.includes('://')) {
         return data;
       }
-      
+
       // Parse as URL and extract the 'code' parameter
       const url = new URL(data);
       const codeParam = url.searchParams.get('code');
@@ -68,7 +68,7 @@ export default function Scan() {
       },
       (error) => {
         console.warn("Location error:", error.code, error.message);
-        
+
         // Error codes: 1=PERMISSION_DENIED, 2=POSITION_UNAVAILABLE, 3=TIMEOUT
         if (!isFallback && (error.code === 2 || error.code === 3)) {
           console.log("High accuracy failed, retrying with standard accuracy...");
@@ -77,10 +77,10 @@ export default function Scan() {
           setLocationPermission('denied');
         }
       },
-      { 
-        enableHighAccuracy: !isFallback, 
-        timeout: isFallback ? 20000 : 15000, 
-        maximumAge: isFallback ? 300000 : 0 
+      {
+        enableHighAccuracy: !isFallback,
+        timeout: isFallback ? 20000 : 15000,
+        maximumAge: isFallback ? 300000 : 0
       }
     );
   }, []);
@@ -156,9 +156,9 @@ export default function Scan() {
 
       const res = await scanResRaw.json();
       const finalStatus = res.status;
-      
+
       const navData = { ...res.data };
-      if (['DEMO-GENUINE-QR', 'DEMO-DUPLICATE-QR', 'DEMO-FAKE-QR'].includes(qrCode)) {
+      if (qrCode === 'DEMO-GENUINE-QR') {
         navData.isDemo = true;
       }
 
@@ -175,10 +175,9 @@ export default function Scan() {
   useEffect(() => {
     const codeParam = searchParams.get('code');
     const token = localStorage.getItem("token");
-    const isDemoScan = ['DEMO-GENUINE-QR', 'DEMO-DUPLICATE-QR', 'DEMO-FAKE-QR'].includes(codeParam);
-    
-    // Only process if user is authenticated or it's a demo scan, and location is granted
-    if (codeParam && (token || isDemoScan) && locationPermission === 'granted') {
+
+    // Only process if user is authenticated and location is granted
+    if (codeParam && token && locationPermission === 'granted') {
       console.log("Processing QR code from URL parameter:", codeParam);
       processQrCode(codeParam);
     }
@@ -196,17 +195,17 @@ export default function Scan() {
     }
 
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    
+
     // For tiny QR codes, we might want to crop to the center "scanner box" area
     // to give the decoder a "zoomed in" view of the most likely QR location.
     // The scanner box in UI is 280x280.
     const displayWidth = video.clientWidth;
     const displayHeight = video.clientHeight;
-    
+
     // Scale factor between video resolution and display size
     const scaleX = video.videoWidth / displayWidth;
     const scaleY = video.videoHeight / displayHeight;
-    
+
     // Scanner box size in video pixels
     const boxSize = 280 * Math.min(scaleX, scaleY) * 1.2; // 20% margin
     const sourceX = (video.videoWidth - boxSize) / 2;
@@ -216,11 +215,11 @@ export default function Scan() {
     canvas.height = boxSize;
 
     ctx.drawImage(video, sourceX, sourceY, boxSize, boxSize, 0, 0, boxSize, boxSize);
-    
+
     // Optional: Image preprocessing for better contrast
     // This can significantly help with tiny/blurry codes
     let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    
+
     // Attempt standard scan
     let code = jsQR(imageData.data, canvas.width, canvas.height, {
       inversionAttempts: "both", // Try both normal and inverted
@@ -239,12 +238,12 @@ export default function Scan() {
       // Increase contrast: stretch values
       const val = avg < 128 ? Math.max(0, avg - 20) : Math.min(255, avg + 20);
       data[i] = val;
-      data[i+1] = val;
-      data[i+2] = val;
+      data[i + 1] = val;
+      data[i + 2] = val;
     }
-    
+
     code = jsQR(data, canvas.width, canvas.height, {
-      inversionAttempts: "dontInvert", 
+      inversionAttempts: "dontInvert",
     });
 
     if (code) {
@@ -281,14 +280,14 @@ export default function Scan() {
 
       try {
         const constraints = {
-          video: { 
+          video: {
             facingMode: "environment",
             width: { ideal: 1920 },
             height: { ideal: 1080 },
             frameRate: { ideal: 30 }
           },
         };
-        
+
         const stream = await navigator.mediaDevices.getUserMedia(constraints)
           .catch(() => navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }))
           .catch(() => navigator.mediaDevices.getUserMedia({ video: true }));

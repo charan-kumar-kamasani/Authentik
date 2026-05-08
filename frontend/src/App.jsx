@@ -34,6 +34,9 @@ import RewardDetail from "./pages/mobile/RewardDetail";
 import MobileLayout from "./components/MobileLayout";
 import MobileLanding from "./pages/mobile/MobileLanding";
 import Support from "./pages/mobile/Support";
+import DemoReport from "./pages/mobile/DemoReport";
+import DemoResult from "./pages/mobile/DemoResult";
+import DemoReport from "./pages/mobile/DemoReport";
 
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -143,16 +146,9 @@ function PrivateRoute({ children }) {
   if (status === "server_error") return <ServerErrorScreen />;
 
   if (status === "unauthorized" || !token) {
-    const searchParams = new URLSearchParams(location.search);
-    const code = searchParams.get('code');
-    const isDemoScan = location.pathname === '/scan' && ['DEMO-GENUINE-QR', 'DEMO-DUPLICATE-QR', 'DEMO-FAKE-QR'].includes(code);
-    const isDemoResult = location.pathname.startsWith('/result') && location.state?.isDemo;
-
-    if (!isDemoScan && !isDemoResult) {
-      const redirectPath = `${location.pathname}${location.search}`;
-      sessionStorage.setItem("redirectAfterLogin", redirectPath);
-      return <Navigate to="/login" replace />;
-    }
+    const redirectPath = `${location.pathname}${location.search}`;
+    sessionStorage.setItem("redirectAfterLogin", redirectPath);
+    return <Navigate to="/login" replace />;
   }
   
   return children;
@@ -187,6 +183,23 @@ function AdminRoute({ children }) {
 /* ================= APP ================= */
 
 export default function App() {
+  if (typeof window !== "undefined") {
+    const searchParams = new URLSearchParams(window.location.search);
+    const code = searchParams.get('code');
+    const isDemoRoute = (window.location.pathname === '/scan' && ['DEMO-GENUINE-QR', 'DEMO-DUPLICATE-QR', 'DEMO-FAKE-QR'].includes(code)) || window.location.pathname === '/demo-report';
+    
+    if (isDemoRoute) {
+      return (
+        <BrowserRouter>
+          <Routes>
+            <Route path="/scan" element={<DemoResult code={code} />} />
+            <Route path="/demo-report" element={<DemoReport />} />
+          </Routes>
+        </BrowserRouter>
+      );
+    }
+  }
+
   const [isMobile, setIsMobile] = useState(
     typeof window !== "undefined" ? window.innerWidth < 768 : false
   );
