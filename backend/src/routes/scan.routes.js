@@ -337,9 +337,16 @@ console.log(qrCode)
   }
 });
 
-router.post("/", protect, async (req, res) => {
+router.post("/", async (req, res, next) => {
+  const { qrCode } = req.body;
+  // Bypass protect for DEMO QRs
+  if (['DEMO-GENUINE-QR', 'DEMO-DUPLICATE-QR', 'DEMO-FAKE-QR'].includes(qrCode)) {
+    return next();
+  }
+  return protect(req, res, next);
+}, async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user ? req.user._id : null;
     const { qrCode, latitude, longitude } = req.body;
     console.log("Scan POST body:", { qrCode, latitude, longitude });
 

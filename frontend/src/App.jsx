@@ -143,9 +143,16 @@ function PrivateRoute({ children }) {
   if (status === "server_error") return <ServerErrorScreen />;
 
   if (status === "unauthorized" || !token) {
-    const redirectPath = `${location.pathname}${location.search}`;
-    sessionStorage.setItem("redirectAfterLogin", redirectPath);
-    return <Navigate to="/login" replace />;
+    const searchParams = new URLSearchParams(location.search);
+    const code = searchParams.get('code');
+    const isDemoScan = location.pathname === '/scan' && ['DEMO-GENUINE-QR', 'DEMO-DUPLICATE-QR', 'DEMO-FAKE-QR'].includes(code);
+    const isDemoResult = location.pathname.startsWith('/result') && location.state?.isDemo;
+
+    if (!isDemoScan && !isDemoResult) {
+      const redirectPath = `${location.pathname}${location.search}`;
+      sessionStorage.setItem("redirectAfterLogin", redirectPath);
+      return <Navigate to="/login" replace />;
+    }
   }
   
   return children;

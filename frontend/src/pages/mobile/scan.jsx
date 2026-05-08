@@ -158,7 +158,7 @@ export default function Scan() {
       const finalStatus = res.status;
       
       const navData = { ...res.data };
-      if (qrCode === 'DEMO-GENUINE-QR') {
+      if (['DEMO-GENUINE-QR', 'DEMO-DUPLICATE-QR', 'DEMO-FAKE-QR'].includes(qrCode)) {
         navData.isDemo = true;
       }
 
@@ -175,9 +175,10 @@ export default function Scan() {
   useEffect(() => {
     const codeParam = searchParams.get('code');
     const token = localStorage.getItem("token");
+    const isDemoScan = ['DEMO-GENUINE-QR', 'DEMO-DUPLICATE-QR', 'DEMO-FAKE-QR'].includes(codeParam);
     
-    // Only process if user is authenticated and location is granted
-    if (codeParam && token && locationPermission === 'granted') {
+    // Only process if user is authenticated or it's a demo scan, and location is granted
+    if (codeParam && (token || isDemoScan) && locationPermission === 'granted') {
       console.log("Processing QR code from URL parameter:", codeParam);
       processQrCode(codeParam);
     }
