@@ -185,7 +185,7 @@ export default function App() {
   if (typeof window !== "undefined") {
     const searchParams = new URLSearchParams(window.location.search);
     const code = searchParams.get('code');
-    const isDemoRoute = (window.location.pathname === '/scan' && ['DEMO-GENUINE-QR', 'DEMO-DUPLICATE-QR', 'DEMO-FAKE-QR'].includes(code)) || window.location.pathname === '/demo-report';
+    const isDemoRoute = (window.location.pathname === '/scan' && ['DEMO-GENUINE-QR', 'DEMO-DUPLICATE-QR', 'DEMO-FAKE-QR', 'DEMO-INACTIVE-QR'].includes(code)) || window.location.pathname === '/demo-report';
     
     if (isDemoRoute) {
       return (
