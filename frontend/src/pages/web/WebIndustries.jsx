@@ -54,7 +54,7 @@ export default function WebIndustries() {
                         <div className="relative w-full" style={{ aspectRatio: '1772/751' }}>
                             <img
                                 src={industriesBanner}
-                                alt="Industry Page banner"
+                                alt="Authentik Industry Solutions - Anti Counterfeit for Fashion, Cosmetics and FMCG"
                                 className="absolute inset-0 w-full h-full object-contain transition-all duration-1000 ease-in-out group-hover:scale-[1.01]"
                             />
                         </div>
@@ -67,7 +67,7 @@ export default function WebIndustries() {
                         <div className="relative w-full rounded-2xl overflow-hidden shadow-xl border border-white/10 mb-5">
                             <img 
                                 src={mobileIndustriesBanner} 
-                                alt="Industries Page banner" 
+                                alt="Authentik Sector-Specific Product Authentication and Security Solutions" 
                                 className="w-full h-auto object-contain"
                             />
                         </div>

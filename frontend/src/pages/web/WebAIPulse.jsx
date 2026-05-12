@@ -57,7 +57,7 @@ export default function WebAIPulse() {
                         <div className="relative w-full" style={{ aspectRatio: '1672/800' }}>
                             <img
                                 src={aiPulseBanner}
-                                alt="Product Page banner"
+                                alt="Authentik AI Pulse - Intelligent Packaging Analytics and Data Insights"
                                 className="absolute inset-0 w-full h-full object-contain transition-all duration-1000 ease-in-out group-hover:scale-[1.01]"
                             />
                         </div>
@@ -70,7 +70,7 @@ export default function WebAIPulse() {
                         <div className="relative w-full rounded-2xl overflow-hidden shadow-xl border border-white/10 mb-5">
                             <img 
                                 src={mobileAIPulseBanner} 
-                                alt="AI Pulse Page banner" 
+                                alt="Authentik AI Pulse Mobile Dashboard for Connected Products" 
                                 className="w-full h-auto object-contain"
                             />
                         </div>

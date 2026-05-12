@@ -104,7 +104,7 @@ export default function LandingPage() {
 
         {/* Hero background image */}
         <div className="absolute top-0 left-0 w-full h-full -z-10 opacity-10 pointer-events-none">
-          <img src={heroImage} alt="" className="w-full h-full object-cover blur-2xl" />
+          <img src={heroImage} alt="Authentik - Leading Anti Counterfeit Solutions and Product Authentication Platform" className="w-full h-full object-cover blur-2xl" />
         </div>
 
         {/* Grid pattern overlay */}

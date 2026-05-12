@@ -112,7 +112,7 @@ export default function WebHowItWorks() {
                                     <div className="relative w-full" style={{ aspectRatio: '1672/800' }}>
                                         <img
                                             src={howItWorksBanner}
-                                            alt="Product Page banner"
+                                            alt="Authentik How It Works - Step-by-Step Product Authentication and QR Integration"
                                             className="absolute inset-0 w-full h-full object-contain transition-all duration-1000 ease-in-out group-hover:scale-[1.01]"
                                         />
                                     </div>
@@ -125,7 +125,7 @@ export default function WebHowItWorks() {
                                     <div className="relative w-full rounded-2xl overflow-hidden shadow-xl border border-white/10 mb-5">
                                         <img 
                                             src={mobileHIWBanner} 
-                                            alt="How It Works Page banner" 
+                                            alt="Authentik Smart Packaging and Serialized QR Code Deployment Guide" 
                                             className="w-full h-auto object-contain"
                                         />
                                     </div>

@@ -60,7 +60,7 @@ export default function WebProduct() {
                         <div className="relative w-full" style={{ aspectRatio: '1672/800' }}>
                             <img 
                                 src={productBanner} 
-                                alt="Product Page banner" 
+                                alt="Authentik Product Authentication Platform - Anti Counterfeit Software Features" 
                                 className="absolute inset-0 w-full h-full object-contain transition-all duration-1000 ease-in-out group-hover:scale-[1.01]"
                             />
                         </div>
@@ -73,7 +73,7 @@ export default function WebProduct() {
                         <div className="relative w-full rounded-2xl overflow-hidden shadow-xl border border-white/10 mb-5">
                             <img 
                                 src={mobileProductBanner} 
-                                alt="Product Page banner" 
+                                alt="Authentik Mobile Product Verification and Traceability Software" 
                                 className="w-full h-auto object-contain"
                             />
                         </div>
@@ -285,7 +285,7 @@ export default function WebProduct() {
                                     <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-50" />
                                     <img 
                                         src={item.img} 
-                                        alt={item.title} 
+                                        alt={`${item.title} - ${item.subTitle} for Product Authentication`} 
                                         className="max-w-[90%] max-h-[90%] object-contain rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 group-hover:scale-110 transition-transform duration-700" 
                                     />
                                     <div className={`absolute top-6 left-6 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-2xl ${item.tagColor} border border-white/10 backdrop-blur-xl z-20`}>
