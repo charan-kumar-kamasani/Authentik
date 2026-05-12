@@ -3,6 +3,7 @@ import { HelpCircle, ArrowRight, MessageCircle, ChevronDown } from "lucide-react
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
+import SEO from "../../components/SEO";
 
 const Glow = ({ color, className }) => (
     <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
@@ -44,6 +45,11 @@ export default function WebFAQs() {
 
     return (
         <div className="min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden flex flex-col">
+            <SEO 
+                title="FAQs | Anti Counterfeit & QR Code Authentication Support"
+                description="Find answers to common questions about how to prevent counterfeit products, qr code authentication for brands, and implementing smart packaging for your products."
+                keywords="how to prevent counterfeit products, qr code authentication for brands, how to verify original products, anti counterfeit qr code solution, smart packaging for brands, qr code warranty system, connected packaging platform, traceability using qr codes, fake product prevention software, digital product authentication"
+            />
             <WebHeader />
 
             {/* ═══════════════ HERO SECTION ═══════════════ */}
@@ -83,12 +89,12 @@ export default function WebFAQs() {
                     <div className="mb-20">
                         <SectionTitle>1. Getting Started</SectionTitle>
                         <FaqItem
-                            question="❓ What is Authentiks?"
-                            answer={<>Authentiks is a product intelligence platform that gives every unit a unique identity through QR codes — helping brands:<br /><br />• Prevent counterfeits<br />• Track product movement<br />• Engage customers<br />• Gain real-time insights</>}
+                            question="❓ What is Authentiks and how to prevent counterfeit products?"
+                            answer={<>Authentiks is a product intelligence platform that provides an anti counterfeit qr code solution to give every unit a unique identity — helping brands:<br /><br />• Prevent counterfeits<br />• Track product movement<br />• Engage customers<br />• Gain real-time insights</>}
                         />
                         <FaqItem
-                            question="❓ How do I start using Authentiks?"
-                            answer={<>Getting started is simple:<br />1. Choose a plan<br />2. Share your product (SKU) details<br />3. Order QR codes<br />4. Receive printed labels at your location<br />5. Apply them to your products<br /><br /><span className="text-indigo-400 font-black italic">👉 No technical integration required.</span></>}
+                            question="❓ How do I start using qr code authentication for brands?"
+                            answer={<>Getting started with our digital product authentication is simple:<br />1. Choose a plan<br />2. Share your product (SKU) details<br />3. Order QR codes<br />4. Receive printed labels at your location<br />5. Apply them to your products<br /><br /><span className="text-indigo-400 font-black italic">👉 No technical integration required.</span></>}
                         />
                         <FaqItem
                             question="❓ How long does it take to go live?"
@@ -108,8 +114,8 @@ export default function WebFAQs() {
                             answer={<>First scan → marked as authentic<br />Repeated scans → marked as suspicious<br /><br /><span className="text-indigo-400 font-black italic">👉 This helps you identify counterfeit or misuse.</span></>}
                         />
                         <FaqItem
-                            question="❓ Is every QR code unique?"
-                            answer={<>Yes.<br /><br />Even within the same SKU, every product unit gets a completely unique QR code.<br /><br /><span className="text-indigo-400 font-black italic">👉 This enables unit-level tracking and authentication.</span></>}
+                            question="❓ How to verify original products using Authentiks?"
+                            answer={<>Yes.<br /><br />Even within the same SKU, every product unit gets a completely unique QR code for unit-level traceability using qr codes.<br /><br /><span className="text-indigo-400 font-black italic">👉 This enables unit-level tracking and authentication.</span></>}
                         />
                         <FaqItem
                             question="❓ How secure is the system?"

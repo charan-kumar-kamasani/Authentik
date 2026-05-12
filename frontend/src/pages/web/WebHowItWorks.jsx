@@ -11,6 +11,7 @@ import ContactFormModal from "../../components/ContactFormModal";
 import AnimatedCTA from "../../components/AnimatedCTA";
 import howItWorksBanner from "../../assets/banners/how_it_works_banner.jpg";
 import mobileHIWBanner from "../../assets/banners/Mobile banner authentiks/HIW.jpg";
+import SEO from "../../components/SEO";
 
 const Glow = ({ color, className }) => (
   <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
@@ -57,6 +58,11 @@ export default function WebHowItWorks() {
 
     return (
         <div className="min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden flex flex-col">
+            <SEO 
+                title="How It Works | Smart Packaging & QR Authentication Explained"
+                description="Discover how digital warranty works and how our serialized qr codes provide intelligent packaging for a complete digital packaging experience."
+                keywords="how digital warranty works, qr authentication explained, serialized qr codes, intelligent packaging, digital packaging experience, consumer connected packaging"
+            />
             <WebHeader />
 
             {/* ═══════════════ HERO SECTION ═══════════════ */}
@@ -156,8 +162,8 @@ export default function WebHowItWorks() {
                     <div className="space-y-6">
                         {[
                             { 
-                                step: '1', title: 'Order Your QR Codes', icon: QrCode, color: 'emerald',
-                                desc: "You share product (SKU) details and quantity required. We handle everything else."
+                                step: '1', title: 'Order Your Serialized QR Codes', icon: QrCode, color: 'emerald',
+                                desc: "You share product (SKU) details and quantity required. We handle everything else for your intelligent packaging."
                             },
                             { 
                                 step: '2', title: 'Unique QR Generated for Every Unit', icon: ShieldCheck, color: 'blue',
@@ -172,8 +178,8 @@ export default function WebHowItWorks() {
                                 desc: "Stick labels on packaging or product. No technical integration required. Works with your existing process."
                             },
                             { 
-                                step: '5', title: 'Customer Scans the Product', icon: Smartphone, color: 'indigo',
-                                desc: "✅ First Scan: Product verified as authentic, Brand message / landing page shown. \n⚠️ Multiple Scans: Marked as suspicious, Logged in backend. Every scan tells a story."
+                                step: '5', title: 'QR Authentication Explained', icon: Smartphone, color: 'indigo',
+                                desc: "✅ First Scan: Product verified as authentic, Brand message / landing page shown. \n⚠️ Multiple Scans: Marked as suspicious, Logged in backend. Every scan tells a story. This is how digital warranty works."
                             },
                             { 
                                 step: '6', title: 'Real-Time Tracking & Insights', icon: BarChart3, color: 'cyan',

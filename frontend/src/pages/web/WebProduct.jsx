@@ -9,6 +9,7 @@ import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
 import AnimatedCTA from "../../components/AnimatedCTA";
+import SEO from "../../components/SEO";
 import productBanner from '../../assets/banners/product_page.jpg';
 import mobileProductBanner from '../../assets/banners/Mobile banner authentiks/Product.jpg';
 
@@ -38,6 +39,11 @@ export default function WebProduct() {
 
     return (
         <div className="min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden flex flex-col">
+            <SEO 
+                title="Product Authentication Platform | Secure QR Code Solutions"
+                description="Authentik is a leading product authentication platform offering anti counterfeit software and traceability software to secure your supply chain and engage consumers."
+                keywords="product authentication platform, anti counterfeit software, qr code product verification, traceability software, smart packaging solutions, digital warranty platform, consumer engagement platform, product tracking software, qr loyalty platform, secure qr code system"
+            />
             <WebHeader />
 
             {/* ═══════════════ HERO SECTION ═══════════════ */}
@@ -87,8 +93,8 @@ export default function WebProduct() {
                             <SectionTag className="bg-indigo-500/10 border-indigo-500/20 text-indigo-400">
                                 <Zap size={14} /> What is Authentiks?
                             </SectionTag>
-                            <SectionTitle>More Than QR Codes — A Complete Product Intelligence Platform</SectionTitle>
-                            <p className="text-gray-400 font-bold mb-8 text-lg">Authentiks is an end-to-end solution that enables brands to:</p>
+                            <SectionTitle>The Complete Product Authentication Platform & Traceability Software</SectionTitle>
+                            <p className="text-gray-400 font-bold mb-8 text-lg">Authentiks is a comprehensive <span className="text-white">anti counterfeit software</span> and <span className="text-white">consumer engagement platform</span> that enables brands to:</p>
                             
                             <ul className="space-y-4 mb-8">
                                 {[
@@ -139,8 +145,8 @@ export default function WebProduct() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {[
                             {
-                                icon: ShieldCheck, title: "1. Product Authentication", sub: "Ensure every product is genuine",
-                                points: ["Unique QR code for every unit", "First-scan authentication logic", "Duplicate scan detection", "Real-time counterfeit alerts"],
+                                icon: ShieldCheck, title: "1. Product Authentication Platform", sub: "Ensure every product is genuine",
+                                points: ["Unique QR code for every unit", "First-scan authentication logic", "Duplicate scan detection", "Real-time anti counterfeit software alerts"],
                                 highlight: "Know instantly if your product is being copied"
                             },
                             {
@@ -149,18 +155,18 @@ export default function WebProduct() {
                                 highlight: "Not just SKU-level — unit-level intelligence"
                             },
                             {
-                                icon: Zap, title: "3. Print, Label & Deliver", sub: "Zero operational hassle",
+                                icon: Zap, title: "3. Smart Packaging Solutions", sub: "Zero operational hassle",
                                 points: ["QR labels printed with scratch layer", "Ready-to-use format", "Delivered directly to warehouse", "Fully managed process"],
                                 highlight: "No need for multiple vendors"
                             },
                             {
-                                icon: Smartphone, title: "4. Customer Engagement", sub: "Turn scans into relationships",
-                                points: ["Redirect users to your website", "Offer coupons & rewards", "Capture customer data", "Direct communication channel"],
+                                icon: Smartphone, title: "4. Consumer Engagement Platform", sub: "Turn scans into relationships",
+                                points: ["Redirect users to your website", "Offer coupons & rewards", "Capture customer data", "Direct communication channel", "Digital warranty platform support"],
                                 highlight: "Reduce dependency on marketplaces"
                             },
                             {
-                                icon: BarChart3, title: "5. Analytics Dashboard", sub: "Make smarter business decisions",
-                                points: ["Scan data by location", "Authentic vs duplicate metrics", "Customer behavior insights", "Product performance tracking"],
+                                icon: BarChart3, title: "5. Product Tracking Software", sub: "Make smarter business decisions",
+                                points: ["Scan data by location", "Authentic vs duplicate metrics", "Customer behavior insights", "Product performance tracking", "Traceability software analytics"],
                                 highlight: "Data that drives growth"
                             },
                             {

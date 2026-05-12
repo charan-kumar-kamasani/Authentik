@@ -1,0 +1,25 @@
+User-agent: *
+Allow: /
+
+# Disallow admin and private routes
+Disallow: /admin/
+Disallow: /enterprise/
+Disallow: /orders/
+Disallow: /generate-qrs/
+Disallow: /qr-management/
+Disallow: /users/
+Disallow: /product-manager/
+
+# Mobile private routes
+Disallow: /home/
+Disallow: /scan/
+Disallow: /profile/
+Disallow: /edit-profile/
+Disallow: /scan-history/
+Disallow: /rewards/
+Disallow: /result/
+Disallow: /report/
+Disallow: /my-reports/
+Disallow: /notifications/
+
+Sitemap: https://authentiks.in/sitemap.xml

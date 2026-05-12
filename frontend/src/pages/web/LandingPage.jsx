@@ -18,6 +18,7 @@ import mobileBanner3 from '../../assets/banners/Mobile banner authentiks/H3.jpg'
 import WebHeroSlider from '../../components/WebHeroSlider';
 import AnimatedCTA from '../../components/AnimatedCTA';
 import WebSecurityInfrastructure from '../../components/WebSecurityInfrastructure';
+import SEO from '../../components/SEO';
 
 /* ═══════════════════════ HERO SLIDES ═══════════════════════ */
 const heroSlides = [
@@ -87,6 +88,11 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden">
+      <SEO 
+        title="Anti Counterfeit Solutions & Product Authentication"
+        description="Authentik offers the best anti counterfeit solutions in India, including smart packaging and qr code authentication for complete product traceability."
+        keywords="anti counterfeit solutions, product authentication, smart packaging, qr code authentication, product traceability, brand protection solutions, product verification system, anti counterfeit technology"
+      />
       <WebHeader />
 
       {/* ═══════════════ HERO SECTION (Dynamic Slider) ═══════════════ */}
@@ -153,15 +159,15 @@ export default function LandingPage() {
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <SectionTag><Lock size={14} /> Security & Authenticity</SectionTag>
-            <SectionTitle>Built for Secure Product Authentication</SectionTitle>
+            <SectionTitle>Comprehensive Anti Counterfeit Solutions for Brands</SectionTitle>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: QrCode, title: 'Unique QR for Every Unit', desc: 'Unique QR code for every unit produced — no two are alike', color: 'text-emerald-400', glow: 'group-hover:shadow-emerald-500/20' },
-              { icon: ScanLine, title: 'First-Scan Validation', desc: 'First-scan validation ensures authenticity at the point of purchase', color: 'text-blue-400', glow: 'group-hover:shadow-blue-500/20' },
-              { icon: AlertTriangle, title: 'Duplicate Detection', desc: 'Duplicate scans instantly detected and flagged in real-time', color: 'text-amber-400', glow: 'group-hover:shadow-amber-500/20' },
-              { icon: Brain, title: 'Intelligent Backend', desc: 'Intelligent backend prevents misuse and unauthorized access', color: 'text-purple-400', glow: 'group-hover:shadow-purple-500/20' },
+              { icon: QrCode, title: 'Secure QR Code Authentication', desc: 'Unique QR code for every unit produced — no two are alike', color: 'text-emerald-400', glow: 'group-hover:shadow-emerald-500/20' },
+              { icon: ScanLine, title: 'Instant Product Authentication', desc: 'First-scan validation ensures authenticity at the point of purchase', color: 'text-blue-400', glow: 'group-hover:shadow-blue-500/20' },
+              { icon: AlertTriangle, title: 'Smart Product Traceability', desc: 'Duplicate scans instantly detected and flagged in real-time across the supply chain', color: 'text-amber-400', glow: 'group-hover:shadow-amber-500/20' },
+              { icon: Brain, title: 'Anti Counterfeit Technology', desc: 'Intelligent backend prevents misuse and unauthorized access to your products', color: 'text-purple-400', glow: 'group-hover:shadow-purple-500/20' },
             ].map((item, i) => (
               <div
                 key={i}
@@ -202,8 +208,8 @@ export default function LandingPage() {
               {
                 step: '01',
                 icon: QrCode,
-                title: 'Order QR Codes',
-                desc: 'Share your Product Details, SKU & quantity',
+                title: 'Order QR Code Authentication',
+                desc: 'Share your Product Details, SKU & quantity for serialized qr codes',
                 color: 'text-emerald-400',
                 stepBg: 'bg-emerald-500/20 border-emerald-500/30',
                 ring: 'ring-emerald-500/20'
@@ -211,8 +217,8 @@ export default function LandingPage() {
               {
                 step: '02',
                 icon: Package,
-                title: 'We Generate & Deliver',
-                desc: 'Serialized, tamper-proof scratch off labels shipped to your doorstep',
+                title: 'Smart Packaging Delivery',
+                desc: 'Serialized, tamper-proof scratch off labels and smart packaging solutions shipped to your doorstep',
                 color: 'text-blue-400',
                 stepBg: 'bg-blue-500/20 border-blue-500/30',
                 ring: 'ring-blue-500/20'

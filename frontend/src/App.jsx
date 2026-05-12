@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import { useState, useEffect } from "react";
 import { LoadingProvider } from './context/LoadingContext';
 import { ConfirmProvider } from './components/ConfirmModal';
+import { HelmetProvider } from 'react-helmet-async';
 
 import Login from "./pages/mobile/Login";
 import OTP from "./pages/mobile/OTP";
@@ -226,6 +227,7 @@ export default function App() {
 
   if (!isMobile || appMode === 'brand') {
     return (
+      <HelmetProvider>
       <LoadingProvider>
         <ConfirmProvider>
           <BrowserRouter>
@@ -338,12 +340,14 @@ export default function App() {
         </BrowserRouter>
         </ConfirmProvider>
       </LoadingProvider>
+      </HelmetProvider>
     );
   }
 
   /* ================= MOBILE APP (PRODUCT MODE) ================= */
 
   return (
+    <HelmetProvider>
     <LoadingProvider>
       <ConfirmProvider>
         <BrowserRouter>
@@ -409,6 +413,7 @@ export default function App() {
         </BrowserRouter>
       </ConfirmProvider>
     </LoadingProvider>
+    </HelmetProvider>
   );
 }
 

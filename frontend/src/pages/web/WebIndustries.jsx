@@ -10,6 +10,7 @@ import ContactFormModal from "../../components/ContactFormModal";
 import AnimatedCTA from "../../components/AnimatedCTA";
 import industriesBanner from '../../assets/banners/industries_banner.jpg';
 import mobileIndustriesBanner from '../../assets/banners/Mobile banner authentiks/Industries.jpg';
+import SEO from "../../components/SEO";
 
 const Glow = ({ color, className }) => (
     <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
@@ -32,6 +33,11 @@ export default function WebIndustries() {
 
     return (
         <div className="min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden flex flex-col">
+            <SEO 
+                title="Industry Solutions | Secure Authentication for Fashion, FMCG & Electronics"
+                description="Authentik provides specialized anti counterfeit solutions for Fashion, FMCG, Cosmetics, and Electronics. Prevent fake fashion products and cosmetics with our smart packaging."
+                keywords="fake fashion products, luxury product authentication, apparel qr authentication, cosmetic product verification, fake cosmetics prevention, electronic product authentication, fake electronics prevention, smart packaging for FMCG, qr code packaging solution, auto parts authentication, counterfeit spare parts solution"
+            />
             <WebHeader />
 
             {/* ═══════════════ HERO SECTION ═══════════════ */}
@@ -110,19 +116,19 @@ export default function WebIndustries() {
                             {
                                 icon: Factory, title: "FMCG", sub: "High Volume. Low Visibility. High Risk.", color: "emerald",
                                 challenges: ["Difficult to track product movement", "Counterfeits in local markets", "No direct connection with customers"],
-                                solutions: ["Unique QR for every unit", "Track scan locations across regions", "Engage customers through product scans"],
-                                highlight: "Turn high-volume sales into actionable insights"
+                                solutions: ["Unique QR for every unit", "Track scan locations across regions", "Engage customers through product scans", "Smart packaging for FMCG"],
+                                highlight: "Turn high-volume sales into actionable insights with qr code packaging solution"
                             },
                             {
                                 icon: Sparkles, title: "Cosmetics & Personal Care", sub: "Trust is Everything", color: "pink",
                                 challenges: ["Fake products damage brand reputation", "Customers unsure about authenticity", "Heavy dependency on marketplaces"],
-                                solutions: ["Instant product authentication", "Build customer confidence", "Drive traffic to your own platform"],
+                                solutions: ["Instant cosmetic product verification", "Build customer confidence", "Drive traffic to your own platform", "Fake cosmetics prevention"],
                                 highlight: "Protect your brand and build loyalty"
                             },
                             {
                                 icon: Shirt, title: "Apparel & Fashion", sub: "Brand Value at Risk", color: "amber",
-                                challenges: ["Counterfeit replicas in the market", "Limited visibility post-sale", "No engagement after purchase"],
-                                solutions: ["Unique identity for each product", "Post-purchase engagement via QR", "Customer data collection"],
+                                challenges: ["Fake fashion products in the market", "Luxury product authentication needs", "Limited visibility post-sale"],
+                                solutions: ["Unique identity for each product", "Post-purchase engagement via apparel qr authentication", "Customer data collection"],
                                 highlight: "Extend your brand experience beyond purchase"
                             },
                             {
@@ -133,7 +139,7 @@ export default function WebIndustries() {
                             },
                             {
                                 icon: Monitor, title: "Electronics & Consumer Goods", sub: "High Value. High Counterfeit Risk.", color: "cyan",
-                                challenges: ["Fake or refurbished products sold as new", "Warranty fraud", "Lack of traceability"],
+                                challenges: ["Fake or refurbished products sold as new", "Electronic product authentication needs", "Fake electronics prevention"],
                                 solutions: ["Secure product verification", "Link QR to warranty registration", "Track product journey"],
                                 highlight: "Protect revenue and customer trust"
                             },

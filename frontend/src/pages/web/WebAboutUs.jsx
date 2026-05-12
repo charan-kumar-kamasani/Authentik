@@ -6,6 +6,7 @@ import {
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
+import SEO from "../../components/SEO";
 
 const Glow = ({ color, className }) => (
     <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
@@ -28,6 +29,11 @@ export default function WebAboutUs() {
 
     return (
         <div className="min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden flex flex-col">
+            <SEO 
+                title="About Us | Our Mission for Product Authentication"
+                description="Learn about Authentiks' mission to bring trust and transparency to every physical product through advanced anti counterfeit technology and product tracking software."
+                keywords="anti counterfeit solutions, brand protection software india, product verification india, secure product authentication mission"
+            />
             <WebHeader />
 
             {/* ═══════════════ HERO SECTION ═══════════════ */}

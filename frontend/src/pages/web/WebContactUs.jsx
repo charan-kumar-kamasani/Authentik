@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
+import SEO from "../../components/SEO";
 import API_BASE_URL from "../../config/api";
 
 const Glow = ({ color, className }) => (
@@ -75,6 +76,11 @@ export default function WebContactUs() {
 
     return (
         <div className="min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden flex flex-col">
+            <SEO 
+                title="Contact Us | Get a Demo for Anti Counterfeit Solutions"
+                description="Contact Authentiks for expert advice on anti counterfeit software and brand protection. Request a demo to see our product authentication platform in action."
+                keywords="contact authentiks, brand protection demo, anti counterfeit software inquiry, product authentication consultation, product traceability experts"
+            />
             <WebHeader />
 
             {/* ═══════════════ HERO SECTION ═══════════════ */}

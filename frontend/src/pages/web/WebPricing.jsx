@@ -12,6 +12,7 @@ import ContactFormModal from "../../components/ContactFormModal";
 import AnimatedCTA from "../../components/AnimatedCTA";
 import pricingBanner from "../../assets/banners/Pricing.jpg";
 import mobilePricingBanner from '../../assets/banners/Mobile banner authentiks/Pricing.jpg';
+import SEO from "../../components/SEO";
 
 /* ═══════════════════════ REUSABLE COMPONENTS ═══════════════════════ */
 
@@ -163,6 +164,11 @@ export default function WebPricing() {
 
     return (
         <div className="min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden flex flex-col">
+            <SEO 
+                title="Pricing | Anti Counterfeit & Product Traceability Software Plans"
+                description="Explore affordable pricing for anti counterfeit solutions in India. Get smart packaging and product authentication platform plans tailored for Indian brands."
+                keywords="anti counterfeit solutions india, smart packaging india, product authentication platform india, qr traceability solution india, fake product detection india, brand protection software india, qr based authentication india, product verification india"
+            />
             <WebHeader />
 
             {/* ═══════════════ HERO SECTION ═══════════════ */}
@@ -209,7 +215,7 @@ export default function WebPricing() {
                 <Glow color="bg-indigo-600" className="-top-32 left-1/2 -translate-x-1/2 opacity-15" />
                 <div className="container mx-auto max-w-7xl relative z-10">
                     <div className="text-center mb-16">
-                        <SectionTitle>Choose Your Plan</SectionTitle>
+                        <SectionTitle>Anti Counterfeit Solutions India: Choose Your Plan</SectionTitle>
 
                         {/* Billing Toggle: Half-Yearly | Yearly */}
                         <div className="inline-flex items-center p-1.5 bg-white/5 rounded-full border border-white/10 relative mt-4">
@@ -389,9 +395,9 @@ export default function WebPricing() {
                     <div className="text-center mb-16">
                         <SectionTag className="bg-purple-500/10 border-purple-500/20 text-purple-400"><QrCode size={14} /> Label Pricing</SectionTag>
                         <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter leading-[1.05] mb-4">
-                            Serialized QR Labels —<br />Delivered to Your Doorstep
+                            Serialized QR Labels India —<br />Delivered to Your Doorstep
                         </h2>
-                        <p className="text-gray-400 font-bold text-lg">Pricing from ₹3 → ₹1 per label (volume-based)</p>
+                        <p className="text-gray-400 font-bold text-lg">Smart packaging india: Pricing from ₹3 → ₹1 per label (volume-based)</p>
                     </div>
 
                     <div className="glass-effect rounded-[2.5rem] border border-white/5 overflow-hidden shadow-2xl shadow-indigo-500/5 mb-10">

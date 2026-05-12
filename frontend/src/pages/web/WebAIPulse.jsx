@@ -10,6 +10,7 @@ import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import ContactFormModal from "../../components/ContactFormModal";
 import AnimatedCTA from "../../components/AnimatedCTA";
+import SEO from "../../components/SEO";
 import aiPulseBanner from "../../assets/banners/AI Pulse.jpg";
 import mobileAIPulseBanner from '../../assets/banners/Mobile banner authentiks/AI Pulse.jpg';
 
@@ -35,6 +36,11 @@ export default function WebAIPulse() {
 
     return (
         <div className="min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden flex flex-col font-sans">
+            <SEO 
+                title="AI Pulse | Intelligent Packaging & Connected Product Analytics"
+                description="Leverage AI Pulse for intelligent packaging insights. Transform your connected products into data-driven assets with digital product passports and real-time analytics."
+                keywords="connected products, digital product passport, smart product identity, intelligent packaging, interactive packaging, serialized qr codes, consumer connected packaging, digital packaging experience"
+            />
             <WebHeader />
 
             {/* ═══════════════ HERO SECTION ═══════════════ */}
@@ -159,7 +165,7 @@ export default function WebAIPulse() {
                             </SectionTag>
                             <SectionTitle>Automatically Generated from Real Interactions</SectionTitle>
                             <p className="text-gray-400 font-bold mb-8 text-lg">
-                                AI Pulse is your AI-powered weekly business report, automatically generated from real customer interactions with your products.
+                                AI Pulse is your AI-powered weekly business report, automatically generated from real customer interactions with your <span className="text-white">connected products</span>. It transforms simple packaging into a <span className="text-white">digital packaging experience</span> that provides a <span className="text-white">digital product passport</span> for every unit.
                             </p>
                         </div>
                     </div>
@@ -176,7 +182,7 @@ export default function WebAIPulse() {
                         <SectionTag className="bg-cyan-500/10 border-cyan-500/20 text-cyan-400">
                             <Calendar size={14} /> How It Works
                         </SectionTag>
-                        <SectionTitle>From Scans to Strategy</SectionTitle>
+                        <SectionTitle>Intelligent Packaging: From Scans to Strategy</SectionTitle>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
