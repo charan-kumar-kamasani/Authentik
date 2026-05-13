@@ -68,6 +68,14 @@ const productSchema = new mongoose.Schema(
       of: mongoose.Schema.Types.Mixed,
       default: {},
     },
+
+    // Warranty information
+    warranty: {
+      duration: { type: Number },                                        // e.g. 12
+      durationUnit: { type: String, enum: ['months', 'years'] },         // months or years
+      warrantyType: { type: String, trim: true },                        // e.g. "Manufacturer", "Extended"
+      description: { type: String, trim: true },                         // warranty terms
+    },
   },
   { timestamps: true }
 );

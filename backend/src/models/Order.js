@@ -107,6 +107,14 @@ const orderSchema = new mongoose.Schema({
     expiryDate: { type: Date, default: null },
   },
 
+  // Warranty information attached to this order's products
+  warranty: {
+    duration: { type: Number },                                        // e.g. 12
+    durationUnit: { type: String, enum: ['months', 'years'] },         // months or years
+    warrantyType: { type: String, trim: true },                        // e.g. "Manufacturer", "Extended", "Limited"
+    description: { type: String, trim: true },                         // warranty terms/details
+  },
+
   // Track QR generation
   qrCodesGenerated: { type: Boolean, default: false },
   qrGeneratedCount: { type: Number, default: 0 },

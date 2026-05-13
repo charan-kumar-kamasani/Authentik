@@ -209,6 +209,13 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
         websiteLink: req.body.coupon.websiteLink || '',
         expiryDate: req.body.coupon.expiryDate || null,
       } : undefined,
+      // Warranty data (if provided)
+      warranty: (req.body.warranty && (req.body.warranty.duration || req.body.warranty.warrantyType)) ? {
+        duration: req.body.warranty.duration || null,
+        durationUnit: req.body.warranty.durationUnit || 'months',
+        warrantyType: req.body.warranty.warrantyType || '',
+        description: req.body.warranty.description || '',
+      } : undefined,
       // Calculate and save pricing
       amount: (await calculateQrPrice(quantityNumber)).total,
       subtotal: (await calculateQrPrice(quantityNumber)).subtotal,
@@ -573,6 +580,7 @@ router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req
         calculatedExpiryDate: order.calculatedExpiryDate,
         dynamicFields: order.dynamicFields,
         variants: order.variants,
+        warranty: (order.warranty && (order.warranty.duration || order.warranty.warrantyType)) ? order.warranty : undefined,
         description: order.description,
         productInfo: order.productInfo,
         quantity: 1,
@@ -962,6 +970,15 @@ router.put('/:id', protect, authorize('company', 'authorizer', 'creator', 'admin
     if (dynamicFields !== undefined) order.dynamicFields = dynamicFields;
     if (variants !== undefined) order.variants = variants;
     if (productImage !== undefined) order.productImage = productImage;
+    // Update warranty if provided
+    if (req.body.warranty !== undefined) {
+      order.warranty = (req.body.warranty && (req.body.warranty.duration || req.body.warranty.warrantyType)) ? {
+        duration: req.body.warranty.duration || null,
+        durationUnit: req.body.warranty.durationUnit || 'months',
+        warrantyType: req.body.warranty.warrantyType || '',
+        description: req.body.warranty.description || '',
+      } : undefined;
+    }
 
     order.history.push({
       status: 'Pending Authorization',

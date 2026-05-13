@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import API_BASE_URL, { createOrder, updateOrder, getProductTemplates, createProductTemplate, deleteProductTemplate, getBrands } from '../../config/api';
-import { Calendar, Package, Plus, X, List, LayoutGrid, Trash2, CheckCircle2, Search, ArrowLeft, Gift } from 'lucide-react';
+import { Calendar, Package, Plus, X, List, LayoutGrid, Trash2, CheckCircle2, Search, ArrowLeft, Gift, Shield } from 'lucide-react';
 import { useConfirm } from '../../components/ConfirmModal';
 
 export default function GenerateQrs() {
@@ -23,6 +23,9 @@ export default function GenerateQrs() {
 
   // Coupon fields
   const [coupon, setCoupon] = useState({ title: '', code: '', description: '', websiteLink: '', expiryDate: '' });
+
+  // Warranty fields
+  const [warranty, setWarranty] = useState({ duration: '', durationUnit: 'months', warrantyType: '', description: '' });
 
   // Dynamic fields
   const [dynamicFieldValues, setDynamicFieldValues] = useState({});
@@ -83,6 +86,14 @@ export default function GenerateQrs() {
           expiryDate: order.coupon.expiryDate || '',
           _expiryMonth: order.coupon.expiryDate ? new Date(order.coupon.expiryDate).getMonth() + 1 : '',
           _expiryYear: order.coupon.expiryDate ? new Date(order.coupon.expiryDate).getFullYear() : ''
+        });
+      }
+      if (order.warranty) {
+        setWarranty({
+          duration: order.warranty.duration || '',
+          durationUnit: order.warranty.durationUnit || 'months',
+          warrantyType: order.warranty.warrantyType || '',
+          description: order.warranty.description || '',
         });
       }
     }
@@ -378,6 +389,13 @@ export default function GenerateQrs() {
           websiteLink: coupon.websiteLink,
           expiryDate: coupon.expiryDate || null,
         } : undefined,
+        // Warranty (if provided)
+        warranty: (warranty.duration || warranty.warrantyType) ? {
+          duration: warranty.duration ? Number(warranty.duration) : null,
+          durationUnit: warranty.durationUnit || 'months',
+          warrantyType: warranty.warrantyType,
+          description: warranty.description,
+        } : undefined,
       };
 
       if (editingOrder) {
@@ -449,6 +467,7 @@ export default function GenerateQrs() {
     setImagePreview(null);
     setIsCatalogProduct(false);
     setCoupon({ code: '', description: '', expiryDate: '' });
+    setWarranty({ duration: '', durationUnit: 'months', warrantyType: '', description: '' });
   };
 
   useEffect(() => {
@@ -1155,6 +1174,70 @@ export default function GenerateQrs() {
           />
           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest ml-1 mt-1">
             If provided, users who scan &amp; review this product will receive this coupon as a reward.
+          </p>
+        </div>
+
+        {/* Warranty Information Section */}
+        <div className="col-span-2 border-t border-slate-200 pt-4 mt-2">
+          <div className="flex items-center gap-2 mb-4">
+            <Shield size={18} className="text-emerald-600" />
+            <h4 className="text-sm font-semibold text-slate-800">Warranty Information (Optional)</h4>
+          </div>
+        </div>
+
+        {/* Warranty Duration */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-slate-700 ml-1">
+            Warranty Duration
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <input
+              type="text"
+              placeholder="e.g. 12"
+              value={warranty.duration}
+              onChange={(e) => setWarranty({ ...warranty, duration: e.target.value.replace(/\D/g, '') })}
+              maxLength="4"
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-medium"
+            />
+            <select
+              value={warranty.durationUnit}
+              onChange={(e) => setWarranty({ ...warranty, durationUnit: e.target.value })}
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-medium"
+            >
+              <option value="months">Months</option>
+              <option value="years">Years</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Warranty Type */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-slate-700 ml-1">
+            Warranty Type
+          </label>
+          <input
+            type="text"
+            placeholder="e.g. Manufacturer Warranty"
+            value={warranty.warrantyType}
+            onChange={(e) => setWarranty({ ...warranty, warrantyType: e.target.value })}
+            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-medium"
+          />
+        </div>
+
+        {/* Warranty Description */}
+        <div className="col-span-2 flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-slate-700 ml-1">
+            Warranty Description
+          </label>
+          <textarea
+            placeholder="e.g. Covers manufacturing defects for 12 months from date of purchase..."
+            value={warranty.description}
+            onChange={(e) => setWarranty({ ...warranty, description: e.target.value })}
+            rows={2}
+            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-medium resize-none"
+          />
+          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest ml-1 mt-1">
+            If provided, warranty information will be displayed to customers on the scan result page.
           </p>
         </div>
 

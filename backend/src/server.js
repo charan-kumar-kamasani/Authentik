@@ -35,6 +35,7 @@ app.use('/dashboard', require('./routes/dashboard.routes'));
 app.use('/product-templates', require('./routes/productTemplate.routes'));
 app.use('/reviews', require('./routes/review.routes'));
 app.use('/leads', require('./routes/lead.routes'));
+app.use('/warranty', require('./routes/warranty.routes'));
 app.use('/dashboard', require('./routes/dashboard-export.routes'));
 
 const PORT = process.env.PORT || 5000;

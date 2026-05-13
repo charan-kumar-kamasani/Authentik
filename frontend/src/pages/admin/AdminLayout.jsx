@@ -370,6 +370,12 @@ export default function AdminLayout({ children }) {
                 icon={Star}
                 isActive={activePath === "/admin/reviews"}
               />
+              <SidebarItemCollapse
+                label="Warranty Claims"
+                onClick={() => navigate("/admin/warranty-claims")}
+                icon={ShieldCheck}
+                isActive={activePath === "/admin/warranty-claims"}
+              />
               {role !== 'superadmin' && (
                 <SidebarItemCollapse
                   label="QR Inventory"

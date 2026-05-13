@@ -1086,3 +1086,75 @@ export const updateLeadStatus = async (id, status, notes, token) => {
         throw e;
     }
 };
+
+// ─── Warranty Claim APIs ───────────────────────────────────────
+
+export const submitWarrantyClaim = async (claimData, token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/warranty/claim`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(claimData)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.error || err.message || 'Failed to submit warranty claim');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Submit Warranty Claim Error:", error);
+        throw error;
+    }
+};
+
+export const getMyWarrantyClaims = async (token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/warranty/my-claims`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch warranty claims');
+        return await response.json();
+    } catch (error) {
+        console.error("Get My Warranty Claims Error:", error);
+        throw error;
+    }
+};
+
+export const getAllWarrantyClaims = async (token, status = '') => {
+    try {
+        const query = status ? `?status=${status}` : '';
+        const response = await fetch(`${API_BASE_URL}/warranty/claims${query}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch warranty claims');
+        return await response.json();
+    } catch (error) {
+        console.error("Get All Warranty Claims Error:", error);
+        throw error;
+    }
+};
+
+export const updateWarrantyClaimStatus = async (id, data, token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/warranty/claims/${id}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.error || 'Failed to update warranty claim');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Update Warranty Claim Status Error:", error);
+        throw error;
+    }
+};
+
