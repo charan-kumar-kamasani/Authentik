@@ -119,6 +119,8 @@ function ResultAuthentic({ data }: { data: any }) {
   // Check for image in data, then data.productId, then data.images array
   const productImage = data.productImage || data.productId?.productImage || (data.images && data.images.length > 0 ? data.images[0] : null);
   console.log("______product image", productImage, data)
+  console.log("[WARRANTY DEBUG FRONTEND] data.warranty:", JSON.stringify(data.warranty));
+  console.log("[WARRANTY DEBUG FRONTEND] condition check:", !!(data.warranty && (data.warranty.duration || data.warranty.warrantyType)));
 
   const companyName = data.companyName || data.company || data.manufacturer || data.brand || data.productId?.brand || "-";
 

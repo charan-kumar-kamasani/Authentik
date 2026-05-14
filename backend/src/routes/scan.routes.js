@@ -208,7 +208,15 @@ console.log(qrCode)
       .populate('orderId')
       .populate({ path: 'brandId', populate: { path: 'companyId' } })
       .lean();
- 
+
+    // 🔍 WARRANTY DEBUG (check route)
+    if (product) {
+      console.log('[WARRANTY DEBUG /check] QR:', qrCode);
+      console.log('[WARRANTY DEBUG /check] Product.warranty:', JSON.stringify(product.warranty));
+      console.log('[WARRANTY DEBUG /check] Order.warranty:', JSON.stringify(product.orderId?.warranty));
+      console.log('[WARRANTY DEBUG /check] Final:', JSON.stringify(product.warranty || product.orderId?.warranty || null));
+    }
+
     // Fetch field labels from global config
     const config = await FormConfig.getGlobalFormConfig();
     const fieldLabels = {};
@@ -389,6 +397,16 @@ router.post("/", async (req, res, next) => {
       .populate('orderId')
       .populate({ path: 'brandId', populate: { path: 'companyId' } })
       .lean();
+
+    // 🔍 WARRANTY DEBUG LOGS
+    if (product) {
+      console.log('[WARRANTY DEBUG] QR:', qrCode);
+      console.log('[WARRANTY DEBUG] Product._id:', product._id);
+      console.log('[WARRANTY DEBUG] Product.warranty:', JSON.stringify(product.warranty));
+      console.log('[WARRANTY DEBUG] Product.orderId exists:', !!product.orderId);
+      console.log('[WARRANTY DEBUG] Order.warranty:', JSON.stringify(product.orderId?.warranty));
+      console.log('[WARRANTY DEBUG] Final warranty value:', JSON.stringify(product.warranty || product.orderId?.warranty || null));
+    }
 
     // Check if user has already reviewed
     let alreadyReviewed = false;

@@ -324,7 +324,8 @@ router.post(
       calculatedExpiryDate,
       dynamicFields,
       variants, // Array of {variantName, value}
-      coupon // { code, description, expiryDate }
+      coupon, // { code, description, expiryDate }
+      warranty // { duration, durationUnit, warrantyType, description }
     } = req.body;
     
     // Ensure quantity is a number, default to 1 if invalid
@@ -366,6 +367,13 @@ router.post(
           dynamicFields: dynamicFields || {},
           variants: variants || [],
           productImage: productImage || null,
+          // Warranty data (if provided)
+          warranty: (warranty && (warranty.duration || warranty.warrantyType)) ? {
+            duration: warranty.duration || null,
+            durationUnit: warranty.durationUnit || 'months',
+            warrantyType: warranty.warrantyType || '',
+            description: warranty.description || '',
+          } : undefined,
         });
         
         createdProducts.push(product);
@@ -424,7 +432,7 @@ router.post(
 
     // Process sequentially to maintain order and correct sequence numbers
     for (const item of products) {
-        const { productName, brand, batchNo, manufactureDate, expiryDate, quantity, description, productInfo } = item;
+        const { productName, brand, batchNo, manufactureDate, expiryDate, quantity, description, productInfo, productImage, mfdOn, bestBefore, calculatedExpiryDate, dynamicFields, variants, warranty } = item;
         
         // Find latest sequence for THIS item's brand
         // Note: For high concurrency real-time, this needs atomic set or transactions. 
@@ -454,9 +462,21 @@ router.post(
             expiryDate,
             description,
             productInfo,
+            productImage: productImage || null,
             quantity,
             sequence: nextSeq,
-            createdBy: req.user._id
+            createdBy: req.user._id,
+            mfdOn: (mfdOn && mfdOn.month && mfdOn.year) ? mfdOn : undefined,
+            bestBefore: (bestBefore && bestBefore.value) ? bestBefore : undefined,
+            calculatedExpiryDate: calculatedExpiryDate || null,
+            dynamicFields: dynamicFields || {},
+            variants: variants || [],
+            warranty: (warranty && (warranty.duration || warranty.warrantyType)) ? {
+              duration: warranty.duration || null,
+              durationUnit: warranty.durationUnit || 'months',
+              warrantyType: warranty.warrantyType || '',
+              description: warranty.description || '',
+            } : undefined,
         });
         
         results.push(newProduct);

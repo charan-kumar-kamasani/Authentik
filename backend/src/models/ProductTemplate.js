@@ -88,6 +88,13 @@ const productTemplateSchema = new mongoose.Schema({
   bestBefore: {
     value: Number,
     unit: { type: String, enum: ['months', 'years'] }
+  },
+  // Warranty information
+  warranty: {
+    duration: { type: Number },
+    durationUnit: { type: String, enum: ['months', 'years'] },
+    warrantyType: { type: String, trim: true },
+    description: { type: String, trim: true },
   }
 }, { timestamps: true });
 

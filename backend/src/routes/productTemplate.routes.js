@@ -47,7 +47,7 @@ router.get('/', protect, async (req, res) => {
 // @access  Private (Creator, Authorizer, Company, Admin, SuperAdmin)
 router.post('/', protect, async (req, res) => {
   try {
-    const { productName, productImage, productInfo, description, brandId, companyId, skuNumber, variants, dynamicFields, bestBefore } = req.body;
+    const { productName, productImage, productInfo, description, brandId, companyId, skuNumber, variants, dynamicFields, bestBefore, warranty } = req.body;
 
     // Default to user's company/brand if not specified
     const finalBrandId = brandId || req.user.brandId;
@@ -69,6 +69,12 @@ router.post('/', protect, async (req, res) => {
       variants: variants || [],
       dynamicFields: dynamicFields || {},
       bestBefore: bestBefore || null,
+      warranty: (warranty && (warranty.duration || warranty.warrantyType)) ? {
+        duration: warranty.duration || null,
+        durationUnit: warranty.durationUnit || 'months',
+        warrantyType: warranty.warrantyType || '',
+        description: warranty.description || '',
+      } : undefined,
       isAuthorized: true,
       authorizedBy: req.user._id
     });
