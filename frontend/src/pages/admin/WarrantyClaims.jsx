@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Clock, CheckCircle, XCircle, ChevronDown, ChevronUp, ExternalLink, X } from 'lucide-react';
+import { ShieldCheck, Clock, CheckCircle, XCircle, ChevronDown, ChevronUp, ExternalLink, X, Send, Loader, Eye, MessageCircle } from 'lucide-react';
 import { getAllWarrantyClaims, updateWarrantyClaimStatus } from '../../config/api';
 
 export default function WarrantyClaims() {
@@ -44,27 +44,35 @@ export default function WarrantyClaims() {
   };
 
   const statusIcon = (status) => {
-    if (status === 'Approved') return <CheckCircle size={16} className="text-emerald-500" />;
-    if (status === 'Rejected') return <XCircle size={16} className="text-red-500" />;
-    return <Clock size={16} className="text-amber-500" />;
+    if (status === 'Sent') return <Send size={14} className="text-blue-500" />;
+    if (status === 'Processing') return <Loader size={14} className="text-amber-500 animate-spin-slow" />;
+    if (status === 'Reviewing') return <Eye size={14} className="text-purple-500" />;
+    if (status === 'Contacted') return <MessageCircle size={14} className="text-indigo-500" />;
+    if (status === 'Resolved') return <CheckCircle size={14} className="text-emerald-500" />;
+    if (status === 'Rejected') return <XCircle size={14} className="text-red-500" />;
+    return <Clock size={14} className="text-slate-500" />;
   };
 
   const statusBadge = (status) => {
     const colors = {
-      Pending: 'bg-amber-50 text-amber-700 border-amber-200',
-      Approved: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      Sent: 'bg-blue-50 text-blue-700 border-blue-200',
+      Processing: 'bg-amber-50 text-amber-700 border-amber-200',
+      Reviewing: 'bg-purple-50 text-purple-700 border-purple-200',
+      Contacted: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+      Resolved: 'bg-emerald-50 text-emerald-700 border-emerald-200',
       Rejected: 'bg-red-50 text-red-700 border-red-200',
     };
     return (
-      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${colors[status] || colors.Pending}`}>
+      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${colors[status] || 'bg-slate-50 text-slate-700 border-slate-200'}`}>
         {statusIcon(status)}
         {status}
       </span>
     );
   };
 
-  const pendingCount = claims.filter(c => c.status === 'Pending').length;
-  const approvedCount = claims.filter(c => c.status === 'Approved').length;
+  const sentCount = claims.filter(c => c.status === 'Sent').length;
+  const processingCount = claims.filter(c => c.status === 'Processing').length;
+  const resolvedCount = claims.filter(c => c.status === 'Resolved').length;
   const rejectedCount = claims.filter(c => c.status === 'Rejected').length;
 
   return (
@@ -83,18 +91,22 @@ export default function WarrantyClaims() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm cursor-pointer hover:bg-slate-50 transition-all" onClick={() => setStatusFilter('')}>
           <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total</p>
           <p className="text-2xl font-black text-slate-800 mt-1">{claims.length}</p>
         </div>
-        <div className="bg-white rounded-2xl p-4 border border-amber-100 shadow-sm cursor-pointer hover:ring-2 hover:ring-amber-200 transition-all" onClick={() => setStatusFilter(statusFilter === 'Pending' ? '' : 'Pending')}>
-          <p className="text-[11px] font-bold text-amber-500 uppercase tracking-wider">Pending</p>
-          <p className="text-2xl font-black text-amber-600 mt-1">{pendingCount}</p>
+        <div className="bg-white rounded-2xl p-4 border border-blue-100 shadow-sm cursor-pointer hover:ring-2 hover:ring-blue-200 transition-all" onClick={() => setStatusFilter(statusFilter === 'Sent' ? '' : 'Sent')}>
+          <p className="text-[11px] font-bold text-blue-500 uppercase tracking-wider">Sent</p>
+          <p className="text-2xl font-black text-blue-600 mt-1">{sentCount}</p>
         </div>
-        <div className="bg-white rounded-2xl p-4 border border-emerald-100 shadow-sm cursor-pointer hover:ring-2 hover:ring-emerald-200 transition-all" onClick={() => setStatusFilter(statusFilter === 'Approved' ? '' : 'Approved')}>
-          <p className="text-[11px] font-bold text-emerald-500 uppercase tracking-wider">Approved</p>
-          <p className="text-2xl font-black text-emerald-600 mt-1">{approvedCount}</p>
+        <div className="bg-white rounded-2xl p-4 border border-amber-100 shadow-sm cursor-pointer hover:ring-2 hover:ring-amber-200 transition-all" onClick={() => setStatusFilter(statusFilter === 'Processing' ? '' : 'Processing')}>
+          <p className="text-[11px] font-bold text-amber-500 uppercase tracking-wider">Processing</p>
+          <p className="text-2xl font-black text-amber-600 mt-1">{processingCount}</p>
+        </div>
+        <div className="bg-white rounded-2xl p-4 border border-emerald-100 shadow-sm cursor-pointer hover:ring-2 hover:ring-emerald-200 transition-all" onClick={() => setStatusFilter(statusFilter === 'Resolved' ? '' : 'Resolved')}>
+          <p className="text-[11px] font-bold text-emerald-500 uppercase tracking-wider">Resolved</p>
+          <p className="text-2xl font-black text-emerald-600 mt-1">{resolvedCount}</p>
         </div>
         <div className="bg-white rounded-2xl p-4 border border-red-100 shadow-sm cursor-pointer hover:ring-2 hover:ring-red-200 transition-all" onClick={() => setStatusFilter(statusFilter === 'Rejected' ? '' : 'Rejected')}>
           <p className="text-[11px] font-bold text-red-500 uppercase tracking-wider">Rejected</p>
@@ -158,21 +170,11 @@ export default function WarrantyClaims() {
               {expandedId === claim._id && (
                 <div className="border-t border-slate-100 px-5 py-4 space-y-4 bg-slate-50/50">
                   {/* Purchase Details */}
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Purchase Date</p>
-                      <p className="text-sm font-semibold text-slate-700 mt-0.5">
-                        {claim.purchaseDate ? new Date(claim.purchaseDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Purchase Source</p>
-                      <p className="text-sm font-semibold text-slate-700 mt-0.5">{claim.purchaseSource || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Seller Name</p>
-                      <p className="text-sm font-semibold text-slate-700 mt-0.5">{claim.sellerName || 'N/A'}</p>
-                    </div>
+                  <div className="mb-4">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Purchase Date</p>
+                    <p className="text-sm font-semibold text-slate-700 mt-0.5">
+                      {claim.purchaseDate ? new Date(claim.purchaseDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'N/A'}
+                    </p>
                   </div>
 
                   {/* Warranty Info */}
@@ -228,10 +230,25 @@ export default function WarrantyClaims() {
                     </div>
                   )}
 
-                  {/* Admin Notes + Actions (only for Pending) */}
-                  {claim.status === 'Pending' && (
+                  {/* Admin Notes + Actions (only for active claims) */}
+                  {!['Resolved', 'Rejected'].includes(claim.status) && (
                     <div className="pt-3 border-t border-slate-200 space-y-3">
                       <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Update Status</label>
+                        <div className="flex gap-2 mb-3">
+                          <select 
+                            id={`status-${claim._id}`}
+                            className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            defaultValue={claim.status}
+                          >
+                            <option value="Sent" disabled>Sent</option>
+                            <option value="Processing">Processing</option>
+                            <option value="Reviewing">Reviewing</option>
+                            <option value="Contacted">Contacted</option>
+                            <option value="Resolved">Resolved</option>
+                            <option value="Rejected">Rejected</option>
+                          </select>
+                        </div>
                         <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Admin Notes (Optional)</label>
                         <textarea
                           value={expandedId === claim._id ? adminNotes : ''}
@@ -241,29 +258,19 @@ export default function WarrantyClaims() {
                           className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                         />
                       </div>
-                      <div className="flex gap-3">
-                        <button
-                          onClick={() => handleStatusUpdate(claim._id, 'Approved')}
-                          disabled={actionLoading === claim._id}
-                          className="flex-1 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-emerald-500/20 transition-all disabled:opacity-50"
-                        >
-                          <CheckCircle size={16} />
-                          {actionLoading === claim._id ? 'Processing...' : 'Approve'}
-                        </button>
-                        <button
-                          onClick={() => handleStatusUpdate(claim._id, 'Rejected')}
-                          disabled={actionLoading === claim._id}
-                          className="flex-1 py-2.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-red-500/20 transition-all disabled:opacity-50"
-                        >
-                          <XCircle size={16} />
-                          {actionLoading === claim._id ? 'Processing...' : 'Reject'}
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => handleStatusUpdate(claim._id, document.getElementById(`status-${claim._id}`).value)}
+                        disabled={actionLoading === claim._id}
+                        className="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 shadow-md transition-all disabled:opacity-50"
+                      >
+                        {actionLoading === claim._id ? <Loader size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+                        {actionLoading === claim._id ? 'Updating...' : 'Update Claim Status'}
+                      </button>
                     </div>
                   )}
 
                   {/* Show admin notes if already reviewed */}
-                  {claim.status !== 'Pending' && claim.adminNotes && (
+                  {['Resolved', 'Rejected'].includes(claim.status) && claim.adminNotes && (
                     <div className="pt-3 border-t border-slate-200">
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Admin Notes</p>
                       <p className="text-sm text-slate-600 bg-white p-3 rounded-xl border border-slate-100">{claim.adminNotes}</p>

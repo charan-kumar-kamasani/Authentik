@@ -99,7 +99,8 @@ function ResultAuthentic({ data }: { data: any }) {
   // Warranty claim state
   const [showWarrantyModal, setShowWarrantyModal] = useState(false);
   const [warrantyClaiming, setWarrantyClaiming] = useState(false);
-  const [warrantyClaimed, setWarrantyClaimed] = useState(false);
+  const [warrantyClaimStatus, setWarrantyClaimStatus] = useState<string | null>(data.warrantyClaimStatus || null);
+  const [warrantyClaimed, setWarrantyClaimed] = useState(!!data.warrantyClaimStatus);
   const [warrantyForm, setWarrantyForm] = useState({
     purchaseDate: '',
     purchaseSource: '',
@@ -435,52 +436,79 @@ function ResultAuthentic({ data }: { data: any }) {
           {isReviewed ? "Product Reviewed" : "Review Product"}
         </button>
 
-        {/* ===== Warranty Info Section ===== */}
-        {data.warranty && (data.warranty.duration || data.warranty.warrantyType) && (
-          <div className="mt-4 bg-white rounded-[16px] shadow-sm border border-emerald-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-3 flex items-center gap-2">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              </svg>
-              <h3 className="text-white font-bold text-[15px]">Warranty Information</h3>
-            </div>
-            <div className="p-4 space-y-3">
-              {data.warranty.warrantyType && (
-                <div className="flex justify-between items-center">
-                  <span className="text-[12px] text-gray-500 font-bold uppercase tracking-wider">Type</span>
-                  <span className="text-[14px] text-emerald-700 font-bold">{data.warranty.warrantyType}</span>
-                </div>
-              )}
-              {data.warranty.duration && (
-                <div className="flex justify-between items-center">
-                  <span className="text-[12px] text-gray-500 font-bold uppercase tracking-wider">Duration</span>
-                  <span className="text-[14px] text-emerald-700 font-bold">
-                    {data.warranty.duration} {data.warranty.durationUnit === 'years' ? 'Year(s)' : 'Month(s)'}
-                  </span>
-                </div>
-              )}
-              {data.warranty.description && (
-                <div className="border-t border-gray-100 pt-3">
-                  <p className="text-[12px] text-gray-500 font-bold uppercase tracking-wider mb-1">Details</p>
-                  <p className="text-[13px] text-gray-700 leading-relaxed">{data.warranty.description}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
 
-        {/* Claim Warranty Button */}
+
+        {/* Claim Warranty Button or Tracker */}
         {data.warranty && (data.warranty.duration || data.warranty.warrantyType) && (
-          <button
-            onClick={() => setShowWarrantyModal(true)}
-            disabled={warrantyClaimed}
-            className={`w-full ${warrantyClaimed ? 'bg-gray-400' : 'bg-gradient-to-r from-emerald-500 to-emerald-700'} text-white font-bold text-[16px] py-3.5 rounded-[30px] shadow-[0_10px_25px_rgba(16,185,129,0.3)] mt-3 flex items-center justify-center gap-2`}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>
-            {warrantyClaimed ? 'Warranty Claimed' : 'Claim Warranty'}
-          </button>
+          <div className="mt-3">
+            {warrantyClaimStatus ? (
+              <div className="bg-white rounded-[24px] shadow-sm border border-emerald-100 p-5 overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-full -z-10 opacity-50" />
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-md">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-[16px] font-black text-slate-800 leading-tight">Warranty Track</h3>
+                    <p className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">Status: <span className="text-emerald-600">{warrantyClaimStatus}</span></p>
+                  </div>
+                </div>
+
+                {/* Progress Tracker UI */}
+                <div className="relative mt-6 px-2">
+                  <div className="absolute left-[15px] top-2 bottom-2 w-[2px] bg-slate-100 z-0" />
+                  <div className="flex flex-col gap-5 relative z-10">
+                    {[
+                      { status: 'Sent', label: 'Claim Submitted' },
+                      { status: 'Processing', label: 'Under Process' },
+                      { status: 'Reviewing', label: 'Team Reviewing' },
+                      { status: 'Contacted', label: 'Contacted You' },
+                      { status: 'Resolved', label: 'Claim Resolved' },
+                    ].map((step, idx, arr) => {
+                      const states = ['Sent', 'Processing', 'Reviewing', 'Contacted', 'Resolved'];
+                      // Handle Rejected specifically if needed
+                      if (warrantyClaimStatus === 'Rejected' && step.status !== 'Sent') return null;
+
+                      const currentIndex = states.indexOf(warrantyClaimStatus === 'Rejected' ? 'Sent' : warrantyClaimStatus);
+                      const isCompleted = idx <= currentIndex;
+                      const isActive = idx === currentIndex;
+
+                      return (
+                        <div key={step.status} className="flex items-center gap-4">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border-2 transition-colors ${
+                            isCompleted ? 'bg-emerald-500 border-emerald-500' : 'bg-white border-slate-200'
+                          } ${isActive ? 'ring-4 ring-emerald-100' : ''}`}>
+                            {isCompleted ? (
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            ) : (
+                              <div className="w-2 h-2 rounded-full bg-slate-200" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <p className={`text-[13px] font-bold ${isCompleted ? 'text-slate-800' : 'text-slate-400'}`}>
+                              {warrantyClaimStatus === 'Rejected' && isActive ? 'Claim Rejected' : step.label}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowWarrantyModal(true)}
+                className="w-full bg-gradient-to-r from-emerald-500 to-emerald-700 text-white font-bold text-[16px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(16,185,129,0.3)] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                Claim Warranty
+              </button>
+            )}
+          </div>
         )}
 
         {/* Review Modal — Premium Bottom Sheet */}
@@ -859,6 +887,34 @@ function ResultAuthentic({ data }: { data: any }) {
                 <p className="text-[13px] text-gray-500 font-medium mt-1">Upload your purchase invoice to claim warranty</p>
               </div>
 
+              {/* ===== Warranty Info Section ===== */}
+              {data.warranty && (data.warranty.duration || data.warranty.warrantyType) && (
+                <div className="mx-6 mb-6 bg-emerald-50 rounded-[16px] shadow-sm border border-emerald-100 overflow-hidden">
+                  <div className="p-4 space-y-3">
+                    {data.warranty.warrantyType && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-[12px] text-gray-500 font-bold uppercase tracking-wider">Type</span>
+                        <span className="text-[14px] text-emerald-700 font-bold">{data.warranty.warrantyType}</span>
+                      </div>
+                    )}
+                    {data.warranty.duration && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-[12px] text-gray-500 font-bold uppercase tracking-wider">Duration</span>
+                        <span className="text-[14px] text-emerald-700 font-bold">
+                          {data.warranty.duration} {data.warranty.durationUnit === 'years' ? 'Year(s)' : 'Month(s)'}
+                        </span>
+                      </div>
+                    )}
+                    {data.warranty.description && (
+                      <div className="border-t border-emerald-100 pt-3">
+                        <p className="text-[12px] text-gray-500 font-bold uppercase tracking-wider mb-1">Details</p>
+                        <p className="text-[13px] text-gray-700 leading-relaxed">{data.warranty.description}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Form */}
               <div className="px-6 pb-8 space-y-5">
                 {/* Purchase Date */}
@@ -869,32 +925,6 @@ function ResultAuthentic({ data }: { data: any }) {
                     value={warrantyForm.purchaseDate}
                     onChange={(e) => setWarrantyForm({ ...warrantyForm, purchaseDate: e.target.value })}
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-medium"
-                    required
-                  />
-                </div>
-
-                {/* Purchase Source */}
-                <div>
-                  <label className="block text-[12px] font-bold text-gray-600 uppercase tracking-wider mb-1.5">Purchase Source *</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Amazon, Retail Store, Flipkart"
-                    value={warrantyForm.purchaseSource}
-                    onChange={(e) => setWarrantyForm({ ...warrantyForm, purchaseSource: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-medium"
-                    required
-                  />
-                </div>
-
-                {/* Seller Name */}
-                <div>
-                  <label className="block text-[12px] font-bold text-gray-600 uppercase tracking-wider mb-1.5">Seller Name *</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Official Brand Store, XYZ Electronics"
-                    value={warrantyForm.sellerName}
-                    onChange={(e) => setWarrantyForm({ ...warrantyForm, sellerName: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-medium"
                     required
                   />
                 </div>
@@ -992,14 +1022,6 @@ function ResultAuthentic({ data }: { data: any }) {
                       alert('Please select a purchase date');
                       return;
                     }
-                    if (!warrantyForm.purchaseSource.trim()) {
-                      alert('Please enter purchase source');
-                      return;
-                    }
-                    if (!warrantyForm.sellerName.trim()) {
-                      alert('Please enter seller name');
-                      return;
-                    }
                     if (invoiceImages.length === 0) {
                       alert('Please upload at least one invoice image');
                       return;
@@ -1032,18 +1054,19 @@ function ResultAuthentic({ data }: { data: any }) {
                       // Submit warranty claim
                       const { submitWarrantyClaim } = await import('../../config/api');
                       const token = localStorage.getItem('token');
-                      await submitWarrantyClaim({
+                      const result = await submitWarrantyClaim({
                         productId: data.productId?._id || data.productId,
                         qrCode: data.qrCode,
                         productName: data.productName || data.productId?.productName,
                         brandId: data.brandId || data.productId?.brandId,
                         invoiceImages: uploadedUrls,
                         purchaseDate: warrantyForm.purchaseDate,
-                        purchaseSource: warrantyForm.purchaseSource,
-                        sellerName: warrantyForm.sellerName,
                         warrantyInfo: data.warranty || null,
                       }, token);
 
+                      if (result && result.claim) {
+                        setWarrantyClaimStatus(result.claim.status || 'Sent');
+                      }
                       setWarrantyClaimed(true);
                       setShowWarrantyModal(false);
                       alert('Warranty claim submitted successfully! Our team will review it.');
@@ -1065,7 +1088,7 @@ function ResultAuthentic({ data }: { data: any }) {
                       <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25"/><path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="opacity-75"/></svg>
                       Submitting...
                     </span>
-                  ) : 'Submit Warranty Claim'}
+                  ) : 'Raise Claim'}
                 </button>
               </div>
             </div>

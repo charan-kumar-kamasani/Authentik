@@ -17,8 +17,6 @@ router.post('/claim', protect, async (req, res) => {
       brandId,
       invoiceImages,
       purchaseDate,
-      purchaseSource,
-      sellerName,
       warrantyInfo,
     } = req.body;
 
@@ -63,10 +61,8 @@ router.post('/claim', protect, async (req, res) => {
       productName: productName || '',
       invoiceImages,
       purchaseDate: new Date(purchaseDate),
-      purchaseSource: purchaseSource || '',
-      sellerName: sellerName || '',
       warrantyInfo: resolvedWarrantyInfo,
-      status: 'Pending',
+      status: 'Sent',
     });
 
     res.status(201).json({
@@ -158,8 +154,8 @@ router.put('/claims/:id/status', protect, async (req, res) => {
 
     const { status, adminNotes } = req.body;
 
-    if (!status || !['Approved', 'Rejected', 'Pending'].includes(status)) {
-      return res.status(400).json({ error: 'Invalid status. Must be Pending, Approved, or Rejected.' });
+    if (!status || !['Sent', 'Processing', 'Reviewing', 'Contacted', 'Resolved', 'Rejected'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status. Must be Sent, Processing, Reviewing, Contacted, Resolved, or Rejected.' });
     }
 
     const claim = await WarrantyClaim.findByIdAndUpdate(

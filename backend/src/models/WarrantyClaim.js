@@ -26,8 +26,6 @@ const warrantyClaimSchema = new mongoose.Schema({
 
   // Purchase details
   purchaseDate: { type: Date },
-  purchaseSource: { type: String, trim: true },  // e.g. "Amazon", "Retail Store"
-  sellerName: { type: String, trim: true },
 
   // Warranty info snapshot (copied from product/order at claim time)
   warrantyInfo: {
@@ -40,8 +38,8 @@ const warrantyClaimSchema = new mongoose.Schema({
   // Claim status
   status: {
     type: String,
-    enum: ['Pending', 'Approved', 'Rejected'],
-    default: 'Pending',
+    enum: ['Sent', 'Processing', 'Reviewing', 'Contacted', 'Resolved', 'Rejected'],
+    default: 'Sent',
   },
 
   // Admin/reviewer notes

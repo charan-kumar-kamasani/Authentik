@@ -6,6 +6,7 @@ const User = require("../models/User");
 const FormConfig = require("../models/FormConfig");
 const Review = require("../models/Review");
 const ProductCoupon = require("../models/ProductCoupon");
+const WarrantyClaim = require("../models/WarrantyClaim");
 const jwt = require("jsonwebtoken");
 const { protect } = require("../middleware/authMiddleware");
 
@@ -89,7 +90,7 @@ router.get("/history", protect, async (req, res) => {
   try {
     const rawScans = await Scan.find({ userId: req.user._id })
       .sort({ createdAt: -1 })
-      .populate("productId")
+      .populate({ path: "productId", populate: { path: "orderId" } })
       .populate({ path: "brandId", populate: { path: "companyId" } })
       .lean();
 
@@ -136,9 +137,28 @@ router.get("/history", protect, async (req, res) => {
       });
     }
 
+    // 2.5 Fetch user reviews and warranty claims for all these products
+    const allProductIds = rawScans.filter(s => s.productId).map(s => s.productId._id);
+    
+    // Fetch reviews
+    const userReviews = await Review.find({ userId: req.user._id, productId: { $in: allProductIds } }).lean();
+    const reviewedProductIds = new Set(userReviews.map(r => r.productId.toString()));
+    
+    // Fetch warranty claims
+    const userClaims = await WarrantyClaim.find({ userId: req.user._id, productId: { $in: allProductIds } }).lean();
+    const claimStatusMap = new Map();
+    userClaims.forEach(c => claimStatusMap.set(c.productId.toString(), c.status));
+
     // 3. Process scans with pre-fetched data
     const scans = rawScans.map(s => {
       const obj = s;
+      
+      // Expose warranty at the root level for frontend consistency
+      if (obj.productId) {
+        obj.warranty = obj.productId.warranty || obj.productId.orderId?.warranty || null;
+        obj.alreadyReviewed = reviewedProductIds.has(obj.productId._id.toString());
+        obj.warrantyClaimStatus = claimStatusMap.get(obj.productId._id.toString()) || null;
+      }
       
       // Inject companyName
       if (obj.brandId && obj.brandId.companyId) {
@@ -414,6 +434,13 @@ router.post("/", async (req, res, next) => {
     const review = await Review.findOne({ productId: product?._id, userId: req.user._id }).lean();
     if (review) alreadyReviewed = true;
 
+    // Check if user has already claimed warranty
+    let warrantyClaimStatus = null;
+    const existingClaim = await WarrantyClaim.findOne({ productId: product?._id, userId: req.user._id }).lean();
+    if (existingClaim) {
+      warrantyClaimStatus = existingClaim.status;
+    }
+
     // Field Labels for dynamic fields from global configuration
     const config = await FormConfig.getGlobalFormConfig();
     const fieldLabels = {};
@@ -526,6 +553,7 @@ router.post("/", async (req, res, next) => {
           warranty: product.warranty || product.orderId?.warranty || null,
           fieldLabels,
           alreadyReviewed,
+          warrantyClaimStatus,
           place,
           scannedAt: scan.createdAt
         }
@@ -577,6 +605,7 @@ router.post("/", async (req, res, next) => {
           warranty: product.warranty || product.orderId?.warranty || null,
         fieldLabels,
           alreadyReviewed,
+          warrantyClaimStatus,
           place,
           latitude,
           longitude,
@@ -654,6 +683,7 @@ router.post("/", async (req, res, next) => {
           warranty: product.warranty || product.orderId?.warranty || null,
           fieldLabels,
           alreadyReviewed,
+          warrantyClaimStatus,
           place,
           scannedAt: scan.createdAt,
           originalScan: {
@@ -705,6 +735,7 @@ router.post("/", async (req, res, next) => {
         warranty: product.warranty || product.orderId?.warranty || null,
         fieldLabels,
         alreadyReviewed,
+        warrantyClaimStatus,
         place,
         latitude,
         longitude,
