@@ -35,12 +35,25 @@ const warrantyClaimSchema = new mongoose.Schema({
     description: String,
   },
 
+  // Claim specific fields
+  issue: { type: String, default: '' },
+  claimDescription: { type: String, default: '' },
+  claimImages: [{ type: String }], // Cloudinary URLs for proof of issue
+
   // Claim status
   status: {
     type: String,
     enum: ['Sent', 'Processing', 'Reviewing', 'Contacted', 'Resolved', 'Rejected'],
     default: 'Sent',
   },
+
+  // Status History for Audit Trail
+  statusHistory: [{
+    status: String,
+    changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    changedAt: { type: Date, default: Date.now },
+    notes: String
+  }],
 
   // Admin/reviewer notes
   adminNotes: { type: String, default: '' },

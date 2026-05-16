@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, History, Gift, User } from "lucide-react";
+import { Home, History, Gift, ShieldCheck } from "lucide-react";
 
 export default function MobileNavbar() {
     const navigate = useNavigate();
@@ -10,7 +10,7 @@ export default function MobileNavbar() {
         { id: "home", label: "Home", icon: Home, path: "/home" },
         { id: "history", label: "History", icon: History, path: "/scan-history" },
         { id: "rewards", label: "Rewards", icon: Gift, path: "/rewards" },
-        { id: "profile", label: "Profile", icon: User, path: "/edit-profile" },
+        { id: "warranty", label: "Warranty", icon: ShieldCheck, path: "/warranty" },
     ];
 
     return (

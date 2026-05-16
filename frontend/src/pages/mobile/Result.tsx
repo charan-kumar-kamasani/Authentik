@@ -185,7 +185,7 @@ function ResultAuthentic({ data }: { data: any }) {
         const formatted = d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
         return formatted.split(' ').map(capitalize).join(' ');
       }
-      
+
       return v.split(' ').map(capitalize).join(' ');
     }
     return String(v);
@@ -193,11 +193,11 @@ function ResultAuthentic({ data }: { data: any }) {
 
   technicalFields.forEach(({ key, label }) => {
     let val = data[key] || data.productId?.[key];
-    
+
     // Check dynamicFields or variants if not found top-level
     if (!val && data.dynamicFields) val = data.dynamicFields[key];
     if (!val && data.productId?.dynamicFields) val = data.productId.dynamicFields[key];
-    
+
     if (!val && (data.variants || data.productId?.variants)) {
       const vArr = (data.variants || data.productId?.variants);
       const variant = vArr.find((v: any) => v.variantName?.toLowerCase() === key.toLowerCase());
@@ -236,9 +236,9 @@ function ResultAuthentic({ data }: { data: any }) {
   const allVariants = data.variants || data.productId?.variants || [];
   allVariants.forEach((v: any) => {
     if (!handledKeys.has(v.variantName) && !handledKeys.has(v.variantName?.toLowerCase())) {
-      blueFields.push({ 
-        label: fieldLabels[v.variantName] || v.variantLabel || formatLabel(v.variantName || ""), 
-        value: String(v.value) 
+      blueFields.push({
+        label: fieldLabels[v.variantName] || v.variantLabel || formatLabel(v.variantName || ""),
+        value: String(v.value)
       });
       handledKeys.add(v.variantName);
     }
@@ -259,7 +259,7 @@ function ResultAuthentic({ data }: { data: any }) {
 
   // Dynamic fields to be shown in gray section
   const grayFields: { label: string; value: any }[] = [];
-  
+
   // 1. Add fields from hardcoded additionalInfoFields
   additionalInfoFields.forEach(({ key, label }) => {
     let val = data[key] || data.productId?.[key];
@@ -293,11 +293,11 @@ function ResultAuthentic({ data }: { data: any }) {
       let val = combinedDynamicFields[key];
       if (val && val !== "-") {
         if (typeof val === 'object' && val.month && val.year) {
-           val = formatMonthYear(val);
+          val = formatMonthYear(val);
         } else if (typeof val === 'string' && /^\d{1,2}[\/\-]\d{4}$/.test(val)) {
-           val = formatMonthYear(val);
+          val = formatMonthYear(val);
         }
-        
+
         if (typeof val !== 'object') {
           const label = fieldLabels[key] || formatLabel(key);
           grayFields.push({ label, value: String(val) });
@@ -411,7 +411,7 @@ function ResultAuthentic({ data }: { data: any }) {
         </div>
 
         {/* Review Button */}
-        <button 
+        <button
           onClick={async () => {
             const token = localStorage.getItem("token");
             if (!token) {
@@ -442,60 +442,16 @@ function ResultAuthentic({ data }: { data: any }) {
         {data.warranty && (data.warranty.duration || data.warranty.warrantyType) && (
           <div className="mt-3">
             {warrantyClaimStatus ? (
-              <div className="bg-white rounded-[24px] shadow-sm border border-emerald-100 p-5 overflow-hidden relative">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-full -z-10 opacity-50" />
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center shadow-md">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                    </svg>
-                  </div>
-                  <div>
-                    <h3 className="text-[16px] font-black text-slate-800 leading-tight">Warranty Track</h3>
-                    <p className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">Status: <span className="text-emerald-600">{warrantyClaimStatus}</span></p>
-                  </div>
-                </div>
-
-                {/* Progress Tracker UI */}
-                <div className="relative mt-6 px-2">
-                  <div className="absolute left-[15px] top-2 bottom-2 w-[2px] bg-slate-100 z-0" />
-                  <div className="flex flex-col gap-5 relative z-10">
-                    {[
-                      { status: 'Sent', label: 'Claim Submitted' },
-                      { status: 'Processing', label: 'Under Process' },
-                      { status: 'Reviewing', label: 'Team Reviewing' },
-                      { status: 'Contacted', label: 'Contacted You' },
-                      { status: 'Resolved', label: 'Claim Resolved' },
-                    ].map((step, idx, arr) => {
-                      const states = ['Sent', 'Processing', 'Reviewing', 'Contacted', 'Resolved'];
-                      // Handle Rejected specifically if needed
-                      if (warrantyClaimStatus === 'Rejected' && step.status !== 'Sent') return null;
-
-                      const currentIndex = states.indexOf(warrantyClaimStatus === 'Rejected' ? 'Sent' : warrantyClaimStatus);
-                      const isCompleted = idx <= currentIndex;
-                      const isActive = idx === currentIndex;
-
-                      return (
-                        <div key={step.status} className="flex items-center gap-4">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border-2 transition-colors ${
-                            isCompleted ? 'bg-emerald-500 border-emerald-500' : 'bg-white border-slate-200'
-                          } ${isActive ? 'ring-4 ring-emerald-100' : ''}`}>
-                            {isCompleted ? (
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                            ) : (
-                              <div className="w-2 h-2 rounded-full bg-slate-200" />
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <p className={`text-[13px] font-bold ${isCompleted ? 'text-slate-800' : 'text-slate-400'}`}>
-                              {warrantyClaimStatus === 'Rejected' && isActive ? 'Claim Rejected' : step.label}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+              <div >
+                <button
+                  onClick={() => navigate("/warranty")}
+                  className="w-full bg-gradient-to-r from-emerald-500 to-emerald-700 text-white font-bold text-[16px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(16,185,129,0.3)] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                  Track Warranty
+                </button>
               </div>
             ) : (
               <button
@@ -503,7 +459,7 @@ function ResultAuthentic({ data }: { data: any }) {
                 className="w-full bg-gradient-to-r from-emerald-500 to-emerald-700 text-white font-bold text-[16px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(16,185,129,0.3)] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 </svg>
                 Warranty Info
               </button>
@@ -516,9 +472,9 @@ function ResultAuthentic({ data }: { data: any }) {
           <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center" style={{ animation: 'reviewOverlayIn 0.25s ease' }}>
             {/* Backdrop */}
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowReviewModal(false)} />
-            
+
             {/* Sheet */}
-            <div 
+            <div
               className="relative w-full sm:max-w-[440px] sm:mx-4 bg-white rounded-t-[28px] sm:rounded-[28px] max-h-[92vh] overflow-y-auto shadow-[0_-8px_40px_rgba(0,0,0,0.2)] sm:shadow-[0_24px_60px_rgba(0,0,0,0.25)]"
               style={{ animation: 'reviewSheetUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
             >
@@ -528,11 +484,11 @@ function ResultAuthentic({ data }: { data: any }) {
               </div>
 
               {/* Close button */}
-              <button 
+              <button
                 onClick={() => setShowReviewModal(false)}
                 className="absolute right-4 top-4 sm:top-5 w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors z-10"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
               </button>
 
               {/* Product Hero */}
@@ -543,7 +499,7 @@ function ResultAuthentic({ data }: { data: any }) {
                   </div>
                 ) : (
                   <div className="w-[80px] h-[80px] rounded-[24px] bg-gradient-to-br from-[#F0F7FF] to-[#E8F4F9] mx-auto mb-5 flex items-center justify-center shadow-[0_8px_24px_rgba(13,78,150,0.15)] bg-white p-1">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2CA4D6" strokeWidth="1.5"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2CA4D6" strokeWidth="1.5"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                   </div>
                 )}
                 <h2 className="text-[22px] font-black text-[#0D4E96] tracking-tight leading-tight mb-1.5">{productName}</h2>
@@ -554,20 +510,20 @@ function ResultAuthentic({ data }: { data: any }) {
               <div className="px-6 py-6 mt-2">
                 <p className="text-[18px] font-black text-[#1F2642] text-center mb-1.5 tracking-tight">How was your experience?</p>
                 <p className="text-[14px] text-[#2CA4D6]/70 text-center mb-6 font-bold tracking-wide">Tap a star to rate this product</p>
-                
+
                 <div className="flex justify-center gap-2 mb-3">
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <button 
-                      key={star} 
-                      onClick={() => setRating(star)} 
+                    <button
+                      key={star}
+                      onClick={() => setRating(star)}
                       className="transition-all duration-200 active:scale-75 hover:scale-110"
-                      style={{ 
+                      style={{
                         transform: star <= rating ? 'scale(1.15)' : 'scale(1)',
                         transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
                       }}
                     >
                       <svg width="48" height="48" viewBox="0 0 24 24" fill={star <= rating ? "#F59E0B" : "none"} stroke={star <= rating ? "#F59E0B" : "#CBD5E1"} strokeWidth="1.5">
-                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                       </svg>
                     </button>
                   ))}
@@ -589,7 +545,7 @@ function ResultAuthentic({ data }: { data: any }) {
                   <div className="relative mt-0.5 flex-shrink-0">
                     <input type="checkbox" checked={optIn} onChange={(e) => setOptIn(e.target.checked)} className="sr-only" />
                     <div className={`w-5 h-5 rounded-md border-2 transition-all duration-200 flex items-center justify-center ${optIn ? 'bg-[#0D4E96] border-[#0D4E96] scale-105' : 'bg-white border-[#CBD5E1] group-hover:border-[#94A3B8]'}`}>
-                      {optIn && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4"><path d="M20 6L9 17l-5-5"/></svg>}
+                      {optIn && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4"><path d="M20 6L9 17l-5-5" /></svg>}
                     </div>
                   </div>
                   <span className="text-[12px] font-bold text-[#333] leading-tight mt-0.5">Yes, I would like to receive exclusive offer and discounts from the brand</span>
@@ -612,15 +568,15 @@ function ResultAuthentic({ data }: { data: any }) {
                       }, token);
                       setIsReviewed(true);
                       setShowReviewModal(false);
-                      
+
                       // Check if a coupon was awarded
                       let couponToAward = result.coupon;
                       if (!couponToAward && data.isDemo) {
-                        couponToAward = { 
-                          title: "DEMO REWARD", 
-                          code: "WELCOME50", 
-                          description: "Get 50% off on your next order!", 
-                          websiteLink: "https://authentiks.in" 
+                        couponToAward = {
+                          title: "DEMO REWARD",
+                          code: "WELCOME50",
+                          description: "Get 50% off on your next order!",
+                          websiteLink: "https://authentiks.in"
                         };
                       }
 
@@ -641,15 +597,14 @@ function ResultAuthentic({ data }: { data: any }) {
                     }
                   }}
                   disabled={submitting || rating === 0}
-                  className={`w-full font-bold text-[16px] py-4 rounded-2xl shadow-lg transition-all duration-300 active:scale-[0.97] ${
-                    rating === 0 
-                      ? 'bg-gray-200 text-gray-400 shadow-none cursor-not-allowed' 
+                  className={`w-full font-bold text-[16px] py-4 rounded-2xl shadow-lg transition-all duration-300 active:scale-[0.97] ${rating === 0
+                      ? 'bg-gray-200 text-gray-400 shadow-none cursor-not-allowed'
                       : 'bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] text-white shadow-blue-500/25 hover:shadow-blue-500/40'
-                  } disabled:opacity-60`}
+                    } disabled:opacity-60`}
                 >
                   {submitting ? (
                     <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25"/><path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="opacity-75"/></svg>
+                      <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" /><path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="opacity-75" /></svg>
                       Submitting...
                     </span>
                   ) : "Submit Review"}
@@ -683,7 +638,7 @@ function ResultAuthentic({ data }: { data: any }) {
               onNotificationClick={handleNotificationClick}
               rightIcon={<div className="w-10" />}
             />
-            
+
             <div className="flex-1 px-5 py-8 flex flex-col items-center">
               <h2 className="text-[#0D4E96] text-[22px] font-bold text-center leading-tight mb-10 max-w-[280px]">
                 Congratulations,<br />You've Unlocked a Reward!
@@ -691,7 +646,7 @@ function ResultAuthentic({ data }: { data: any }) {
 
               {/* Ticket Card */}
               <div className="w-full max-w-sm relative mt-6 shadow-[0_15px_40px_rgba(0,0,0,0.1)] rounded-[20px] bg-white border border-gray-100">
-                
+
                 {/* Gift Icon overlapping top */}
                 <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 bg-[#2CA4D6] rounded-full border-[6px] border-white flex items-center justify-center z-10 shadow-sm">
                   <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -716,7 +671,7 @@ function ResultAuthentic({ data }: { data: any }) {
                   <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full"></div>
                   {/* Right Cutout */}
                   <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full"></div>
-                  
+
                   <span className="text-white text-[20px] font-black tracking-widest uppercase">
                     {awardedCoupon.code}
                   </span>
@@ -729,7 +684,7 @@ function ResultAuthentic({ data }: { data: any }) {
                     className="w-8 h-8 flex items-center justify-center active:scale-90 transition-transform"
                   >
                     {couponCopied ? (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>
                     ) : (
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
                     )}
@@ -743,7 +698,7 @@ function ResultAuthentic({ data }: { data: any }) {
                       Valid till: {new Date(awardedCoupon.expiryDate).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}
                     </p>
                   )}
-                  
+
                   {awardedCoupon.description && (
                     <div className="text-left mb-6">
                       <p className="text-[#666] text-[12px] font-bold uppercase mb-1">Coupon Details:</p>
@@ -873,14 +828,14 @@ function ResultAuthentic({ data }: { data: any }) {
                 onClick={() => setShowWarrantyModal(false)}
                 className="absolute right-4 top-4 sm:top-5 w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors z-10"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
               </button>
 
               {/* Header */}
               <div className="px-6 pt-8 pb-4 text-center">
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 mx-auto mb-4 flex items-center justify-center shadow-lg">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   </svg>
                 </div>
                 <h2 className="text-[20px] font-black text-[#0D4E96] tracking-tight">Claim Warranty</h2>
@@ -948,7 +903,7 @@ function ResultAuthentic({ data }: { data: any }) {
                             }}
                             className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shadow-md"
                           >
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12" /></svg>
                           </button>
                         </div>
                       ))}
@@ -960,8 +915,8 @@ function ResultAuthentic({ data }: { data: any }) {
                       {/* Camera capture */}
                       <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-50 border-2 border-dashed border-emerald-300 rounded-2xl text-emerald-700 font-bold text-[13px] cursor-pointer hover:bg-emerald-100 transition-colors">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                          <circle cx="12" cy="13" r="4"/>
+                          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                          <circle cx="12" cy="13" r="4" />
                         </svg>
                         Camera
                         <input
@@ -986,9 +941,9 @@ function ResultAuthentic({ data }: { data: any }) {
                       {/* File upload */}
                       <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 border-2 border-dashed border-blue-300 rounded-2xl text-blue-700 font-bold text-[13px] cursor-pointer hover:bg-blue-100 transition-colors">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                          <polyline points="17 8 12 3 7 8"/>
-                          <line x1="12" y1="3" x2="12" y2="15"/>
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                          <polyline points="17 8 12 3 7 8" />
+                          <line x1="12" y1="3" x2="12" y2="15" />
                         </svg>
                         Gallery
                         <input
@@ -1077,15 +1032,14 @@ function ResultAuthentic({ data }: { data: any }) {
                     }
                   }}
                   disabled={warrantyClaiming || invoiceImages.length === 0}
-                  className={`w-full font-bold text-[16px] py-4 rounded-2xl shadow-lg transition-all duration-300 active:scale-[0.97] ${
-                    invoiceImages.length === 0
+                  className={`w-full font-bold text-[16px] py-4 rounded-2xl shadow-lg transition-all duration-300 active:scale-[0.97] ${invoiceImages.length === 0
                       ? 'bg-gray-200 text-gray-400 shadow-none cursor-not-allowed'
                       : 'bg-gradient-to-r from-emerald-500 to-emerald-700 text-white shadow-emerald-500/25 hover:shadow-emerald-500/40'
-                  } disabled:opacity-60`}
+                    } disabled:opacity-60`}
                 >
                   {warrantyClaiming ? (
                     <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25"/><path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="opacity-75"/></svg>
+                      <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" /><path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="opacity-75" /></svg>
                       Submitting...
                     </span>
                   ) : 'Raise Claim'}

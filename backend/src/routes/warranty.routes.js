@@ -63,6 +63,11 @@ router.post('/claim', protect, async (req, res) => {
       purchaseDate: new Date(purchaseDate),
       warrantyInfo: resolvedWarrantyInfo,
       status: 'Sent',
+      statusHistory: [{
+        status: 'Sent',
+        changedAt: new Date(),
+        notes: 'Claim submitted by customer'
+      }]
     });
 
     res.status(201).json({
@@ -87,9 +92,24 @@ router.post('/claim', protect, async (req, res) => {
 router.get('/my-claims', protect, async (req, res) => {
   try {
     const claims = await WarrantyClaim.find({ userId: req.user._id })
+      .populate('productId')
       .sort({ createdAt: -1 })
       .lean();
-    res.json(claims);
+
+    // Attach product-linked coupons (rewards) to each claim
+    const ProductCoupon = require('../models/ProductCoupon');
+    const claimsWithCoupons = await Promise.all(claims.map(async (claim) => {
+      if (claim.productId?._id) {
+        const coupons = await ProductCoupon.find({ 
+          productId: claim.productId._id, 
+          isActive: true 
+        }).lean();
+        return { ...claim, coupons };
+      }
+      return { ...claim, coupons: [] };
+    }));
+
+    res.json(claimsWithCoupons);
   } catch (err) {
     console.error('Error fetching user warranty claims:', err);
     res.status(500).json({ error: 'Failed to fetch warranty claims' });
@@ -133,6 +153,7 @@ router.get('/claims', protect, async (req, res) => {
     const claims = await WarrantyClaim.find(query)
       .populate('userId', 'name mobile email')
       .populate('productId', 'productName brand batchNo qrCode')
+      .populate('statusHistory.changedBy', 'name email')
       .sort({ createdAt: -1 })
       .lean();
 
@@ -158,25 +179,74 @@ router.put('/claims/:id/status', protect, async (req, res) => {
       return res.status(400).json({ error: 'Invalid status. Must be Sent, Processing, Reviewing, Contacted, Resolved, or Rejected.' });
     }
 
-    const claim = await WarrantyClaim.findByIdAndUpdate(
-      req.params.id,
-      {
-        status,
-        adminNotes: adminNotes || '',
-        reviewedBy: req.user._id,
-        reviewedAt: new Date(),
-      },
-      { new: true }
-    );
-
+    const claim = await WarrantyClaim.findById(req.params.id);
     if (!claim) {
       return res.status(404).json({ error: 'Warranty claim not found' });
     }
+
+    // Update status and push to history
+    claim.status = status;
+    claim.adminNotes = adminNotes || '';
+    claim.reviewedBy = req.user._id;
+    claim.reviewedAt = new Date();
+    
+    claim.statusHistory.push({
+      status,
+      changedBy: req.user._id,
+      changedAt: new Date(),
+      notes: adminNotes || `Status updated to ${status}`
+    });
+
+    await claim.save();
+    await claim.populate('reviewedBy', 'name email');
+    await claim.populate('statusHistory.changedBy', 'name email');
 
     res.json(claim);
   } catch (err) {
     console.error('Error updating warranty claim status:', err);
     res.status(500).json({ error: 'Failed to update warranty claim' });
+  }
+});
+
+// ─── 5. UPDATE CLAIM DETAILS (Authenticated User) ──────────────────
+router.patch('/claim/:id', protect, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { id } = req.params;
+    const {
+      purchaseDate,
+      invoiceImages,
+      issue,
+      claimDescription,
+      claimImages,
+    } = req.body;
+
+    const claim = await WarrantyClaim.findOne({ _id: id, userId });
+    if (!claim) {
+      return res.status(404).json({ error: 'Claim not found' });
+    }
+
+    // Update fields if provided
+    if (purchaseDate) claim.purchaseDate = new Date(purchaseDate);
+    if (invoiceImages && Array.isArray(invoiceImages)) claim.invoiceImages = invoiceImages;
+    if (issue) claim.issue = issue;
+    if (claimDescription) claim.claimDescription = claimDescription;
+    if (claimImages && Array.isArray(claimImages)) claim.claimImages = claimImages;
+
+    // If they are adding issue details, we might want to reset status to 'Sent' 
+    // or keep it if it's already 'Processing' etc. 
+    // For now, let's just save.
+
+    await claim.save();
+
+    res.json({
+      success: true,
+      message: 'Warranty claim updated successfully',
+      claim,
+    });
+  } catch (err) {
+    console.error('Error updating warranty claim details:', err);
+    res.status(500).json({ error: 'Failed to update warranty claim details' });
   }
 });
 

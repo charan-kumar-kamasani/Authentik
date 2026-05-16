@@ -1158,3 +1158,24 @@ export const updateWarrantyClaimStatus = async (id, data, token) => {
     }
 };
 
+export const updateWarrantyClaim = async (id, data, token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/warranty/claim/${id}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.error || 'Failed to update warranty claim');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error("Update Warranty Claim Error:", error);
+        throw error;
+    }
+};
+

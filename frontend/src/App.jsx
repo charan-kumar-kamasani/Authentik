@@ -37,6 +37,9 @@ import MobileLanding from "./pages/mobile/MobileLanding";
 import Support from "./pages/mobile/Support";
 import DemoReport from "./pages/mobile/DemoReport";
 import DemoResult from "./pages/mobile/DemoResult";
+import Warranty from "./pages/mobile/Warranty";
+import RaiseClaim from "./pages/mobile/RaiseClaim";
+import UpdateWarranty from "./pages/mobile/UpdateWarranty";
 
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -407,6 +410,9 @@ export default function App() {
             <Route path="/report" element={<ReportProduct />} />
             <Route path="/my-reports" element={<MyReports />} />
             <Route path="/notifications" element={<Notifications />} />
+            <Route path="/warranty" element={<Warranty />} />
+            <Route path="/raise-claim/:id" element={<RaiseClaim />} />
+            <Route path="/update-warranty/:id" element={<UpdateWarranty />} />
           </Route>
 
           {/* Smart fallback */}
