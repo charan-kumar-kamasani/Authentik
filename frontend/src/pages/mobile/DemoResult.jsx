@@ -432,6 +432,7 @@ function ResultAuthentic({ data }) {
               </div>
             </div>
           </div>
+        )}
         {/* ===== Warranty Claim Modal ===== */}
         {showWarrantyModal && (
           <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
