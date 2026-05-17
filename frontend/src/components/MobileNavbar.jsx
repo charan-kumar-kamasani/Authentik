@@ -9,8 +9,8 @@ export default function MobileNavbar() {
     const navItems = [
         { id: "home", label: "Home", icon: Home, path: "/home" },
         { id: "history", label: "History", icon: History, path: "/scan-history" },
-        { id: "rewards", label: "Rewards", icon: Gift, path: "/rewards" },
         { id: "warranty", label: "Warranty", icon: ShieldCheck, path: "/warranty" },
+        { id: "rewards", label: "Rewards", icon: Gift, path: "/rewards" },
     ];
 
     return (
