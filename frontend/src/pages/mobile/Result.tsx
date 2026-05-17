@@ -1025,9 +1025,9 @@ function ResultAuthentic({ data }: { data: any }) {
                       }
                       setWarrantyClaimed(true);
                       setShowWarrantyModal(false);
-                      await confirmModal({ title: 'Success', description: 'Warranty claim submitted successfully! Our team will review it.', cancelText: null });
+                      await confirmModal({ title: 'Success', description: 'Warranty registered successfully!', cancelText: null });
                     } catch (error: any) {
-                      await confirmModal({ title: 'Error', description: error.message || 'Failed to submit warranty claim', cancelText: null });
+                      await confirmModal({ title: 'Error', description: error.message || 'Failed to register warranty', cancelText: null });
                     } finally {
                       setWarrantyClaiming(false);
                     }
