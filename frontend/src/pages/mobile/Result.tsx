@@ -434,7 +434,7 @@ function ResultAuthentic({ data }: { data: any }) {
           disabled={isReviewed}
           className={`w-full ${isReviewed ? 'bg-gray-400' : 'bg-gradient-to-r from-[#0E5CAB] to-[#1F2642]'} text-white font-bold text-[18px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(14,92,171,0.3)] mt-4`}
         >
-          {isReviewed ? "Product Reviewed" : "Review Product"}
+          {isReviewed ? "Product Reviewed" : (data.productId.orderId.coupon.code != null || ata.productId.orderId.coupon.code != undefined || ata.productId.orderId.coupon.code != "" ? "Review & Claim Coupon" : "Review Product")}
         </button>
 
 
@@ -599,8 +599,8 @@ function ResultAuthentic({ data }: { data: any }) {
                   }}
                   disabled={submitting || rating === 0}
                   className={`w-full font-bold text-[16px] py-4 rounded-2xl shadow-lg transition-all duration-300 active:scale-[0.97] ${rating === 0
-                      ? 'bg-gray-200 text-gray-400 shadow-none cursor-not-allowed'
-                      : 'bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] text-white shadow-blue-500/25 hover:shadow-blue-500/40'
+                    ? 'bg-gray-200 text-gray-400 shadow-none cursor-not-allowed'
+                    : 'bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] text-white shadow-blue-500/25 hover:shadow-blue-500/40'
                     } disabled:opacity-60`}
                 >
                   {submitting ? (
@@ -861,6 +861,22 @@ function ResultAuthentic({ data }: { data: any }) {
                         </span>
                       </div>
                     )}
+                    {data.warranty.customerCare && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-[12px] text-gray-500 font-bold uppercase tracking-wider">Support Tel</span>
+                        <span className="text-[14px] text-emerald-700 font-bold">
+                          <a href={`tel:${data.warranty.customerCare}`} className="underline hover:text-emerald-800">{data.warranty.customerCare}</a>
+                        </span>
+                      </div>
+                    )}
+                    {data.warranty.supportEmail && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-[12px] text-gray-500 font-bold uppercase tracking-wider">Support Email</span>
+                        <span className="text-[14px] text-emerald-700 font-bold">
+                          <a href={`mailto:${data.warranty.supportEmail}`} className="underline hover:text-emerald-800">{data.warranty.supportEmail}</a>
+                        </span>
+                      </div>
+                    )}
                     {data.warranty.description && (
                       <div className="border-t border-emerald-100 pt-3">
                         <p className="text-[12px] text-gray-500 font-bold uppercase tracking-wider mb-1">Details</p>
@@ -879,6 +895,7 @@ function ResultAuthentic({ data }: { data: any }) {
                   <input
                     type="date"
                     value={warrantyForm.purchaseDate}
+                    max={new Date().toISOString().split('T')[0]}
                     onChange={(e) => setWarrantyForm({ ...warrantyForm, purchaseDate: e.target.value })}
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-medium"
                     required
@@ -1034,8 +1051,8 @@ function ResultAuthentic({ data }: { data: any }) {
                   }}
                   disabled={warrantyClaiming || invoiceImages.length === 0}
                   className={`w-full font-bold text-[16px] py-4 rounded-2xl shadow-lg transition-all duration-300 active:scale-[0.97] ${invoiceImages.length === 0
-                      ? 'bg-gray-200 text-gray-400 shadow-none cursor-not-allowed'
-                      : 'bg-gradient-to-r from-emerald-500 to-emerald-700 text-white shadow-emerald-500/25 hover:shadow-emerald-500/40'
+                    ? 'bg-gray-200 text-gray-400 shadow-none cursor-not-allowed'
+                    : 'bg-gradient-to-r from-emerald-500 to-emerald-700 text-white shadow-emerald-500/25 hover:shadow-emerald-500/40'
                     } disabled:opacity-60`}
                 >
                   {warrantyClaiming ? (

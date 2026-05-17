@@ -113,6 +113,8 @@ const orderSchema = new mongoose.Schema({
     durationUnit: { type: String, enum: ['months', 'years'] },         // months or years
     warrantyType: { type: String, trim: true },                        // e.g. "Manufacturer", "Extended", "Limited"
     description: { type: String, trim: true },                         // warranty terms/details
+    customerCare: { type: String, trim: true },
+    supportEmail: { type: String, trim: true },
   },
 
   // Track QR generation

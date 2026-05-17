@@ -154,12 +154,12 @@ function WarrantyCard({ item, activeTab }: { item: any, activeTab: string }) {
 
   const handleSupport = () => {
     const p = item.productId;
-    const care = p?.customerCare || 'Not available';
-    const email = p?.supportEmail || 'Not available';
+    const care = item.warrantyInfo?.customerCare || p?.customerCare || 'Not available';
+    const email = item.warrantyInfo?.supportEmail || p?.supportEmail || 'Not available';
     
     // Create a simple alert for now, or could use a modal
     const message = `Support Details:\n\nCustomer Care: ${care}\nSupport Email: ${email}`;
-    if (email !== 'Not available') {
+    if (email && email !== 'Not available') {
         if (window.confirm(`${message}\n\nWould you like to send an email?`)) {
             window.location.href = `mailto:${email}`;
         }

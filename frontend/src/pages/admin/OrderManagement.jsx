@@ -841,6 +841,7 @@ const OrderManagement = () => {
                 <th className="px-6 py-4">Order ID</th>
                 <th className="px-6 py-4">Product & Brand</th>
                 <th className="px-6 py-4">Quantity</th>
+                <th className="px-6 py-4">Warranty</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4">{sortBy === 'updatedAt' ? 'Last Updated' : 'Created At'}</th>
                 <th className="px-6 py-4 text-right">Total Amount</th>
@@ -874,6 +875,17 @@ const OrderManagement = () => {
                   </td>
                   <td className="px-6 py-4">
                     <span className="text-sm font-black text-slate-700">{order.quantity}</span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <button 
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        navigate(`/admin/warranty-claims?search=${encodeURIComponent(order.productName || '')}&orderId=${order._id}`); 
+                      }} 
+                      className="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1.5 rounded-lg border border-blue-200 hover:bg-blue-100 hover:shadow-sm transition-all flex items-center gap-1.5"
+                    >
+                      <ShieldCheck size={14} /> Go to Warranty
+                    </button>
                   </td>
                   <td className="px-6 py-4"><StatusBadge status={order.status} /></td>
                   <td className="px-6 py-4">
@@ -932,7 +944,8 @@ const OrderManagement = () => {
                       {order.status !== 'Received' && !['Pending Authorization', 'Rejected'].includes(order.status) && (role === 'superadmin' || role === 'admin') && (
                         <ActionBtn onClick={() => setDownloadModal(order._id)} icon={FileDown} label="Download QRs" color="slate" />
                       )}
-
+                      {/* Mobile Preview Action */}
+                      <ActionBtn onClick={() => setMobilePreviewOrder(order)} icon={Eye} label="Preview" color="slate" />
                     </div>
                   </td>
                 </tr>

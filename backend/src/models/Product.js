@@ -69,12 +69,13 @@ const productSchema = new mongoose.Schema(
       default: {},
     },
 
-    // Warranty information
     warranty: {
       duration: { type: Number },                                        // e.g. 12
       durationUnit: { type: String, enum: ['months', 'years'] },         // months or years
       warrantyType: { type: String, trim: true },                        // e.g. "Manufacturer", "Extended"
       description: { type: String, trim: true },                         // warranty terms
+      customerCare: { type: String, trim: true },
+      supportEmail: { type: String, trim: true },
     },
   },
   { timestamps: true }

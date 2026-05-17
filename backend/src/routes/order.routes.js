@@ -209,12 +209,13 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
         websiteLink: req.body.coupon.websiteLink || '',
         expiryDate: req.body.coupon.expiryDate || null,
       } : undefined,
-      // Warranty data (if provided)
       warranty: (req.body.warranty && (req.body.warranty.duration || req.body.warranty.warrantyType)) ? {
         duration: req.body.warranty.duration || null,
         durationUnit: req.body.warranty.durationUnit || 'months',
         warrantyType: req.body.warranty.warrantyType || '',
         description: req.body.warranty.description || '',
+        customerCare: req.body.warranty.customerCare || '',
+        supportEmail: req.body.warranty.supportEmail || '',
       } : undefined,
       // Calculate and save pricing
       amount: (await calculateQrPrice(quantityNumber)).total,
@@ -977,6 +978,8 @@ router.put('/:id', protect, authorize('company', 'authorizer', 'creator', 'admin
         durationUnit: req.body.warranty.durationUnit || 'months',
         warrantyType: req.body.warranty.warrantyType || '',
         description: req.body.warranty.description || '',
+        customerCare: req.body.warranty.customerCare || '',
+        supportEmail: req.body.warranty.supportEmail || '',
       } : undefined;
     }
 

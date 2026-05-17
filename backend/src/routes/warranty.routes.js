@@ -3,6 +3,7 @@ const WarrantyClaim = require('../models/WarrantyClaim');
 const Product = require('../models/Product');
 const Brand = require('../models/Brand');
 const { protect } = require('../middleware/authMiddleware');
+const { sendWarrantyClaimEmail } = require('../utils/emailService');
 
 const router = express.Router();
 
@@ -62,13 +63,25 @@ router.post('/claim', protect, async (req, res) => {
       invoiceImages,
       purchaseDate: new Date(purchaseDate),
       warrantyInfo: resolvedWarrantyInfo,
-      status: 'Sent',
+      status: 'Registered',
       statusHistory: [{
-        status: 'Sent',
+        status: 'Registered',
         changedAt: new Date(),
         notes: 'Claim submitted by customer'
       }]
     });
+
+    // Fetch brand email for notification
+    let supportEmail = null;
+    if (claim.brandId) {
+      const brand = await Brand.findById(claim.brandId).lean();
+      if (brand && brand.email) {
+        supportEmail = brand.email;
+      }
+    }
+
+    // Send email notification non-blocking
+    sendWarrantyClaimEmail(supportEmail, claim).catch(e => console.error("Warranty email error:", e));
 
     res.status(201).json({
       success: true,
@@ -119,7 +132,7 @@ router.get('/my-claims', protect, async (req, res) => {
 // ─── 3. GET ALL WARRANTY CLAIMS (Admin / Authorizer / Creator) ──────
 router.get('/claims', protect, async (req, res) => {
   try {
-    const { role } = req.user;
+    const role = (req.user.role || '').toLowerCase();
 
     // Only admin, superadmin, authorizer, creator, company can view claims
     if (!['admin', 'superadmin', 'authorizer', 'creator', 'company'].includes(role)) {
@@ -152,7 +165,7 @@ router.get('/claims', protect, async (req, res) => {
 
     const claims = await WarrantyClaim.find(query)
       .populate('userId', 'name mobile email')
-      .populate('productId', 'productName brand batchNo qrCode')
+      .populate('productId', 'productName brand batchNo qrCode orderId')
       .populate('statusHistory.changedBy', 'name email')
       .sort({ createdAt: -1 })
       .lean();
@@ -167,16 +180,16 @@ router.get('/claims', protect, async (req, res) => {
 // ─── 4. UPDATE CLAIM STATUS (Admin / Authorizer) ────────────────────
 router.put('/claims/:id/status', protect, async (req, res) => {
   try {
-    const { role } = req.user;
+    const role = (req.user.role || '').toLowerCase();
 
-    if (!['admin', 'superadmin', 'authorizer', 'company'].includes(role)) {
+    if (!['admin', 'superadmin', 'authorizer', 'creator', 'company'].includes(role)) {
       return res.status(403).json({ error: 'Not authorized to update claim status' });
     }
 
     const { status, adminNotes } = req.body;
 
-    if (!status || !['Sent', 'Processing', 'Reviewing', 'Contacted', 'Resolved', 'Rejected'].includes(status)) {
-      return res.status(400).json({ error: 'Invalid status. Must be Sent, Processing, Reviewing, Contacted, Resolved, or Rejected.' });
+    if (!status || !['Registered', 'Claimed', 'Processing', 'Reviewing', 'Contacted', 'Resolved', 'Rejected'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status. Must be Registered, Claimed, Processing, Reviewing, Contacted, Resolved, or Rejected.' });
     }
 
     const claim = await WarrantyClaim.findById(req.params.id);
@@ -233,9 +246,16 @@ router.patch('/claim/:id', protect, async (req, res) => {
     if (claimDescription) claim.claimDescription = claimDescription;
     if (claimImages && Array.isArray(claimImages)) claim.claimImages = claimImages;
 
-    // If they are adding issue details, we might want to reset status to 'Sent' 
-    // or keep it if it's already 'Processing' etc. 
-    // For now, let's just save.
+    // If user is adding issue details and claim is still Registered, advance to Claimed
+    if (issue && claim.status === 'Registered') {
+      claim.status = 'Claimed';
+      claim.statusHistory.push({
+        status: 'Claimed',
+        changedBy: userId,
+        changedAt: new Date(),
+        notes: 'Customer raised a warranty claim'
+      });
+    }
 
     await claim.save();
 

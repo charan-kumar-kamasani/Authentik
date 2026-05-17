@@ -208,7 +208,7 @@ const getStatusMessage = (status) => {
   return messages[status] || '';
 };
 
-module.exports = { sendOrderStatusEmail, sendLeadConfirmation, sendCouponExpiryNotification, sendCreditExpiryNotification };
+module.exports = { sendOrderStatusEmail, sendLeadConfirmation, sendCouponExpiryNotification, sendCreditExpiryNotification, sendWarrantyClaimEmail };
 
 // ── Lead Confirmation Email ──
 async function sendLeadConfirmation(leadData) {
@@ -403,5 +403,43 @@ async function sendCreditExpiryNotification(emails, companyData) {
     });
   } catch (err) {
     console.warn('Credit expiry email error:', err.message);
+  }
+}
+
+// ── Warranty Claim Email ──
+async function sendWarrantyClaimEmail(supportEmail, claimDetails) {
+  try {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) return;
+    const transporter = createTransporter();
+    const recipient = supportEmail || process.env.ADMIN_EMAIL || process.env.EMAIL_USER;
+    if (!recipient) return;
+
+    await transporter.sendMail({
+      from: `"Authentiks Warranty" <${process.env.EMAIL_USER}>`,
+      to: recipient,
+      subject: `🛡️ New Warranty Claim Registered - ${claimDetails.productName}`,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+          <div style="background:linear-gradient(135deg,#10b981,#059669);color:white;padding:25px;text-align:center;border-radius:12px 12px 0 0;">
+            <h1 style="margin:0;">🛡️ New Warranty Claim</h1>
+          </div>
+          <div style="background:#fff;padding:25px;border:1px solid #ddd;border-top:none;border-radius:0 0 12px 12px;">
+            <p>A new warranty claim has been registered.</p>
+            <div style="background:#f0fdf4;padding:15px;border-radius:8px;border-left:4px solid #10b981;margin:15px 0;">
+              <p><strong>Product:</strong> ${claimDetails.productName}</p>
+              <p><strong>QR Code:</strong> ${claimDetails.qrCode || 'N/A'}</p>
+              <p><strong>Date of Purchase:</strong> ${claimDetails.purchaseDate ? new Date(claimDetails.purchaseDate).toLocaleDateString() : 'N/A'}</p>
+            </div>
+            <p>Please log in to the admin dashboard to review the claim and take necessary actions.</p>
+            <div style="text-align:center;margin-top:20px;">
+              <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/warranty-claims" style="display:inline-block;padding:10px 20px;background:#10b981;color:#fff;text-decoration:none;border-radius:6px;font-weight:bold;">View Claims Dashboard</a>
+            </div>
+          </div>
+        </div>
+      `
+    });
+    console.log(`[EmailService] Warranty claim email sent to ${recipient}`);
+  } catch (err) {
+    console.warn('Warranty claim email error:', err.message);
   }
 }

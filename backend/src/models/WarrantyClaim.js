@@ -33,6 +33,8 @@ const warrantyClaimSchema = new mongoose.Schema({
     durationUnit: { type: String, enum: ['months', 'years'] },
     warrantyType: String,
     description: String,
+    customerCare: String,
+    supportEmail: String,
   },
 
   // Claim specific fields
@@ -43,8 +45,8 @@ const warrantyClaimSchema = new mongoose.Schema({
   // Claim status
   status: {
     type: String,
-    enum: ['Sent', 'Processing', 'Reviewing', 'Contacted', 'Resolved', 'Rejected'],
-    default: 'Sent',
+    enum: ['Registered', 'Claimed', 'Processing', 'Reviewing', 'Contacted', 'Resolved', 'Rejected'],
+    default: 'Registered',
   },
 
   // Status History for Audit Trail

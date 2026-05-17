@@ -323,6 +323,12 @@ export default function AdminLayout({ children }) {
                 icon={Gift}
                 isActive={activePath === "/admin/coupons"}
               />
+              <SidebarItemCollapse
+                label="Warranty"
+                onClick={() => navigate("/admin/warranty-claims")}
+                icon={ShieldCheck}
+                isActive={activePath === "/admin/warranty-claims"}
+              />
             </div>
           ) : (
             <>
@@ -371,7 +377,7 @@ export default function AdminLayout({ children }) {
                 isActive={activePath === "/admin/reviews"}
               />
               <SidebarItemCollapse
-                label="Warranty Claims"
+                label="Warranty"
                 onClick={() => navigate("/admin/warranty-claims")}
                 icon={ShieldCheck}
                 isActive={activePath === "/admin/warranty-claims"}

@@ -102,6 +102,7 @@ export default function UpdateWarranty() {
               <input
                 type="date"
                 value={purchaseDate}
+                max={new Date().toISOString().split('T')[0]}
                 onChange={(e) => setPurchaseDate(e.target.value)}
                 className="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-[15px] font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
               />

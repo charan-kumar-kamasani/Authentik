@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import API_BASE_URL, { createOrder, updateOrder, getProductTemplates, createProductTemplate, deleteProductTemplate, getBrands } from '../../config/api';
-import { Calendar, Package, Plus, X, List, LayoutGrid, Trash2, CheckCircle2, Search, ArrowLeft, Gift, Shield } from 'lucide-react';
+import { Calendar, Package, Plus, X, List, LayoutGrid, Trash2, CheckCircle2, Search, ArrowLeft, Gift, Shield, ShieldCheck } from 'lucide-react';
 import { useConfirm } from '../../components/ConfirmModal';
 
 export default function GenerateQrs() {
@@ -25,7 +25,7 @@ export default function GenerateQrs() {
   const [coupon, setCoupon] = useState({ title: '', code: '', description: '', websiteLink: '', expiryDate: '' });
 
   // Warranty fields
-  const [warranty, setWarranty] = useState({ duration: '', durationUnit: 'months', warrantyType: '', description: '' });
+  const [warranty, setWarranty] = useState({ duration: '', durationUnit: 'months', warrantyType: '', description: '', customerCare: '', supportEmail: '' });
 
   // Dynamic fields
   const [dynamicFieldValues, setDynamicFieldValues] = useState({});
@@ -44,6 +44,7 @@ export default function GenerateQrs() {
   const [currentUser, setCurrentUser] = useState(null);
 
   const [submitting, setSubmitting] = useState(false);
+  const [mobilePreviewOrder, setMobilePreviewOrder] = useState(null);
   const [templateSearch, setTemplateSearch] = useState('');
   const [editingOrder, setEditingOrder] = useState(null);
   const confirm = useConfirm();
@@ -94,6 +95,8 @@ export default function GenerateQrs() {
           durationUnit: order.warranty.durationUnit || 'months',
           warrantyType: order.warranty.warrantyType || '',
           description: order.warranty.description || '',
+          customerCare: order.warranty.customerCare || '',
+          supportEmail: order.warranty.supportEmail || '',
         });
       }
     }
@@ -203,15 +206,7 @@ export default function GenerateQrs() {
     e.preventDefault();
     if (submitting) return;
 
-    const ok = await confirm({ 
-      title: editingOrder ? 'Update & Resubmit Order' : 'Create Product & QR', 
-      description: editingOrder 
-        ? 'Are you sure you want to update this order and resubmit for authorization?' 
-        : 'Are you sure you want to create this product record and generate QR codes?', 
-      confirmText: editingOrder ? 'Yes, Resubmit' : 'Yes, Create', 
-      cancelText: 'Cancel' 
-    });
-    if (!ok) return;
+    // Mobile preview modal now serves as the confirmation step
 
     setSubmitting(true);
     const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
@@ -360,6 +355,46 @@ export default function GenerateQrs() {
         }
       }
 
+      // Warranty fields validation
+      const hasAnyWarrantyField = !!(
+        warranty.duration ||
+        warranty.warrantyType ||
+        warranty.description ||
+        warranty.customerCare ||
+        warranty.supportEmail
+      );
+
+      if (hasAnyWarrantyField) {
+        const missingFields = [];
+        if (!warranty.duration) missingFields.push('Warranty Duration');
+        if (!warranty.warrantyType) missingFields.push('Warranty Type');
+        if (!warranty.description) missingFields.push('Warranty Description');
+        if (!warranty.customerCare) missingFields.push('Customer Care Number');
+        if (!warranty.supportEmail) missingFields.push('Support Email');
+
+        if (missingFields.length > 0) {
+          await confirm({
+            title: 'Warranty Info Required',
+            description: `Since you've filled some warranty details, all warranty fields are mandatory. Please fill: ${missingFields.join(', ')}.`,
+            cancelText: null
+          });
+          setSubmitting(false);
+          return;
+        }
+
+        // Email validation for supportEmail
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(warranty.supportEmail)) {
+          await confirm({
+            title: 'Invalid Support Email',
+            description: 'Please enter a valid support email address for warranty.',
+            cancelText: null
+          });
+          setSubmitting(false);
+          return;
+        }
+      }
+
       const orderData = {
         productName,
         skuNumber: newQr.skuNumber,
@@ -390,16 +425,32 @@ export default function GenerateQrs() {
           expiryDate: coupon.expiryDate || null,
         } : undefined,
         // Warranty (if provided)
-        warranty: (warranty.duration || warranty.warrantyType) ? {
+        warranty: (warranty.duration || warranty.warrantyType || warranty.customerCare || warranty.supportEmail || warranty.description) ? {
           duration: warranty.duration ? Number(warranty.duration) : null,
           durationUnit: warranty.durationUnit || 'months',
           warrantyType: warranty.warrantyType,
           description: warranty.description,
+          customerCare: warranty.customerCare,
+          supportEmail: warranty.supportEmail,
         } : undefined,
       };
 
+      setMobilePreviewOrder(orderData);
+    } catch (err) {
+      console.error(err);
+      await confirm({ title: 'Error', description: err.message || 'Failed to prepare QR order', cancelText: null });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const submitOrderData = async (orderData) => {
+    setSubmitting(true);
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+    try {
       if (editingOrder) {
         await updateOrder(editingOrder._id, orderData);
+        setMobilePreviewOrder(null);
         await confirm({
           title: 'Success!',
           description: role === 'creator' ? 'Order updated and re-submitted! Authorizer will review it again.' : 'Order updated successfully!',
@@ -409,6 +460,7 @@ export default function GenerateQrs() {
         navigate('/orders');
       } else if (role === 'creator') {
         await createOrder(orderData, token);
+        setMobilePreviewOrder(null);
         await confirm({
           title: 'Success!',
           description: 'Order created successfully. The authorizer will process it to generate QRs.',
@@ -433,9 +485,10 @@ export default function GenerateQrs() {
             msg += ' Your PDF download will start now.';
             downloadPdf(result.pdfBase64, 'products_qr_codes.pdf');
           } else {
-            msg += ' (Note: PDF was too large for instant download; please use the streaming \'PDF\' button in Order Management for this batch).';
+            msg += " (Note: PDF was too large for instant download; please use the streaming 'PDF' button in Order Management for this batch).";
           }
           
+          setMobilePreviewOrder(null);
           await confirm({
             title: 'Success!',
             description: msg,
@@ -445,6 +498,7 @@ export default function GenerateQrs() {
           navigate('/orders');
         } else {
           const d = await res.json().catch(() => ({}));
+          setMobilePreviewOrder(null);
           await confirm({ title: 'Error', description: d.error || 'Failed to create QR', cancelText: null });
         }
       }
@@ -453,6 +507,7 @@ export default function GenerateQrs() {
       await confirm({ title: 'Error', description: err.message || 'Failed to create QR', cancelText: null });
     } finally {
       setSubmitting(false);
+      setMobilePreviewOrder(null);
     }
   };
 
@@ -725,6 +780,14 @@ export default function GenerateQrs() {
   const filteredProducts = filterBrandId 
     ? products.filter(p => (p.brandId?._id || p.brandId) === filterBrandId)
     : products;
+
+  const hasAnyWarrantyField = !!(
+    warranty.duration ||
+    warranty.warrantyType ||
+    warranty.description ||
+    warranty.customerCare ||
+    warranty.supportEmail
+  );
 
   return (
     <div className="bg-white rounded-2xl p-0 shadow-sm border border-slate-200 relative overflow-hidden">
@@ -1188,7 +1251,7 @@ export default function GenerateQrs() {
         {/* Warranty Duration */}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-slate-700 ml-1">
-            Warranty Duration
+            Warranty Duration {hasAnyWarrantyField && <span className="text-red-500">*</span>}
           </label>
           <div className="grid grid-cols-2 gap-2">
             <input
@@ -1213,7 +1276,7 @@ export default function GenerateQrs() {
         {/* Warranty Type */}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-slate-700 ml-1">
-            Warranty Type
+            Warranty Type {hasAnyWarrantyField && <span className="text-red-500">*</span>}
           </label>
           <input
             type="text"
@@ -1224,10 +1287,38 @@ export default function GenerateQrs() {
           />
         </div>
 
+        {/* Customer Care Number */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-slate-700 ml-1">
+            Customer Care Number {hasAnyWarrantyField && <span className="text-red-500">*</span>}
+          </label>
+          <input
+            type="text"
+            placeholder="e.g. +1-800-555-0199"
+            value={warranty.customerCare}
+            onChange={(e) => setWarranty({ ...warranty, customerCare: e.target.value })}
+            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-medium"
+          />
+        </div>
+
+        {/* Support Email */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium text-slate-700 ml-1">
+            Support Email {hasAnyWarrantyField && <span className="text-red-500">*</span>}
+          </label>
+          <input
+            type="email"
+            placeholder="e.g. support@brand.com"
+            value={warranty.supportEmail}
+            onChange={(e) => setWarranty({ ...warranty, supportEmail: e.target.value })}
+            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-medium"
+          />
+        </div>
+
         {/* Warranty Description */}
         <div className="col-span-2 flex flex-col gap-1.5">
           <label className="text-sm font-medium text-slate-700 ml-1">
-            Warranty Description
+            Warranty Description {hasAnyWarrantyField && <span className="text-red-500">*</span>}
           </label>
           <textarea
             placeholder="e.g. Covers manufacturing defects for 12 months from date of purchase..."
@@ -1254,6 +1345,104 @@ export default function GenerateQrs() {
       </form>
 
       </div>
+
+      {/* --- Consumer Mobile Preview Modal --- */}
+      {mobilePreviewOrder && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+          <div className="relative w-full max-w-[375px] h-[750px] max-h-[90vh] bg-[#F5F5F5] rounded-[2.5rem] shadow-2xl overflow-y-auto border-[10px] border-slate-800 flex flex-col hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {/* Notch */}
+            <div className="absolute top-0 inset-x-0 h-5 bg-slate-800 rounded-b-2xl w-1/2 mx-auto z-50"></div>
+            
+            {/* Header */}
+            <div className="w-full flex items-center justify-center p-4 bg-white sticky top-0 z-40 shadow-sm/50 pt-8">
+              <h1 className="text-[18px] font-bold text-[#0D4E96] tracking-tight">Authentiks</h1>
+              <button 
+                onClick={() => setMobilePreviewOrder(null)} 
+                className="absolute right-4 top-7 w-7 h-7 flex items-center justify-center bg-slate-100 text-slate-500 rounded-full hover:bg-slate-200 transition-colors"
+                title="Close Emulator"
+              >
+                <X size={14} strokeWidth={3} />
+              </button>
+            </div>
+
+            <div className="w-full flex flex-col pb-6">
+              {/* Authentic Status Card */}
+                <div className="flex flex-row justify-center items-center gap-3">
+                  <div className="bg-white rounded-full p-1.5">
+                    <ShieldCheck size={24} className="text-[#2CA4D6] fill-white" />
+                  </div>
+                  <div className="text-left">
+                    <h2 className="text-[16px] font-bold leading-tight">Authentic Product</h2>
+                    <p className="text-[11px] opacity-90 font-medium">This product has been verified as genuine</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Body */}
+              <div className="bg-white shadow-sm rounded-b-[14px] mx-3">
+                <div className="bg-white pb-5 flex flex-col items-center relative gap-3 rounded-b-[14px]">
+                  <div className="w-full bg-[#1F2642] py-2 text-center">
+                    <h3 className="text-white font-bold text-[18px] px-2 truncate leading-tight">{mobilePreviewOrder.productName}</h3>
+                  </div>
+                  <div className="relative h-[200px] w-[90%] rounded-[1.5rem] mt-2 mx-auto overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 shadow-md border-4 border-white flex items-center justify-center">
+                    {mobilePreviewOrder.productImage ? (
+                      <img src={mobilePreviewOrder.productImage} className="w-full h-full object-contain" alt="Product" />
+                    ) : (
+                      <span className="text-slate-300 font-bold text-sm">No Image</span>
+                    )}
+                  </div>
+                  
+                  {/* Grid Fields */}
+                  <div className="w-full px-4 pt-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="bg-[#F0F7FF] rounded-xl flex items-center justify-start gap-3 p-3 border border-[#e5f0fa]">
+                         <div className="flex-1 w-full flex flex-col items-start gap-0"><span className="text-[#0D4E96] text-[9px] font-black uppercase tracking-widest opacity-60">Brand</span><span className="text-[#0D4E96] text-[13px] font-black tracking-tight">{mobilePreviewOrder.brand}</span></div>
+                      </div>
+                      {mobilePreviewOrder.mfdOn?.month && (
+                        <div className="bg-[#F0F7FF] rounded-xl flex items-center justify-start gap-3 p-3 border border-[#e5f0fa]">
+                           <div className="flex-1 w-full flex flex-col items-start gap-0"><span className="text-[#0D4E96] text-[9px] font-black uppercase tracking-widest opacity-60">Mfd on</span><span className="text-[#0D4E96] text-[13px] font-black tracking-tight">{mobilePreviewOrder.mfdOn?.month} {mobilePreviewOrder.mfdOn?.year}</span></div>
+                        </div>
+                      )}
+                      {(mobilePreviewOrder.variants || []).slice(0,2).map((val, idx) => (
+                        <div key={idx} className="bg-[#F0F7FF] rounded-xl flex items-center justify-start gap-3 p-3 border border-[#e5f0fa]">
+                           <div className="flex-1 w-full flex flex-col items-start gap-0"><span className="text-[#0D4E96] text-[9px] font-black uppercase tracking-widest opacity-60 truncate w-full">{val.variantName}</span><span className="text-[#0D4E96] text-[13px] font-black tracking-tight truncate w-full">{val.value}</span></div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Additional Info */}
+                    <div className="mt-5 border-t border-gray-100 pt-3 mb-3">
+                      <h4 className="text-[#333] font-bold text-[12px] mb-2 ml-1 uppercase tracking-tight">Additional Info:</h4>
+                      <div className="bg-[#F2F2F2] p-3 rounded-[16px] shadow-sm space-y-3 border border-gray-200/50">
+                        {mobilePreviewOrder.productInfo && (
+                          <div className="mb-3">
+                            <p className="text-[#444] text-[12px] font-medium whitespace-pre-wrap leading-relaxed">{mobilePreviewOrder.productInfo}</p>
+                          </div>
+                        )}
+                        <div className="space-y-2">
+                          <div className="border-b border-gray-300/30 pb-2">
+                             <p className="text-[#333] text-[10px] font-bold uppercase tracking-wider opacity-60 mb-0.5">Manufactured By</p>
+                             <p className="text-[#0D4E96] text-[12px] font-bold">{currentUser?.companyId?.companyName || 'Unknown Company'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-4 mt-auto">
+                    <button
+                        onClick={() => submitOrderData(mobilePreviewOrder)}
+                        disabled={submitting}
+                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-2xl shadow-lg transition-colors flex items-center justify-center gap-2"
+                    >
+                        {submitting ? 'Submitting...' : 'Proceed to Submit'} <ArrowLeft className="rotate-180" size={18} />
+                    </button>
+                </div>
+              </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
