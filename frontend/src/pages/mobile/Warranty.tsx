@@ -98,7 +98,7 @@ export default function Warranty() {
             onClick={() => setActiveTab(tab)}
             className={`flex-1 py-3 text-[13px] font-black uppercase tracking-wider rounded-xl transition-all ${
               activeTab === tab 
-                ? 'bg-white text-[#0D4E96] shadow-sm ring-1 ring-black/5 scale-[1.02]' 
+                ? 'bg-[#0D4E96] text-white shadow-md scale-[1.02]' 
                 : 'text-slate-400 hover:text-slate-600'
             }`}
           >
@@ -127,19 +127,27 @@ function WarrantyCard({ item, activeTab }: { item: any, activeTab: string }) {
 
   const getTimeLeft = () => {
     if (isExpired) return null;
-    const seconds = Math.floor(diff / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-    const months = Math.floor(days / 30);
-    const years = Math.floor(months / 12);
 
-    return {
-      years,
-      months: months % 12,
-      days: days % 30,
-      hours: hours % 24
-    };
+    let years = expiryDate.getFullYear() - now.getFullYear();
+    let months = expiryDate.getMonth() - now.getMonth();
+    let days = expiryDate.getDate() - now.getDate();
+    let hours = expiryDate.getHours() - now.getHours();
+
+    if (hours < 0) {
+      hours += 24;
+      days--;
+    }
+    if (days < 0) {
+      const prevMonth = new Date(expiryDate.getFullYear(), expiryDate.getMonth(), 0);
+      days += prevMonth.getDate();
+      months--;
+    }
+    if (months < 0) {
+      months += 12;
+      years--;
+    }
+
+    return { years, months, days, hours };
   };
 
   const timeLeft = getTimeLeft();

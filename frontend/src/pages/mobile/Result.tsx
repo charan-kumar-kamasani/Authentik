@@ -13,7 +13,7 @@ import { useConfirm } from "../../components/ConfirmModal";
 export default function Result() {
   const { status } = useParams();
   const navigate = useNavigate();
-  const confirmModal = useConfirm();
+  const confirmModal = useConfirm() as any;
   const { state } = useLocation();
 
   const validStatuses = ["ORIGINAL", "ALREADY_USED", "ALREADY_SCANNED", "DUPLICATE", "FAKE", "INACTIVE"];
@@ -84,6 +84,7 @@ function Header({ title = "Authentiks", showBell = true }) {
 
 function ResultAuthentic({ data }: { data: any }) {
   const navigate = useNavigate();
+  const confirmModal = useConfirm() as any;
   const [showAll, setShowAll] = useState(false);
   const [showMore, setShowMore] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -461,7 +462,7 @@ function ResultAuthentic({ data }: { data: any }) {
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 </svg>
-                Warranty Info
+                Register Warranty
               </button>
             )}
           </div>
@@ -928,7 +929,7 @@ function ResultAuthentic({ data }: { data: any }) {
                             const f = e.target.files?.[0];
                             if (!f) return;
                             if (!f.type.startsWith('image/')) {
-                              alert('Only image files are allowed');
+                              confirmModal({ title: 'Error', description: 'Only image files are allowed', cancelText: null });
                               return;
                             }
                             const preview = URL.createObjectURL(f);
@@ -955,7 +956,7 @@ function ResultAuthentic({ data }: { data: any }) {
                             const f = e.target.files?.[0];
                             if (!f) return;
                             if (!f.type.startsWith('image/')) {
-                              alert('Only image files are allowed');
+                              confirmModal({ title: 'Error', description: 'Only image files are allowed', cancelText: null });
                               return;
                             }
                             const preview = URL.createObjectURL(f);
@@ -974,7 +975,7 @@ function ResultAuthentic({ data }: { data: any }) {
                   onClick={async () => {
                     // Validate
                     if (!warrantyForm.purchaseDate) {
-                      alert('Please select a purchase date');
+                      await confirmModal({ title: 'Notice', description: 'Please select a purchase date', cancelText: null });
                       return;
                     }
                     if (invoiceImages.length === 0) {
@@ -1024,9 +1025,9 @@ function ResultAuthentic({ data }: { data: any }) {
                       }
                       setWarrantyClaimed(true);
                       setShowWarrantyModal(false);
-                      alert('Warranty claim submitted successfully! Our team will review it.');
+                      await confirmModal({ title: 'Success', description: 'Warranty claim submitted successfully! Our team will review it.', cancelText: null });
                     } catch (error: any) {
-                      alert(error.message || 'Failed to submit warranty claim');
+                      await confirmModal({ title: 'Error', description: error.message || 'Failed to submit warranty claim', cancelText: null });
                     } finally {
                       setWarrantyClaiming(false);
                     }
