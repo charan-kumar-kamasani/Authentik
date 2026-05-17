@@ -40,6 +40,15 @@ const DEMO_PRODUCT = {
   ],
   hasCoupon: true,
   alreadyReviewed: false,
+  warranty: {
+    duration: 1,
+    durationUnit: "years",
+    warrantyType: "Brand Warranty",
+    customerCare: "1600800800",
+    supportEmail: "care@alphalite.com",
+    description: "This product comes with a 1-Year brand warranty covering all manufacturing defects. Physical damages and unauthorized modifications are not covered under standard terms."
+  },
+  warrantyClaimStatus: null,
 };
 
 const getDemoResult = (qrCode, userId, latitude, longitude, place) => {
