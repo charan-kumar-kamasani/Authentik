@@ -20,6 +20,14 @@ const DEMO_PRODUCT = {
     "mrp": "₹36,999",
     "manufacturedBy": "ALPHALITE SPORTS",
     "website": "www.alphalite.com"
+  },
+  warranty: {
+    duration: 1,
+    durationUnit: "years",
+    warrantyType: "Brand Warranty",
+    customerCare: "1600800800",
+    supportEmail: "care@alphalite.com",
+    description: "This product comes with a 1-Year brand warranty covering all manufacturing defects. Physical damages and unauthorized modifications are not covered under standard terms."
   }
 };
 
@@ -58,6 +66,14 @@ function ResultAuthentic({ data }) {
   const [awardedCoupon, setAwardedCoupon] = useState(null);
   const [showCouponReveal, setShowCouponReveal] = useState(false);
   const [couponCopied, setCouponCopied] = useState(false);
+
+  const [showWarrantyModal, setShowWarrantyModal] = useState(false);
+  const [warrantyClaimStatus, setWarrantyClaimStatus] = useState(null);
+  const [warrantyClaimed, setWarrantyClaimed] = useState(false);
+  const [warrantyClaiming, setWarrantyClaiming] = useState(false);
+  const [warrantyForm, setWarrantyForm] = useState({ purchaseDate: "" });
+  const [invoiceImages, setInvoiceImages] = useState([]);
+  const warrantyFileRef = React.useRef(null);
 
   const productName = data.productName;
   const productImage = data.productImage;
@@ -186,6 +202,29 @@ function ResultAuthentic({ data }) {
             </div>
           </div>
         </div>
+
+        {/* Register Warranty Button */}
+        {data.warranty && (
+          <div className="w-full mt-4">
+            {warrantyClaimStatus ? (
+              <button
+                onClick={() => alert(`Demo Mode Tracker:\nYour claim status is currently: "${warrantyClaimStatus}".\nIn a real scan, you'd be redirected to your personal Warranty Claims dashboard to track this live.`)}
+                className="w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-bold text-[18px] py-4 rounded-[30px] shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 active:scale-95 transition-all uppercase tracking-wider flex items-center justify-center gap-2"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Track Warranty
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowWarrantyModal(true)}
+                className="w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-bold text-[18px] py-4 rounded-[30px] shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 active:scale-95 transition-all uppercase tracking-wider flex items-center justify-center gap-2"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Register Warranty
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Review Button */}
         <button 
@@ -390,6 +429,208 @@ function ResultAuthentic({ data }) {
                     Redeem Now
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        {/* ===== Warranty Claim Modal ===== */}
+        {showWarrantyModal && (
+          <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center">
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowWarrantyModal(false)} />
+            <div
+              className="relative w-full sm:max-w-[440px] sm:mx-4 bg-white rounded-t-[28px] sm:rounded-[28px] max-h-[92vh] overflow-y-auto shadow-[0_-8px_40px_rgba(0,0,0,0.2)]"
+              style={{ animation: 'reviewSheetUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)' }}
+            >
+              {/* Handle bar (mobile) */}
+              <div className="flex justify-center pt-3 pb-1 sm:hidden">
+                <div className="w-10 h-1 rounded-full bg-gray-300" />
+              </div>
+
+              {/* Close */}
+              <button
+                onClick={() => setShowWarrantyModal(false)}
+                className="absolute right-4 top-4 sm:top-5 w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors z-10"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+              </button>
+
+              {/* Header */}
+              <div className="px-6 pt-8 pb-4 text-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 mx-auto mb-4 flex items-center justify-center shadow-lg">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                </div>
+                <h2 className="text-[20px] font-black text-[#0D4E96] tracking-tight">Register Warranty</h2>
+                <p className="text-[13px] text-gray-500 font-medium mt-1">Upload your purchase invoice to register warranty</p>
+              </div>
+
+              {/* ===== Warranty Info Section ===== */}
+              {data.warranty && (
+                <div className="mx-6 mb-6 bg-emerald-50 rounded-[16px] shadow-sm border border-emerald-100 overflow-hidden">
+                  <div className="p-4 space-y-3">
+                    {data.warranty.warrantyType && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-[12px] text-gray-500 font-bold uppercase tracking-wider">Type</span>
+                        <span className="text-[14px] text-emerald-700 font-bold">{data.warranty.warrantyType}</span>
+                      </div>
+                    )}
+                    {data.warranty.duration && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-[12px] text-gray-500 font-bold uppercase tracking-wider">Duration</span>
+                        <span className="text-[14px] text-emerald-700 font-bold">
+                          {data.warranty.duration} {data.warranty.durationUnit === 'years' ? 'Year(s)' : 'Month(s)'}
+                        </span>
+                      </div>
+                    )}
+                    {data.warranty.customerCare && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-[12px] text-gray-500 font-bold uppercase tracking-wider">Support Tel</span>
+                        <span className="text-[14px] text-emerald-700 font-bold">
+                          <a href={`tel:${data.warranty.customerCare}`} className="underline hover:text-emerald-800">{data.warranty.customerCare}</a>
+                        </span>
+                      </div>
+                    )}
+                    {data.warranty.supportEmail && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-[12px] text-gray-500 font-bold uppercase tracking-wider">Support Email</span>
+                        <span className="text-[14px] text-emerald-700 font-bold">
+                          <a href={`mailto:${data.warranty.supportEmail}`} className="underline hover:text-emerald-800">{data.warranty.supportEmail}</a>
+                        </span>
+                      </div>
+                    )}
+                    {data.warranty.description && (
+                      <div className="border-t border-emerald-100 pt-3">
+                        <p className="text-[12px] text-gray-500 font-bold uppercase tracking-wider mb-1">Details</p>
+                        <p className="text-[13px] text-gray-700 leading-relaxed break-all whitespace-pre-wrap">{data.warranty.description}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Form */}
+              <div className="px-6 pb-8 space-y-5">
+                {/* Purchase Date */}
+                <div>
+                  <label className="block text-[12px] font-bold text-gray-600 uppercase tracking-wider mb-1.5">Purchase Date *</label>
+                  <input
+                    type="date"
+                    value={warrantyForm.purchaseDate}
+                    max={new Date().toISOString().split('T')[0]}
+                    onChange={(e) => setWarrantyForm({ ...warrantyForm, purchaseDate: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-medium"
+                    required
+                  />
+                </div>
+
+                {/* Invoice Image Upload */}
+                <div>
+                  <label className="block text-[12px] font-bold text-gray-600 uppercase tracking-wider mb-1.5">
+                    Invoice / Bill Images * <span className="text-gray-400 font-normal">(max 3)</span>
+                  </label>
+
+                  {/* Image previews */}
+                  {invoiceImages.length > 0 && (
+                    <div className="flex gap-2 mb-3 flex-wrap">
+                      {invoiceImages.map((img, idx) => (
+                        <div key={idx} className="relative w-20 h-20 rounded-xl overflow-hidden border-2 border-emerald-200 shadow-sm">
+                          <img src={img.preview} alt={`Invoice ${idx + 1}`} className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setInvoiceImages(prev => prev.filter((_, i) => i !== idx));
+                            }}
+                            className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shadow-md"
+                          >
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {invoiceImages.length < 3 && (
+                    <div className="flex gap-2">
+                      {/* Camera capture */}
+                      <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-50 border-2 border-dashed border-emerald-300 rounded-2xl text-emerald-700 font-bold text-[13px] cursor-pointer hover:bg-emerald-100 transition-colors">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                          <circle cx="12" cy="13" r="4" />
+                        </svg>
+                        Camera
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          className="hidden"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            if (!f) return;
+                            const preview = URL.createObjectURL(f);
+                            setInvoiceImages(prev => [...prev, { file: f, preview }]);
+                            e.target.value = '';
+                          }}
+                        />
+                      </label>
+
+                      {/* File upload */}
+                      <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 border-2 border-dashed border-blue-300 rounded-2xl text-blue-700 font-bold text-[13px] cursor-pointer hover:bg-blue-100 transition-colors">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                          <polyline points="17 8 12 3 7 8" />
+                          <line x1="12" y1="3" x2="12" y2="15" />
+                        </svg>
+                        Gallery
+                        <input
+                          ref={warrantyFileRef}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const f = e.target.files?.[0];
+                            if (!f) return;
+                            const preview = URL.createObjectURL(f);
+                            setInvoiceImages(prev => [...prev, { file: f, preview }]);
+                            e.target.value = '';
+                          }}
+                        />
+                      </label>
+                    </div>
+                  )}
+                  <p className="text-[11px] text-gray-400 mt-1.5 font-medium">Upload clear photos of your purchase bill/invoice (images only, no PDFs)</p>
+                </div>
+
+                {/* Submit */}
+                <button
+                  onClick={() => {
+                    if (!warrantyForm.purchaseDate) {
+                      alert('Please select a purchase date');
+                      return;
+                    }
+                    if (invoiceImages.length === 0) {
+                      alert('Please upload at least one invoice image');
+                      return;
+                    }
+
+                    setWarrantyClaiming(true);
+                    setTimeout(() => {
+                      setWarrantyClaiming(false);
+                      setWarrantyClaimStatus('Processing');
+                      setWarrantyClaimed(true);
+                      setShowWarrantyModal(false);
+                      alert('Demo Mode: Warranty registered successfully! (Simulated submission)');
+                    }, 1500);
+                  }}
+                  disabled={warrantyClaiming}
+                  className="w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-extrabold text-[16px] py-4 rounded-2xl shadow-lg shadow-emerald-500/25 active:scale-95 transition-all uppercase tracking-wider flex items-center justify-center gap-2"
+                >
+                  {warrantyClaiming ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="animate-spin w-5 h-5 text-white" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25"/><path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="opacity-75"/></svg>
+                      Registering...
+                    </span>
+                  ) : 'Submit Claim'}
+                </button>
               </div>
             </div>
           </div>
