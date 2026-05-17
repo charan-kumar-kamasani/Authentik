@@ -632,7 +632,7 @@ function ResultAuthentic({ data }: { data: any }) {
 
         {/* Coupon Reveal Dialog - Full Screen */}
         {showCouponReveal && awardedCoupon && (
-          <div className="fixed inset-0 z-[200] bg-white flex flex-col font-sans overflow-y-auto" style={{ animation: 'couponFadeIn 0.3s ease' }}>
+          <div className="fixed inset-0 z-[200] bg-gradient-to-b from-[#F0F7FF] via-[#FFFFFF] to-[#F8FAFC] flex flex-col font-sans overflow-y-auto" style={{ animation: 'couponFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1)' }}>
             <MobileHeader
               title="Authentiks"
               onLeftClick={() => setShowCouponReveal(false)}
@@ -640,17 +640,28 @@ function ResultAuthentic({ data }: { data: any }) {
               rightIcon={<div className="w-10" />}
             />
 
-            <div className="flex-1 px-5 py-8 flex flex-col items-center">
-              <h2 className="text-[#0D4E96] text-[22px] font-bold text-center leading-tight mb-10 max-w-[280px]">
-                Congratulations,<br />You've Unlocked a Reward!
-              </h2>
+            <div className="flex-1 px-5 py-8 flex flex-col items-center relative overflow-hidden">
+              {/* Confetti & Celebratory background SVGs */}
+              <div className="absolute top-10 left-6 w-8 h-8 opacity-25 text-pink-500 animate-bounce">🎈</div>
+              <div className="absolute top-20 right-8 w-6 h-6 opacity-25 text-amber-500 animate-pulse">✨</div>
+              <div className="absolute bottom-40 left-10 w-6 h-6 opacity-25 text-blue-500 animate-pulse">✨</div>
+              <div className="absolute bottom-20 right-10 w-8 h-8 opacity-25 text-indigo-500 animate-bounce">🎈</div>
+
+              <div className="text-center mb-8 relative z-10">
+                <span className="text-[12px] font-black uppercase tracking-widest text-[#2CA4D6] bg-cyan-50 px-3.5 py-1.5 rounded-full border border-cyan-100/50 mb-3 inline-block">
+                  Reward Unlocked 🎉
+                </span>
+                <h2 className="bg-gradient-to-r from-[#0D4E96] to-[#1E3A8A] bg-clip-text text-transparent text-[24px] font-black text-center leading-tight">
+                  Congratulations!<br />You've Earned a Coupon
+                </h2>
+              </div>
 
               {/* Ticket Card */}
-              <div className="w-full max-w-sm relative mt-6 shadow-[0_15px_40px_rgba(0,0,0,0.1)] rounded-[20px] bg-white border border-gray-100">
+              <div className="w-full max-w-sm relative mt-8 shadow-[0_20px_50px_rgba(13,78,150,0.1)] rounded-[24px] bg-white border border-slate-100">
 
                 {/* Gift Icon overlapping top */}
-                <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 bg-[#2CA4D6] rounded-full border-[6px] border-white flex items-center justify-center z-10 shadow-sm">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 bg-gradient-to-tr from-[#0D4E96] to-[#2CA4D6] rounded-full border-[6px] border-white flex items-center justify-center z-20 shadow-xl shadow-blue-500/20">
+                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 12 20 22 4 22 4 12"></polyline>
                     <rect x="2" y="7" width="20" height="5"></rect>
                     <line x1="12" y1="22" x2="12" y2="7"></line>
@@ -659,51 +670,76 @@ function ResultAuthentic({ data }: { data: any }) {
                   </svg>
                 </div>
 
-                {/* Top Dark Section */}
-                <div className="bg-[#1F2642] rounded-t-[20px] pt-14 pb-8 px-6 text-center relative overflow-hidden">
-                  <h3 className="text-white text-[24px] font-black uppercase tracking-wide">
+                {/* Top Section: Gradient Header */}
+                <div className="bg-[#1F2642] bg-gradient-to-br from-[#0D4E96] via-[#1E3A8A] to-[#1F2642] rounded-t-[24px] pt-16 pb-8 px-6 text-center relative overflow-hidden">
+                  {/* Decorative glowing blobs */}
+                  <div className="absolute -right-10 -top-10 w-28 h-28 bg-white/5 rounded-full blur-xl" />
+                  
+                  {/* Brand Tag */}
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 mb-3">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                    <span className="text-white/95 text-[10px] font-black tracking-wider uppercase">
+                      {companyName}
+                    </span>
+                  </div>
+
+                  <h3 className="text-white text-[22px] font-black uppercase tracking-wide leading-tight drop-shadow-sm px-2">
                     {awardedCoupon.title || "REWARD UNLOCKED"}
                   </h3>
                 </div>
 
-                {/* Middle Light Blue Section */}
-                <div className="bg-[#2CA4D6] py-4 px-6 relative flex items-center justify-center gap-3">
-                  {/* Left Cutout */}
-                  <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full"></div>
-                  {/* Right Cutout */}
-                  <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-white rounded-full"></div>
-
-                  <span className="text-white text-[20px] font-black tracking-widest uppercase">
-                    {awardedCoupon.code}
-                  </span>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(awardedCoupon.code);
-                      setCouponCopied(true);
-                      setTimeout(() => setCouponCopied(false), 2000);
-                    }}
-                    className="w-8 h-8 flex items-center justify-center active:scale-90 transition-transform"
-                  >
-                    {couponCopied ? (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5" /></svg>
-                    ) : (
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                    )}
-                  </button>
+                {/* Ticket Notch Divider Area */}
+                <div className="relative py-5 bg-slate-50 border-y border-dashed border-slate-200 flex items-center justify-center">
+                  {/* Left Notch */}
+                  <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#F8FAFC] rounded-full border border-slate-200/50 shadow-[inset_-3px_0_6px_rgba(0,0,0,0.02)] z-10" />
+                  {/* Right Notch */}
+                  <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#F8FAFC] rounded-full border border-slate-200/50 shadow-[inset_3px_0_6px_rgba(0,0,0,0.02)] z-10" />
+                  
+                  {/* Coupon Code Dashed Box */}
+                  <div className="flex items-center justify-between gap-3 px-5 py-2.5 rounded-2xl border-2 border-dashed font-mono text-[18px] font-black uppercase tracking-widest border-cyan-500/30 bg-cyan-500/5 text-[#0D4E96]">
+                    <span>{awardedCoupon.code}</span>
+                    
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(awardedCoupon.code);
+                        setCouponCopied(true);
+                        setTimeout(() => setCouponCopied(false), 2000);
+                      }}
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                        couponCopied
+                          ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 scale-105'
+                          : 'bg-white text-slate-500 hover:text-slate-700 shadow-sm border border-slate-200 hover:border-slate-300 active:scale-90'
+                      }`}
+                    >
+                      {couponCopied ? (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M20 6L9 17l-5-5" /></svg>
+                      ) : (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                      )}
+                    </button>
+                  </div>
                 </div>
 
-                {/* Bottom White Section */}
-                <div className="bg-white rounded-b-[20px] p-6 text-center">
+                {/* Bottom Details Section */}
+                <div className="bg-white rounded-b-[24px] p-6 text-center">
                   {awardedCoupon.expiryDate && (
-                    <p className="text-[#333] text-[14px] font-bold mb-4">
-                      Valid till: {new Date(awardedCoupon.expiryDate).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}
-                    </p>
+                    <div className="flex items-center justify-center gap-1.5 text-slate-500 mb-4">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="opacity-60">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                      <p className="text-[13px] font-black uppercase tracking-wider text-slate-400">
+                        Valid Until: <span className="text-slate-700 font-bold normal-case">{new Date(awardedCoupon.expiryDate).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}</span>
+                      </p>
+                    </div>
                   )}
 
                   {awardedCoupon.description && (
-                    <div className="text-left mb-6">
-                      <p className="text-[#666] text-[12px] font-bold uppercase mb-1">Coupon Details:</p>
-                      <p className="text-[#666] text-[13px] leading-relaxed">
+                    <div className="text-left mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                      <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">Reward Description</p>
+                      <p className="text-slate-600 text-[13px] font-medium leading-relaxed">
                         {awardedCoupon.description}
                       </p>
                     </div>
@@ -717,7 +753,7 @@ function ResultAuthentic({ data }: { data: any }) {
                         navigate('/rewards');
                       }
                     }}
-                    className="w-full bg-[#1F2642] text-white font-bold text-[16px] py-4 rounded-[30px] shadow-lg active:scale-95 transition-transform"
+                    className="w-full bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] text-white font-extrabold text-[15px] py-4 rounded-2xl shadow-lg shadow-blue-500/10 hover:shadow-blue-500/25 active:scale-95 transition-all uppercase tracking-wider"
                   >
                     Redeem Now
                   </button>

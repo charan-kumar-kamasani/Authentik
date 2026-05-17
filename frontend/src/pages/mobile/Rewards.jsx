@@ -115,73 +115,114 @@ export default function Rewards() {
 
         {/* Rewards List */}
         <div className="space-y-4">
-          {filteredRewards.map((reward) => (
-            <div key={reward._id} className="w-full relative shadow-[0_4px_15px_rgba(0,0,0,0.05)] rounded-[16px] bg-white border border-gray-100">
-              {/* Top Dark Section */}
-              <div className="bg-[#1F2642] rounded-t-[16px] pt-6 pb-5 px-5 text-center relative overflow-hidden">
-                <p className="text-white/80 text-[12px] font-semibold tracking-wider uppercase mb-1">
-                  {reward.brand || 'Brand'}
-                </p>
-                <h3 className="text-white text-[20px] font-black uppercase tracking-wide leading-tight">
-                  {reward.couponTitle || 'REWARD UNLOCKED'}
-                </h3>
-              </div>
+          {filteredRewards.map((reward) => {
+            const isExpired = activeTab === 'expired';
+            return (
+              <div 
+                key={reward._id} 
+                className={`w-full relative rounded-3xl overflow-hidden border border-slate-100 bg-white transition-all duration-300 ${
+                  isExpired 
+                    ? 'opacity-70 saturate-50' 
+                    : 'shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)]'
+                }`}
+              >
+                {/* Top Section: Gradient Header */}
+                <div className={`p-6 text-center relative overflow-hidden bg-gradient-to-br ${
+                  isExpired
+                    ? 'from-slate-600 via-slate-700 to-slate-800'
+                    : 'from-[#0D4E96] via-[#1E3A8A] to-[#1F2642]'
+                }`}>
+                  {/* Decorative glowing circles */}
+                  <div className="absolute -right-10 -top-10 w-32 h-32 bg-white/5 rounded-full blur-xl" />
+                  <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-cyan-500/10 rounded-full blur-xl" />
+                  
+                  {/* Brand Badge */}
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 mb-3">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                    <span className="text-white/95 text-[10px] font-black tracking-wider uppercase">
+                      {reward.brand || 'Brand'}
+                    </span>
+                  </div>
 
-              {/* Middle Light Blue Section */}
-              <div className="bg-[#2CA4D6] py-3 px-5 relative flex items-center justify-center gap-3">
-                {/* Left Cutout */}
-                <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#F8FAFC] rounded-full border-r border-gray-100/50"></div>
-                {/* Right Cutout */}
-                <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#F8FAFC] rounded-full border-l border-gray-100/50"></div>
-                
-                <span className="text-white text-[16px] font-black tracking-widest uppercase">
-                  {reward.couponCode}
-                </span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    copyCode(reward.couponCode, reward._id);
-                  }}
-                  className="w-7 h-7 flex items-center justify-center active:scale-90 transition-transform ml-2"
-                >
-                  {copiedId === reward._id ? (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>
-                  ) : (
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                  )}
-                </button>
-              </div>
-
-              {/* Bottom White Section */}
-              <div className="bg-white rounded-b-[16px] p-4 flex items-center justify-between">
-                <div>
-                  {reward.couponExpiry ? (
-                    <p className="text-[#64748B] text-[12px] font-bold">
-                      Validity: <span className="text-[#1F2642]">{new Date(reward.couponExpiry).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}</span>
-                    </p>
-                  ) : (
-                    <p className="text-[#64748B] text-[12px] font-bold">No expiry</p>
-                  )}
+                  {/* Title */}
+                  <h3 className="text-white text-[20px] font-black uppercase tracking-wide leading-tight drop-shadow-sm px-2">
+                    {reward.couponTitle || 'REWARD UNLOCKED'}
+                  </h3>
                 </div>
-                
-                <button
-                  onClick={() => {
-                    if (reward.websiteLink) {
-                      window.open(reward.websiteLink, '_blank');
-                    }
-                  }}
-                  disabled={activeTab === 'expired'}
-                  className={`px-5 py-2 rounded-full text-[13px] font-bold shadow-sm transition-transform ${
-                    activeTab === 'expired'
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                      : 'bg-[#1F2642] text-white hover:bg-[#151a2e] active:scale-95'
-                  }`}
-                >
-                  Redeem Now
-                </button>
+
+                {/* Ticket Notch Divider Area */}
+                <div className="relative py-4 bg-slate-50 border-y border-dashed border-slate-200 flex items-center justify-center">
+                  {/* Left Notch */}
+                  <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#F8FAFC] rounded-full border border-slate-200/50 shadow-[inset_-3px_0_6px_rgba(0,0,0,0.02)] z-10" />
+                  {/* Right Notch */}
+                  <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#F8FAFC] rounded-full border border-slate-200/50 shadow-[inset_3px_0_6px_rgba(0,0,0,0.02)] z-10" />
+                  
+                  {/* Coupon Code Dashed Box */}
+                  <div className={`flex items-center justify-between gap-3 px-5 py-2.5 rounded-2xl border-2 border-dashed font-mono text-[16px] font-black uppercase tracking-widest transition-colors ${
+                    isExpired
+                      ? 'border-slate-300 bg-slate-100 text-slate-500'
+                      : 'border-cyan-500/30 bg-cyan-500/5 text-[#0D4E96]'
+                  }`}>
+                    <span>{reward.couponCode}</span>
+                    
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!isExpired) copyCode(reward.couponCode, reward._id);
+                      }}
+                      disabled={isExpired}
+                      className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
+                        copiedId === reward._id
+                          ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 scale-105'
+                          : 'bg-white text-slate-500 hover:text-slate-700 shadow-sm border border-slate-200 hover:border-slate-300 active:scale-90'
+                      }`}
+                    >
+                      {copiedId === reward._id ? (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M20 6L9 17l-5-5"/></svg>
+                      ) : (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Bottom Details Section */}
+                <div className="bg-white p-5 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-2 text-slate-500">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="opacity-60">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="16" y1="2" x2="16" y2="6"></line>
+                      <line x1="8" y1="2" x2="8" y2="6"></line>
+                      <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    {reward.couponExpiry ? (
+                      <p className="text-[12px] font-black uppercase tracking-wider text-slate-400">
+                        Valid: <span className="text-slate-700 font-bold normal-case">{new Date(reward.couponExpiry).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}</span>
+                      </p>
+                    ) : (
+                      <p className="text-[12px] font-black uppercase tracking-wider text-slate-400">No Expiry</p>
+                    )}
+                  </div>
+                  
+                  <button
+                    onClick={() => {
+                      if (reward.websiteLink) {
+                        window.open(reward.websiteLink, '_blank');
+                      }
+                    }}
+                    disabled={isExpired}
+                    className={`px-6 py-3 rounded-2xl text-[13px] font-extrabold shadow-md active:scale-95 transition-all uppercase tracking-wider ${
+                      isExpired
+                        ? 'bg-slate-100 text-slate-400 shadow-none cursor-not-allowed border border-slate-200'
+                        : 'bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] text-white shadow-blue-500/10 hover:shadow-blue-500/20'
+                    }`}
+                  >
+                    Redeem Now
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

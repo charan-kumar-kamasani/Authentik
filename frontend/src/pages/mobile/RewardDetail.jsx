@@ -100,22 +100,37 @@ export default function RewardDetail() {
 
           {/* Coupon Code */}
           <div className="p-6">
-            <div className="border-[2px] border-dashed border-[#2CA4D6]/40 rounded-[28px] p-6 bg-gradient-to-b from-[#F0F7FF] to-[#E8F4F9] text-center shadow-inner relative overflow-hidden">
-              <p className="text-[11px] text-[#1a5fa8] font-black uppercase tracking-[0.25em] mb-2">
+            <div className={`border-2 border-dashed rounded-3xl p-6 text-center relative overflow-hidden transition-colors ${
+              isExpired
+                ? 'border-slate-300 bg-slate-50 text-slate-500'
+                : 'border-cyan-500/40 bg-gradient-to-b from-cyan-500/5 to-cyan-500/10 text-[#0D4E96] shadow-[inset_0_2px_8px_rgba(44,164,214,0.05)]'
+            }`}>
+              <p className={`text-[11px] font-black uppercase tracking-[0.25em] mb-3 ${
+                isExpired ? 'text-slate-400' : 'text-[#2CA4D6]'
+              }`}>
                 {reward.couponTitle || 'Your Coupon Code'}
               </p>
               <div className="flex items-center justify-center gap-4 w-full px-2">
-                <span className="text-[24px] sm:text-[32px] font-black text-[#0D4E96] tracking-[0.1em] drop-shadow-sm flex-1 break-all text-center">
+                <span className={`text-[24px] sm:text-[30px] font-black tracking-[0.1em] drop-shadow-sm flex-1 break-all text-center font-mono ${
+                  isExpired ? 'text-slate-500' : 'text-[#0D4E96]'
+                }`}>
                   {reward.couponCode}
                 </span>
                 <button
                   onClick={copyCode}
-                  className="w-12 h-12 bg-gradient-to-br from-[#0D4E96] to-[#2CA4D6] rounded-[16px] active:scale-90 transition-transform flex items-center justify-center shadow-[0_6px_16px_rgba(13,78,150,0.3)] hover:shadow-[0_8px_20px_rgba(13,78,150,0.4)]"
+                  disabled={isExpired}
+                  className={`w-12 h-12 rounded-[16px] flex items-center justify-center transition-all ${
+                    isExpired
+                      ? 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300'
+                      : copied
+                        ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 scale-105'
+                        : 'bg-gradient-to-br from-[#0D4E96] to-[#2CA4D6] text-white hover:from-[#0B3D75] hover:to-[#2282B0] active:scale-90 shadow-[0_6px_16px_rgba(13,78,150,0.2)]'
+                  }`}
                 >
                   {copied ? (
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M20 6L9 17l-5-5"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M20 6L9 17l-5-5"/></svg>
                   ) : (
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
                   )}
                 </button>
               </div>
