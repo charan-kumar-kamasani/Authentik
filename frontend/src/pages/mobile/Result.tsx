@@ -838,8 +838,8 @@ function ResultAuthentic({ data }: { data: any }) {
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   </svg>
                 </div>
-                <h2 className="text-[20px] font-black text-[#0D4E96] tracking-tight">Activate Warranty</h2>
-                <p className="text-[13px] text-gray-500 font-medium mt-1">Upload your purchase invoice to activate warranty</p>
+                <h2 className="text-[20px] font-black text-[#0D4E96] tracking-tight">Register Warranty</h2>
+                <p className="text-[13px] text-gray-500 font-medium mt-1">Upload your purchase invoice to register warranty</p>
               </div>
 
               {/* ===== Warranty Info Section ===== */}
@@ -1042,7 +1042,7 @@ function ResultAuthentic({ data }: { data: any }) {
                       <svg className="animate-spin w-5 h-5" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" /><path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="3" strokeLinecap="round" className="opacity-75" /></svg>
                       Submitting...
                     </span>
-                  ) : 'Save'}
+                  ) : 'Register Warranty'}
                 </button>
               </div>
             </div>
