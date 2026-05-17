@@ -739,7 +739,7 @@ function ResultAuthentic({ data }: { data: any }) {
                   {awardedCoupon.description && (
                     <div className="text-left mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
                       <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">Reward Description</p>
-                      <p className="text-slate-600 text-[13px] font-medium leading-relaxed">
+                      <p className="text-slate-600 text-[13px] font-medium leading-relaxed break-all whitespace-pre-wrap">
                         {awardedCoupon.description}
                       </p>
                     </div>

@@ -147,7 +147,7 @@ export default function RewardDetail() {
             )}
 
             {reward.couponDescription && (
-              <p className="text-[#1e3a5f]/80 text-[15px] text-center mt-6 font-medium leading-relaxed px-2">
+              <p className="text-[#1e3a5f]/80 text-[15px] text-center mt-6 font-medium leading-relaxed px-2 break-all whitespace-pre-wrap">
                 {reward.couponDescription}
               </p>
             )}
