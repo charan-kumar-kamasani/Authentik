@@ -45,6 +45,34 @@ export default function GenerateQrs() {
 
   const [submitting, setSubmitting] = useState(false);
   const [mobilePreviewOrder, setMobilePreviewOrder] = useState(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [showWarrantyModal, setShowWarrantyModal] = useState(false);
+  const [showCouponReveal, setShowCouponReveal] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [optIn, setOptIn] = useState(true);
+  const [couponCopied, setCouponCopied] = useState(false);
+  const [isReviewed, setIsReviewed] = useState(false);
+  const [warrantyForm, setWarrantyForm] = useState({ purchaseDate: '', purchaseSource: '', sellerName: '' });
+  const [invoiceImages, setInvoiceImages] = useState([]);
+  const [previewSubmitting, setPreviewSubmitting] = useState(false);
+  const [warrantyClaimStatus, setWarrantyClaimStatus] = useState(null);
+  const [warrantyClaimed, setWarrantyClaimed] = useState(false);
+
+  const resetPreviewStates = () => {
+    setShowReviewModal(false);
+    setShowWarrantyModal(false);
+    setShowCouponReveal(false);
+    setRating(0);
+    setOptIn(true);
+    setCouponCopied(false);
+    setIsReviewed(false);
+    setWarrantyForm({ purchaseDate: '', purchaseSource: '', sellerName: '' });
+    setInvoiceImages([]);
+    setPreviewSubmitting(false);
+    setWarrantyClaimStatus(null);
+    setWarrantyClaimed(false);
+  };
+
   const [templateSearch, setTemplateSearch] = useState('');
   const [editingOrder, setEditingOrder] = useState(null);
   const confirm = useConfirm();
@@ -1347,102 +1375,708 @@ export default function GenerateQrs() {
       </div>
 
       {/* --- Consumer Mobile Preview Modal --- */}
-      {mobilePreviewOrder && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
-          <div className="relative w-full max-w-[375px] h-[750px] max-h-[90vh] bg-[#F5F5F5] rounded-[2.5rem] shadow-2xl overflow-y-auto border-[10px] border-slate-800 flex flex-col hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-            {/* Notch */}
-            <div className="absolute top-0 inset-x-0 h-5 bg-slate-800 rounded-b-2xl w-1/2 mx-auto z-50"></div>
-            
-            {/* Header */}
-            <div className="w-full flex items-center justify-center p-4 bg-white sticky top-0 z-40 shadow-sm/50 pt-8">
-              <h1 className="text-[18px] font-bold text-[#0D4E96] tracking-tight">Authentiks</h1>
-              <button 
-                onClick={() => setMobilePreviewOrder(null)} 
-                className="absolute right-4 top-7 w-7 h-7 flex items-center justify-center bg-slate-100 text-slate-500 rounded-full hover:bg-slate-200 transition-colors"
-                title="Close Emulator"
-              >
-                <X size={14} strokeWidth={3} />
-              </button>
-            </div>
+      {/* --- Consumer Mobile Preview Modal --- */}
+      {mobilePreviewOrder && (() => {
+        const fieldLabels = {};
+        if (formConfig?.customFields) {
+          formConfig.customFields.forEach(f => {
+            fieldLabels[f.fieldName] = f.fieldLabel;
+          });
+        }
 
-            <div className="w-full flex flex-col pb-6">
-              {/* Authentic Status Card */}
-                <div className="flex flex-row justify-center items-center gap-3">
-                  <div className="bg-white rounded-full p-1.5">
-                    <ShieldCheck size={24} className="text-[#2CA4D6] fill-white" />
-                  </div>
-                  <div className="text-left">
-                    <h2 className="text-[16px] font-bold leading-tight">Authentic Product</h2>
-                    <p className="text-[11px] opacity-90 font-medium">This product has been verified as genuine</p>
-                  </div>
-                </div>
+        const formatLabel = (key) => {
+          if (!key) return '';
+          const lowerK = key.toLowerCase();
+          
+          if (lowerK.startsWith('field_')) return "Product Detail";
+          if (lowerK.startsWith('variant_')) return "Specification";
+          
+          const manualMap = {
+            "marketedby": "Marketed By",
+            "manufacturedby": "Manufactured By",
+            "countryoforigin": "Country of Origin",
+            "customercare": "Customer Care",
+            "supportemail": "Support E-mail",
+            "website": "Website",
+            "importerregno": "Importer Reg. No",
+            "importmarketedby": "Import & Marketed By"
+          };
+          if (manualMap[lowerK]) return manualMap[lowerK];
+          
+          if (key.includes(' ')) {
+            return key.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+          }
+          if (key !== key.toUpperCase()) {
+            const result = key.replace(/([A-Z])/g, " $1");
+            return result.charAt(0).toUpperCase() + result.slice(1).trim();
+          }
+          return key.charAt(0).toUpperCase() + key.slice(1).toLowerCase();
+        };
+
+        const getFieldVal = (key) => {
+          if (mobilePreviewOrder[key] !== undefined && mobilePreviewOrder[key] !== null) return mobilePreviewOrder[key];
+          if (key === 'sku' && mobilePreviewOrder['skuNumber'] !== undefined) return mobilePreviewOrder['skuNumber'];
+          if (key === 'expiryDate' && mobilePreviewOrder['calculatedExpiryDate'] !== undefined) return mobilePreviewOrder['calculatedExpiryDate'];
+
+          const dyn = mobilePreviewOrder.dynamicFields || {};
+          const possibleKeys = [
+            key,
+            key.toLowerCase(),
+            key.toUpperCase(),
+            key.replace(/([A-Z])/g, "_$1").toLowerCase(),
+            key.replace(/([A-Z])/g, " $1").toLowerCase(),
+          ];
+
+          for (const pk of possibleKeys) {
+            if (dyn[pk] !== undefined && dyn[pk] !== null) return dyn[pk];
+          }
+
+          return null;
+        };
+
+        const formatMonthYear = (v) => {
+          if (!v) return null;
+          const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : '';
+
+          if (typeof v === 'object' && v.month && v.year) {
+            const mInt = parseInt(v.month);
+            if (!isNaN(mInt) && mInt >= 1 && mInt <= 12) {
+              const monthStr = new Date(2000, mInt - 1, 1).toLocaleDateString('en-GB', { month: 'short' });
+              return `${capitalize(monthStr)} ${v.year}`;
+            }
+            return `${capitalize(String(v.month))} ${v.year}`;
+          } else if (typeof v === 'string') {
+            const parts = v.split(/[\/\-]/);
+            if (parts.length === 2 || parts.length === 3) {
+              const m = parseInt(parts.length === 3 ? parts[1] : parts[0]);
+              let y = parseInt(parts.length === 3 ? parts[2] : parts[1]);
+              if (y < 100) y += 2000;
+              if (!isNaN(m) && !isNaN(y) && m >= 1 && m <= 12 && y >= 1000) {
+                const monthStr = new Date(2000, m - 1, 1).toLocaleDateString('en-GB', { month: 'short' });
+                return `${capitalize(monthStr)} ${y}`;
+              }
+            }
+
+            const d = new Date(v);
+            if (!isNaN(d.getTime()) && v.length >= 8 && !/^\d+$/.test(v)) {
+              const formatted = d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+              return formatted.split(' ').map(capitalize).join(' ');
+            }
+            return v.split(' ').map(capitalize).join(' ');
+          }
+          return String(v);
+        };
+
+        const technicalFields = [
+          { key: "brand", label: "Brand" },
+          { key: "category", label: "Category" },
+          { key: "batchNo", label: "Batch #" },
+          { key: "sku", label: "SKU" },
+          { key: "mrp", label: "MRP" },
+          { key: "color", label: "Color" },
+          { key: "size", label: "Size" },
+          { key: "model", label: "Model / Series" },
+          { key: "weight", label: "Weight" },
+          { key: "storage", label: "Storage" },
+          { key: "flavour", label: "Flavour" },
+          { key: "capacity", label: "Capacity" },
+          { key: "material", label: "Material" },
+          { key: "mfdOn", label: "Mfd on" },
+          { key: "expiryDate", label: "Exp by" },
+        ];
+
+        const blueFields = [];
+        const handledKeys = new Set();
+
+        technicalFields.forEach(({ key, label }) => {
+          let val = getFieldVal(key);
+
+          if (!val && mobilePreviewOrder.variants) {
+            const variant = mobilePreviewOrder.variants.find(v => v.variantName?.toLowerCase() === key.toLowerCase() || v.variantLabel?.toLowerCase() === key.toLowerCase());
+            if (variant) val = variant.value;
+          }
+
+          if (key === "mfdOn" && val) {
+            val = formatMonthYear(val);
+          }
+          if (key === "expiryDate" && val) {
+            val = formatMonthYear(val);
+          }
+
+          if (key === "mrp" && val) {
+            const num = String(val).replace(/[^0-9.]/g, '');
+            if (num && !isNaN(Number(num))) {
+              val = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(Number(num));
+            } else {
+              val = val.toString().startsWith('₹') ? val : `₹${val}`;
+            }
+          }
+
+          if (val && val !== "-") {
+            const finalLabel = key === "mrp" ? "MRP" : (fieldLabels[key] || label);
+            blueFields.push({ label: finalLabel, value: String(val) });
+            handledKeys.add(key.toLowerCase());
+            handledKeys.add(key);
+            handledKeys.add(key.replace(/([A-Z])/g, "_$1").toLowerCase());
+            handledKeys.add(key.replace(/([A-Z])/g, " $1").toLowerCase());
+          }
+        });
+
+        const allVariants = mobilePreviewOrder.variants || [];
+        allVariants.forEach((v) => {
+          const vName = v.variantName || "";
+          if (!handledKeys.has(vName.toLowerCase()) && !handledKeys.has(vName)) {
+            blueFields.push({
+              label: fieldLabels[vName] || v.variantLabel || formatLabel(vName),
+              value: String(v.value)
+            });
+            handledKeys.add(vName.toLowerCase());
+          }
+        });
+
+        const additionalInfoFields = [
+          { key: "manufacturedBy", label: "Manufactured By" },
+          { key: "marketedBy", label: "Marketed By" },
+          { key: "importMarketedBy", label: "Import & Marketed By" },
+          { key: "importerRegNo", label: "Importer Reg. No" },
+          { key: "countryOfOrigin", label: "Country of Origin" },
+          { key: "website", label: "Website" },
+          { key: "supportEmail", label: "Support E-mail" },
+          { key: "customerCare", label: "Customer Care" },
+        ];
+
+        const grayFields = [];
+        additionalInfoFields.forEach(({ key, label }) => {
+          let val = getFieldVal(key);
+          
+          if (key === "manufacturedBy" || key === "marketedBy" || key === "importMarketedBy") {
+            const compName = mobilePreviewOrder.brand || "-";
+            const currentComp = mobilePreviewOrder.companyName || (typeof currentUser !== 'undefined' ? currentUser?.companyId?.companyName : null) || "-";
+            if (val && compName !== "-" && !val.toLowerCase().includes(compName.toLowerCase())) {
+              val = `${compName}\n${val}`;
+            } else if (!val && compName !== "-") {
+              val = compName;
+            }
+          }
+
+          if (val && val !== "-" && !handledKeys.has(key.toLowerCase())) {
+            grayFields.push({ label, value: String(val) });
+            handledKeys.add(key.toLowerCase());
+          }
+        });
+
+        const combinedDynamicFields = mobilePreviewOrder.dynamicFields || {};
+        Object.keys(combinedDynamicFields).forEach(k => {
+          if (!handledKeys.has(k.toLowerCase()) && !handledKeys.has(k)) {
+            const lowerKey = k.toLowerCase();
+            if (lowerKey === 'product quantity' || lowerKey === 'quantity' || lowerKey === 'productquantity' || lowerKey === 'qr quantity' || lowerKey === 'qrquantity' || lowerKey.includes('sku')) {
+              return;
+            }
+
+            let val = combinedDynamicFields[k];
+            if (val && val !== "-") {
+              if (typeof val === 'object' && val.month && val.year) {
+                val = formatMonthYear(val);
+              } else if (typeof val === 'string' && /^\d{1,2}[\/\-]\d{4}$/.test(val)) {
+                val = formatMonthYear(val);
+              }
+
+              if (typeof val !== 'object') {
+                const label = fieldLabels[k] || formatLabel(k);
+                grayFields.push({ label, value: String(val) });
+                handledKeys.add(k.toLowerCase());
+              }
+            }
+          }
+        });
+
+        return (
+          <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+            <div className="relative w-full max-w-[375px] h-[750px] max-h-[90vh] bg-[#F5F5F5] rounded-[2.5rem] shadow-2xl overflow-hidden border-[10px] border-slate-800 flex flex-col" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              {/* Notch */}
+              <div className="absolute top-0 inset-x-0 h-5 bg-slate-800 rounded-b-2xl w-1/2 mx-auto z-50"></div>
+              
+              {/* Header */}
+              <div className="w-full flex items-center justify-center p-4 bg-white sticky top-0 z-40 shadow-sm pt-8 flex-shrink-0">
+                <h1 className="text-[18px] font-bold text-[#0D4E96] tracking-tight">Authentiks</h1>
+                <button 
+                  onClick={() => { setMobilePreviewOrder(null); resetPreviewStates(); }} 
+                  className="absolute right-4 top-7 w-7 h-7 flex items-center justify-center bg-slate-100 text-slate-500 rounded-full hover:bg-slate-200 transition-colors"
+                  title="Close Emulator"
+                >
+                  <X size={14} strokeWidth={3} />
+                </button>
               </div>
 
-              {/* Body */}
-              <div className="bg-white shadow-sm rounded-b-[14px] mx-3">
-                <div className="bg-white pb-5 flex flex-col items-center relative gap-3 rounded-b-[14px]">
-                  <div className="w-full bg-[#1F2642] py-2 text-center">
-                    <h3 className="text-white font-bold text-[18px] px-2 truncate leading-tight">{mobilePreviewOrder.productName}</h3>
+              {/* Scrollable Mobile View */}
+              <div className="flex-1 w-full flex flex-col overflow-y-auto px-3 pb-24 pt-2 hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                {/* Status Card */}
+                <div className="bg-[#2CA4D6] rounded-t-[16px] p-4 text-center text-white relative shadow-md z-10">
+                  <div className="flex flex-row justify-center items-center gap-2.5">
+                    <div className="bg-white rounded-full p-1.5 flex items-center justify-center">
+                      <ShieldCheck size={26} className="text-[#2CA4D6]" />
+                    </div>
+                    <div className="text-left">
+                      <h2 className="text-[17px] font-bold leading-tight">
+                        Authentic Product
+                      </h2>
+                      <p className="text-[11px] opacity-90 font-medium">
+                        This product has been verified as genuine
+                      </p>
+                    </div>
                   </div>
-                  <div className="relative h-[200px] w-[90%] rounded-[1.5rem] mt-2 mx-auto overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 shadow-md border-4 border-white flex items-center justify-center">
+                </div>
+
+                {/* Body Details */}
+                <div className="bg-white shadow-sm rounded-b-[16px] pb-5 flex flex-col items-center relative gap-3 border border-t-0 border-gray-100">
+                  <div className="w-full bg-[#1F2642] py-2.5 text-center">
+                    <h3 className="text-white font-bold text-[18px] px-2 truncate leading-tight">
+                      {mobilePreviewOrder.productName}
+                    </h3>
+                  </div>
+
+                  {/* Product Image */}
+                  <div className="relative h-[210px] w-[90%] rounded-[2rem] mt-1 mx-auto overflow-hidden bg-white shadow-2xl border-4 border-white shadow-indigo-100/50 flex items-center justify-center">
                     {mobilePreviewOrder.productImage ? (
                       <img src={mobilePreviewOrder.productImage} className="w-full h-full object-contain" alt="Product" />
                     ) : (
-                      <span className="text-slate-300 font-bold text-sm">No Image</span>
+                      <div className="w-full h-full bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
+                        <span className="text-slate-300 font-bold text-sm">No Image</span>
+                      </div>
                     )}
                   </div>
-                  
-                  {/* Grid Fields */}
-                  <div className="w-full px-4 pt-2">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="bg-[#F0F7FF] rounded-xl flex items-center justify-start gap-3 p-3 border border-[#e5f0fa]">
-                         <div className="flex-1 w-full flex flex-col items-start gap-0"><span className="text-[#0D4E96] text-[9px] font-black uppercase tracking-widest opacity-60">Brand</span><span className="text-[#0D4E96] text-[13px] font-black tracking-tight">{mobilePreviewOrder.brand}</span></div>
-                      </div>
-                      {mobilePreviewOrder.mfdOn?.month && (
-                        <div className="bg-[#F0F7FF] rounded-xl flex items-center justify-start gap-3 p-3 border border-[#e5f0fa]">
-                           <div className="flex-1 w-full flex flex-col items-start gap-0"><span className="text-[#0D4E96] text-[9px] font-black uppercase tracking-widest opacity-60">Mfd on</span><span className="text-[#0D4E96] text-[13px] font-black tracking-tight">{mobilePreviewOrder.mfdOn?.month} {mobilePreviewOrder.mfdOn?.year}</span></div>
-                        </div>
-                      )}
-                      {(mobilePreviewOrder.variants || []).slice(0,2).map((val, idx) => (
-                        <div key={idx} className="bg-[#F0F7FF] rounded-xl flex items-center justify-start gap-3 p-3 border border-[#e5f0fa]">
-                           <div className="flex-1 w-full flex flex-col items-start gap-0"><span className="text-[#0D4E96] text-[9px] font-black uppercase tracking-widest opacity-60 truncate w-full">{val.variantName}</span><span className="text-[#0D4E96] text-[13px] font-black tracking-tight truncate w-full">{val.value}</span></div>
-                        </div>
-                      ))}
-                    </div>
 
-                    {/* Additional Info */}
-                    <div className="mt-5 border-t border-gray-100 pt-3 mb-3">
-                      <h4 className="text-[#333] font-bold text-[12px] mb-2 ml-1 uppercase tracking-tight">Additional Info:</h4>
-                      <div className="bg-[#F2F2F2] p-3 rounded-[16px] shadow-sm space-y-3 border border-gray-200/50">
-                        {mobilePreviewOrder.productInfo && (
-                          <div className="mb-3">
-                            <p className="text-[#444] text-[12px] font-medium whitespace-pre-wrap leading-relaxed">{mobilePreviewOrder.productInfo}</p>
+                  {/* Blue Fields Grid */}
+                  {blueFields.length > 0 && (
+                    <div className="w-full px-4 pt-2">
+                      <div className="grid grid-cols-2 gap-2.5">
+                        {blueFields.map((field, idx) => (
+                          <div key={idx} className="bg-[#259DCF] rounded-[16px] p-3 shadow-md text-left transition-all">
+                            <p className="text-white/80 text-[10px] font-bold uppercase tracking-wider mb-0.5">
+                              {field.label}
+                            </p>
+                            <p className="text-white text-[13px] font-bold leading-tight break-words">{field.value}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Gray Additional Info */}
+                  {((mobilePreviewOrder.productInfo && mobilePreviewOrder.productInfo.trim()) || grayFields.length > 0) && (
+                    <div className="w-full px-4 mt-3">
+                      <h4 className="text-[#333] font-black text-[11px] mb-2 ml-1 uppercase tracking-wider">Additional Info:</h4>
+                      <div className="bg-[#F2F2F2] p-4 rounded-[16px] shadow-inner space-y-3.5 border border-gray-200/55">
+                        {mobilePreviewOrder.productInfo && mobilePreviewOrder.productInfo.trim() && (
+                          <div className="mb-2">
+                            <p className="text-[#444] text-[12px] font-medium whitespace-pre-wrap leading-relaxed">
+                              {mobilePreviewOrder.productInfo}
+                            </p>
                           </div>
                         )}
-                        <div className="space-y-2">
-                          <div className="border-b border-gray-300/30 pb-2">
-                             <p className="text-[#333] text-[10px] font-bold uppercase tracking-wider opacity-60 mb-0.5">Manufactured By</p>
-                             <p className="text-[#0D4E96] text-[12px] font-bold">{currentUser?.companyId?.companyName || 'Unknown Company'}</p>
+                        {grayFields.length > 0 && (
+                          <div className="space-y-2.5">
+                            {grayFields.map((field, idx) => (
+                              <div key={idx} className="border-b border-gray-300/30 pb-2.5 last:border-0 last:pb-0">
+                                <p className="text-[#333] text-[9.5px] font-bold uppercase tracking-widest opacity-60 mb-0.5">
+                                  {field.label}
+                                </p>
+                                <p className="text-[#0D4E96] text-[12px] font-bold max-w-full break-words whitespace-pre-line">
+                                  {field.value}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Interactive Reviews Button */}
+                <button
+                  onClick={() => setShowReviewModal(true)}
+                  disabled={isReviewed}
+                  className={`w-full ${isReviewed ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-[#0E5CAB] to-[#1F2642]'} text-white font-bold text-[16px] py-3.5 rounded-[30px] shadow-[0_8px_20px_rgba(14,92,171,0.25)] mt-4 active:scale-95 transition-transform flex items-center justify-center gap-2`}
+                >
+                  {isReviewed ? "Product Reviewed" : (mobilePreviewOrder.coupon ? "Review & Claim Coupon" : "Review Product")}
+                </button>
+
+                {/* Interactive Warranties Button */}
+                {mobilePreviewOrder.warranty && (
+                  <div className="mt-3">
+                    {warrantyClaimed ? (
+                      <button
+                        onClick={() => alert("Simulated Redirect to Warranty Claims Tracking Page")}
+                        className="w-full bg-gradient-to-r from-emerald-500 to-emerald-700 text-white font-bold text-[15px] py-3.5 rounded-[30px] shadow-[0_8px_20px_rgba(16,185,129,0.25)] flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                        Track Warranty
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => setShowWarrantyModal(true)}
+                        className="w-full bg-gradient-to-r from-emerald-500 to-emerald-700 text-white font-bold text-[15px] py-3.5 rounded-[30px] shadow-[0_8px_20px_rgba(16,185,129,0.25)] flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                        Register Warranty
+                      </button>
+                    )}
+                  </div>
+                )}
+                
+                <p className="text-center text-[9px] text-slate-400 font-bold mt-4 uppercase tracking-widest">Simulator Mode - View Only</p>
+              </div>
+
+              {/* ===== Modals Rendered Absolutes in Viewport Wrapper ===== */}
+
+              {/* 1. Review Modal Bottom Sheet */}
+              {showReviewModal && (
+                <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end justify-center rounded-[2.5rem] overflow-hidden animate-in fade-in duration-200">
+                  {/* Backdrop Close Click */}
+                  <div className="absolute inset-0" onClick={() => setShowReviewModal(false)} />
+                  
+                  {/* Sheet */}
+                  <div className="relative w-full bg-white rounded-t-[28px] max-h-[85%] overflow-y-auto shadow-2xl z-10 animate-in slide-in-from-bottom duration-300 pb-6 hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    <div className="flex justify-center pt-3 pb-1">
+                      <div className="w-10 h-1 rounded-full bg-gray-300" />
+                    </div>
+
+                    <button
+                      onClick={() => setShowReviewModal(false)}
+                      className="absolute right-4 top-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="3" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                    </button>
+
+                    {/* Product Hero */}
+                    <div className="px-6 pt-6 pb-4 text-center border-b border-slate-50">
+                      {mobilePreviewOrder.productImage ? (
+                        <div className="w-[70px] h-[70px] rounded-[20px] overflow-hidden mx-auto mb-3 shadow-md bg-white p-0.5 border">
+                          <img src={mobilePreviewOrder.productImage} alt="" className="w-full h-full object-contain rounded-[18px]" />
+                        </div>
+                      ) : (
+                        <div className="w-[70px] h-[70px] rounded-[20px] bg-slate-50 mx-auto mb-3 flex items-center justify-center border">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2CA4D6" strokeWidth="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                        </div>
+                      )}
+                      <h2 className="text-[18px] font-black text-[#0D4E96] tracking-tight leading-tight mb-1">{mobilePreviewOrder.productName}</h2>
+                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{mobilePreviewOrder.brand || "Brand"}</p>
+                    </div>
+
+                    {/* Rating Section */}
+                    <div className="px-6 py-5 text-center">
+                      <p className="text-[16px] font-black text-slate-800 mb-1">How was your experience?</p>
+                      <p className="text-[12px] text-slate-400 font-bold mb-4">Tap a star to rate this product</p>
+
+                      <div className="flex justify-center gap-2 mb-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            onClick={() => setRating(star)}
+                            className="transition-all active:scale-75 hover:scale-105 duration-200"
+                            style={{ transform: star <= rating ? 'scale(1.1)' : 'scale(1)' }}
+                          >
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill={star <= rating ? "#F59E0B" : "none"} stroke={star <= rating ? "#F59E0B" : "#CBD5E1"} strokeWidth="1.5">
+                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                            </svg>
+                          </button>
+                        ))}
+                      </div>
+                      <div className="h-5">
+                        {rating > 0 && (
+                          <p className="text-[13px] font-black text-[#F59E0B]">
+                            {['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][rating]}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Opt-in & Submit */}
+                    <div className="px-6 pb-2 text-left">
+                      <label className="flex items-start gap-3 cursor-pointer mb-5 group">
+                        <div className="relative mt-0.5 flex-shrink-0">
+                          <input type="checkbox" checked={optIn} onChange={(e) => setOptIn(e.target.checked)} className="sr-only" />
+                          <div className={`w-4 h-4 rounded border transition-all flex items-center justify-center ${optIn ? 'bg-[#0D4E96] border-[#0D4E96] scale-105' : 'bg-white border-slate-300'}`}>
+                            {optIn && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4"><path d="M20 6L9 17l-5-5" /></svg>}
                           </div>
                         </div>
+                        <span className="text-[11.5px] font-bold text-slate-600 leading-tight">Yes, I would like to receive exclusive offer and discounts from the brand</span>
+                      </label>
+
+                      <button
+                        onClick={() => {
+                          if (rating === 0) return;
+                          setPreviewSubmitting(true);
+                          setTimeout(() => {
+                            setPreviewSubmitting(false);
+                            setIsReviewed(true);
+                            setShowReviewModal(false);
+                            if (mobilePreviewOrder.coupon) {
+                              setShowCouponReveal(true);
+                            } else {
+                              alert("Thank you for your review!");
+                            }
+                          }, 800);
+                        }}
+                        disabled={rating === 0 || previewSubmitting}
+                        className={`w-full py-3.5 rounded-[30px] font-bold text-[15px] shadow-md flex items-center justify-center ${
+                          rating === 0 || previewSubmitting
+                            ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-[#0E5CAB] to-[#1F2642] text-white active:scale-95 transition-transform'
+                        }`}
+                      >
+                        {previewSubmitting ? "Submitting..." : "Submit Review"}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 2. Coupon Reveal Page Overlay */}
+              {showCouponReveal && (
+                <div className="absolute inset-0 z-50 bg-gradient-to-b from-[#F0F7FF] via-[#FFFFFF] to-[#F8FAFC] flex flex-col overflow-y-auto rounded-[2rem] hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                  {/* Header */}
+                  <div className="w-full flex items-center justify-between p-4 bg-white sticky top-0 z-50 shadow-sm/50 pt-8 flex-shrink-0">
+                    <button onClick={() => setShowCouponReveal(false)} className="text-[#0D4E96] p-1">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+                    </button>
+                    <h1 className="text-[18px] font-bold text-[#0D4E96] tracking-tight">Authentiks</h1>
+                    <div className="w-8"></div>
+                  </div>
+
+                  <div className="flex-1 px-4 py-6 flex flex-col items-center relative overflow-hidden text-center">
+                    <div className="absolute top-6 left-4 opacity-25 text-pink-500 animate-bounce">🎈</div>
+                    <div className="absolute top-12 right-6 opacity-25 text-amber-500 animate-pulse">✨</div>
+
+                    <div className="mb-4">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-[#2CA4D6] bg-cyan-50 px-3 py-1 rounded-full border border-cyan-100/50 mb-2 inline-block">
+                        Reward Unlocked 🎉
+                      </span>
+                      <h2 className="bg-gradient-to-r from-[#0D4E96] to-[#1E3A8A] bg-clip-text text-transparent text-[20px] font-black leading-tight">
+                        Congratulations!<br />You've Earned a Coupon
+                      </h2>
+                    </div>
+
+                    {/* Ticket Graphic Card */}
+                    <div className="w-full max-w-sm relative mt-4 shadow-xl rounded-[24px] bg-white border border-slate-100 text-center">
+                      {/* Overlapping Gift Icon */}
+                      <div className="absolute -top-7 left-1/2 -translate-x-1/2 w-14 h-14 bg-gradient-to-tr from-[#0D4E96] to-[#2CA4D6] rounded-full border-4 border-white flex items-center justify-center z-20 shadow-lg">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+                          <polyline points="20 12 20 22 4 22 4 12"></polyline>
+                          <rect x="2" y="7" width="20" height="5"></rect>
+                          <line x1="12" y1="22" x2="12" y2="7"></line>
+                          <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
+                          <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+                        </svg>
+                      </div>
+
+                      {/* Header */}
+                      <div className="bg-[#1F2642] bg-gradient-to-br from-[#0D4E96] via-[#1E3A8A] to-[#1F2642] rounded-t-[24px] pt-10 pb-6 px-4 text-center">
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 border border-white/10 mb-2">
+                          <span className="w-1 h-1 bg-cyan-400 rounded-full animate-pulse" />
+                          <span className="text-white text-[8px] font-black uppercase tracking-wider">{mobilePreviewOrder.brand || "Brand"}</span>
+                        </div>
+                        <h3 className="text-white text-[16px] font-black uppercase tracking-wide leading-tight px-2">
+                          {mobilePreviewOrder.coupon?.title || "REWARD UNLOCKED"}
+                        </h3>
+                      </div>
+
+                      {/* Notched Divider */}
+                      <div className="relative py-4 bg-slate-50 border-y border-dashed border-slate-200 flex items-center justify-center">
+                        <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#FFFFFF] rounded-full border border-slate-200/50 shadow-inner z-10" />
+                        <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#FFFFFF] rounded-full border border-slate-200/50 shadow-inner z-10" />
+
+                        <div className="flex items-center justify-between gap-3 px-4 py-1.5 rounded-xl border-2 border-dashed font-mono text-[16px] font-black uppercase tracking-widest border-cyan-500/30 bg-cyan-500/5 text-[#0D4E96]">
+                          <span>{mobilePreviewOrder.coupon?.code || "WELCOME50"}</span>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(mobilePreviewOrder.coupon?.code || "WELCOME50");
+                              setCouponCopied(true);
+                              setTimeout(() => setCouponCopied(false), 2000);
+                            }}
+                            className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
+                              couponCopied
+                                ? 'bg-emerald-500 text-white shadow-md scale-105'
+                                : 'bg-white text-slate-500 hover:text-slate-700 shadow-sm border border-slate-200 active:scale-90'
+                            }`}
+                          >
+                            {couponCopied ? (
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M20 6L9 17l-5-5" /></svg>
+                            ) : (
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Details */}
+                      <div className="bg-white rounded-b-[24px] p-5 text-center">
+                        {mobilePreviewOrder.coupon?.expiryDate && (
+                          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">
+                            Valid Until: <span className="text-slate-700">{new Date(mobilePreviewOrder.coupon.expiryDate).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}</span>
+                          </p>
+                        )}
+                        {mobilePreviewOrder.coupon?.description && (
+                          <div className="text-left bg-slate-50 p-3 rounded-xl border border-slate-100 mb-4 text-[12px] font-medium text-slate-600">
+                            {mobilePreviewOrder.coupon.description}
+                          </div>
+                        )}
+                        <button onClick={() => setShowCouponReveal(false)} className="w-full bg-[#1F2642] text-white font-bold text-[14px] py-3 rounded-xl shadow-md">Done</button>
                       </div>
                     </div>
                   </div>
                 </div>
+              )}
 
-                <div className="p-4 mt-auto">
+              {/* 3. Warranty Claim Modal Bottom Sheet */}
+              {showWarrantyModal && (
+                <div className="absolute inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end justify-center rounded-[2.5rem] overflow-hidden animate-in fade-in duration-200">
+                  <div className="absolute inset-0" onClick={() => setShowWarrantyModal(false)} />
+
+                  <div className="relative w-full bg-white rounded-t-[28px] max-h-[85%] overflow-y-auto shadow-2xl z-10 animate-in slide-in-from-bottom duration-300 pb-6 hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    <div className="flex justify-center pt-3 pb-1">
+                      <div className="w-10 h-1 rounded-full bg-gray-300" />
+                    </div>
+
                     <button
-                        onClick={() => submitOrderData(mobilePreviewOrder)}
-                        disabled={submitting}
-                        className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-2xl shadow-lg transition-colors flex items-center justify-center gap-2"
+                      onClick={() => setShowWarrantyModal(false)}
+                      className="absolute right-4 top-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors"
                     >
-                        {submitting ? 'Submitting...' : 'Proceed to Submit'} <ArrowLeft className="rotate-180" size={18} />
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="3" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
                     </button>
+
+                    {/* Header */}
+                    <div className="px-6 pt-5 pb-4 text-center">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 mx-auto mb-3 flex items-center justify-center shadow-md">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                      </div>
+                      <h2 className="text-[18px] font-black text-[#0D4E96] tracking-tight">Register Warranty</h2>
+                      <p className="text-[11.5px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Upload purchase invoice to activate</p>
+                    </div>
+
+                    {/* Warranty Policies Parameters Card */}
+                    {mobilePreviewOrder.warranty && (mobilePreviewOrder.warranty.duration || mobilePreviewOrder.warranty.warrantyType) && (
+                      <div className="mx-6 mb-4 bg-emerald-50 rounded-xl border border-emerald-100 p-4 space-y-2 text-left">
+                        {mobilePreviewOrder.warranty.warrantyType && (
+                          <div className="flex justify-between items-center text-[12px]">
+                            <span className="text-emerald-800 font-bold uppercase tracking-wider">Type</span>
+                            <span className="text-emerald-950 font-black">{mobilePreviewOrder.warranty.warrantyType}</span>
+                          </div>
+                        )}
+                        {mobilePreviewOrder.warranty.duration && (
+                          <div className="flex justify-between items-center text-[12px]">
+                            <span className="text-emerald-800 font-bold uppercase tracking-wider">Duration</span>
+                            <span className="text-emerald-950 font-black">
+                              {mobilePreviewOrder.warranty.duration} {mobilePreviewOrder.warranty.durationUnit || "months"}
+                            </span>
+                          </div>
+                        )}
+                        {mobilePreviewOrder.warranty.description && (
+                          <div className="border-t border-emerald-100 pt-2 text-[11px] text-emerald-800">
+                            {mobilePreviewOrder.warranty.description}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Form Inputs */}
+                    <div className="px-6 space-y-4 text-left">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1">Purchase Date *</label>
+                        <input
+                          type="date"
+                          value={warrantyForm.purchaseDate}
+                          onChange={(e) => setWarrantyForm({ ...warrantyForm, purchaseDate: e.target.value })}
+                          className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-[12.5px]"
+                          required
+                        />
+                      </div>
+
+                      {/* Invoice bill capture preview block */}
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Invoice / Receipt Bill Images *</label>
+                        {invoiceImages.length > 0 ? (
+                          <div className="flex gap-2 mb-2 flex-wrap">
+                            {invoiceImages.map((img, idx) => (
+                              <div key={idx} className="relative w-16 h-16 rounded-lg overflow-hidden border-2 border-emerald-300 bg-emerald-50 flex items-center justify-center">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                                <button
+                                  type="button"
+                                  onClick={() => setInvoiceImages([])}
+                                  className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-md"
+                                >
+                                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setInvoiceImages([{ preview: 'simulated' }])}
+                              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-emerald-50 border-2 border-dashed border-emerald-200 rounded-xl text-emerald-700 font-black text-[12px] hover:bg-emerald-100/70 transition-colors"
+                            >
+                              Camera
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setInvoiceImages([{ preview: 'simulated' }])}
+                              className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-50 border-2 border-dashed border-blue-200 rounded-xl text-blue-700 font-black text-[12px] hover:bg-blue-100/70 transition-colors"
+                            >
+                              Gallery
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          if (!warrantyForm.purchaseDate || invoiceImages.length === 0) return;
+                          setPreviewSubmitting(true);
+                          setTimeout(() => {
+                            setPreviewSubmitting(false);
+                            setWarrantyClaimStatus("Processing");
+                            setWarrantyClaimed(true);
+                            setShowWarrantyModal(false);
+                            alert("Warranty registration simulated successfully!");
+                          }, 850);
+                        }}
+                        disabled={!warrantyForm.purchaseDate || invoiceImages.length === 0 || previewSubmitting}
+                        className={`w-full py-3.5 rounded-[30px] font-bold text-[15px] shadow-lg flex items-center justify-center gap-2 ${
+                          !warrantyForm.purchaseDate || invoiceImages.length === 0 || previewSubmitting
+                            ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-emerald-500 to-emerald-700 text-white hover:opacity-95 active:scale-95 transition-transform'
+                        }`}
+                      >
+                        {previewSubmitting ? "Registering..." : "Submit Warranty"}
+                      </button>
+                    </div>
+                  </div>
                 </div>
+              )}
+
+              {/* Sticky Submit Bar */}
+              <div className="absolute bottom-0 inset-x-0 bg-white border-t border-slate-100 p-4 z-50 flex items-center justify-center">
+                <button
+                  onClick={() => submitOrderData(mobilePreviewOrder)}
+                  disabled={submitting}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-2xl shadow-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  {submitting ? 'Submitting...' : 'Proceed to Submit'} <ArrowLeft className="rotate-180" size={18} />
+                </button>
               </div>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

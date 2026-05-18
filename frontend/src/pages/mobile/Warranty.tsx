@@ -41,6 +41,7 @@ export default function Warranty() {
   const categorizedClaims = {
     active: claims.filter(c => {
       if (c.status === 'Rejected') return false;
+      if (c.issue) return false;
       const expiry = calculateExpiry(c.purchaseDate, c.warrantyInfo?.duration || 0, c.warrantyInfo?.durationUnit || 'years');
       return expiry.getTime() > new Date().getTime();
     }),
@@ -331,12 +332,12 @@ function WarrantyCard({ item, activeTab }: { item: any, activeTab: string }) {
               }}
               className={`flex items-center justify-center gap-2 py-3.5 rounded-2xl font-black text-[14px] shadow-lg active:scale-95 transition-all ${
                 item.issue 
-                  ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-none' 
+                  ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-none cursor-default' 
                   : 'bg-[#0D4E96] text-white shadow-blue-100'
               }`}
             >
               {item.issue ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
-              {item.issue ? 'Track Claim' : 'Raise Claim'}
+              {item.issue ? 'Claim Raised' : 'Raise Claim'}
             </button>
           )}
           <div className="grid grid-cols-2 gap-2.5">
