@@ -434,7 +434,7 @@ function ResultAuthentic({ data }: { data: any }) {
           disabled={isReviewed}
           className={`w-full ${isReviewed ? 'bg-gray-400' : 'bg-gradient-to-r from-[#0E5CAB] to-[#1F2642]'} text-white font-bold text-[18px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(14,92,171,0.3)] mt-4`}
         >
-          {isReviewed ? "Product Reviewed" : (data.productId.orderId.coupon.code != null || ata.productId.orderId.coupon.code != undefined || ata.productId.orderId.coupon.code != "" ? "Review & Claim Coupon" : "Review Product")}
+          {isReviewed ? "Product Reviewed" : (data.productId.orderId.coupon.code != null || data.productId.orderId.coupon.code != undefined || data.productId.orderId.coupon.code != "" ? "Review & Claim Coupon" : "Review Product")}
         </button>
 
 
