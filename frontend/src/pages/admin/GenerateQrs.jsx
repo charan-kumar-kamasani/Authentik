@@ -1435,16 +1435,19 @@ export default function GenerateQrs() {
         };
 
         const formatMonthYear = (v) => {
-          if (!v) return null;
+          if (!v) return "";
           const capitalize = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : '';
 
-          if (typeof v === 'object' && v.month && v.year) {
-            const mInt = parseInt(v.month);
-            if (!isNaN(mInt) && mInt >= 1 && mInt <= 12) {
-              const monthStr = new Date(2000, mInt - 1, 1).toLocaleDateString('en-GB', { month: 'short' });
-              return `${capitalize(monthStr)} ${v.year}`;
+          if (typeof v === 'object') {
+            if (v.month && v.year) {
+              const mInt = parseInt(v.month);
+              if (!isNaN(mInt) && mInt >= 1 && mInt <= 12) {
+                const monthStr = new Date(2000, mInt - 1, 1).toLocaleDateString('en-GB', { month: 'short' });
+                return `${capitalize(monthStr)} ${v.year}`;
+              }
+              return `${capitalize(String(v.month))} ${v.year}`;
             }
-            return `${capitalize(String(v.month))} ${v.year}`;
+            return "";
           } else if (typeof v === 'string') {
             const parts = v.split(/[\/\-]/);
             if (parts.length === 2 || parts.length === 3) {
@@ -1466,6 +1469,7 @@ export default function GenerateQrs() {
           }
           return String(v);
         };
+
 
         const technicalFields = [
           { key: "brand", label: "Brand" },
@@ -1549,15 +1553,7 @@ export default function GenerateQrs() {
         additionalInfoFields.forEach(({ key, label }) => {
           let val = getFieldVal(key);
           
-          if (key === "manufacturedBy" || key === "marketedBy" || key === "importMarketedBy") {
-            const compName = mobilePreviewOrder.brand || "-";
-            const currentComp = mobilePreviewOrder.companyName || (typeof currentUser !== 'undefined' ? currentUser?.companyId?.companyName : null) || "-";
-            if (val && compName !== "-" && !val.toLowerCase().includes(compName.toLowerCase())) {
-              val = `${compName}\n${val}`;
-            } else if (!val && compName !== "-") {
-              val = compName;
-            }
-          }
+
 
           if (val && val !== "-" && !handledKeys.has(key.toLowerCase())) {
             grayFields.push({ label, value: String(val) });

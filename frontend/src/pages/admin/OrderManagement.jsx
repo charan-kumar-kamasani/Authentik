@@ -1775,8 +1775,11 @@ const OrderManagement = () => {
 
         const formatMonthYear = (val) => {
           if (!val) return "";
-          if (typeof val === 'object' && val.month && val.year) {
-            return `${val.month} ${val.year}`;
+          if (typeof val === 'object') {
+            if (val.month && val.year) {
+              return `${val.month} ${val.year}`;
+            }
+            return "";
           }
           const str = String(val);
           const parts = str.split(/[\/\-]/);
@@ -1908,15 +1911,7 @@ const OrderManagement = () => {
         additionalInfoFields.forEach(({ key, label }) => {
           let val = getFieldVal(key);
           
-          if (key === "manufacturedBy" || key === "marketedBy" || key === "importMarketedBy") {
-            const compName = mobilePreviewOrder.brand || "-";
-            const currentComp = mobilePreviewOrder.companyName || "-";
-            if (val && compName !== "-" && !val.toLowerCase().includes(compName.toLowerCase())) {
-              val = `${compName}\n${val}`;
-            } else if (!val && compName !== "-") {
-              val = compName;
-            }
-          }
+
 
           if (val && val !== "-" && !handledKeys.has(key.toLowerCase())) {
             grayFields.push({ label, value: String(val) });

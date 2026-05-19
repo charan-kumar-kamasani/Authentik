@@ -158,17 +158,20 @@ function ResultAuthentic({ data }: { data: any }) {
   const fieldLabels = data.fieldLabels || data.productId?.fieldLabels || {};
 
   const formatMonthYear = (v: any) => {
-    if (!v) return null;
+    if (!v) return "";
 
     const capitalize = (s: string) => s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : '';
 
-    if (typeof v === 'object' && v.month && v.year) {
-      const mInt = parseInt(v.month);
-      if (!isNaN(mInt) && mInt >= 1 && mInt <= 12) {
-        const monthStr = new Date(2000, mInt - 1, 1).toLocaleDateString('en-GB', { month: 'short' });
-        return `${capitalize(monthStr)} ${v.year}`;
+    if (typeof v === 'object') {
+      if (v.month && v.year) {
+        const mInt = parseInt(v.month);
+        if (!isNaN(mInt) && mInt >= 1 && mInt <= 12) {
+          const monthStr = new Date(2000, mInt - 1, 1).toLocaleDateString('en-GB', { month: 'short' });
+          return `${capitalize(monthStr)} ${v.year}`;
+        }
+        return `${capitalize(String(v.month))} ${v.year}`;
       }
-      return `${capitalize(String(v.month))} ${v.year}`;
+      return "";
     } else if (typeof v === 'string') {
       const parts = v.split(/[\/\-]/);
       if (parts.length === 2 || parts.length === 3) {
@@ -267,13 +270,7 @@ function ResultAuthentic({ data }: { data: any }) {
     if (!val && data.dynamicFields) val = data.dynamicFields[key];
     if (!val && data.productId?.dynamicFields) val = data.productId?.dynamicFields[key];
 
-    if (key === "manufacturedBy" || key === "marketedBy" || key === "importMarketedBy") {
-      if (val && companyName !== "-" && !val.toLowerCase().includes(companyName.toLowerCase())) {
-        val = `${companyName}\n${val}`;
-      } else if (!val && companyName !== "-") {
-        val = companyName;
-      }
-    }
+
 
     if (val && val !== "-" && !handledKeys.has(key)) {
       grayFields.push({ label, value: String(val) });
