@@ -294,7 +294,7 @@ function WarrantyCard({ item, activeTab }: { item: any, activeTab: string }) {
                 <span className="text-[11px] font-black text-amber-700 uppercase tracking-widest">Exclusive Rewards</span>
               </div>
               
-              <div className="space-y-3">
+              {/* <div className="space-y-3">
                 {item.coupons.map((coupon: any, idx: number) => (
                   <div key={idx} className="bg-white/80 backdrop-blur-sm p-3 rounded-xl border border-amber-200/50 flex items-center justify-between shadow-sm">
                     <div className="min-w-0">
@@ -315,7 +315,7 @@ function WarrantyCard({ item, activeTab }: { item: any, activeTab: string }) {
                     </button>
                   </div>
                 ))}
-              </div>
+              </div> */}
             </div>
           </div>
         )}
