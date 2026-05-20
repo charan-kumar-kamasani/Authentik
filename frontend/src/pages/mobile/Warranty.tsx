@@ -282,7 +282,7 @@ function WarrantyCard({ item, activeTab }: { item: any, activeTab: string }) {
           </div>
         )}
 
-        {/* Rewards Section */}
+        {/*  
         {item.coupons && item.coupons.length > 0 && (
           <div className="mb-5 p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border border-amber-100 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-20 h-20 bg-amber-200/20 rounded-bl-full -z-0" />
@@ -294,7 +294,7 @@ function WarrantyCard({ item, activeTab }: { item: any, activeTab: string }) {
                 <span className="text-[11px] font-black text-amber-700 uppercase tracking-widest">Exclusive Rewards</span>
               </div>
               
-              {/* <div className="space-y-3">
+              <div className="space-y-3">
                 {item.coupons.map((coupon: any, idx: number) => (
                   <div key={idx} className="bg-white/80 backdrop-blur-sm p-3 rounded-xl border border-amber-200/50 flex items-center justify-between shadow-sm">
                     <div className="min-w-0">
@@ -315,10 +315,10 @@ function WarrantyCard({ item, activeTab }: { item: any, activeTab: string }) {
                     </button>
                   </div>
                 ))}
-              </div> */}
+              </div>
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Action Buttons */}
         <div className="grid grid-cols-1 gap-2.5">
