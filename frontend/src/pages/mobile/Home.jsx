@@ -91,15 +91,24 @@ export default function Home() {
             let title = "Authentic Product";
             let icon = statusValid;
             let statusColor = "text-[#214B80]";
+            let statusLabel = "Verified";
+            let badgeColor = "text-[#2563EB]";
+            let badgeBg = "bg-[#EFF6FF]";
 
             if (item.status === "FAKE") {
               title = "Fake or Counterfeit";
               icon = statusFake;
               statusColor = "text-red-600";
+              statusLabel = "Counterfeit";
+              badgeColor = "text-[#DC2626]";
+              badgeBg = "bg-[#FEF2F2]";
             } else if (item.status === "INACTIVE") {
               title = "Inactive QR Code";
               icon = statusFake;
               statusColor = "text-red-600";
+              statusLabel = "Counterfeit";
+              badgeColor = "text-[#DC2626]";
+              badgeBg = "bg-[#FEF2F2]";
             } else if (
               item.status === "ALREADY_USED" ||
               item.status === "DUPLICATE"
@@ -107,6 +116,9 @@ export default function Home() {
               title = "Duplicate Scan";
               icon = statusWarning;
               statusColor = "text-amber-500";
+              statusLabel = "Alert";
+              badgeColor = "text-[#EA580C]";
+              badgeBg = "bg-[#FFF7ED]";
             } else {
               title = item.productName || "Herbtox+";
             }
@@ -118,6 +130,9 @@ export default function Home() {
               time: timeStr,
               icon,
               statusColor,
+              statusLabel,
+              badgeColor,
+              badgeBg,
               fullData: item
             };
           });
@@ -348,15 +363,20 @@ export default function Home() {
                         </div>
                       </div>
                       
-                      {/* Arrow indicator */}
-                      <svg 
-                        className="w-5 h-5 text-gray-400 ml-2 flex-shrink-0 group-hover:translate-x-1 transition-transform duration-300" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
+                      {/* Status Badge + Arrow */}
+                      <div className="flex items-center gap-1.5 ml-2 flex-shrink-0">
+                        <span className={`text-[12px] font-bold ${scan.badgeColor} px-2.5 py-1 rounded-full ${scan.badgeBg}`}>
+                          {scan.statusLabel}
+                        </span>
+                        <svg 
+                          className="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform duration-300" 
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
                 ))}

@@ -37,11 +37,17 @@ export default function ScanHistory() {
             let type = "valid";
             let icon = StatusValid;
             let content = {};
+            let statusLabel = "Verified";
+            let badgeColor = "text-[#2563EB]";
+            let badgeBg = "bg-[#EFF6FF]";
 
             if (item.status === "FAKE" || item.status === "INACTIVE") {
               type = item.status.toLowerCase();
               // "dangerous" icon (red circle x)
               icon = StatusFake;
+              statusLabel = "Counterfeit";
+              badgeColor = "text-[#DC2626]";
+              badgeBg = "bg-[#FEF2F2]";
               content = {
                 title: item.status === "FAKE" ? "Fake or Counterfeit" : "Inactive QR Code",
                 subtitle: item.status === "FAKE"
@@ -52,6 +58,9 @@ export default function ScanHistory() {
               type = "duplicate";
               // "warning" icon (yellow triangle)
               icon = StatusDuplicate;
+              statusLabel = "Alert";
+              badgeColor = "text-[#EA580C]";
+              badgeBg = "bg-[#FFF7ED]";
               content = {
                 title: "Duplicate Scan",
                 subtitle: "This QR code has been scanned before. Please check product details carefully."
@@ -76,6 +85,9 @@ export default function ScanHistory() {
               scannedDate: dateStr,
               scannedTime: timeStr,
               icon,
+              statusLabel,
+              badgeColor,
+              badgeBg,
               latitude: item.latitude,
               longitude: item.longitude,
               place: item.place,
@@ -106,7 +118,14 @@ export default function ScanHistory() {
         }}
       >
         {/* Main Content */}
-        <div className="flex items-center p-5 bg-gradient-to-br from-white to-[#F8FBFF]">
+        <div className="relative flex items-center p-5 bg-gradient-to-br from-white to-[#F8FBFF]">
+          {/* Status Badge - Top Right */}
+          <div className="absolute top-3 right-3">
+            <span className={`text-[11px] font-bold ${item.badgeColor} px-3 py-1 rounded-full ${item.badgeBg} shadow-sm`}>
+              {item.statusLabel}
+            </span>
+          </div>
+
           {/* Icon Container with Premium Gradient */}
           <div className="relative w-[85px] h-[85px] flex-shrink-0 mr-4">
             {/* Glow effect */}
@@ -127,7 +146,7 @@ export default function ScanHistory() {
           </div>
 
           {/* Text Container */}
-          <div className="flex-1">
+          <div className="flex-1 pr-16">
             {item.type === 'valid' ? (
               <div className="text-[13px] leading-relaxed space-y-1">
                 <p className="font-extrabold text-[#0D4E96]">
