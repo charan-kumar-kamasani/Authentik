@@ -25,29 +25,36 @@ export default function ScanHistory() {
         if (res.ok) {
           const data = await res.json();
           // Map data
+          const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
           const mappedData = data.map((item) => {
             const dateObj = new Date(item.createdAt);
-            const dateStr = dateObj.toLocaleDateString("en-GB");
+            const day = String(dateObj.getDate()).padStart(2, "0");
+            const monthName = monthNames[dateObj.getMonth()];
+            const year = dateObj.getFullYear();
             const timeStr = dateObj.toLocaleTimeString("en-US", {
               hour: "2-digit",
               minute: "2-digit",
               hour12: true
-            }).toLowerCase(); // "10:10 am"
+            });
 
             let type = "valid";
             let icon = StatusValid;
             let content = {};
             let statusLabel = "Verified";
-            let badgeColor = "text-[#2563EB]";
-            let badgeBg = "bg-[#EFF6FF]";
+            let badgeColor = "text-[#16A34A]";
+            let badgeBg = "bg-[#F0FDF4]";
+            let statusBadgeIcon = "verified";
+
+            // Extract brand logo from populated brandId or company
+            const brandLogo = item.brandId?.brandLogo || null;
 
             if (item.status === "FAKE" || item.status === "INACTIVE") {
               type = item.status.toLowerCase();
-              // "dangerous" icon (red circle x)
               icon = StatusFake;
               statusLabel = "Counterfeit";
               badgeColor = "text-[#DC2626]";
               badgeBg = "bg-[#FEF2F2]";
+              statusBadgeIcon = "counterfeit";
               content = {
                 title: item.status === "FAKE" ? "Fake or Counterfeit" : "Inactive QR Code",
                 subtitle: item.status === "FAKE"
@@ -56,38 +63,45 @@ export default function ScanHistory() {
               };
             } else if (item.status === "ALREADY_USED" || item.status === "DUPLICATE") {
               type = "duplicate";
-              // "warning" icon (yellow triangle)
               icon = StatusDuplicate;
               statusLabel = "Alert";
               badgeColor = "text-[#EA580C]";
               badgeBg = "bg-[#FFF7ED]";
+              statusBadgeIcon = "alert";
               content = {
                 title: "Duplicate Scan",
                 subtitle: "This QR code has been scanned before. Please check product details carefully."
               };
             } else {
-              // Valid
               type = "valid";
               icon = StatusValid;
               const prod = item.productId || {};
               content = {
-                brand: prod.brand || item.productName || "Amul",
-                product: item.productName || prod.productName || "Amul Pure Ghee",
-                mfdOn: prod.manufactureDate || "10/24",
-                expOn: prod.expiryDate || "10/25",
+                brand: prod.brand || item.productName || "Brand",
+                product: item.productName || prod.productName || "Product",
+                mfdOn: prod.manufactureDate || "--",
+                expOn: prod.expiryDate || "--",
               };
             }
+
+            // Title for the card (brand name or product name)
+            const cardTitle = type === 'valid' 
+              ? (item.productName || item.brandId?.brandName || content.product)
+              : content.title;
 
             return {
               id: item._id,
               type,
               content,
-              scannedDate: dateStr,
+              cardTitle,
+              scannedDate: `${day} ${monthName} ${year}`,
               scannedTime: timeStr,
               icon,
+              brandLogo,
               statusLabel,
               badgeColor,
               badgeBg,
+              statusBadgeIcon,
               latitude: item.latitude,
               longitude: item.longitude,
               place: item.place,
@@ -110,116 +124,91 @@ export default function ScanHistory() {
     return (
       <div 
         onClick={() => navigate(`/result/${item.status || 'ORIGINAL'}`, { state: item.fullData })}
-        className="w-full mb-5 bg-white rounded-[20px] shadow-[0_4px_20px_rgba(13,78,150,0.12)] overflow-hidden border border-white hover:shadow-[0_8px_30px_rgba(13,78,150,0.2)] transition-all duration-300 hover:scale-[1.02] cursor-pointer"
+        className="bg-white rounded-[16px] p-3.5 flex items-center cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#F0F0F0] hover:shadow-[0_4px_20px_rgba(0,0,0,0.1)] transition-all duration-300 active:scale-[0.98] mb-3"
         style={{
           animation: `fadeSlideUp 0.5s ease-out forwards`,
-          animationDelay: `${index * 0.1}s`,
+          animationDelay: `${index * 0.06}s`,
           opacity: 0
         }}
       >
-        {/* Main Content */}
-        <div className="relative flex items-center p-5 bg-gradient-to-br from-white to-[#F8FBFF]">
-          {/* Status Badge - Top Right */}
-          <div className="absolute top-3 right-3">
-            <span className={`text-[11px] font-bold ${item.badgeColor} px-3 py-1 rounded-full ${item.badgeBg} shadow-sm`}>
-              {item.statusLabel}
-            </span>
-          </div>
-
-          {/* Icon Container with Premium Gradient */}
-          <div className="relative w-[85px] h-[85px] flex-shrink-0 mr-4">
-            {/* Glow effect */}
-            <div className={`absolute inset-0 rounded-[16px] blur-xl opacity-40 ${
-              item.type === 'valid' ? 'bg-gradient-to-br from-[#0D4E96] to-[#2CA4D6]' :
-              ['fake', 'inactive'].includes(item.type) ? 'bg-gradient-to-br from-[#E30211] to-[#FF4444]' :
-              'bg-gradient-to-br from-[#FFA500] to-[#FFCC00]'
-            }`} />
-            
-            {/* Icon Background */}
-            <div className={`relative w-full h-full rounded-[16px] flex items-center justify-center ${
-              item.type === 'valid' ? 'bg-gradient-to-br from-[#E8F4F9] to-[#F0F9FF]' :
-              ['fake', 'inactive'].includes(item.type) ? 'bg-gradient-to-br from-[#FFE8E8] to-[#FFF0F0]' :
-              'bg-gradient-to-br from-[#FFF8E8] to-[#FFFBF0]'
-            } shadow-lg`}>
-              <img src={item.icon} alt={item.type} className="w-[60px] h-[60px] object-contain" />
-            </div>
-          </div>
-
-          {/* Text Container */}
-          <div className="flex-1 pr-16">
-            {item.type === 'valid' ? (
-              <div className="text-[13px] leading-relaxed space-y-1">
-                <p className="font-extrabold text-[#0D4E96]">
-                  Brand: <span className="font-black bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] bg-clip-text text-transparent">{item.content.brand}</span>
-                </p>
-                <p className="font-bold text-[#214B80]">
-                  Product: <span className="font-extrabold text-[#0D4E96]">{item.content.product}</span>
-                </p>
-                <p className="font-bold text-[#555]">
-                  Mfd: <span className="font-extrabold text-[#333]">{item.content.mfdOn}</span>
-                </p>
-                <p className="font-bold text-[#555]">
-                  Exp: <span className="font-extrabold text-[#333]">{item.content.expOn}</span>
-                </p>
-              </div>
+        {/* Brand Logo with Status Badge */}
+        <div className="relative w-[60px] h-[60px] flex-shrink-0 mr-3.5">
+          {/* Logo Circle */}
+          <div className="w-full h-full rounded-full bg-[#F5F5F5] border-2 border-[#E8E8E8] flex items-center justify-center overflow-hidden">
+            {item.brandLogo ? (
+              <img
+                src={item.brandLogo}
+                alt={item.cardTitle}
+                className="w-[40px] h-[40px] object-contain"
+              />
             ) : (
-              <div>
-                <h3 className={`font-black text-[17px] mb-2 ${
-                  ['fake', 'inactive'].includes(item.type) 
-                    ? 'bg-gradient-to-r from-[#E30211] to-[#FF4444] bg-clip-text text-transparent' 
-                    : 'bg-gradient-to-r from-[#FFA500] to-[#FF8C00] bg-clip-text text-transparent'
-                }`}>
-                  {item.content.title}
-                </h3>
-                <p className="text-[#555] text-[12px] font-semibold leading-snug">
-                  {item.content.subtitle}
-                </p>
-              </div>
+              <img
+                src={item.icon}
+                alt={item.type}
+                className="w-[32px] h-[32px] object-contain"
+              />
+            )}
+          </div>
+          
+          {/* Status Badge Overlay */}
+          <div className={`absolute -bottom-0.5 -right-0.5 w-[22px] h-[22px] rounded-full flex items-center justify-center border-2 border-white shadow-sm ${
+            item.statusBadgeIcon === 'verified' 
+              ? 'bg-[#16A34A]'
+              : item.statusBadgeIcon === 'alert'
+              ? 'bg-[#F59E0B]'
+              : 'bg-[#DC2626]'
+          }`}>
+            {item.statusBadgeIcon === 'verified' ? (
+              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            ) : item.statusBadgeIcon === 'alert' ? (
+              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            ) : (
+              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
             )}
           </div>
         </div>
-
-        {/* Footer - Premium Gradient Bar */}
-        <div className="bg-gradient-to-r from-[#0D4E96] via-[#1a5fa8] to-[#2CA4D6] text-white py-3 px-4 relative overflow-hidden">
-          {/* Shimmer effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" 
-               style={{ backgroundSize: '200% 100%' }} />
-          
-          <div className="relative">
-            <div className="text-center text-[11px] font-bold">
-              <span className="inline-flex items-center gap-2">
-                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                </svg>
-                {item.scannedDate}
-              </span>
-              <span className="mx-2 opacity-50">•</span>
-              <span className="inline-flex items-center gap-1">
-                <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                </svg>
-                {item.scannedTime}
-              </span>
-            </div>
-            
-            {/* {item.latitude && item.longitude && (
-              <div className="text-center text-[10px] font-medium border-t border-white/20 pt-2 mt-2 opacity-90">
-                <div className="flex items-center justify-center gap-1">
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                  </svg>
-                  <span>{parseFloat(item.latitude).toFixed(4)}, {parseFloat(item.longitude).toFixed(4)}</span>
-                </div>
-                {item.place && <div className="text-[9px] mt-1">{item.place}</div>}
-              </div>
-            )} */}
-            
-            {item.originalScan && (
-              <div className="text-center text-[10px] font-medium border-t border-white/20 pt-2 mt-2 italic opacity-80">
-                First scanned by {item.originalScan.scannedBy} on {new Date(item.originalScan.scannedAt).toLocaleDateString()}
-              </div>
-            )}
+        
+        {/* Text Content */}
+        <div className="flex-1 min-w-0">
+          <h4 className="font-bold text-[15px] text-[#1A1A2E] leading-tight mb-1 truncate">
+            {item.cardTitle}
+          </h4>
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <span className={`inline-flex items-center gap-1 text-[11px] font-semibold ${item.badgeColor} px-2 py-0.5 rounded-full ${item.badgeBg}`}>
+              {item.statusBadgeIcon === 'verified' ? (
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+              ) : item.statusBadgeIcon === 'alert' ? (
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+              ) : null}
+              {item.statusLabel}
+            </span>
           </div>
+          <div className="flex items-center gap-1.5">
+            <svg className="w-3.5 h-3.5 text-[#9CA3AF] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+            </svg>
+            <p className="text-[#6B7280] text-[12px] font-medium">
+              {item.scannedDate} • {item.scannedTime}
+            </p>
+          </div>
+        </div>
+        
+        {/* Chevron Arrow */}
+        <div className="flex-shrink-0 ml-2">
+          <svg 
+            className="w-5 h-5 text-[#C4C4C4]" 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
         </div>
       </div>
     );
