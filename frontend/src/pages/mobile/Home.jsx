@@ -93,7 +93,7 @@ export default function Home() {
             let icon = statusValid;
             let statusColor = "text-[#214B80]";
             let statusLabel = "Verified";
-            let badgeColor = "text-[#0D4E96]";
+            let badgeColor = "text-[#2CA4D6]";
             let badgeBg = "bg-[#E8F4F9]";
             let statusBadgeIcon = "verified"; // verified | alert | counterfeit
 
@@ -342,7 +342,7 @@ export default function Home() {
                       {/* Status Badge Overlay */}
                       <div className={`absolute -bottom-0.5 -right-0.5 w-[22px] h-[22px] rounded-full flex items-center justify-center border-2 border-white shadow-sm ${
                         scan.statusBadgeIcon === 'verified' 
-                          ? 'bg-[#0D4E96]'
+                          ? 'bg-[#2CA4D6]'
                           : scan.statusBadgeIcon === 'alert'
                           ? 'bg-[#F59E0B]'
                           : 'bg-[#DC2626]'
@@ -366,16 +366,17 @@ export default function Home() {
                     {/* Text Content */}
                     <div className="flex-1 min-w-0 flex flex-col justify-center">
                       <h4 className="font-bold text-[15px] text-[#1A1A2E] leading-tight mb-0.5 truncate">
-                        {scan.title}
+                       {scan.productName}
                       </h4>
                       {scan.statusBadgeIcon === 'verified' && scan.productName && scan.title !== scan.productName && (
-                        <p className="text-[13px] text-[#4B5563] font-medium mb-1.5 truncate">
-                          {scan.productName}
+                        <p className="text-[13px] text-[#6B7280] font-medium mb-1.5 truncate">
+                           {scan.title}
                         </p>
                       )}
                       <div className="flex items-center gap-1.5 mt-0.5">
-                        <svg className="w-3.5 h-3.5 text-[#9CA3AF] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                        <svg className="w-3.5 h-3.5 text-[#9CA3AF] flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z" />
                         </svg>
                         <p className="text-[#6B7280] text-[10px] font-medium">
                           {scan.date} • {scan.time}
@@ -386,11 +387,6 @@ export default function Home() {
                     {/* Badge and Chevron */}
                     <div className="flex items-center flex-shrink-0  gap-1">
                       <div className={`inline-flex items-center gap-1 text-[10px] font-bold tracking-wide uppercase ${scan.badgeColor} px-2.5 py-1 rounded-full ${scan.badgeBg}`}>
-                        {scan.statusBadgeIcon === 'verified' ? (
-                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-                        ) : scan.statusBadgeIcon === 'alert' ? (
-                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
-                        ) : null}
                         {scan.statusLabel}
                       </div>
                       <svg 
