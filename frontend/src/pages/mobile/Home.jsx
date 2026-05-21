@@ -93,8 +93,8 @@ export default function Home() {
             let icon = statusValid;
             let statusColor = "text-[#214B80]";
             let statusLabel = "Verified";
-            let badgeColor = "text-[#16A34A]";
-            let badgeBg = "bg-[#F0FDF4]";
+            let badgeColor = "text-[#0D4E96]";
+            let badgeBg = "bg-[#E8F4F9]";
             let statusBadgeIcon = "verified"; // verified | alert | counterfeit
 
             // Extract brand logo from populated brandId or company
@@ -342,7 +342,7 @@ export default function Home() {
                       {/* Status Badge Overlay */}
                       <div className={`absolute -bottom-0.5 -right-0.5 w-[22px] h-[22px] rounded-full flex items-center justify-center border-2 border-white shadow-sm ${
                         scan.statusBadgeIcon === 'verified' 
-                          ? 'bg-[#16A34A]'
+                          ? 'bg-[#0D4E96]'
                           : scan.statusBadgeIcon === 'alert'
                           ? 'bg-[#F59E0B]'
                           : 'bg-[#DC2626]'

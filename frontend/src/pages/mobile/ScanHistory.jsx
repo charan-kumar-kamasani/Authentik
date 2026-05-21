@@ -41,8 +41,8 @@ export default function ScanHistory() {
             let icon = StatusValid;
             let content = {};
             let statusLabel = "Verified";
-            let badgeColor = "text-[#16A34A]";
-            let badgeBg = "bg-[#F0FDF4]";
+            let badgeColor = "text-[#0D4E96]";
+            let badgeBg = "bg-[#E8F4F9]";
             let statusBadgeIcon = "verified";
 
             // Extract brand logo from populated brandId or company
@@ -155,7 +155,7 @@ export default function ScanHistory() {
           {/* Status Badge Overlay */}
           <div className={`absolute -bottom-0.5 -right-0.5 w-[22px] h-[22px] rounded-full flex items-center justify-center border-2 border-white shadow-sm ${
             item.statusBadgeIcon === 'verified' 
-              ? 'bg-[#16A34A]'
+              ? 'bg-[#0D4E96]'
               : item.statusBadgeIcon === 'alert'
               ? 'bg-[#F59E0B]'
               : 'bg-[#DC2626]'
