@@ -218,7 +218,7 @@ export default function WebPricing() {
                         <SectionTitle>Anti Counterfeit Solutions India: Choose Your Plan</SectionTitle>
 
                         {/* Billing Toggle: Half-Yearly | Yearly */}
-                        <div className="inline-flex items-center p-1.5 bg-white/5 rounded-full border border-white/10 relative mt-4">
+                        {/* <div className="inline-flex items-center p-1.5 bg-white/5 rounded-full border border-white/10 relative mt-4">
                             <div
                                 className={`absolute inset-y-1.5 w-[calc(50%-6px)] rounded-full transition-all duration-300 shadow-md bg-white ${billingCycle === 'halfYearly' ? 'left-1.5' : 'left-[calc(50%+4.5px)]'}`}
                             />
@@ -234,7 +234,7 @@ export default function WebPricing() {
                             >
                                 Yearly (Save 20%)
                             </button>
-                        </div>
+                        </div> */}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">

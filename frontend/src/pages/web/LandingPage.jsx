@@ -329,7 +329,7 @@ export default function LandingPage() {
             <SectionTitle>Scale Your Protection & Engagement</SectionTitle>
             
             {/* 🔁 TOGGLE */}
-            <div className="flex items-center justify-center gap-4 mt-8">
+            {/* <div className="flex items-center justify-center gap-4 mt-8">
               <span className={`text-sm font-black uppercase tracking-widest transition-colors duration-300 ${billingCycle === 'half-yearly' ? 'text-white' : 'text-gray-500'}`}>Half-Yearly</span>
               <button 
                 onClick={() => setBillingCycle(billingCycle === 'yearly' ? 'half-yearly' : 'yearly')}
@@ -341,7 +341,7 @@ export default function LandingPage() {
                 <span className={`text-sm font-black uppercase tracking-widest transition-colors duration-300 ${billingCycle === 'yearly' ? 'text-white' : 'text-gray-500'}`}>Yearly</span>
                 <span className="text-[10px] font-black text-emerald-400 uppercase tracking-tighter">Save 20%</span>
               </div>
-            </div>
+            </div> */}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
