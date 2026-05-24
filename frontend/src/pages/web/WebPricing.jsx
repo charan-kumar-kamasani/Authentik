@@ -270,7 +270,7 @@ export default function WebPricing() {
                                         </div>
 
                                         {/* Price display */}
-                                        <div className="flex flex-col gap-1 mt-6 relative z-10">
+                                        {/* <div className="flex flex-col gap-1 mt-6 relative z-10">
                                             <div className="flex items-baseline gap-1">
                                                 <span className="text-4xl md:text-5xl font-black text-white tracking-tighter drop-shadow-md">
                                                     ₹{monthlyPrice.toLocaleString()}
@@ -282,9 +282,9 @@ export default function WebPricing() {
                                             <div className="text-sm font-bold text-gray-400 mt-1">
                                                 {cycleText}
                                             </div>
-                                        </div>
+                                        </div> */}
                                         {/* Yearly benefits badges */}
-                                        {isYearly && (
+                                        {/* {isYearly && (
                                             <div className="mt-6 flex flex-col gap-3 relative z-10">
                                                 <div className={`inline-flex items-center gap-2 text-sm font-black animate-in slide-in-from-left duration-300 ${plan.accentColor}`}>
                                                     {plan.id === 'starter' ? '🟢' : plan.id === 'growth' ? '🔵' : '🟣'} {saveLabel}
@@ -293,7 +293,7 @@ export default function WebPricing() {
                                                     <span className={plan.accentColor}>+</span> ₹{plan.bonusQR.toLocaleString()} QR Credits Included
                                                 </div>
                                             </div>
-                                        )}
+                                        )} */}
                                     </div>
 
                                     <div className="mb-8 bg-white/[0.03] rounded-2xl p-5 border border-white/5">

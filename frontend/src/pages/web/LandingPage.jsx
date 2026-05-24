@@ -295,10 +295,10 @@ export default function LandingPage() {
               <div className="absolute -top-20 -right-20 w-48 h-48 bg-emerald-500 rounded-full blur-[100px] opacity-20" />
               <div className="relative z-10">
                 <div className="text-[11px] font-black uppercase tracking-[0.25em] text-emerald-400 mb-6">Monthly Investment</div>
-                <div className="flex items-baseline gap-1 mb-2">
+                {/* <div className="flex items-baseline gap-1 mb-2">
                   <span className="text-5xl md:text-6xl font-black text-white tracking-tighter">₹10K</span>
                   <span className="text-gray-500 font-bold">/month</span>
-                </div>
+                </div> */}
                 <p className="text-gray-400 font-medium mb-8">Can generate far more in repeat revenue</p>
 
                 <div className="space-y-4 mb-10">
@@ -445,7 +445,7 @@ export default function LandingPage() {
                   {plan.tier}
                 </div>
 
-                <div className="mb-6">
+                {/* <div className="mb-6">
                   <div className="flex items-baseline gap-1">
                     <span className="text-4xl md:text-5xl font-black text-white tracking-tighter">₹{plan.price}</span>
                     <span className="text-gray-500 font-bold uppercase text-xs tracking-widest">/ month</span>
@@ -461,7 +461,7 @@ export default function LandingPage() {
                     <Sparkles size={16} className={plan.saveColor} />
                     + {plan.credits}
                   </div>
-                </div>
+                </div> */}
 
                 <p className="text-sm text-gray-400 font-bold mb-8 leading-relaxed italic">{plan.tag}</p>
 
