@@ -18,6 +18,7 @@ import mobileBanner3 from '../../assets/banners/Mobile banner authentiks/H3.jpg'
 import WebHeroSlider from '../../components/WebHeroSlider';
 import AnimatedCTA from '../../components/AnimatedCTA';
 import WebSecurityInfrastructure from '../../components/WebSecurityInfrastructure';
+import PricingCards from '../../components/PricingCards';
 import SEO from '../../components/SEO';
 
 /* ═══════════════════════ HERO SLIDES ═══════════════════════ */
@@ -344,150 +345,7 @@ export default function LandingPage() {
             </div> */}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                id: 'starter',
-                tier: 'STARTER',
-                tag: 'Best for: Small brands starting authentication',
-                price: billingCycle === 'yearly' ? '4,000' : '5,000',
-                credits: '₹5,000 QR Credits Included',
-                color: 'from-emerald-500 to-emerald-600',
-                borderColor: 'border-emerald-500/20 hover:border-emerald-500/40',
-                tagBg: 'bg-emerald-500/10 text-emerald-400',
-                saveColor: 'text-emerald-400',
-                saveIcon: '🟢',
-                features: [
-                  { category: 'Includes:', items: [
-                    'Unique QR for every product',
-                    'First-scan authentication',
-                    'Basic scan tracking',
-                    'Dashboard access'
-                  ]},
-                  { category: '🔒 Privacy-first analytics', items: [
-                    'No personal user data',
-                    'City-level scan insights'
-                  ]}
-                ]
-              },
-              {
-                id: 'growth',
-                tier: 'GROWTH',
-                badge: '⭐ MOST POPULAR',
-                tag: 'Best for: Brands building customer engagement',
-                price: billingCycle === 'yearly' ? '8,000' : '10,000',
-                credits: '₹10,000 QR Credits Included',
-                color: 'from-blue-500 to-cyan-500',
-                borderColor: 'border-blue-500/20 hover:border-blue-500/40',
-                tagBg: 'bg-blue-500/10 text-blue-400',
-                saveColor: 'text-blue-400',
-                saveIcon: '🔵',
-                highlighted: true,
-                features: [
-                  { category: 'Includes everything in Starter +', items: [
-                    'Coupon & rewards engine',
-                    'Customer data capture (consent-based)',
-                    'Redirect to website',
-                    'Counterfeit alerts',
-                    'Advanced scan analytics'
-                  ]},
-                  { category: '✨ AI Pulse Insights', items: [
-                    'Customer behavior analysis',
-                    'Scan trends & patterns',
-                    'Actionable growth suggestions'
-                  ]},
-                  { category: '📊 Smart data access (consent-driven)', items: [
-                    'Name & Age Group',
-                    'Gender & Contact Number',
-                    'Exportable reports'
-                  ]}
-                ]
-              },
-              {
-                id: 'enterprise',
-                tier: 'ENTERPRISE',
-                tag: 'Best for: Large brands & scale operations',
-                price: billingCycle === 'yearly' ? '16,000' : '20,000',
-                credits: '₹20,000 QR Credits Included',
-                color: 'from-purple-500 to-indigo-600',
-                borderColor: 'border-purple-500/20 hover:border-purple-500/40',
-                tagBg: 'bg-purple-500/10 text-purple-400',
-                saveColor: 'text-purple-400',
-                saveIcon: '🟣',
-                features: [
-                  { category: 'Includes everything in Growth +', items: [
-                    'Real-time counterfeit alerts',
-                    'Advanced analytics & insights',
-                    'Batch-level tracking',
-                    'API integrations',
-                    'Priority support'
-                  ]},
-                  { category: '🚀 Advanced AI Pulse', items: [
-                    'Predictive demand insights',
-                    'Fraud detection patterns',
-                    'Region-wise performance tracking',
-                    'Automated growth recommendations'
-                  ]}
-                ]
-              }
-            ].map((plan, i) => (
-              <div
-                key={i}
-                className={`group glass-effect rounded-[2.5rem] p-8 md:p-10 border ${plan.borderColor} transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl relative overflow-hidden flex flex-col ${plan.highlighted ? 'ring-1 ring-blue-500/40 bg-blue-500/5' : ''}`}
-              >
-                {plan.badge && (
-                  <div className="absolute top-0 right-0 px-6 py-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white text-[10px] font-black uppercase tracking-widest rounded-bl-2xl">
-                    {plan.badge}
-                  </div>
-                )}
-                
-                <div className={`inline-flex px-4 py-1.5 rounded-full text-[12px] font-black uppercase tracking-widest ${plan.tagBg} mb-6 w-fit`}>
-                  {plan.tier}
-                </div>
-
-                {/* <div className="mb-6">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl md:text-5xl font-black text-white tracking-tighter">₹{plan.price}</span>
-                    <span className="text-gray-500 font-bold uppercase text-xs tracking-widest">/ month</span>
-                  </div>
-                  <p className="text-[10px] text-gray-500 font-black mt-1 tracking-widest uppercase italic">({billingCycle === 'yearly' ? 'Yearly' : 'Half-Yearly'})</p>
-                </div>
-
-                <div className="mb-8 space-y-2">
-                  <div className={`text-xs font-black uppercase tracking-widest ${plan.saveColor} flex items-center gap-2`}>
-                    <span>{plan.saveIcon === '🟢' ? '💚' : plan.saveIcon === '🔵' ? '💙' : '💜'} Save 20% with yearly</span>
-                  </div>
-                  <div className="text-white font-black text-sm uppercase tracking-widest bg-white/5 py-3 px-4 rounded-xl border border-white/10 flex items-center gap-2">
-                    <Sparkles size={16} className={plan.saveColor} />
-                    + {plan.credits}
-                  </div>
-                </div> */}
-
-                <p className="text-sm text-gray-400 font-bold mb-8 leading-relaxed italic">{plan.tag}</p>
-
-                <div className="space-y-8 mb-10 flex-grow">
-                  {plan.features.map((section, j) => (
-                    <div key={j}>
-                      <h4 className="text-[10px] font-black text-white uppercase tracking-[0.2em] mb-4 opacity-80">{section.category}</h4>
-                      <ul className="space-y-3">
-                        {section.items.map((item, k) => (
-                          <li key={k} className="flex items-start gap-3">
-                            <CheckCircle2 size={16} className={`shrink-0 mt-0.5 ${plan.saveColor}`} />
-                            <span className="text-gray-300 font-bold text-sm leading-tight">{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-
-                <AnimatedCTA 
-                  onClick={() => setShowContactForm(true)}
-                  className="w-full"
-                />
-              </div>
-            ))}
-          </div>
+          <PricingCards onCTA={() => setShowContactForm(true)} />
 
           {/* ⚡ TRUST LINE */}
           <div className="mt-20 text-center">
