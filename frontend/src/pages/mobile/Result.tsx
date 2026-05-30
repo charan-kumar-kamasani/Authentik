@@ -1261,7 +1261,7 @@ function ResultFake({ data }: { data: any }) {
               />
             </div>
             <h2 className="text-[20px] font-bold uppercase tracking-wide">
-              COUNTERFEIT DETECTED
+              WARNING! 
             </h2>
           </div>
           <div className="bg-[#444444] p-2 w-full">
