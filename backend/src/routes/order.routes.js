@@ -217,6 +217,14 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
         customerCare: req.body.warranty.customerCare || '',
         supportEmail: req.body.warranty.supportEmail || '',
       } : undefined,
+      // Cashback data (if provided)
+      cashback: (req.body.cashback && req.body.cashback.isActive) ? {
+        isActive: true,
+        totalFund: Number(req.body.cashback.totalFund) || 0,
+        minPerUser: Number(req.body.cashback.minPerUser) || 0,
+        maxPerUser: Number(req.body.cashback.maxPerUser) || 0,
+        disbursed: 0,
+      } : undefined,
       // Calculate and save pricing
       amount: (await calculateQrPrice(quantityNumber)).total,
       subtotal: (await calculateQrPrice(quantityNumber)).subtotal,
@@ -979,7 +987,16 @@ router.put('/:id', protect, authorize('company', 'authorizer', 'creator', 'admin
         warrantyType: req.body.warranty.warrantyType || '',
         description: req.body.warranty.description || '',
         customerCare: req.body.warranty.customerCare || '',
-        supportEmail: req.body.warranty.supportEmail || '',
+      } : undefined;
+    }
+    // Update cashback if provided
+    if (req.body.cashback !== undefined) {
+      order.cashback = (req.body.cashback && req.body.cashback.isActive) ? {
+        isActive: true,
+        totalFund: Number(req.body.cashback.totalFund) || 0,
+        minPerUser: Number(req.body.cashback.minPerUser) || 0,
+        maxPerUser: Number(req.body.cashback.maxPerUser) || 0,
+        disbursed: order.cashback?.disbursed || 0,
       } : undefined;
     }
 

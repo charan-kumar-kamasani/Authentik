@@ -698,6 +698,32 @@ router.post("/", async (req, res, next) => {
     /* =======================
        ✅ ORIGINAL (FIRST SCAN)
     ======================= */
+    // --- CASHBACK LOGIC ---
+    let cashbackAwarded = 0;
+    if (product.orderId && product.orderId.cashback && product.orderId.cashback.isActive) {
+      const cashbackData = product.orderId.cashback;
+      const remainingFund = cashbackData.totalFund - cashbackData.disbursed;
+      
+      if (remainingFund > 0 && remainingFund >= cashbackData.minPerUser) {
+        const maxPossible = Math.min(cashbackData.maxPerUser, remainingFund);
+        const randomAmount = Math.floor(Math.random() * (maxPossible - cashbackData.minPerUser + 1)) + cashbackData.minPerUser;
+        
+        cashbackAwarded = randomAmount;
+        
+        // Update Order disbursed amount
+        const Order = require('../models/Order');
+        await Order.findByIdAndUpdate(product.orderId._id, {
+          $inc: { 'cashback.disbursed': cashbackAwarded }
+        });
+
+        // Update User wallet balance
+        const User = require('../models/User');
+        await User.findByIdAndUpdate(userId, {
+          $inc: { walletBalance: cashbackAwarded }
+        });
+      }
+    }
+
     const scan = await Scan.create({
       userId,
       productId: product._id,
@@ -710,7 +736,20 @@ router.post("/", async (req, res, next) => {
       place,
       latitude,
       longitude,
+      cashbackAwarded,
     });
+
+    if (cashbackAwarded > 0) {
+      const WalletTransaction = require('../models/WalletTransaction');
+      await WalletTransaction.create({
+        userId,
+        amount: cashbackAwarded,
+        type: 'cashback_earned',
+        scanId: scan._id,
+        orderId: product.orderId._id,
+        description: `Cashback earned from scanning ${product.productName || 'product'} QR code.`
+      });
+    }
 
     return res.json({
       status: "ORIGINAL",
@@ -739,8 +778,9 @@ router.post("/", async (req, res, next) => {
         place,
         latitude,
         longitude,
-      scannedAt: scan.createdAt,
-          hasCoupon: !!(await ProductCoupon.findOne({ productId: product._id, isActive: true }).lean()),
+        scannedAt: scan.createdAt,
+        hasCoupon: !!(await ProductCoupon.findOne({ productId: product._id, isActive: true }).lean()),
+        cashbackAwarded,
       },
     });
   } catch (err) {

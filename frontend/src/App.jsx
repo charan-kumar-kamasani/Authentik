@@ -40,6 +40,7 @@ import DemoResult from "./pages/mobile/DemoResult";
 import Warranty from "./pages/mobile/Warranty";
 import RaiseClaim from "./pages/mobile/RaiseClaim";
 import UpdateWarranty from "./pages/mobile/UpdateWarranty";
+import Wallet from "./pages/mobile/Wallet";
 
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -413,6 +414,7 @@ export default function App() {
             <Route path="/warranty" element={<Warranty />} />
             <Route path="/raise-claim/:id" element={<RaiseClaim />} />
             <Route path="/update-warranty/:id" element={<UpdateWarranty />} />
+            <Route path="/wallet" element={<Wallet />} />
           </Route>
 
           {/* Smart fallback */}

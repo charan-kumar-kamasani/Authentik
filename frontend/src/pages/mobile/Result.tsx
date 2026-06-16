@@ -360,6 +360,24 @@ function ResultAuthentic({ data }: { data: any }) {
             </div>
           </div>
 
+          {/* Cashback Banner */}
+          {data.cashbackAwarded > 0 && (
+            <div className="mx-4 mt-2 mb-4 bg-gradient-to-r from-pink-500 to-purple-600 rounded-[16px] p-4 text-white shadow-lg relative overflow-hidden flex items-center justify-between transform transition-all hover:scale-[1.02]">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl -mr-10 -mt-10 animate-pulse"></div>
+              <div className="relative z-10">
+                <p className="text-[11px] font-bold uppercase tracking-widest text-pink-200 mb-0.5">Lucky QR Scan 🎉</p>
+                <h3 className="text-[26px] font-black leading-tight drop-shadow-sm">₹{data.cashbackAwarded}</h3>
+                <p className="text-[13px] font-medium opacity-90">Added to your Wallet</p>
+              </div>
+              <button 
+                onClick={() => navigate('/wallet')}
+                className="relative z-10 bg-white text-pink-600 font-extrabold px-4 py-2.5 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.1)] text-sm active:scale-95 transition-transform"
+              >
+                View Wallet
+              </button>
+            </div>
+          )}
+
           <div className="p-2 space-y-4">
             {/* Grid Details (Blue Cards) */}
             <div className="grid grid-cols-2 gap-3">

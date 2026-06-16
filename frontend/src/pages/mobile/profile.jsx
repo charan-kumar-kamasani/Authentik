@@ -16,7 +16,7 @@ import IconTerms from "../../assets/v2/profile/Vector (4).svg"; // Document
 import IconPolicies from "../../assets/v2/profile/Vector.svg"; // Shield
 import IconLogout from "../../assets/v2/profile/Vector (6).svg"; // Power button
 import MobileHeader from "../../components/MobileHeader";
-import { Globe } from "lucide-react";
+import { Globe, Wallet } from "lucide-react";
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -122,7 +122,8 @@ export default function Profile() {
           [
             { icon: IconScanHistory, text: "Scan History", action: () => navigate("/scan-history") },
             { icon: IconReports, text: "Reports", action: () => navigate("/my-reports") },
-            { icon: IconScanHistory, text: "My Rewards", action: () => navigate("/rewards") }
+            { icon: IconScanHistory, text: "My Rewards", action: () => navigate("/rewards") },
+            { icon: Wallet, text: "My Wallet", isLucide: true, action: () => navigate("/wallet") }
           ],
           [
             { icon: IconAboutUs, text: "About Us", action: () => navigate("/about-us") },

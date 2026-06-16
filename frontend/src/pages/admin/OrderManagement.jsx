@@ -433,15 +433,56 @@ const OrderManagement = () => {
       };
 
       if (actionLabels[action] && (!data || Object.keys(data).length === 0)) {
-        if (action === 'process' && (role === 'superadmin' || role === 'admin') && (!data || Object.keys(data).length === 0)) {
+        if (action === 'process' && (role === 'superadmin' || role === 'admin')) {
           const order = orders.find(o => o._id === orderId);
           setProcessModal({ isOpen: true, order, bonusQuantity: 0 });
           return;
         }
 
+        let descriptionNode = actionLabels[action];
+
+        if (action === 'authorize') {
+          const order = orders.find(o => o._id === orderId);
+          if (order) {
+            const qrAmount = order.amount || 0;
+            const cashbackActive = order.cashback?.isActive;
+            const cashbackFund = cashbackActive ? (order.cashback.totalFund || 0) : 0;
+            const totalPayable = qrAmount + cashbackFund;
+
+            descriptionNode = (
+              <div className="space-y-4">
+                <p className="text-sm text-slate-600">Authorize this order? The following amounts will be deducted or charged:</p>
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="font-bold text-slate-600">QR Generation Cost:</span>
+                    <span className="font-bold text-slate-800">₹{qrAmount.toLocaleString()}</span>
+                  </div>
+                  {cashbackActive && (
+                    <div className="flex justify-between text-sm text-emerald-600">
+                      <span className="font-bold">Cashback Fund:</span>
+                      <span className="font-bold">+ ₹{cashbackFund.toLocaleString()}</span>
+                    </div>
+                  )}
+                  <div className="h-px bg-slate-200 my-2"></div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-black text-slate-800 uppercase tracking-tight text-xs">Total Payable:</span>
+                    <span className="font-black text-blue-600 text-lg tracking-tight">₹{totalPayable.toLocaleString()}</span>
+                  </div>
+                </div>
+                {!cashbackActive && (
+                  <p className="text-xs text-amber-700 font-bold bg-amber-50 p-3 rounded-xl border border-amber-100 flex gap-2">
+                    <AlertTriangle size={16} className="shrink-0 text-amber-500" />
+                    <span>No cashback program was added. You can cancel and click 'Edit' to add a cashback program if needed.</span>
+                  </p>
+                )}
+              </div>
+            );
+          }
+        }
+
         const ok = await confirm({ 
           title: action.charAt(0).toUpperCase() + action.slice(1), 
-          description: actionLabels[action], 
+          description: descriptionNode, 
           confirmText: 'Yes, Proceed', 
           cancelText: 'Cancel' 
         });
@@ -547,8 +588,8 @@ const OrderManagement = () => {
     setEditing(true);
     try {
       // Create a payload of changing fields
-      const { _id, productName, brand, batchNo, quantity, productInfo } = editOrderModal.data;
-      const updates = { productName, brand, batchNo, quantity, productInfo };
+      const { _id, productName, brand, batchNo, quantity, productInfo, cashback } = editOrderModal.data;
+      const updates = { productName, brand, batchNo, quantity, productInfo, cashback };
       
       await updateOrder(_id, updates);
       await fetchOrders();
@@ -958,7 +999,7 @@ const OrderManagement = () => {
                       {/* Edit — allowed for superadmin always, admin if not processed, company ONLY if Pending, creator ONLY if Rejected */}
                       {(role === 'superadmin' || 
                         (['Pending Authorization', 'Authorized', 'Rejected'].includes(order.status) && role === 'admin') || 
-                        (order.status === 'Pending Authorization' && ['company'].includes(role)) ||
+                        (order.status === 'Pending Authorization' && ['company', 'authorizer'].includes(role)) ||
                         (order.status === 'Rejected' && role === 'creator')) && (
                         <ActionBtn onClick={() => {
                           if (role === 'creator' || role === 'superadmin') {
@@ -1158,6 +1199,19 @@ const OrderManagement = () => {
                           </div>
                         )}
 
+                        {/* Cashback Details */}
+                        {order.cashback && order.cashback.isActive && (
+                          <div className="mt-4 pt-4 border-t border-slate-100">
+                            <h4 className="text-xs font-black text-emerald-500 uppercase tracking-wider mb-2 flex items-center gap-1.5"><Gift size={14} /> Cashback Program Active</h4>
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 bg-emerald-50 p-3 rounded-xl border border-emerald-100">
+                              <div className="text-sm"><span className="font-bold text-slate-600">Total Fund:</span> <span className="font-black text-emerald-700">₹{order.cashback.totalFund}</span></div>
+                              <div className="text-sm"><span className="font-bold text-slate-600">Disbursed:</span> <span className="font-black text-slate-800">₹{order.cashback.disbursed}</span></div>
+                              <div className="text-sm"><span className="font-bold text-slate-600">Min Amount:</span> <span className="text-slate-800">₹{order.cashback.minPerUser}</span></div>
+                              <div className="text-sm"><span className="font-bold text-slate-600">Max Amount:</span> <span className="text-slate-800">₹{order.cashback.maxPerUser}</span></div>
+                            </div>
+                          </div>
+                        )}
+
                         {/* Dispatch Details */}
                         {order.dispatchDetails && order.dispatchDetails.courierName && (
                           <div className="mt-4 pt-4 border-t border-slate-100">
@@ -1330,6 +1384,51 @@ const OrderManagement = () => {
                     placeholder="E.g., ingredients, storage instructions..."
                     className="w-full px-5 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium resize-none"
                   />
+                </div>
+
+                <div className="border border-emerald-100 rounded-2xl bg-emerald-50/30 overflow-hidden">
+                  <div className="p-4 bg-emerald-50 border-b border-emerald-100 flex items-center justify-between cursor-pointer" onClick={() => {
+                    setEditOrderModal(prev => ({
+                      ...prev,
+                      data: {
+                        ...prev.data,
+                        cashback: {
+                          ...prev.data.cashback,
+                          isActive: !(prev.data.cashback?.isActive)
+                        }
+                      }
+                    }));
+                  }}>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
+                        <Gift size={20} />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-slate-800">Cashback Program (Optional)</h3>
+                        <p className="text-xs text-slate-500">Enable lucky cashback for users when they scan</p>
+                      </div>
+                    </div>
+                    <div className={`w-12 h-6 rounded-full transition-colors relative ${editOrderModal.data.cashback?.isActive ? 'bg-emerald-500' : 'bg-slate-300'}`}>
+                      <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${editOrderModal.data.cashback?.isActive ? 'translate-x-6' : 'translate-x-0'}`} />
+                    </div>
+                  </div>
+
+                  {editOrderModal.data.cashback?.isActive && (
+                    <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-5">
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Fund (₹)</label>
+                        <input type="number" value={editOrderModal.data.cashback?.totalFund || ''} onChange={e => setEditOrderModal(prev => ({...prev, data: {...prev.data, cashback: {...prev.data.cashback, totalFund: e.target.value}}}))} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500/30 text-slate-800" placeholder="e.g. 50000" />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Min per User (₹)</label>
+                        <input type="number" value={editOrderModal.data.cashback?.minPerUser || ''} onChange={e => setEditOrderModal(prev => ({...prev, data: {...prev.data, cashback: {...prev.data.cashback, minPerUser: e.target.value}}}))} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500/30 text-slate-800" placeholder="e.g. 5" />
+                      </div>
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Max per User (₹)</label>
+                        <input type="number" value={editOrderModal.data.cashback?.maxPerUser || ''} onChange={e => setEditOrderModal(prev => ({...prev, data: {...prev.data, cashback: {...prev.data.cashback, maxPerUser: e.target.value}}}))} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500/30 text-slate-800" placeholder="e.g. 50" />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </form>
             </div>

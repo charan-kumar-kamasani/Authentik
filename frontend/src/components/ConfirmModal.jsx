@@ -26,7 +26,11 @@ export function ConfirmProvider({ children }) {
               <h3 className="text-lg font-black text-slate-800">{dialog.title}</h3>
             </div>
             <div className="p-6">
-              <p className="text-sm text-slate-600">{dialog.description}</p>
+              {typeof dialog.description === 'string' ? (
+                <p className="text-sm text-slate-600">{dialog.description}</p>
+              ) : (
+                dialog.description
+              )}
             </div>
             <div className="p-4 flex gap-3 justify-end bg-slate-50">
               {dialog.cancelText && (

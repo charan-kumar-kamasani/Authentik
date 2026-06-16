@@ -134,6 +134,15 @@ const orderSchema = new mongoose.Schema({
   },
   paymentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Payment' },
 
+  // Cashback Scheme attached to this order
+  cashback: {
+    isActive: { type: Boolean, default: false },
+    totalFund: { type: Number, default: 0 },
+    minPerUser: { type: Number, default: 0 },
+    maxPerUser: { type: Number, default: 0 },
+    disbursed: { type: Number, default: 0 },
+  },
+
 }, { timestamps: true });
 
 // Performance Indexes

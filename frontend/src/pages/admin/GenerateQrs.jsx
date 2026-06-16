@@ -27,6 +27,9 @@ export default function GenerateQrs() {
   // Warranty fields
   const [warranty, setWarranty] = useState({ duration: '', durationUnit: 'months', warrantyType: '', description: '', customerCare: '', supportEmail: '' });
 
+  // Cashback fields
+  const [cashback, setCashback] = useState({ isActive: false, totalFund: '', minPerUser: '', maxPerUser: '' });
+
   // Dynamic fields
   const [dynamicFieldValues, setDynamicFieldValues] = useState({});
   const [formConfig, setFormConfig] = useState(null);
@@ -125,6 +128,14 @@ export default function GenerateQrs() {
           description: order.warranty.description || '',
           customerCare: order.warranty.customerCare || '',
           supportEmail: order.warranty.supportEmail || '',
+        });
+      }
+      if (order.cashback) {
+        setCashback({
+          isActive: order.cashback.isActive || false,
+          totalFund: order.cashback.totalFund || '',
+          minPerUser: order.cashback.minPerUser || '',
+          maxPerUser: order.cashback.maxPerUser || '',
         });
       }
     }
@@ -461,6 +472,13 @@ export default function GenerateQrs() {
           customerCare: warranty.customerCare,
           supportEmail: warranty.supportEmail,
         } : undefined,
+        // Cashback (if provided)
+        cashback: cashback.isActive ? {
+          isActive: true,
+          totalFund: Number(cashback.totalFund) || 0,
+          minPerUser: Number(cashback.minPerUser) || 0,
+          maxPerUser: Number(cashback.maxPerUser) || 0,
+        } : undefined,
       };
 
       setMobilePreviewOrder(orderData);
@@ -551,6 +569,7 @@ export default function GenerateQrs() {
     setIsCatalogProduct(false);
     setCoupon({ code: '', description: '', expiryDate: '' });
     setWarranty({ duration: '', durationUnit: 'months', warrantyType: '', description: '' });
+    setCashback({ isActive: false, totalFund: '', minPerUser: '', maxPerUser: '' });
   };
 
   useEffect(() => {
@@ -1359,6 +1378,64 @@ export default function GenerateQrs() {
             If provided, warranty information will be displayed to customers on the scan result page.
           </p>
         </div>
+
+        {/* Cashback Information Section */}
+        <div className="col-span-2 border-t border-slate-200 pt-4 mt-2">
+          <div className="flex items-center gap-2 mb-4">
+            <Gift size={18} className="text-pink-600" />
+            <h4 className="text-sm font-semibold text-slate-800">Cashback Program (Optional)</h4>
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer mb-4">
+            <input 
+              type="checkbox" 
+              checked={cashback.isActive} 
+              onChange={(e) => setCashback({...cashback, isActive: e.target.checked})}
+              className="w-4 h-4 text-pink-600 bg-slate-100 border-slate-300 rounded focus:ring-pink-500"
+            />
+            <span className="text-sm font-medium text-slate-700">Enable lucky cashback for this batch</span>
+          </label>
+        </div>
+
+        {cashback.isActive && (
+          <>
+            <div className="col-span-2 flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-slate-700 ml-1">
+                Total Cashback Fund (₹) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                placeholder="e.g. 10000"
+                value={cashback.totalFund}
+                onChange={(e) => setCashback({ ...cashback, totalFund: e.target.value })}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all font-medium"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-slate-700 ml-1">
+                Minimum Amount per User (₹) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                placeholder="e.g. 5"
+                value={cashback.minPerUser}
+                onChange={(e) => setCashback({ ...cashback, minPerUser: e.target.value })}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all font-medium"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-slate-700 ml-1">
+                Maximum Amount per User (₹) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                placeholder="e.g. 50"
+                value={cashback.maxPerUser}
+                onChange={(e) => setCashback({ ...cashback, maxPerUser: e.target.value })}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all font-medium"
+              />
+            </div>
+          </>
+        )}
 
         {/* Submit Button */}
         <div className="col-span-2 pt-4">

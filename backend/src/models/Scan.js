@@ -38,6 +38,7 @@ module.exports = mongoose.model(
       place: String,
       latitude: Number,
       longitude: Number,
+      cashbackAwarded: { type: Number, default: 0 }, // Amount awarded in Rs for this scan
     },
     { timestamps: true }
   )
