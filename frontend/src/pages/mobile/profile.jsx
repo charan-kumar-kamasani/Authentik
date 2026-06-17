@@ -71,7 +71,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-[#F0F7FF] via-[#FFFFFF] to-[#E8F4F9] font-sans flex flex-col overflow-hidden">
+    <div className="min-h-full bg-gradient-to-br from-[#F0F7FF] via-[#FFFFFF] to-[#E8F4F9] font-sans flex flex-col">
 
       {/* Header */}
       <div className="shrink-0">
@@ -117,7 +117,7 @@ export default function Profile() {
       </div>
 
       {/* Menu List - Tight Layout to fit screen */}
-      <div className="flex-1 flex flex-col px-5 pb-20 overflow-y-auto no-scrollbar">
+      <div className="flex flex-col px-5 pb-24">
         {[
           [
             { icon: IconScanHistory, text: "Scan History", action: () => navigate("/scan-history") },

@@ -10,9 +10,14 @@ const walletTransactionSchema = new mongoose.Schema({
     type: Number, 
     required: true 
   },
+  currency: {
+    type: String,
+    enum: ['INR', 'POINTS'],
+    default: 'INR'
+  },
   type: { 
     type: String, 
-    enum: ['cashback_earned'], 
+    enum: ['cashback_earned', 'points_earned', 'points_redeemed'], 
     required: true 
   },
   scanId: { 

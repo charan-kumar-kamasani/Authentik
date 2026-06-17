@@ -3,15 +3,20 @@ const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
 const User = require('../models/User');
 const WalletTransaction = require('../models/WalletTransaction');
+const Scan = require('../models/Scan');
+const Order = require('../models/Order');
 
 // Get Wallet Balance
 router.get('/balance', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select('walletBalance');
+    const user = await User.findById(req.user._id).select('walletBalance loyaltyPoints');
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    res.json({ balance: user.walletBalance || 0 });
+    res.json({ 
+      balance: user.walletBalance || 0,
+      loyaltyPoints: user.loyaltyPoints || 0
+    });
   } catch (err) {
     console.error('Wallet balance error:', err);
     res.status(500).json({ error: 'Failed to fetch wallet balance' });

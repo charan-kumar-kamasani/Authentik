@@ -30,6 +30,9 @@ export default function GenerateQrs() {
   // Cashback fields
   const [cashback, setCashback] = useState({ isActive: false, totalFund: '', minPerUser: '', maxPerUser: '' });
 
+  // Loyalty Points fields
+  const [loyalty, setLoyalty] = useState({ isActive: false, pointsPerScan: '', totalPointsFund: '' });
+
   // Dynamic fields
   const [dynamicFieldValues, setDynamicFieldValues] = useState({});
   const [formConfig, setFormConfig] = useState(null);
@@ -136,6 +139,13 @@ export default function GenerateQrs() {
           totalFund: order.cashback.totalFund || '',
           minPerUser: order.cashback.minPerUser || '',
           maxPerUser: order.cashback.maxPerUser || '',
+        });
+      }
+      if (order.loyalty) {
+        setLoyalty({
+          isActive: order.loyalty.isActive || false,
+          pointsPerScan: order.loyalty.pointsPerScan || '',
+          totalPointsFund: order.loyalty.totalPointsFund || '',
         });
       }
     }
@@ -479,6 +489,12 @@ export default function GenerateQrs() {
           minPerUser: Number(cashback.minPerUser) || 0,
           maxPerUser: Number(cashback.maxPerUser) || 0,
         } : undefined,
+        // Loyalty Points (if provided)
+        loyalty: loyalty.isActive ? {
+          isActive: true,
+          pointsPerScan: Number(loyalty.pointsPerScan) || 0,
+          totalPointsFund: Number(loyalty.totalPointsFund) || 0,
+        } : undefined,
       };
 
       setMobilePreviewOrder(orderData);
@@ -570,6 +586,7 @@ export default function GenerateQrs() {
     setCoupon({ code: '', description: '', expiryDate: '' });
     setWarranty({ duration: '', durationUnit: 'months', warrantyType: '', description: '' });
     setCashback({ isActive: false, totalFund: '', minPerUser: '', maxPerUser: '' });
+    setLoyalty({ isActive: false, pointsPerScan: '', totalPointsFund: '' });
   };
 
   useEffect(() => {
@@ -1432,6 +1449,52 @@ export default function GenerateQrs() {
                 value={cashback.maxPerUser}
                 onChange={(e) => setCashback({ ...cashback, maxPerUser: e.target.value })}
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all font-medium"
+              />
+            </div>
+          </>
+        )}
+
+        {/* Loyalty Points Section */}
+        <div className="col-span-2 border-t border-slate-200 pt-4 mt-2">
+          <div className="flex items-center gap-2 mb-4">
+            <Gift size={18} className="text-amber-600" />
+            <h4 className="text-sm font-semibold text-slate-800">Loyalty Points Program (Optional)</h4>
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer mb-4">
+            <input 
+              type="checkbox" 
+              checked={loyalty.isActive} 
+              onChange={(e) => setLoyalty({...loyalty, isActive: e.target.checked})}
+              className="w-4 h-4 text-amber-600 bg-slate-100 border-slate-300 rounded focus:ring-amber-500"
+            />
+            <span className="text-sm font-medium text-slate-700">Enable loyalty points for this batch</span>
+          </label>
+        </div>
+
+        {loyalty.isActive && (
+          <>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-slate-700 ml-1">
+                Points per Scan <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                placeholder="e.g. 10"
+                value={loyalty.pointsPerScan}
+                onChange={(e) => setLoyalty({ ...loyalty, pointsPerScan: e.target.value })}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all font-medium"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium text-slate-700 ml-1">
+                Total Points Fund <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                placeholder="e.g. 50000"
+                value={loyalty.totalPointsFund}
+                onChange={(e) => setLoyalty({ ...loyalty, totalPointsFund: e.target.value })}
+                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all font-medium"
               />
             </div>
           </>

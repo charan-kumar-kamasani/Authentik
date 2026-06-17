@@ -38,6 +38,7 @@ app.use('/leads', require('./routes/lead.routes'));
 app.use('/warranty', require('./routes/warranty.routes'));
 app.use('/dashboard', require('./routes/dashboard-export.routes'));
 app.use('/wallet', require('./routes/wallet.routes'));
+app.use('/loyalty', require('./routes/loyalty.routes'));
 
 const PORT = process.env.PORT || 5000;
 const HOST = "0.0.0.0";

@@ -396,6 +396,12 @@ export default function AdminLayout({ children }) {
                 icon={Gift}
                 isActive={activePath === "/admin/coupons"}
               />
+              <SidebarItemCollapse
+                label="Cashbacks & Loyalty"
+                onClick={() => navigate("/admin/loyalty")}
+                icon={Coins}
+                isActive={activePath === "/admin/loyalty"}
+              />
 
               {["superadmin", "admin"].includes(role) && (
                 <SidebarItemCollapse

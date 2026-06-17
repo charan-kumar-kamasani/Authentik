@@ -739,17 +739,54 @@ router.post("/", async (req, res, next) => {
       cashbackAwarded,
     });
 
+    let loyaltyPointsAwarded = 0;
+    if (product.orderId && product.orderId.loyalty && product.orderId.loyalty.isActive) {
+      const loyaltyData = product.orderId.loyalty;
+      const remainingPointsFund = loyaltyData.totalPointsFund - loyaltyData.pointsDisbursed;
+      
+      if (remainingPointsFund > 0 && remainingPointsFund >= loyaltyData.pointsPerScan) {
+        loyaltyPointsAwarded = loyaltyData.pointsPerScan;
+        
+        // Update Order disbursed points
+        const Order = require('../models/Order');
+        await Order.findByIdAndUpdate(product.orderId._id, {
+          $inc: { 'loyalty.pointsDisbursed': loyaltyPointsAwarded }
+        });
+
+        // Update User loyalty balance
+        const User = require('../models/User');
+        await User.findByIdAndUpdate(userId, {
+          $inc: { loyaltyPoints: loyaltyPointsAwarded }
+        });
+      }
+    }
+
     if (cashbackAwarded > 0) {
       const WalletTransaction = require('../models/WalletTransaction');
       await WalletTransaction.create({
         userId,
         amount: cashbackAwarded,
+        currency: 'INR',
         type: 'cashback_earned',
         scanId: scan._id,
         orderId: product.orderId._id,
         description: `Cashback earned from scanning ${product.productName || 'product'} QR code.`
       });
     }
+
+    if (loyaltyPointsAwarded > 0) {
+      const WalletTransaction = require('../models/WalletTransaction');
+      await WalletTransaction.create({
+        userId,
+        amount: loyaltyPointsAwarded,
+        currency: 'POINTS',
+        type: 'points_earned',
+        scanId: scan._id,
+        orderId: product.orderId._id,
+        description: `Loyalty points earned from scanning ${product.productName || 'product'} QR code.`
+      });
+    }
+
 
     return res.json({
       status: "ORIGINAL",
@@ -781,6 +818,7 @@ router.post("/", async (req, res, next) => {
         scannedAt: scan.createdAt,
         hasCoupon: !!(await ProductCoupon.findOne({ productId: product._id, isActive: true }).lean()),
         cashbackAwarded,
+        loyaltyPointsAwarded,
       },
     });
   } catch (err) {

@@ -46,6 +46,7 @@ const userSchema = new mongoose.Schema(
     city: { type: String },
     profileImage: { type: String, default: null }, // URL stored from Cloudinary
     walletBalance: { type: Number, default: 0 }, // Authentik Wallet Balance in Rs
+    loyaltyPoints: { type: Number, default: 0 }, // Total Loyalty Points earned
   },
   { timestamps: true }
 );

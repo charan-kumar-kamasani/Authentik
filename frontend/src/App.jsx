@@ -68,6 +68,7 @@ import AdminLeads from "./pages/admin/AdminLeads";
 import QrPricingManagement from "./pages/admin/QrPricingManagement";
 import AIPulseDashboard from "./pages/admin/AIPulseDashboard";
 import WarrantyClaims from "./pages/admin/WarrantyClaims";
+import LoyaltyDashboard from "./pages/admin/LoyaltyDashboard";
 
 // Scroll to top on navigation
 function ScrollToTop() {
@@ -312,6 +313,7 @@ export default function App() {
             <Route path="/admin/reviews" element={<AdminRoute><AdminLayout><AdminReviews /></AdminLayout></AdminRoute>} />
             <Route path="/admin/warranty-claims" element={<AdminRoute><AdminLayout><WarrantyClaims /></AdminLayout></AdminRoute>} />
             <Route path="/admin/coupons" element={<AdminRoute><AdminLayout><ProductCoupons /></AdminLayout></AdminRoute>} />
+            <Route path="/admin/loyalty" element={<AdminRoute><AdminLayout><LoyaltyDashboard /></AdminLayout></AdminRoute>} />
             <Route
               path="/users"
               element={

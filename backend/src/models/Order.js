@@ -143,6 +143,14 @@ const orderSchema = new mongoose.Schema({
     disbursed: { type: Number, default: 0 },
   },
 
+  // Loyalty Points Scheme attached to this order
+  loyalty: {
+    isActive: { type: Boolean, default: false },
+    pointsPerScan: { type: Number, default: 0 },
+    totalPointsFund: { type: Number, default: 0 },
+    pointsDisbursed: { type: Number, default: 0 }
+  },
+
 }, { timestamps: true });
 
 // Performance Indexes

@@ -225,6 +225,13 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
         maxPerUser: Number(req.body.cashback.maxPerUser) || 0,
         disbursed: 0,
       } : undefined,
+      // Loyalty Points data (if provided)
+      loyalty: (req.body.loyalty && req.body.loyalty.isActive) ? {
+        isActive: true,
+        pointsPerScan: Number(req.body.loyalty.pointsPerScan) || 0,
+        totalPointsFund: Number(req.body.loyalty.totalPointsFund) || 0,
+        pointsDisbursed: 0,
+      } : undefined,
       // Calculate and save pricing
       amount: (await calculateQrPrice(quantityNumber)).total,
       subtotal: (await calculateQrPrice(quantityNumber)).subtotal,
@@ -997,6 +1004,15 @@ router.put('/:id', protect, authorize('company', 'authorizer', 'creator', 'admin
         minPerUser: Number(req.body.cashback.minPerUser) || 0,
         maxPerUser: Number(req.body.cashback.maxPerUser) || 0,
         disbursed: order.cashback?.disbursed || 0,
+      } : undefined;
+    }
+    // Update loyalty if provided
+    if (req.body.loyalty !== undefined) {
+      order.loyalty = (req.body.loyalty && req.body.loyalty.isActive) ? {
+        isActive: true,
+        pointsPerScan: Number(req.body.loyalty.pointsPerScan) || 0,
+        totalPointsFund: Number(req.body.loyalty.totalPointsFund) || 0,
+        pointsDisbursed: order.loyalty?.pointsDisbursed || 0,
       } : undefined;
     }
 
