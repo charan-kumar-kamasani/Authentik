@@ -77,6 +77,11 @@ const productSchema = new mongoose.Schema(
       customerCare: { type: String, trim: true },
       supportEmail: { type: String, trim: true },
     },
+    // Order Links (e.g. reorder links)
+    orderLinks: [{
+      title: { type: String, trim: true },
+      url: { type: String, trim: true }
+    }],
   },
   { timestamps: true }
 );

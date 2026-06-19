@@ -444,6 +444,24 @@ function ResultAuthentic({ data }: { data: any }) {
           </div>
         </div>
 
+        {/* Order Links */}
+        {(data.orderLinks?.length > 0 || data.productId?.orderLinks?.length > 0) && (
+          <div className="mt-6 flex flex-col gap-3">
+            {(data.orderLinks || data.productId?.orderLinks).map((link: any, index: number) => (
+              <a
+                key={index}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-blue-50 border border-blue-200 text-[#0E5CAB] font-bold text-[16px] py-4 rounded-[20px] shadow-sm text-center flex items-center justify-center gap-2 hover:bg-blue-100 transition-colors"
+              >
+                {link.title}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+              </a>
+            ))}
+          </div>
+        )}
+
         {/* Review Button */}
         <button
           onClick={async () => {
@@ -1242,6 +1260,24 @@ function ResultRepeat({ data }: { data: any }) {
             </div>
           </div>
         </div>
+
+        {/* Order Links */}
+        {(data.orderLinks?.length > 0 || data.productId?.orderLinks?.length > 0) && (
+          <div className="mt-6 flex flex-col gap-3">
+            {(data.orderLinks || data.productId?.orderLinks).map((link: any, index: number) => (
+              <a
+                key={index}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-blue-50 border border-blue-200 text-[#0E5CAB] font-bold text-[16px] py-4 rounded-[20px] shadow-sm text-center flex items-center justify-center gap-2 hover:bg-blue-100 transition-colors"
+              >
+                {link.title}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+              </a>
+            ))}
+          </div>
+        )}
 
         {/* Report CTA */}
         <div className="text-center mt-2">

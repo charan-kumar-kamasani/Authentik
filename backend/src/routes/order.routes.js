@@ -84,7 +84,8 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       calculatedExpiryDate,
       dynamicFields,
       variants,
-      productImage
+      productImage,
+      orderLinks
     } = req.body;
 
     let quantityFinal = req.body.quantity;
@@ -217,6 +218,8 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
         customerCare: req.body.warranty.customerCare || '',
         supportEmail: req.body.warranty.supportEmail || '',
       } : undefined,
+      // Order Links
+      orderLinks: Array.isArray(orderLinks) ? orderLinks.filter(link => link.title && link.url) : [],
       // Cashback data (if provided)
       cashback: (req.body.cashback && req.body.cashback.isActive) ? {
         isActive: true,
@@ -597,6 +600,7 @@ router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req
         dynamicFields: order.dynamicFields,
         variants: order.variants,
         warranty: (order.warranty && (order.warranty.duration || order.warranty.warrantyType)) ? order.warranty : undefined,
+        orderLinks: order.orderLinks || [],
         description: order.description,
         productInfo: order.productInfo,
         quantity: 1,

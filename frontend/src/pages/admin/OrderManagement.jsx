@@ -1212,6 +1212,29 @@ const OrderManagement = () => {
                           </div>
                         )}
 
+                        {/* Order Links */}
+                        {order.orderLinks && order.orderLinks.length > 0 && (
+                          <div className="mt-4 pt-4 border-t border-slate-100">
+                            <h4 className="text-xs font-black text-blue-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg> 
+                              Order Links
+                            </h4>
+                            <div className="flex flex-wrap gap-3 mt-2">
+                              {order.orderLinks.map((link, idx) => (
+                                <a
+                                  key={idx}
+                                  href={link.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-3 py-2 bg-blue-50 text-blue-700 text-sm font-bold rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors flex items-center gap-1"
+                                >
+                                  {link.title}
+                                </a>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
                         {/* Dispatch Details */}
                         {order.dispatchDetails && order.dispatchDetails.courierName && (
                           <div className="mt-4 pt-4 border-t border-slate-100">

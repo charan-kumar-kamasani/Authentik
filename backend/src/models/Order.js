@@ -117,6 +117,12 @@ const orderSchema = new mongoose.Schema({
     supportEmail: { type: String, trim: true },
   },
 
+  // Order Links (e.g. reorder links)
+  orderLinks: [{
+    title: { type: String, trim: true },
+    url: { type: String, trim: true }
+  }],
+
   // Track QR generation
   qrCodesGenerated: { type: Boolean, default: false },
   qrGeneratedCount: { type: Number, default: 0 },
