@@ -5,6 +5,7 @@ import { Calendar, Package, Plus, X, List, LayoutGrid, Trash2, CheckCircle2, Sea
 import { useConfirm } from '../../components/ConfirmModal';
 
 export default function GenerateQrs() {
+  const [currentStep, setCurrentStep] = useState(1);
   const [newQr, setNewQr] = useState({
     productName: '',
     skuNumber: '',
@@ -256,6 +257,26 @@ export default function GenerateQrs() {
       return { ...inst, inputType: resolved.inputType, options: resolved.options || [], value: newValue, variantLabel: resolved.variantLabel };
     }));
   }, [formConfig?.variants]);
+
+  const handleNextStep = () => {
+    const stepEl = document.getElementById(`step-${currentStep}`);
+    if (stepEl) {
+      const inputs = stepEl.querySelectorAll('input, select, textarea');
+      for (let i = 0; i < inputs.length; i++) {
+        if (!inputs[i].checkValidity()) {
+          inputs[i].reportValidity();
+          return;
+        }
+      }
+    }
+    setCurrentStep(prev => Math.min(prev + 1, 6));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePrevStep = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleCreateQr = async (e) => {
     e.preventDefault();
@@ -887,10 +908,17 @@ export default function GenerateQrs() {
     warranty.supportEmail
   );
 
-  return (
-    <div className="bg-white rounded-2xl p-0 shadow-sm border border-slate-200 relative overflow-hidden">
-      {/* Tabs */}
+  const steps = [
+    { id: 1, title: 'Product Basics', icon: Package },
+    { id: 2, title: 'Variants & Specs', icon: LayoutGrid },
+    { id: 3, title: 'Dates & Expiry', icon: Calendar },
+    { id: 4, title: 'Rewards & Offers', icon: Gift },
+    { id: 5, title: 'Warranty & Links', icon: Shield },
+    { id: 6, title: 'Review', icon: CheckCircle2 }
+  ];
 
+  return (
+    <div className="bg-white rounded-2xl p-0 shadow-sm border border-slate-200 relative">
       <div className="p-8">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
@@ -899,7 +927,55 @@ export default function GenerateQrs() {
           </h3>
         </div>
 
+        {/* Professional Minimalist Stepper UI */}
+        <div className="sticky top-[56px] z-40 bg-white/95 backdrop-blur-md pt-4 pb-6 mb-10 -mx-8 px-8 border-b border-slate-100 shadow-sm">
+          <div className="flex items-center justify-between relative px-2">
+            {/* Minimalist Progress Line */}
+            <div className="absolute left-8 right-8 top-5 -translate-y-1/2 h-[2px] bg-slate-100 z-0"></div>
+            <div 
+              className="absolute left-8 top-5 -translate-y-1/2 h-[2px] bg-indigo-600 z-0 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]" 
+              style={{ width: `calc(${((currentStep - 1) / (steps.length - 1)) * 100}% - 64px)` }}
+            ></div>
+            
+            {steps.map((step) => {
+              const isActive = currentStep === step.id;
+              const isCompleted = currentStep > step.id;
+              const isClickable = isCompleted;
+              
+              return (
+                <div 
+                  key={step.id} 
+                  onClick={() => {
+                    if (isClickable) setCurrentStep(step.id);
+                  }}
+                  className={`relative z-10 flex flex-col items-center gap-3 bg-white transition-all duration-300 ${isClickable ? 'cursor-pointer group' : ''}`}
+                >
+                  <div 
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 outline outline-[6px] outline-white ${
+                      isActive 
+                        ? 'bg-indigo-600 text-white ring-1 ring-indigo-600/20 shadow-sm' 
+                        : isCompleted 
+                          ? 'bg-indigo-600 text-white group-hover:bg-indigo-700' 
+                          : 'bg-white text-slate-400 border border-slate-200'
+                    }`}
+                  >
+                    {isCompleted ? <CheckCircle2 size={18} strokeWidth={2.5} /> : <span className={`text-sm font-semibold ${isActive ? 'text-white' : 'text-slate-500'}`}>{step.id}</span>}
+                  </div>
+                  <div className="flex flex-col items-center bg-white px-2">
+                    <span className={`text-sm font-medium transition-colors duration-300 ${isActive ? 'text-indigo-600' : isCompleted ? 'text-slate-700 group-hover:text-indigo-600' : 'text-slate-400'}`}>
+                      {step.title}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         <form onSubmit={handleCreateQr} className="grid grid-cols-2 gap-6">
+
+        {/* STEP 1: Product Basics */}
+        <div id="step-1" className={`col-span-2 grid grid-cols-2 gap-6 ${currentStep === 1 ? 'block' : 'hidden'}`}>
 
         {/* Brand Filter */}
         <div className="flex flex-col gap-1.5 col-span-2 md:col-span-1">
@@ -1032,9 +1108,10 @@ export default function GenerateQrs() {
             );
           })()}
         </div>
+        </div> {/* End Step 1 */}
 
-
-
+        {/* STEP 2: Attributes & Variants */}
+        <div id="step-2" className={`col-span-2 grid grid-cols-2 gap-6 ${currentStep === 2 ? 'block' : 'hidden'}`}>
 
         {/* Dynamic Custom Fields */}
         {formConfig?.customFields && formConfig.customFields.length > 0 && (
@@ -1163,6 +1240,10 @@ export default function GenerateQrs() {
             )}
           </>
         )}
+        </div> {/* End Step 2 */}
+
+        {/* STEP 3: Dates & Expiry */}
+        <div id="step-3" className={`col-span-2 grid grid-cols-2 gap-6 ${currentStep === 3 ? 'block' : 'hidden'}`}>
 
         {/* Divider */}
         <div className="col-span-2 border-t border-slate-200 pt-4 mt-2">
@@ -1235,6 +1316,11 @@ export default function GenerateQrs() {
             {calculatedExpiry || 'Enter Mfd On and Best Before to calculate'}
           </div>
         </div>
+
+        </div> {/* End Step 3 */}
+
+        {/* STEP 4: Rewards & Offers */}
+        <div id="step-4" className={`col-span-2 grid grid-cols-2 gap-6 ${currentStep === 4 ? 'block' : 'hidden'}`}>
 
         {/* Coupon Code Section */}
         <div className="col-span-2 border-t border-slate-200 pt-4 mt-2">
@@ -1337,6 +1423,11 @@ export default function GenerateQrs() {
             If provided, users who scan &amp; review this product will receive this coupon as a reward.
           </p>
         </div>
+
+        </div> {/* End Step 4 */}
+
+        {/* STEP 5: Warranty & Links */}
+        <div id="step-5" className={`col-span-2 grid grid-cols-2 gap-6 ${currentStep === 5 ? 'block' : 'hidden'}`}>
 
         {/* Warranty Information Section */}
         <div className="col-span-2 border-t border-slate-200 pt-4 mt-2">
@@ -1601,16 +1692,109 @@ export default function GenerateQrs() {
           </div>
         </div>
 
-        {/* Submit Button */}
-        <div className="col-span-2 pt-4">
-          <button 
-            type="submit" 
-            disabled={submitting} 
-            className={"w-full text-white font-semibold py-3.5 rounded-xl transition-all shadow-md " + (submitting ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98]')}
-          >
-            {submitting ? 'Processing...' : (role === 'creator' ? 'Create Order & QRs' : 'Generate Product & QR')}
-          </button>
+        </div> {/* End Step 5 */}
+
+        {/* STEP 6: Review */}
+        <div id="step-6" className={`col-span-2 flex flex-col gap-6 ${currentStep === 6 ? 'block' : 'hidden'}`}>
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-6">
+            <h4 className="text-sm font-semibold text-slate-800 mb-4 flex items-center gap-2">
+              <CheckCircle2 size={18} className="text-indigo-600" />
+              Review Your Configuration
+            </h4>
+            <div className="grid grid-cols-2 gap-y-4 gap-x-8 text-sm">
+              <div>
+                <p className="text-slate-500 font-medium mb-1">Product Name</p>
+                <p className="text-slate-900 font-semibold">{newQr.productName || 'Not provided'}</p>
+              </div>
+              <div>
+                <p className="text-slate-500 font-medium mb-1">SKU Number</p>
+                <p className="text-slate-900 font-semibold">{newQr.skuNumber || 'Not provided'}</p>
+              </div>
+              <div>
+                <p className="text-slate-500 font-medium mb-1">Batch Number</p>
+                <p className="text-slate-900 font-semibold">{newQr.batchNo || 'Not provided'}</p>
+              </div>
+              <div>
+                <p className="text-slate-500 font-medium mb-1">Quantity</p>
+                <p className="text-slate-900 font-semibold">{newQr.quantity || 0} QRs</p>
+              </div>
+              <div>
+                <p className="text-slate-500 font-medium mb-1">Mfd On</p>
+                <p className="text-slate-900 font-semibold">{mfdOn.month && mfdOn.year ? `${mfdOn.month}/${mfdOn.year}` : 'Not provided'}</p>
+              </div>
+              <div>
+                <p className="text-slate-500 font-medium mb-1">Best Before</p>
+                <p className="text-slate-900 font-semibold">{bestBefore.value ? `${bestBefore.value} ${bestBefore.unit}` : 'Not provided'}</p>
+              </div>
+              <div className="col-span-2 pt-4 mt-2 border-t border-slate-200 flex flex-wrap gap-4">
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${coupon.title ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-500'}`}>
+                  Coupon: {coupon.title ? 'Enabled' : 'None'}
+                </span>
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${cashback.isActive ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
+                  Cashback: {cashback.isActive ? 'Enabled' : 'Disabled'}
+                </span>
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${loyalty.isActive ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
+                  Loyalty Points: {loyalty.isActive ? 'Enabled' : 'Disabled'}
+                </span>
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${warranty.duration ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                  Warranty: {warranty.duration ? `${warranty.duration} ${warranty.durationUnit}` : 'None'}
+                </span>
+              </div>
+            </div>
+          </div>
+          <p className="text-sm text-slate-500 text-center">Please review the details above carefully before generating QRs. Once generated, some details cannot be changed.</p>
         </div>
+
+        {/* Form Footer / Stepper Navigation */}
+        <div className="col-span-2 flex items-center justify-between pt-8 mt-6 border-t border-slate-200/60">
+          <button
+            type="button"
+            onClick={handlePrevStep}
+            disabled={currentStep === 1 || submitting}
+            className={`px-5 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 text-sm ${
+              currentStep === 1 
+                ? 'opacity-0 pointer-events-none' 
+                : 'text-slate-600 hover:bg-slate-100 active:bg-slate-200'
+            }`}
+          >
+            <ArrowLeft size={16} />
+            Back
+          </button>
+
+          {currentStep < 6 ? (
+            <button
+              type="button"
+              onClick={handleNextStep}
+              className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-all duration-200 flex items-center gap-2 text-sm shadow-sm active:scale-[0.98]"
+            >
+              Continue
+              <ArrowLeft size={16} className="rotate-180" />
+            </button>
+          ) : (
+            <button 
+              type="submit" 
+              disabled={submitting} 
+              className={`px-6 py-2.5 text-white font-medium rounded-lg transition-all duration-200 flex items-center gap-2 text-sm shadow-sm active:scale-[0.98] ${
+                submitting 
+                  ? 'bg-slate-400 cursor-not-allowed' 
+                  : 'bg-indigo-600 hover:bg-indigo-700'
+              }`}
+            >
+              {submitting ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                  Processing...
+                </div>
+              ) : (
+                <>
+                  {role === 'creator' ? 'Create Order & QRs' : 'Generate Product & QR'}
+                  <CheckCircle2 size={16} />
+                </>
+              )}
+            </button>
+          )}
+        </div>
+
       </form>
 
       </div>
