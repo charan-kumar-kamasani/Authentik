@@ -25,7 +25,7 @@ const Technology = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
                     
                     {/* Layer 1 */}
-                    <div className="glass-card" style={{ display: 'flex', gap: '3rem', alignItems: 'center', padding: '3rem' }}>
+                    <div className="glass-card tech-layer-card" style={{ display: 'flex', alignItems: 'center' }}>
                         <div style={{ flex: 1 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
                                 <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '1rem', borderRadius: '16px' }}>
@@ -41,12 +41,12 @@ const Technology = () => {
                             </p>
                         </div>
                         <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-                            <img src="https://images.unsplash.com/photo-1508344928928-7137b29de218?auto=format&fit=crop&w=600&q=80" alt="Microscopic Ink Pattern" style={{ borderRadius: '16px', maxWidth: '100%' }} />
+                            <img src="/assets/tech_layer1.png" alt="Microscopic Ink Pattern" style={{ borderRadius: '16px', maxWidth: '100%' }} />
                         </div>
                     </div>
 
                     {/* Layer 2 */}
-                    <div className="glass-card" style={{ display: 'flex', gap: '3rem', alignItems: 'center', padding: '3rem', flexDirection: 'row-reverse' }}>
+                    <div className="glass-card tech-layer-card reverse" style={{ display: 'flex', alignItems: 'center' }}>
                         <div style={{ flex: 1 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
                                 <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '1rem', borderRadius: '16px' }}>
@@ -64,12 +64,12 @@ const Technology = () => {
                             </ul>
                         </div>
                         <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-                            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80" alt="Data Analytics" style={{ borderRadius: '16px', maxWidth: '100%' }} />
+                            <img src="/assets/tech_layer2.png" alt="Data Analytics" style={{ borderRadius: '16px', maxWidth: '100%' }} />
                         </div>
                     </div>
 
                     {/* Layer 3 */}
-                    <div className="glass-card" style={{ display: 'flex', gap: '3rem', alignItems: 'center', padding: '3rem' }}>
+                    <div className="glass-card tech-layer-card" style={{ display: 'flex', alignItems: 'center' }}>
                         <div style={{ flex: 1 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
                                 <div style={{ background: 'rgba(139, 92, 246, 0.1)', padding: '1rem', borderRadius: '16px' }}>
@@ -85,7 +85,7 @@ const Technology = () => {
                             </p>
                         </div>
                         <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-                            <img src="https://images.unsplash.com/photo-1639762681485-074b7f4ec851?auto=format&fit=crop&w=600&q=80" alt="Blockchain Tech" style={{ borderRadius: '16px', maxWidth: '100%' }} />
+                            <img src="/assets/tech_layer3.png" alt="Blockchain Tech" style={{ borderRadius: '16px', maxWidth: '100%' }} />
                         </div>
                     </div>
 

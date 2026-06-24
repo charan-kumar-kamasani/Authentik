@@ -296,6 +296,22 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* Responsive Tech Layer Cards */
+.tech-layer-card {
+  gap: 3rem;
+  padding: 3rem;
+}
+.tech-layer-card.reverse {
+  flex-direction: row-reverse;
+}
+@media (max-width: 767px) {
+  .tech-layer-card, .tech-layer-card.reverse {
+    flex-direction: column !important;
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+}
+
 /* Mobile Nav Overlay */
 .mobile-nav-overlay {
   position: fixed;
