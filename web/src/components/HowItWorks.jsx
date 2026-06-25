@@ -15,7 +15,7 @@ const steps = [
 
 const HowItWorks = () => {
   return (
-    <section id="how-it-works" className="section" style={{ padding: '7rem 0' }}>
+    <section id="how-it-works" className="section" style={{ padding: '4rem 0' }}>
       <div className="container">
         <div className="section-header">
           <div className="section-label">

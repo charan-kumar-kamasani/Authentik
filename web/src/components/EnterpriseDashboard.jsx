@@ -13,7 +13,7 @@ const chartHeights = [35, 55, 42, 68, 50, 72, 45, 80, 62, 75, 58, 85];
 
 const EnterpriseDashboard = () => {
   return (
-    <section className="section" style={{ padding: '7rem 0' }}>
+    <section className="section" style={{ padding: '4rem 0' }}>
       <div className="container">
         <div className="section-header">
           <div className="section-label">

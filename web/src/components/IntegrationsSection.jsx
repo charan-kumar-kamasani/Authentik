@@ -17,7 +17,7 @@ const integrations = [
 
 const IntegrationsSection = () => {
   return (
-    <section className="section" style={{ padding: '6rem 0' }}>
+    <section className="section" style={{ padding: '4rem 0' }}>
       <div className="container">
         <div className="section-header">
           <div className="section-label">

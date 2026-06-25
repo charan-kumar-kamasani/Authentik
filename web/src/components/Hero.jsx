@@ -5,8 +5,8 @@ import { Link } from 'react-router-dom';
 const Hero = () => {
   return (
     <section className="section" style={{
-      paddingTop: '10rem',
-      paddingBottom: '6rem',
+      paddingTop: '8rem',
+      paddingBottom: '4rem',
       textAlign: 'center',
       display: 'flex',
       flexDirection: 'column',
@@ -70,44 +70,6 @@ const Hero = () => {
           </a>
         </div>
 
-        {/* Trusted By Strip */}
-        <div className="fade-in-up delay-4" style={{
-          marginTop: '5rem',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: '1.25rem'
-        }}>
-          <span style={{
-            fontSize: '0.75rem',
-            fontWeight: 600,
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em',
-            color: 'var(--text-tertiary)'
-          }}>
-            Trusted by enterprise brands worldwide
-          </span>
-          <div style={{
-            display: 'flex',
-            gap: '2.5rem',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            opacity: 0.4
-          }}>
-            {['Pharma Corp', 'LuxBrand', 'AutoMakers', 'FashionCo', 'RetailGlobal'].map((brand, i) => (
-              <span key={i} style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: '1.1rem',
-                fontWeight: 700,
-                color: 'var(--text-primary)',
-                letterSpacing: '-0.02em'
-              }}>
-                {brand}
-              </span>
-            ))}
-          </div>
-        </div>
 
       </div>
     </section>

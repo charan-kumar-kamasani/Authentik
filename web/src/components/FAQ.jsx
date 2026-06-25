@@ -32,7 +32,7 @@ const FAQ = () => {
   const [openIdx, setOpenIdx] = useState(null);
 
   return (
-    <section className="section" style={{ padding: '6rem 0' }}>
+    <section className="section" style={{ padding: '4rem 0' }}>
       <div className="container" style={{ maxWidth: '800px' }}>
         <div className="section-header">
           <div className="section-label">
