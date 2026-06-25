@@ -3,16 +3,28 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 
 const faqs = [
   {
-    q: "How does the inactive-by-default QR work?",
-    a: "When Super Admins generate QR codes during the Processing stage, they are stored in the database as 'inactive'. They remain unscannable until the Authorizer officially marks the order as 'Received' at its final destination."
+    q: "What makes Authentiks different from authentication companies?",
+    a: "Authentication companies focus on verifying products — that's just one step. Authentiks is a connected product platform that transforms every physical product into a persistent digital touchpoint. Authentication is the entry point, but the real value is in the consumer relationship, first-party data, and lifetime engagement that follows."
   },
   {
-    q: "Can I customize the email notifications?",
-    a: "Yes, our email templates are beautifully crafted using HTML and can be configured or branded via the backend environment settings."
+    q: "How does Authentiks help build consumer relationships?",
+    a: "Every product interaction creates an opportunity to engage. When a consumer interacts with your product, Authentiks captures their profile, activates warranties, delivers personalized content, enrolls them in loyalty programs, and creates a direct communication channel — all without intermediaries."
   },
   {
-    q: "Is it possible to integrate with existing ERPs?",
-    a: "Absolutely. Our Enterprise plan includes full REST API access, allowing you to sync order states directly with your existing supply chain tools."
+    q: "What kind of data does the platform collect?",
+    a: "Authentiks collects first-party consumer data including demographics, location, engagement patterns, product preferences, warranty registrations, and behavioral insights. All data is collected with consent and stored in compliance with GDPR and global privacy regulations."
+  },
+  {
+    q: "How long does enterprise deployment take?",
+    a: "Most enterprise deployments go live within 4–6 weeks. Our team handles integration, configuration, and onboarding. The platform is designed to work alongside your existing infrastructure with minimal engineering effort."
+  },
+  {
+    q: "Does Authentiks integrate with our existing systems?",
+    a: "Yes. Authentiks offers native integrations with leading CRM, ERP, e-commerce, and marketing automation platforms including Salesforce, SAP, Shopify, HubSpot, and more. Our REST API and webhooks enable custom integrations with any system."
+  },
+  {
+    q: "What industries does Authentiks serve?",
+    a: "Authentiks serves consumer brands across pharmaceuticals, FMCG, automotive, fashion and apparel, electronics, luxury goods, and food and beverage. Any industry where physical products should create ongoing digital consumer relationships."
   }
 ];
 
@@ -20,23 +32,33 @@ const FAQ = () => {
   const [openIdx, setOpenIdx] = useState(null);
 
   return (
-    <section style={{ padding: '6rem 0' }}>
+    <section className="section" style={{ padding: '6rem 0' }}>
       <div className="container" style={{ maxWidth: '800px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '3rem' }} className="fade-in-up">
-          <h2 style={{ fontSize: '2.5rem' }}>Frequently Asked <span className="text-gradient">Questions</span></h2>
+        <div className="section-header">
+          <div className="section-label">
+            <span>FAQ</span>
+          </div>
+          <h2>Frequently Asked <span className="text-gradient">Questions</span></h2>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {faqs.map((faq, idx) => (
-            <div key={idx} className="glass-card fade-in-up delay-2" style={{ padding: '1.5rem', cursor: 'pointer' }} onClick={() => setOpenIdx(openIdx === idx ? null : idx)}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h4 style={{ fontSize: '1.125rem', margin: 0 }}>{faq.q}</h4>
-                {openIdx === idx ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            <div key={idx} className="faq-item">
+              <div
+                className="faq-question"
+                onClick={() => setOpenIdx(openIdx === idx ? null : idx)}
+              >
+                <h4>{faq.q}</h4>
+                {openIdx === idx ? (
+                  <ChevronUp size={20} color="var(--accent-primary)" />
+                ) : (
+                  <ChevronDown size={20} color="var(--text-tertiary)" />
+                )}
               </div>
               {openIdx === idx && (
-                <p style={{ marginTop: '1rem', color: 'var(--text-secondary)', lineHeight: 1.6, fontSize: '0.95rem' }}>
+                <div className="faq-answer">
                   {faq.a}
-                </p>
+                </div>
               )}
             </div>
           ))}

@@ -1,61 +1,112 @@
 import React from 'react';
-import { ArrowRight, ShieldCheck } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Hero = () => {
   return (
-    <section style={{ 
-      padding: '8rem 0 6rem', 
+    <section className="section" style={{
+      paddingTop: '10rem',
+      paddingBottom: '6rem',
       textAlign: 'center',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      minHeight: '80vh'
+      minHeight: '90vh'
     }}>
       <div className="container">
-        
+
         <div className="fade-in-up" style={{
           display: 'inline-flex',
           alignItems: 'center',
           gap: '0.5rem',
-          padding: '0.5rem 1rem',
+          padding: '0.4rem 1rem',
           borderRadius: '9999px',
-          background: 'var(--glass-bg)',
-          border: '1px solid var(--glass-border)',
-          backdropFilter: 'var(--glass-blur)',
+          background: 'var(--accent-gradient-subtle)',
+          border: '1px solid rgba(99, 102, 241, 0.15)',
           marginBottom: '2rem',
-          fontSize: '0.875rem',
-          color: 'var(--text-secondary)'
+          fontSize: '0.8rem',
+          fontWeight: 600,
+          letterSpacing: '0.04em',
+          textTransform: 'uppercase',
+          color: 'var(--accent-primary)'
         }}>
-          <ShieldCheck size={16} color="var(--accent-color)" />
-          <span>The new standard for secure product distribution</span>
+          <span style={{ fontSize: '0.7rem' }}>✦</span>
+          <span>The Consumer Layer for Physical Products</span>
         </div>
 
-        <h1 className="fade-in-up delay-1" style={{ 
-          fontSize: 'clamp(3rem, 6vw, 5rem)', 
+        <h1 className="fade-in-up delay-1" style={{
           maxWidth: '900px',
           margin: '0 auto 1.5rem',
         }}>
-          Control your supply chain with <span className="text-gradient">intelligent QR workflows.</span>
+          Every Product You Sell Should{' '}
+          <span className="text-gradient">Keep Working</span>
+          {' '}For Your Brand.
         </h1>
-        
-        <p className="fade-in-up delay-2" style={{ 
-          fontSize: '1.125rem', 
+
+        <p className="fade-in-up delay-2" style={{
+          fontSize: '1.2rem',
           color: 'var(--text-secondary)',
-          maxWidth: '600px',
+          maxWidth: '640px',
           margin: '0 auto 3rem',
-          lineHeight: 1.8
+          lineHeight: 1.7
         }}>
-          Authentik provides end-to-end QR code lifecycle management. Track every order from authorization to final receipt with unmatched security and beautiful design.
+          Authentiks transforms every physical product into a persistent digital
+          touchpoint — building direct consumer relationships, collecting first-party
+          data, and driving lifetime value.
         </p>
-        
-        <div className="fade-in-up delay-3" style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-          <a href="/login" className="btn btn-primary">
-            Get Started <ArrowRight size={18} />
+
+        <div className="fade-in-up delay-3" style={{
+          display: 'flex',
+          gap: '1rem',
+          justifyContent: 'center',
+          flexWrap: 'wrap'
+        }}>
+          <Link to="/contact-us" className="btn btn-primary btn-large">
+            Request Demo <ArrowRight size={18} />
+          </Link>
+          <a href="#how-it-works" className="btn btn-secondary btn-large">
+            See How It Works
           </a>
-          <a href="#features" className="btn btn-glass">
-            View Features
-          </a>
+        </div>
+
+        {/* Trusted By Strip */}
+        <div className="fade-in-up delay-4" style={{
+          marginTop: '5rem',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '1.25rem'
+        }}>
+          <span style={{
+            fontSize: '0.75rem',
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+            color: 'var(--text-tertiary)'
+          }}>
+            Trusted by enterprise brands worldwide
+          </span>
+          <div style={{
+            display: 'flex',
+            gap: '2.5rem',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+            opacity: 0.4
+          }}>
+            {['Pharma Corp', 'LuxBrand', 'AutoMakers', 'FashionCo', 'RetailGlobal'].map((brand, i) => (
+              <span key={i} style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: '1.1rem',
+                fontWeight: 700,
+                color: 'var(--text-primary)',
+                letterSpacing: '-0.02em'
+              }}>
+                {brand}
+              </span>
+            ))}
+          </div>
         </div>
 
       </div>

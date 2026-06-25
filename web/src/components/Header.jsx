@@ -7,18 +7,18 @@ const DropdownMenu = ({ title, links, theme }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div 
+    <div
       style={{ position: 'relative' }}
       onMouseEnter={() => setIsOpen(true)}
       onMouseLeave={() => setIsOpen(false)}
     >
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
         gap: '0.25rem',
-        color: 'var(--text-secondary)', 
-        fontSize: '0.875rem', 
-        fontWeight: 500, 
+        color: 'var(--text-secondary)',
+        fontSize: '0.875rem',
+        fontWeight: 500,
         cursor: 'pointer',
         transition: 'color 0.2s',
         padding: '0.5rem 0'
@@ -35,34 +35,35 @@ const DropdownMenu = ({ title, links, theme }) => {
           top: '100%',
           left: '50%',
           transform: 'translateX(-50%)',
-          background: theme === 'dark' ? 'rgba(15, 15, 15, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'var(--glass-blur)',
-          WebkitBackdropFilter: 'var(--glass-blur)',
+          background: theme === 'dark' ? 'rgba(15, 15, 20, 0.95)' : 'rgba(255, 255, 255, 0.97)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
           border: '1px solid var(--glass-border)',
           borderRadius: '16px',
-          padding: '1rem',
+          padding: '0.75rem',
           minWidth: '220px',
-          boxShadow: theme === 'dark' ? '0 10px 40px rgba(0,0,0,0.5)' : '0 10px 40px rgba(0,0,0,0.1)',
+          boxShadow: theme === 'dark' ? '0 10px 40px rgba(0,0,0,0.5)' : '0 10px 40px rgba(0,0,0,0.08)',
           display: 'flex',
           flexDirection: 'column',
-          gap: '0.5rem',
+          gap: '0.25rem',
           zIndex: 1001
         }}>
           {links.map((link, i) => (
-            <Link 
-              key={i} 
+            <Link
+              key={i}
               to={link.path}
               style={{
                 color: 'var(--text-secondary)',
                 textDecoration: 'none',
                 fontSize: '0.875rem',
-                padding: '0.5rem',
-                borderRadius: '8px',
-                transition: 'all 0.2s'
+                padding: '0.6rem 0.75rem',
+                borderRadius: '10px',
+                transition: 'all 0.2s',
+                fontWeight: 500
               }}
               onMouseOver={e => {
-                e.target.style.background = 'rgba(128,128,128,0.1)';
-                e.target.style.color = 'var(--text-primary)';
+                e.target.style.background = 'var(--accent-gradient-subtle)';
+                e.target.style.color = 'var(--accent-primary)';
               }}
               onMouseOut={e => {
                 e.target.style.background = 'transparent';
@@ -78,16 +79,23 @@ const DropdownMenu = ({ title, links, theme }) => {
   );
 };
 
-/* ---- Mobile Nav Data ---- */
+/* ---- Navigation Data ---- */
 const navSections = [
+  {
+    title: 'Platform',
+    links: [
+      { label: 'Connected Products', path: '/solutions/anti-counterfeit' },
+      { label: 'Consumer Intelligence', path: '/solutions/consumer-loyalty' },
+      { label: 'Digital Experiences', path: '/solutions/digital-warranty' },
+    ],
+  },
   {
     title: 'Solutions',
     links: [
-      { label: 'Anti-Counterfeiting', path: '/solutions/anti-counterfeit' },
-      { label: 'Track & Trace', path: '/solutions/track-and-trace' },
-      { label: 'Digital Warranty', path: '/solutions/digital-warranty' },
-      { label: 'Consumer Loyalty', path: '/solutions/consumer-loyalty' },
-      { label: 'Channel Loyalty', path: '/solutions/channel-loyalty' },
+      { label: 'Brand Protection', path: '/solutions/anti-counterfeit' },
+      { label: 'Consumer Engagement', path: '/solutions/consumer-loyalty' },
+      { label: 'Warranty Activation', path: '/solutions/digital-warranty' },
+      { label: 'First-Party Data', path: '/solutions/track-and-trace' },
     ],
   },
   {
@@ -97,13 +105,6 @@ const navSections = [
       { label: 'FMCG & Retail', path: '/industries/fmcg' },
       { label: 'Automotive', path: '/industries/automotive' },
       { label: 'Apparel & Fashion', path: '/industries/fashion' },
-    ],
-  },
-  {
-    title: null, // standalone links
-    links: [
-      { label: 'Technology', path: '/technology' },
-      { label: 'Live Demo', path: '/live-demo' },
     ],
   },
   {
@@ -127,6 +128,7 @@ const navSections = [
 const Header = () => {
   const { theme, toggleTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
 
   // Close mobile nav on route change
@@ -144,83 +146,95 @@ const Header = () => {
     return () => { document.body.style.overflow = ''; };
   }, [mobileOpen]);
 
+  // Track scroll for header background
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <>
-      <header style={{ 
-        position: 'fixed', 
-        top: '1.5rem', 
-        left: '50%', 
-        transform: 'translateX(-50%)', 
+      <header style={{
+        position: 'fixed',
+        top: '1rem',
+        left: '50%',
+        transform: 'translateX(-50%)',
         zIndex: 1000,
         width: '95%',
         maxWidth: '1200px',
-        padding: '0.65rem 1.25rem',
-        background: theme === 'dark' ? 'rgba(5, 5, 5, 0.4)' : 'rgba(255, 255, 255, 0.4)',
-        backdropFilter: 'blur(30px)',
-        WebkitBackdropFilter: 'blur(30px)',
+        padding: '0.6rem 1.25rem',
+        background: scrolled
+          ? (theme === 'dark' ? 'rgba(10, 10, 15, 0.85)' : 'rgba(255, 255, 255, 0.85)')
+          : (theme === 'dark' ? 'rgba(10, 10, 15, 0.4)' : 'rgba(255, 255, 255, 0.4)'),
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
         border: '1px solid var(--glass-border)',
         borderRadius: '9999px',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        boxShadow: theme === 'dark' ? '0 4px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.1)' : '0 4px 40px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255,255,255,0.5)'
+        transition: 'background 0.3s ease, box-shadow 0.3s ease',
+        boxShadow: scrolled
+          ? (theme === 'dark' ? '0 4px 32px rgba(0, 0, 0, 0.4)' : '0 4px 32px rgba(0, 0, 0, 0.06)')
+          : 'none'
       }}>
         {/* Logo */}
         <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: 'inherit' }}>
-          <img 
-            src="/logo.png" 
-            alt="Authentik Logo" 
-            style={{ 
-              width: '32px', 
-              height: '32px', 
+          <img
+            src="/logo.svg"
+            alt="Authentiks Logo"
+            style={{
+              width: '32px',
+              height: '32px',
               objectFit: 'contain'
-            }} 
+            }}
           />
-          <span className="header-logo-text" style={{ 
-            fontFamily: 'var(--font-display)', 
-            fontWeight: 600, 
+          <span className="header-logo-text" style={{
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
             fontSize: '1.125rem',
-            letterSpacing: '-0.02em',
-            color: 'var(--text-primary)'
+            letterSpacing: '-0.02em'
           }}>
-            Authentik
+            <span style={{ color: '#1a3a8f' }}>Authen</span>
+            <span style={{ color: '#3b8ced' }}>tiks</span>
           </span>
         </Link>
 
         {/* Desktop Nav Links */}
-        <nav style={{ gap: '2rem', alignItems: 'center' }} className="desktop-nav">
-          
-          <DropdownMenu 
-            title="Solutions" 
+        <nav style={{ gap: '1.75rem', alignItems: 'center' }} className="desktop-nav">
+          <DropdownMenu
+            title="Platform"
             theme={theme}
-            links={navSections[0].links} 
+            links={navSections[0].links}
           />
-          
-          <DropdownMenu 
-            title="Industries" 
+          <DropdownMenu
+            title="Solutions"
             theme={theme}
-            links={navSections[1].links} 
+            links={navSections[1].links}
           />
-          <Link to="/technology" style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500, transition: 'color 0.2s' }} onMouseOver={e => e.target.style.color = 'var(--text-primary)'} onMouseOut={e => e.target.style.color = 'var(--text-secondary)'}>Technology</Link>
-          <Link to="/live-demo" style={{ color: 'var(--text-secondary)', textDecoration: 'none', fontSize: '0.875rem', fontWeight: 500, transition: 'color 0.2s' }} onMouseOver={e => e.target.style.color = 'var(--text-primary)'} onMouseOut={e => e.target.style.color = 'var(--text-secondary)'}>Live Demo</Link>
-          
-          <DropdownMenu 
-            title="Resources" 
+          <DropdownMenu
+            title="Industries"
             theme={theme}
-            links={navSections[3].links} 
+            links={navSections[2].links}
           />
-
-          <DropdownMenu 
-            title="Company" 
+          <DropdownMenu
+            title="Resources"
             theme={theme}
-            links={navSections[4].links} 
+            links={navSections[3].links}
           />
-
+          <DropdownMenu
+            title="Company"
+            theme={theme}
+            links={navSections[4].links}
+          />
         </nav>
 
         {/* Actions */}
-        <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <button 
+        <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <button
             onClick={toggleTheme}
             style={{
               background: 'transparent',
@@ -230,21 +244,25 @@ const Header = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '0.5rem',
+              padding: '0.45rem',
               borderRadius: '50%',
               transition: 'background 0.2s'
             }}
             onMouseOver={e => e.currentTarget.style.background = 'rgba(128,128,128,0.1)'}
             onMouseOut={e => e.currentTarget.style.background = 'transparent'}
           >
-            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+            {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
           </button>
-          <a href="/login" className="btn btn-primary header-login-btn" style={{ padding: '0.5rem 1.25rem', fontSize: '0.875rem' }}>
-            Login
-          </a>
+          <Link
+            to="/contact-us"
+            className="btn btn-primary header-cta-btn"
+            style={{ padding: '0.45rem 1.1rem', fontSize: '0.85rem', borderRadius: '10px' }}
+          >
+            Request Demo
+          </Link>
 
           {/* Mobile Hamburger */}
-          <button 
+          <button
             className="mobile-menu-btn"
             onClick={() => setMobileOpen(true)}
             aria-label="Open navigation menu"
@@ -255,25 +273,22 @@ const Header = () => {
       </header>
 
       {/* ---- Mobile Navigation ---- */}
-      {/* Overlay backdrop */}
-      <div 
+      <div
         className={`mobile-nav-overlay ${mobileOpen ? 'open' : ''}`}
         onClick={() => setMobileOpen(false)}
       />
 
-      {/* Slide-out panel */}
       <nav className={`mobile-nav-panel ${mobileOpen ? 'open' : ''}`}>
-        {/* Panel header */}
         <div className="mobile-nav-header">
-          <span style={{ 
-            fontFamily: 'var(--font-display)', 
-            fontWeight: 600, 
-            fontSize: '1.125rem',
-            color: 'var(--text-primary)'
+          <span style={{
+            fontFamily: 'var(--font-display)',
+            fontWeight: 700,
+            fontSize: '1.125rem'
           }}>
-            Menu
+            <span style={{ color: '#1a3a8f' }}>Authen</span>
+            <span style={{ color: '#3b8ced' }}>tiks</span>
           </span>
-          <button 
+          <button
             className="mobile-nav-close"
             onClick={() => setMobileOpen(false)}
             aria-label="Close navigation menu"
@@ -282,7 +297,6 @@ const Header = () => {
           </button>
         </div>
 
-        {/* Nav sections */}
         {navSections.map((section, idx) => (
           <div key={idx}>
             {idx > 0 && <div className="mobile-nav-divider" />}
@@ -304,21 +318,21 @@ const Header = () => {
           </div>
         ))}
 
-        {/* Bottom CTA */}
         <div className="mobile-nav-divider" style={{ marginTop: 'auto' }} />
-        <a 
-          href="/login" 
-          className="btn btn-primary" 
-          style={{ 
-            width: '100%', 
+        <Link
+          to="/contact-us"
+          className="btn btn-primary"
+          style={{
+            width: '100%',
             marginTop: '0.5rem',
             padding: '0.875rem',
             fontSize: '0.95rem',
             textAlign: 'center'
           }}
+          onClick={() => setMobileOpen(false)}
         >
-          Login
-        </a>
+          Request Demo
+        </Link>
       </nav>
     </>
   );

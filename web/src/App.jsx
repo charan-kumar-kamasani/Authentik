@@ -3,10 +3,17 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import { useTheme } from './contexts/ThemeContext'
 import Header from './components/Header'
 import Hero from './components/Hero'
-import Features from './components/Features'
+import Problem from './components/Problem'
+import WorldChanged from './components/WorldChanged'
+import PlatformOverview from './components/PlatformOverview'
 import HowItWorks from './components/HowItWorks'
-import Pricing from './components/Pricing'
+import BusinessOutcomes from './components/BusinessOutcomes'
+import EnterpriseDashboard from './components/EnterpriseDashboard'
+import IndustriesSection from './components/IndustriesSection'
+import SecuritySection from './components/SecuritySection'
+import IntegrationsSection from './components/IntegrationsSection'
 import FAQ from './components/FAQ'
+import FinalCTA from './components/FinalCTA'
 import Footer from './components/Footer'
 
 // Pages
@@ -53,10 +60,17 @@ const LandingLayout = () => (
     <Header />
     <main>
       <Hero />
+      <Problem />
+      <WorldChanged />
+      <PlatformOverview />
       <HowItWorks />
-      <Features />
-      <Pricing />
+      <BusinessOutcomes />
+      <EnterpriseDashboard />
+      <IndustriesSection />
+      <SecuritySection />
+      <IntegrationsSection />
       <FAQ />
+      <FinalCTA />
     </main>
     <Footer />
   </>
@@ -74,7 +88,7 @@ function App() {
       </div>
 
       <ScrollToTop />
-      
+
       <Routes>
         <Route path="/" element={<LandingLayout />} />
 

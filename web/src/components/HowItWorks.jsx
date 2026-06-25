@@ -1,52 +1,55 @@
 import React from 'react';
-import { FileText, UserCheck, Settings, Package, Truck, CheckCircle } from 'lucide-react';
+import { ShieldCheck, UserCheck, FileCheck, BookOpen, Gift, Heart, BarChart3, ShoppingCart, Infinity } from 'lucide-react';
 
 const steps = [
-  { icon: <FileText size={20} />, title: "1. Order Created", desc: "Creator drafts the initial order (Pending)." },
-  { icon: <UserCheck size={20} />, title: "2. Authorized", desc: "Authorizer approves the order details." },
-  { icon: <Settings size={20} />, title: "3. Processing", desc: "QRs generated (Inactive state)." },
-  { icon: <Package size={20} />, title: "4. Dispatching", desc: "Super Admin prepares for shipment." },
-  { icon: <Truck size={20} />, title: "5. Dispatched", desc: "In transit with tracking info." },
-  { icon: <CheckCircle size={20} />, title: "6. Received", desc: "Marked received. QRs Activated." },
+  { icon: <ShieldCheck size={20} />, title: 'Authenticate', desc: 'Instant product verification builds consumer trust' },
+  { icon: <UserCheck size={20} />, title: 'Register Consumer', desc: 'Capture first-party consumer profile and preferences' },
+  { icon: <FileCheck size={20} />, title: 'Activate Warranty', desc: 'Seamless digital warranty registration' },
+  { icon: <BookOpen size={20} />, title: 'Deliver Product Info', desc: 'Rich product content and usage guidance' },
+  { icon: <Gift size={20} />, title: 'Rewards', desc: 'Personalized offers and incentives' },
+  { icon: <Heart size={20} />, title: 'Loyalty', desc: 'Points, tiers, and exclusive experiences' },
+  { icon: <BarChart3 size={20} />, title: 'Consumer Insights', desc: 'Behavioral data and engagement analytics' },
+  { icon: <ShoppingCart size={20} />, title: 'Repeat Purchase', desc: 'Data-driven re-engagement and cross-sell' },
+  { icon: <Infinity size={20} />, title: 'Lifetime Relationship', desc: 'From one-time buyer to brand advocate' },
 ];
 
 const HowItWorks = () => {
   return (
-    <section style={{ padding: '6rem 0', position: 'relative' }}>
+    <section id="how-it-works" className="section" style={{ padding: '7rem 0' }}>
       <div className="container">
-        <div style={{ textAlign: 'center', marginBottom: '4rem' }} className="fade-in-up">
-          <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>The <span className="text-gradient">6-Step</span> Security Workflow</h2>
-          <p style={{ color: 'var(--text-secondary)' }}>A bulletproof process ensuring total control from creation to final receipt.</p>
+        <div className="section-header">
+          <div className="section-label">
+            <span>How It Works</span>
+          </div>
+          <h2>Every Scan Creates <span className="text-gradient">Business Value.</span></h2>
+          <p>
+            A single consumer interaction unlocks an entire lifecycle of engagement,
+            data collection, and revenue generation.
+          </p>
         </div>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-          gap: '2rem'
-        }}>
+        <div className="journey-flow">
           {steps.map((step, idx) => (
-            <div key={idx} className={`fade-in-up delay-${(idx % 3) + 1}`} style={{
-              background: 'var(--glass-bg)',
-              border: '1px solid var(--glass-border)',
-              borderRadius: '16px',
-              padding: '1.5rem',
-              backdropFilter: 'var(--glass-blur)',
-              position: 'relative'
-            }}>
-              <div style={{
-                width: '40px', height: '40px',
-                borderRadius: '50%',
-                background: 'rgba(16, 185, 129, 0.1)',
-                border: '1px solid rgba(16, 185, 129, 0.3)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'var(--accent-color)',
-                marginBottom: '1rem'
-              }}>
-                {step.icon}
+            <React.Fragment key={idx}>
+              <div className="journey-step">
+                <div className="step-icon">
+                  {step.icon}
+                </div>
+                <div>
+                  <div className="step-text" style={{ color: 'var(--text-primary)' }}>{step.title}</div>
+                  <div style={{
+                    fontSize: '0.85rem',
+                    color: 'var(--text-secondary)',
+                    marginTop: '0.15rem'
+                  }}>
+                    {step.desc}
+                  </div>
+                </div>
               </div>
-              <h4 style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>{step.title}</h4>
-              <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{step.desc}</p>
-            </div>
+              {idx < steps.length - 1 && (
+                <div className="journey-connector" />
+              )}
+            </React.Fragment>
           ))}
         </div>
       </div>
