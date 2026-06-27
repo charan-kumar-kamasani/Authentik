@@ -484,6 +484,7 @@ router.post("/", async (req, res, next) => {
       return res.json({
         status: "FAKE",
         data: {
+          recommendations: [],
           qrCode,
           productId: null,
           productName: null,
@@ -501,6 +502,15 @@ router.post("/", async (req, res, next) => {
     // Resolve final brand data from product or prefix
     const finalBrandId = product.brandId || brandIdFromPrefix;
     const finalBrandName = product.brand || brandNameFromPrefix;
+
+    let recommendations = [];
+    if (finalBrandId) {
+      recommendations = await Product.find({
+        brandId: finalBrandId,
+        _id: { $ne: product._id },
+        isActive: true
+      }).limit(4).select("_id productName mrp productImage category discount oldPrice ratingBadge price").lean();
+    }
 
     /* =======================
        🚫 INACTIVE PRODUCT
@@ -524,6 +534,7 @@ router.post("/", async (req, res, next) => {
         status: "INACTIVE",
         message: "This QR code is inactive.",
         data: {
+          recommendations,
           qrCode,
           productId: product._id,
           brandId: finalBrandId,
@@ -575,6 +586,7 @@ router.post("/", async (req, res, next) => {
       return res.json({
         status: "ORIGINAL",
         data: {
+          recommendations,
           qrCode,
           productId: product._id,
           companyName: product.brandId?.companyId?.companyName || null,
@@ -652,6 +664,7 @@ router.post("/", async (req, res, next) => {
       return res.json({
         status: "ALREADY_USED",
         data: {
+          recommendations,
           qrCode,
           productId: product._id,
           brandId: finalBrandId,
@@ -791,6 +804,7 @@ router.post("/", async (req, res, next) => {
     return res.json({
       status: "ORIGINAL",
       data: {
+        recommendations,
         qrCode,
         productId: product._id,
         brandId: finalBrandId,
@@ -1020,6 +1034,26 @@ router.put("/reports/:id/status", protect, async (req, res) => {
     res.json(report);
   } catch (err) {
     res.status(500).json({ error: "Failed to update report" });
+  }
+});
+
+
+// Get all recommendations (products) for a specific brand
+router.get("/recommendations/:brandId", async (req, res) => {
+  try {
+    const Product = require("../models/Product");
+    const { brandId } = req.params;
+    
+    // We only return active products. No pagination for now to keep it simple.
+    const recommendations = await Product.find({
+      brandId: brandId,
+      isActive: true
+    }).select("_id productName mrp productImage category discount oldPrice ratingBadge").sort({ createdAt: -1 }).lean();
+    
+    res.json(recommendations);
+  } catch (err) {
+    console.error("Error fetching recommendations:", err);
+    res.status(500).json({ error: "Failed to fetch recommendations" });
   }
 });
 

@@ -1,0 +1,174 @@
+  // Recommendations mock data
+  const recommendations = [
+    { id: 1, title: 'Daily Fibre+ Greens Unflavoured', price: '₹1,299', oldPrice: '₹1,499', discount: '13% OFF', ratingBadge: '4.4g FIBRE', image: productImage || 'https://via.placeholder.com/150' },
+    { id: 2, title: 'Plant Protein Mango Mania', price: '₹1,439', oldPrice: '₹1,799', discount: '20% OFF', ratingBadge: '25g PROTEIN', image: productImage || 'https://via.placeholder.com/150' },
+    { id: 3, title: 'Plant Protein Classic Unflavoured', price: '₹1,439', oldPrice: '₹1,799', discount: '20% OFF', ratingBadge: '25g PROTEIN', image: productImage || 'https://via.placeholder.com/150' },
+    { id: 4, title: 'Nutrition Mix Chocolate', price: '₹1,699', oldPrice: '₹1,999', discount: '15% OFF', ratingBadge: '13 VITAMINS & MINERALS', image: productImage || 'https://via.placeholder.com/150' },
+  ];
+
+  return (
+    <div className="min-h-screen bg-[#FAFAFA] font-sans flex flex-col relative pb-32">
+      
+      {/* Top Blue Header Section */}
+      <div className="bg-[#01227E] pt-12 pb-16 px-5 relative rounded-b-[40px] overflow-hidden">
+        {/* Subtle glowing effect behind shield */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-[#105DE4] rounded-full opacity-30 blur-[40px] pointer-events-none" />
+        
+        {/* Top Header Row */}
+        <div className="flex items-center justify-between mb-6 relative z-10">
+          <button onClick={() => navigate("/home")} className="p-1 -ml-1 text-white">
+            <ChevronLeft className="w-7 h-7" strokeWidth={2} />
+          </button>
+          <button className="p-1 -mr-1 text-white">
+            <Share className="w-6 h-6" strokeWidth={2} />
+          </button>
+        </div>
+
+        {/* Main Authentic Header Section */}
+        <div className="flex flex-col items-center relative z-10">
+          <div className="w-20 h-20 mb-4">
+             <img src={authenticIcon} alt="Authentic" className="w-full h-full object-contain drop-shadow-xl" />
+          </div>
+          <h2 className="text-white text-[24px] font-bold tracking-tight mb-1.5">Authentic Product</h2>
+          <p className="text-[#B3C8F9] text-[13px] font-medium text-center max-w-[240px] leading-relaxed">
+            This product is 100% authentic and verified by Authentiks
+          </p>
+        </div>
+      </div>
+
+      {/* Main Scrollable Content */}
+      <div className="flex-1 px-4 -mt-10 relative z-20 flex flex-col gap-4 pb-10">
+        
+        {/* Product Info Card */}
+        <div className="bg-white rounded-[24px] p-5 shadow-[0_4px_25px_rgba(0,0,0,0.06)] flex gap-4">
+          <div className="w-[100px] h-[120px] flex-shrink-0 flex items-center justify-center">
+             {productImage ? (
+                <img src={productImage} alt={productName} className="w-full h-full object-contain drop-shadow-md" />
+              ) : (
+                <div className="w-full h-full bg-gray-50 rounded-lg flex items-center justify-center text-gray-300 text-xs">No Image</div>
+              )}
+          </div>
+          <div className="flex flex-col flex-1 py-1 justify-center">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E05206" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              <span className="text-[#0B1E36] font-bold text-[13px]">{companyName}</span>
+              <ShieldCheck className="w-[14px] h-[14px] text-[#105DE4] fill-[#105DE4] stroke-white" strokeWidth={1} />
+            </div>
+            <h3 className="text-[#0B1E36] font-extrabold text-[17px] leading-tight mb-1">{productName}</h3>
+            <p className="text-[#5A7184] text-[13px] font-medium mb-3">Chocolate Fudge</p>
+            
+            <div className="flex flex-wrap gap-2">
+              <span className="px-2 py-0.5 bg-[#EEF2FF] text-[#4F46E5] rounded-md text-[10px] font-bold tracking-wide">Protein</span>
+              <span className="px-2 py-0.5 bg-[#ECFDF5] text-[#059669] rounded-md text-[10px] font-bold tracking-wide">Plant Based</span>
+              <span className="px-2 py-0.5 bg-[#EEF2FF] text-[#4F46E5] rounded-md text-[10px] font-bold tracking-wide">25g Protein</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Action Menu Cards */}
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x pt-1">
+           <button onClick={() => navigate("/product-details", { state: data })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
+             <FileText className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
+             <div className="flex items-end justify-between w-full mt-auto">
+               <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Product Details</span>
+               <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
+             </div>
+           </button>
+
+           <button className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
+             <BookOpen className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
+             <div className="flex items-end justify-between w-full mt-auto">
+               <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Product Education</span>
+               <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
+             </div>
+           </button>
+
+           <button className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
+             <MessageSquare className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
+             <div className="flex items-end justify-between w-full mt-auto">
+               <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Consumer Feedback</span>
+               <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
+             </div>
+           </button>
+        </div>
+
+        {/* Why Authenticity Matters Banner */}
+        <div className="bg-white rounded-[16px] p-4 flex items-center gap-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100">
+           <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center">
+             <ShieldCheck className="w-8 h-8 text-[#105DE4]" strokeWidth={1.5} />
+           </div>
+           <div className="flex flex-col flex-1">
+             <h4 className="text-[14px] font-bold text-[#0B1E36] mb-0.5">Why Authenticity Matters</h4>
+             <p className="text-[11px] text-[#5A7184] font-medium leading-tight">Every scan helps us fight counterfeit products and ensure you get the best quality and safety.</p>
+           </div>
+           <ChevronRight className="w-5 h-5 text-gray-300" />
+        </div>
+
+        {/* Recommendations Section */}
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[16px] font-extrabold text-[#0B1E36]">Recommendation for You</h3>
+            <button className="text-[12px] font-bold text-[#105DE4] flex items-center gap-0.5">
+              View All <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+          
+          <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide snap-x">
+             {recommendations.map(item => (
+               <div key={item.id} className="snap-start flex-shrink-0 w-[150px] bg-white rounded-[16px] p-3 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 relative">
+                 <div className="w-full h-[140px] bg-[#F8F9FA] rounded-[12px] p-2 flex items-center justify-center mb-3 relative">
+                   <img src={item.image} alt={item.title} className="w-full h-full object-contain mix-blend-multiply" />
+                   {/* Rating/Feature Badge overlapping bottom right */}
+                   <div className="absolute -bottom-2 -right-2 bg-[#F3F6E8] text-[#4F5927] border border-white text-[8px] font-extrabold px-1.5 py-1 rounded-full text-center leading-[1.1] shadow-sm flex items-center justify-center w-10 h-10 whitespace-pre-wrap break-words">
+                     {item.ratingBadge}
+                   </div>
+                 </div>
+                 <h4 className="text-[11px] font-bold text-[#0B1E36] leading-[1.3] mb-2 line-clamp-2 h-7">{item.title}</h4>
+                 <div className="flex items-baseline gap-1.5 mb-1 mt-auto">
+                   <span className="text-[14px] font-extrabold text-[#0B1E36]">{item.price}</span>
+                   <span className="text-[10px] font-medium text-[#829AB1] line-through">{item.oldPrice}</span>
+                 </div>
+                 <div className="bg-[#ECFDF5] text-[#059669] text-[9px] font-bold px-2 py-0.5 rounded w-max tracking-wide">
+                   {item.discount}
+                 </div>
+               </div>
+             ))}
+          </div>
+        </div>
+
+      </div>
+
+      {/* Bottom Review & Claim Reward Button (Floating above tab bar) */}
+      <div className="fixed bottom-[70px] left-0 right-0 px-4 py-3 bg-gradient-to-t from-[#FAFAFA] via-[#FAFAFA] to-transparent z-40">
+        <button
+          onClick={async () => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+              setShowReviewModal(true);
+              return;
+            }
+            try {
+              const { getProfile } = await import("../../config/api");
+              const profileData = await getProfile(token);
+              if (profileData && !profileData.name) {
+                setShowProfilePrompt(true);
+              } else {
+                setShowReviewModal(true);
+              }
+            } catch (e) {
+              setShowReviewModal(true);
+            }
+          }}
+          disabled={isReviewed}
+          className={`w-full ${isReviewed ? 'bg-gray-400' : 'bg-[#01227E]'} text-white rounded-[24px] p-3.5 flex items-center shadow-[0_8px_25px_rgba(1,34,126,0.25)] active:scale-[0.98] transition-transform`}
+        >
+          <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center flex-shrink-0 mr-3">
+             <Gift className="w-[20px] h-[20px] text-[#01227E]" strokeWidth={2} />
+          </div>
+          <div className="flex flex-col flex-1 text-left">
+             <span className="text-[15px] font-extrabold mb-0.5">{isReviewed ? "Product Reviewed" : "Review & Claim Reward"}</span>
+             <span className="text-[11px] font-medium text-[#B3C8F9]">Share your experience and earn exciting rewards!</span>
+          </div>
+          <ChevronRight className="w-5 h-5 text-white/80" />
+        </button>
+      </div>

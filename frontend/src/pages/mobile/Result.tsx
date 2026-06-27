@@ -1,5 +1,7 @@
+import { ChevronLeft, Share, FileText, BookOpen, MessageSquare, ShieldCheck, Gift, ChevronRight, XCircle, AlertTriangle, Headset, Flag, X, ShieldAlert, Calendar, Phone, MapPin, RefreshCcw } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
+import API_BASE_URL from "../../config/api";
 
 // Assets
 import authenticIcon from "../../assets/logo.svg";
@@ -305,164 +307,191 @@ function ResultAuthentic({ data }: { data: any }) {
     }
   });
 
-  return (
-    <div className="min-h-screen bg-[#F5F5F5] font-sans flex flex-col items-center">
-      <MobileHeader
-        title="Scan Result"
-        onLeftClick={() => navigate("/profile")}
-        onNotificationClick={handleNotificationClick}
-        rightIcon={<div className="w-10" />}
-      />
+  // Recommendations from DB (if available) or fetched dynamically
+  const [recommendations, setRecommendations] = useState(data?.recommendations || []);
 
-      <div className="w-full max-w-md px-4 py-4 flex flex-col pb-24">
-        {/* Status Card */}
-        <div className="bg-[#2CA4D6] rounded-t-[16px] p-4 text-center text-white relative shadow-md z-10">
-          <div className="flex flex-row justify-center items-center gap-2">
-            <div className="bg-white rounded-full">
-              <img
-                src={authenticIcon}
-                alt="Authentic"
-                className="w-11 h-11 object-contain m-1"
-              />
-            </div>
-            <div className="text-left">
-              <h2 className="text-[18px] font-bold leading-tight">
-                Authentic Product
-              </h2>
-              <p className="text-[12px] opacity-90 font-medium">
-                This product has been verified as genuine
-              </p>
-            </div>
-          </div>
+  useEffect(() => {
+    // If not provided in route state (e.g., coming from Scan History), fetch them.
+    if ((!data?.recommendations || data.recommendations.length === 0) && (data?.brandId || data?.product?.brandId || data?.productId?.brandId || data?.brandId?._id)) {
+      const bId = data?.brandId?._id || data?.brandId || data?.product?.brandId || data?.productId?.brandId;
+      fetch(`${API_BASE_URL}/scan/recommendations/${bId}`)
+        .then(res => res.json())
+        .then(resData => {
+          if (Array.isArray(resData)) {
+            setRecommendations(resData.slice(0, 4));
+          }
+        })
+        .catch(err => console.error("Failed to fetch recommendations:", err));
+    }
+  }, [data]);
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Authentik Product Verified",
+          text: `Check out this 100% authentic ${data?.productName || "product"} by ${data?.brand || "Brand"}!`,
+          url: window.location.href,
+        });
+      } catch (err) {
+        console.error("Error sharing:", err);
+      }
+    } else {
+      // Fallback
+      navigator.clipboard.writeText(window.location.href);
+      alert("Link copied to clipboard!");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#FAFAFA] font-sans flex flex-col relative pb-32">
+      
+      {/* Top Blue Header Section */}
+      <div className="bg-[#01227E] pt-8 px-5 relative rounded-b-[40px] overflow-hidden">
+        {/* Subtle glowing effect behind shield */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-[#105DE4] rounded-full opacity-30 blur-[40px] pointer-events-none" />
+        
+        {/* Top Header Row */}
+        <div className="flex items-center justify-between mb-6 relative z-50">
+          <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-white">
+            <ChevronLeft className="w-7 h-7" strokeWidth={2} />
+          </button>
+          <button onClick={handleShare} className="p-1 -mr-1 text-white">
+            <Share className="w-6 h-6" strokeWidth={2} />
+          </button>
         </div>
 
-        <div className="bg-white shadow-sm rounded-b-[16px]">
-          {/* Product Image & Name Section */}
-          <div className="bg-white pb-6 flex flex-col items-center relative gap-3">
-            <div className="w-full bg-[#1F2642] py-2 text-center">
-              <h3 className="text-white font-bold text-[20px]">
-                {productName}
-              </h3>
-            </div>
-            <div className="relative group">
-              <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-              <div className="relative h-[220px] w-full rounded-[2rem] overflow-hidden bg-white shadow-2xl border-4 border-white shadow-indigo-200/50">
-                {productImage ? (
-                  <img src={productImage} alt={data.productName} className="w-full h-full object-contain transform transition-transform duration-700 group-hover:scale-110" />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-                    {/* Assuming 'Package' icon is available or needs to be imported/defined */}
-                    {/* <Package size={80} className="text-slate-300 stroke-[1.5]" /> */}
-                    <span className="text-slate-300 text-xl">No Image</span>
-                  </div>
-                )}
-              </div>
-            </div>
+        {/* Main Authentic Header Section */}
+        <div className="flex flex-col items-center relative z-10 top-[-60px]">
+          <div className="w-20 h-20 mb-4">
+             <img src={authenticIcon} alt="Authentic" className="w-full h-full object-contain drop-shadow-xl" />
           </div>
+          <h2 className="text-white text-[24px] font-bold tracking-tight mb-1.5">Authentic Product</h2>
+          <p className="text-[#B3C8F9] text-[13px] font-medium text-center max-w-[240px] leading-relaxed">
+            This product is 100% authentic and verified by Authentiks
+          </p>
+        </div>
+      </div>
 
-          {/* Cashback Banner */}
-          {data.cashbackAwarded > 0 && (
-            <div className="mx-4 mt-2 mb-4 bg-gradient-to-r from-pink-500 to-purple-600 rounded-[16px] p-4 text-white shadow-lg relative overflow-hidden flex items-center justify-between transform transition-all hover:scale-[1.02]">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl -mr-10 -mt-10 animate-pulse"></div>
-              <div className="relative z-10">
-                <p className="text-[11px] font-bold uppercase tracking-widest text-pink-200 mb-0.5">Lucky QR Scan 🎉</p>
-                <h3 className="text-[26px] font-black leading-tight drop-shadow-sm">₹{data.cashbackAwarded}</h3>
-                <p className="text-[13px] font-medium opacity-90">Added to your Wallet</p>
-              </div>
-              <button 
-                onClick={() => navigate('/wallet')}
-                className="relative z-10 bg-white text-pink-600 font-extrabold px-4 py-2.5 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.1)] text-sm active:scale-95 transition-transform"
-              >
-                View Wallet
-              </button>
+      {/* Main Scrollable Content */}
+      <div className="flex-1 px-4 -mt-10 relative z-20 flex flex-col gap-4 pb-10">
+        
+        {/* Product Info Card */}
+        <div className="bg-white rounded-[24px] p-5 shadow-[0_4px_25px_rgba(0,0,0,0.06)] flex gap-4">
+          <div className="w-[100px] h-[120px] flex-shrink-0 flex items-center justify-center">
+             {productImage ? (
+                <img src={productImage} alt={productName} className="w-full h-full object-contain drop-shadow-md" />
+              ) : (
+                <div className="w-full h-full bg-gray-50 rounded-lg flex items-center justify-center text-gray-300 text-xs">No Image</div>
+              )}
+          </div>
+          <div className="flex flex-col flex-1 py-1 justify-center">
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E05206" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              <span className="text-[#0B1E36] font-bold text-[13px]">{companyName}</span>
+              <ShieldCheck className="w-[14px] h-[14px] text-[#105DE4] fill-[#105DE4] stroke-white" strokeWidth={1} />
             </div>
-          )}
-
-          {/* Loyalty Points Banner */}
-          {data.loyaltyPointsAwarded > 0 && (
-            <div className="mx-4 mt-2 mb-4 bg-gradient-to-r from-amber-500 to-orange-600 rounded-[16px] p-4 text-white shadow-lg relative overflow-hidden flex items-center justify-between transform transition-all hover:scale-[1.02]">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl -mr-10 -mt-10 animate-pulse"></div>
-              <div className="relative z-10">
-                <p className="text-[11px] font-bold uppercase tracking-widest text-amber-200 mb-0.5">Loyalty Points ⭐</p>
-                <h3 className="text-[26px] font-black leading-tight drop-shadow-sm">+{data.loyaltyPointsAwarded} pts</h3>
-                <p className="text-[13px] font-medium opacity-90">Added to your Points</p>
-              </div>
-              <button 
-                onClick={() => navigate('/wallet')}
-                className="relative z-10 bg-white text-amber-600 font-extrabold px-4 py-2.5 rounded-xl shadow-[0_4px_10px_rgba(0,0,0,0.1)] text-sm active:scale-95 transition-transform"
-              >
-                View Points
-              </button>
-            </div>
-          )}
-
-          <div className="p-2 space-y-4">
-            {/* Grid Details (Blue Cards) */}
-            <div className="grid grid-cols-2 gap-3">
-              {blueFields.map((field, idx) => (
-                <DetailBox key={idx} label={field.label} value={field.value} />
+            <h3 className="text-[#0B1E36] font-extrabold text-[17px] leading-tight mb-1">{productName}</h3>
+            {(data.category || data.productId?.category) && (
+              <p className="text-[#5A7184] text-[13px] font-medium mb-2">{data.category || data.productId?.category}</p>
+            )}
+            
+            <div className="flex flex-wrap gap-2 mt-1">
+              {(data.variants || data.productId?.variants || []).map((v: any, index: number) => (
+                <span 
+                  key={index}
+                  className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wide ${index % 2 === 0 ? 'bg-[#EEF2FF] text-[#4F46E5]' : 'bg-[#ECFDF5] text-[#059669]'}`}
+                >
+                  {v.variantLabel || v.value || v.name}
+                </span>
               ))}
             </div>
-
-            {/* Additional Info Section (Gray Box) */}
-            <div className="mt-6 border-t border-gray-100 pt-4">
-              <h4 className="text-[#333] font-bold text-[14px] mb-3 ml-1 uppercase tracking-tight">Additional Info:</h4>
-              <div className="bg-[#F2F2F2] p-5 rounded-[20px] shadow-sm space-y-4 border border-gray-200/50">
-                {/* Product Info / Description */}
-                {(data.description || data.productId?.description || data.productInfo || data.productId?.productInfo) && (
-                  <div className="mb-4">
-                    <p className="text-[#444] text-[15px] font-medium whitespace-pre-wrap leading-relaxed">
-                      {data.description || data.productId?.description || data.productInfo || data.productId?.productInfo}
-                    </p>
-                  </div>
-                )}
-
-                {/* Key Benefits */}
-                {(data.keyBenefits || data.productId?.keyBenefits) && (
-                  <div className="mb-4">
-                    <p className="text-[#333] text-[12px] font-bold uppercase tracking-wider opacity-60 mb-1">Key Benefits</p>
-                    <ul className="list-disc pl-5 text-[#444] text-[14px] font-medium space-y-1">
-                      {(data.keyBenefits || data.productId?.keyBenefits).split('\n').filter(Boolean).map((benefit: string, i: number) => (
-                        <li key={i}>{benefit.trim()}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* All Collected Gray Fields */}
-                <div className="space-y-4">
-                  {/* Gray Dynamic Fields */}
-                  {grayFields.map(({ label, value }, idx) => (
-                    <div key={idx} className="border-b border-gray-300/30 pb-3 last:border-0 last:pb-0">
-                      <p className="text-[#333] text-[11px] font-bold uppercase tracking-wider opacity-60 mb-1">{label}</p>
-                      <p className="text-[#0D4E96] text-[14px] font-bold whitespace-pre-wrap">{value}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
-        {/* Order Links */}
-        {(data.orderLinks?.length > 0 || data.productId?.orderLinks?.length > 0) && (
-          <div className="mt-6 flex flex-col gap-3">
-            {(data.orderLinks || data.productId?.orderLinks).map((link: any, index: number) => (
-              <a
-                key={index}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full bg-blue-50 border border-blue-200 text-[#0E5CAB] font-bold text-[16px] py-4 rounded-[20px] shadow-sm text-center flex items-center justify-center gap-2 hover:bg-blue-100 transition-colors"
-              >
-                {link.title}
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-              </a>
-            ))}
+        {/* Action Menu Cards */}
+        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x pt-1">
+           <button onClick={() => navigate("/product-details", { state: data })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
+             <FileText className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
+             <div className="flex items-end justify-between w-full mt-auto">
+               <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Product Details</span>
+               <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
+             </div>
+           </button>
+
+           <button className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
+             <BookOpen className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
+             <div className="flex items-end justify-between w-full mt-auto">
+               <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Product Education</span>
+               <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
+             </div>
+           </button>
+
+           <button className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
+             <MessageSquare className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
+             <div className="flex items-end justify-between w-full mt-auto">
+               <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Consumer Feedback</span>
+               <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
+             </div>
+           </button>
+        </div>
+
+        {/* Why Authenticity Matters Banner */}
+        <div className="bg-white rounded-[16px] p-4 flex items-center gap-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100">
+           <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center">
+             <ShieldCheck className="w-8 h-8 text-[#105DE4]" strokeWidth={1.5} />
+           </div>
+           <div className="flex flex-col flex-1">
+             <h4 className="text-[14px] font-bold text-[#0B1E36] mb-0.5">Why Authenticity Matters</h4>
+             <p className="text-[11px] text-[#5A7184] font-medium leading-tight">Every scan helps us fight counterfeit products and ensure you get the best quality and safety.</p>
+           </div>
+           <ChevronRight className="w-5 h-5 text-gray-300" />
+        </div>
+
+        {/* Recommendations Section */}
+        {recommendations.length > 0 && (
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[16px] font-extrabold text-[#0B1E36]">Recommendation for You</h3>
+              <button onClick={() => navigate(`/recommendations/${data?.brandId?._id || data?.brandId || data?.product?.brandId || data?.productId?.brandId}`)} className="text-[12px] font-bold text-[#105DE4] flex items-center gap-0.5">
+                View All <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
+               {recommendations.map((item: any, index: number) => (
+                 <div key={item.id || item._id || index} className="snap-start flex-shrink-0 w-[170px] bg-white rounded-[20px] p-4 flex flex-col shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-gray-100 relative">
+                   <div className="w-full h-[150px] bg-[#F8F9FA] rounded-[14px] p-2 flex items-center justify-center mb-4 relative">
+                     <img src={item.image || item.productImage || 'https://via.placeholder.com/150'} alt={item.title || item.productName} className="w-full h-full object-contain mix-blend-multiply" />
+                     {/* Rating/Feature Badge overlapping bottom right */}
+                     {item.ratingBadge && (
+                       <div className="absolute -bottom-3 -right-3 bg-[#F3F6E8] text-[#4F5927] border-2 border-white text-[9.5px] font-extrabold px-1.5 py-1 rounded-full text-center leading-[1.1] shadow-sm flex items-center justify-center w-[46px] h-[46px] whitespace-pre-wrap break-words">
+                         {item.ratingBadge}
+                       </div>
+                     )}
+                   </div>
+                   <h4 className="text-[13px] font-bold text-[#0B1E36] leading-snug mb-3 line-clamp-2 min-h-[36px]">{item.title || item.productName}</h4>
+                   <div className="flex items-baseline gap-2 mb-2 mt-auto">
+                     <span className="text-[17px] font-extrabold text-[#0B1E36]">{item.price || (item.mrp ? `₹${item.mrp}` : '')}</span>
+                     {item.oldPrice && (
+                       <span className="text-[13px] font-semibold text-[#829AB1] line-through">{item.oldPrice}</span>
+                     )}
+                   </div>
+                   {item.discount && (
+                     <div className="bg-[#E8F8F0] text-[#059669] text-[10px] font-extrabold px-2.5 py-1 rounded-[6px] w-max tracking-wide">
+                       {item.discount}
+                     </div>
+                   )}
+                 </div>
+               ))}
+            </div>
           </div>
         )}
 
-        {/* Review Button */}
+      </div>
+
+      {/* Bottom Review & Claim Reward Button (Floating above tab bar) */}
+      <div className="fixed bottom-[70px] left-0 right-0 px-4 py-3 bg-gradient-to-t from-[#FAFAFA] via-[#FAFAFA] to-transparent z-40">
         <button
           onClick={async () => {
             const token = localStorage.getItem("token");
@@ -483,41 +512,18 @@ function ResultAuthentic({ data }: { data: any }) {
             }
           }}
           disabled={isReviewed}
-          className={`w-full ${isReviewed ? 'bg-gray-400' : 'bg-gradient-to-r from-[#0E5CAB] to-[#1F2642]'} text-white font-bold text-[18px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(14,92,171,0.3)] mt-4`}
+          className={`w-full ${isReviewed ? 'bg-gray-400' : 'bg-[#01227E]'} text-white rounded-[24px] p-3.5 flex items-center shadow-[0_8px_25px_rgba(1,34,126,0.25)] active:scale-[0.98] transition-transform`}
         >
-          {isReviewed ? "Product Reviewed" : (data.productId.orderId.coupon.code != null || data.productId.orderId.coupon.code != undefined || data.productId.orderId.coupon.code != "" ? "Review & Claim Coupon" : "Review Product")}
-        </button>
-
-
-
-        {/* Claim Warranty Button or Tracker */}
-        {data.warranty && (data.warranty.duration || data.warranty.warrantyType) && (
-          <div className="mt-3">
-            {warrantyClaimStatus ? (
-              <div >
-                <button
-                  onClick={() => navigate("/warranty")}
-                  className="w-full bg-gradient-to-r from-emerald-500 to-emerald-700 text-white font-bold text-[16px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(16,185,129,0.3)] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  </svg>
-                  Track Warranty
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowWarrantyModal(true)}
-                className="w-full bg-gradient-to-r from-emerald-500 to-emerald-700 text-white font-bold text-[16px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(16,185,129,0.3)] flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                </svg>
-                Register Warranty
-              </button>
-            )}
+          <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center flex-shrink-0 mr-3">
+             <Gift className="w-[20px] h-[20px] text-[#01227E]" strokeWidth={2} />
           </div>
-        )}
+          <div className="flex flex-col flex-1 text-left">
+             <span className="text-[15px] font-extrabold mb-0.5">{isReviewed ? "Product Reviewed" : "Review & Claim Reward"}</span>
+             <span className="text-[11px] font-medium text-[#B3C8F9]">Share your experience and earn exciting rewards!</span>
+          </div>
+          <ChevronRight className="w-5 h-5 text-white/80" />
+        </button>
+      </div>
 
         {/* Review Modal — Premium Bottom Sheet */}
         {showReviewModal && (
@@ -1154,7 +1160,6 @@ function ResultAuthentic({ data }: { data: any }) {
           </div>
         )}
       </div>
-    </div>
   );
 }
 
@@ -1162,133 +1167,126 @@ function ResultAuthentic({ data }: { data: any }) {
 function ResultRepeat({ data }: { data: any }) {
   const navigate = useNavigate();
   return (
-    <div className="min-h-screen bg-[#F5F5F5] font-sans flex flex-col items-center">
-      <MobileHeader
-        title="Scan Result"
-        onLeftClick={() => navigate("/profile")}
-        onNotificationClick={handleNotificationClick}
-        rightIcon={<div className="w-10" />}
-      />
-
-      <div className="w-full max-w-md px-4 py-4 flex flex-col pb-24">
-        {/* Alert Card */}
-        <div className="bg-[#FFA808] rounded-[16px] shadow-[0_10px_20px_rgba(255,168,8,0.3)] text-center text-white flex flex-col items-center gap-3">
-          <div className="flex flex-col justify-center items-center gap-2 mt-4">
-            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center">
-              <img src={warningIcon} alt="Warning" className="w-10 h-10" />
-            </div>
-
-            <h2 className="text-[20px] font-bold uppercase tracking-wide">
-              REPEAT SCAN ALERT
-            </h2>
-          </div>
-          <div className="bg-[#444444] p-2 w-full">
-            <p className="text-[13px] font-medium leading-tight mt-1 opacity-95">
-              This product has already been scanned and verified earlier on
-              another account
-            </p>
-          </div>
+    <div className="min-h-screen bg-[#FAFAFA] font-sans flex flex-col relative pb-32">
+      
+      {/* Top Orange Header Section */}
+      <div className="bg-[#FF6B00] pt-8 px-5 relative rounded-b-[40px] overflow-hidden">
+        {/* Subtle background circles */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full border border-white/10 pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full border border-white/5 pointer-events-none" />
+        
+        {/* Top Header Row */}
+        <div className="flex items-center justify-between mb-4 relative z-50">
+          <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-white">
+            <ChevronLeft className="w-7 h-7" strokeWidth={2} />
+          </button>
+          <h1 className="text-white text-[17px] font-bold">Scan Result</h1>
+          <div className="w-7 h-7" /> {/* Spacer */}
         </div>
 
-        <div className="bg-white rounded-b-[16px] shadow-sm p-2 pt-4">
-          {/* Details Section */}
-          <div className="bg-[#F8F8F8] rounded-[16px] p-5 shadow-lg text-center space-y-2 border border-gray-200">
-            <div>
-              <p className="text-[#6E6D6B] text-[14px] font-bold">
-                Already Verified On:
-              </p>
-              <p className="text-[#6E6D6B] text-[16px] font-bold">
-                {data.originalScan?.scannedAt
-                  ? new Date(data.originalScan.scannedAt).toLocaleString(
-                    "en-GB",
-                    {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: true,
-                    },
-                  )
-                  : "20/Oct/2025  08:30 PM (IST)"}
-              </p>
-            </div>
-            {data.originalScan?.scannedBy && data.originalScan.scannedBy !== 'Unknown' && (
-              <div>
-                <p className="text-[#6E6D6B] text-[14px] font-bold">
-                  Scanned Mobile No:
-                </p>
-                <p className="text-[#6E6D6B] text-[16px] font-bold">
-                  {maskPhoneNumber(data.originalScan.scannedBy)}
-                </p>
+        {/* Main Alert Header Section */}
+        <div className="flex flex-col items-center relative z-10 pb-8 mt-2">
+          <div className="mb-3 text-white">
+            <ShieldAlert className="w-[60px] h-[60px]" strokeWidth={1.5} />
+          </div>
+          <h2 className="text-white text-[24px] font-bold tracking-tight mb-2 text-center leading-tight">
+            DUPLICATE SCAN<br/>DETECTED
+          </h2>
+          <p className="text-white/90 text-[14px] font-medium text-center max-w-[280px] leading-relaxed">
+            This product has already been registered and authenticated on another account.
+          </p>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 px-4 mt-6 relative z-20 flex flex-col gap-4 pb-10">
+        
+        {/* Scan Details Card */}
+        <div className="bg-white rounded-[12px] shadow-sm flex flex-col overflow-hidden">
+          <div className="text-center py-3">
+            <h3 className="text-[#FF6B00] font-bold text-[16px]">Scan Details</h3>
+          </div>
+          <div className="px-5 pb-5 flex flex-col gap-4">
+            
+            <div className="flex items-center border-b border-gray-100 pb-3">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center border border-[#FF6B00]/20 mr-4">
+                <Calendar className="w-4 h-4 text-[#FF6B00]" strokeWidth={2} />
               </div>
-            )}
-            {/* <div>
-              <p className="text-[#6E6D6B] text-[12px] font-bold">
-                Product Verification ID:
-              </p>
-              <p className="text-[#6E6D6B] text-[14px] font-bold">
-                {data._id
-                  ? data._id.slice(-12).toUpperCase()
-                  : "SSG45SHHSB58SBH"}
-              </p>
-            </div> */}
-          </div>
-
-          {/* Info Text */}
-          <div className="p-5  space-y-4">
-            <div>
-              <h4 className="font-bold text-[#333] text-[13px] mb-1">
-                Why you're seeing this?
-              </h4>
-              <ul className="list-disc pl-4 text-[#666] text-[11px] space-y-0.5">
-                <li>This product's digital ID has been used before</li>
-                <li>Genuine products are typically verified once per unit</li>
-                <li>Repeated scans can be a sign of tampering or misuse</li>
-              </ul>
+              <div className="flex-1 flex justify-between items-center">
+                <span className="text-[13px] font-semibold text-[#1A1A1A]">First Authenticated:</span>
+                <span className="text-[13px] font-bold text-[#1A1A1A]">
+                  {data.originalScan?.scannedAt
+                    ? new Date(data.originalScan.scannedAt).toLocaleString("en-GB", {
+                        day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit", hour12: true
+                      })
+                    : "12 May 2026, 10:30 AM"}
+                </span>
+              </div>
             </div>
 
-            <div>
-              <h4 className="font-bold text-[#333] text-[13px] mb-1">
-                What should you do?
-              </h4>
-              <ul className="list-disc pl-4 text-[#666] text-[11px] space-y-0.5">
-                <li>Avoid purchasing or using this product</li>
-                <li>Report to local consumer protection agency</li>
-                <li>Contact the brand directly with batch details</li>
-              </ul>
+            <div className="flex items-center border-b border-gray-100 pb-3">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center border border-[#FF6B00]/20 mr-4">
+                <Phone className="w-4 h-4 text-[#FF6B00]" strokeWidth={2} />
+              </div>
+              <div className="flex-1 flex justify-between items-center">
+                <span className="text-[13px] font-semibold text-[#1A1A1A]">First Authenticated By:</span>
+                <span className="text-[13px] font-bold text-[#1A1A1A]">
+                  {maskPhoneNumber(data.originalScan?.scannedBy) || "988XXXX144"}
+                </span>
+              </div>
             </div>
+
+            <div className="flex items-center border-b border-gray-100 pb-3">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center border border-[#FF6B00]/20 mr-4">
+                <MapPin className="w-4 h-4 text-[#FF6B00]" strokeWidth={2} />
+              </div>
+              <div className="flex-1 flex justify-between items-center">
+                <span className="text-[13px] font-semibold text-[#1A1A1A]">First Scan Location:</span>
+                <span className="text-[13px] font-bold text-[#1A1A1A]">
+                  {data.originalScan?.location || "Chennai, India"}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <div className="w-9 h-9 rounded-full flex items-center justify-center border border-[#FF6B00]/20 mr-4">
+                <RefreshCcw className="w-4 h-4 text-[#FF6B00]" strokeWidth={2} />
+              </div>
+              <div className="flex-1 flex justify-between items-center">
+                <span className="text-[13px] font-semibold text-[#1A1A1A]">Total Scans Detected:</span>
+                <span className="text-[13px] font-bold text-[#1A1A1A]">{data.totalScans || 3}</span>
+              </div>
+            </div>
+
           </div>
         </div>
 
-        {/* Order Links */}
-        {(data.orderLinks?.length > 0 || data.productId?.orderLinks?.length > 0) && (
-          <div className="mt-6 flex flex-col gap-3">
-            {(data.orderLinks || data.productId?.orderLinks).map((link: any, index: number) => (
-              <a
-                key={index}
-                href={link.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full bg-blue-50 border border-blue-200 text-[#0E5CAB] font-bold text-[16px] py-4 rounded-[20px] shadow-sm text-center flex items-center justify-center gap-2 hover:bg-blue-100 transition-colors"
-              >
-                {link.title}
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-              </a>
-            ))}
+        {/* Warning Indicator Card */}
+        <div className="bg-white rounded-[12px] p-4 flex gap-4 border border-[#FF6B00] shadow-sm">
+          <div className="w-10 h-10 rounded-full bg-[#FF6B00] flex-shrink-0 flex items-center justify-center mt-0.5">
+            <AlertTriangle className="w-5 h-5 text-white" strokeWidth={2} />
           </div>
-        )}
+          <div>
+            <h4 className="text-[#FF6B00] font-bold text-[14px] mb-1.5">This may indicate:</h4>
+            <ul className="list-disc pl-4 text-[#333333] text-[13px] space-y-1 font-medium">
+              <li>Product sharing or resale</li>
+              <li>Unauthorized distribution</li>
+              <li>Potential counterfeit activity</li>
+            </ul>
+          </div>
+        </div>
 
-        {/* Report CTA */}
-        <div className="text-center mt-2">
-          <p className="text-[#FFA808] font-bold text-[14px]">
-            Help us protect others
+        {/* Contact Note */}
+        <div className="bg-white rounded-[12px] p-4 flex gap-4 shadow-sm items-center">
+          <Headset className="w-7 h-7 text-[#FF6B00] flex-shrink-0 ml-1" strokeWidth={1.5} />
+          <p className="text-[#1A1A1A] text-[13px] font-medium leading-relaxed">
+            If you recently purchased this product, please contact the seller or report this scan for investigation.
           </p>
-          <p className="text-[#FFA808] font-bold text-[14px] mb-3">
-            Report this product now
-          </p>
+        </div>
 
-          <button
+        {/* Action Buttons */}
+        <div className="flex flex-col gap-3 mt-1">
+          <button 
             onClick={() => navigate("/report", {
               state: {
                 qrCode: data.qrCode,
@@ -1297,14 +1295,28 @@ function ResultRepeat({ data }: { data: any }) {
                 brand: data.brand || data.productId?.brand,
                 productId: data.productId?._id || data.productId || null,
                 brandId: data.brandId || data.productId?.brandId || null,
-                scanStatus: "FAKE"
+                scanStatus: "ALREADY_USED"
               }
             })}
-            className="w-full bg-[#FFA808] text-white font-bold text-[18px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(255,168,8,0.4)] hover:bg-[#e59410] transition-colors"
+            className="w-full bg-[#FF6B00] text-white font-bold text-[15px] py-4 rounded-[8px] flex items-center justify-center gap-2 shadow-sm"
           >
-            Click to Report
+            <Flag className="w-5 h-5" strokeWidth={2.5} />
+            REPORT PRODUCT
+          </button>
+          <button className="w-full bg-white text-[#0D4E96] border border-[#0D4E96] font-bold text-[15px] py-4 rounded-[8px] flex items-center justify-center gap-2 shadow-sm">
+            <Headset className="w-5 h-5" strokeWidth={2} />
+            CONTACT SUPPORT
           </button>
         </div>
+
+        {/* Footer Note */}
+        <div className="bg-white rounded-[12px] p-4 flex gap-4 shadow-sm items-start mt-2 border border-gray-100">
+          <ShieldCheck className="w-8 h-8 text-[#FF6B00] flex-shrink-0" strokeWidth={2} />
+          <p className="text-[#1A1A1A] text-[12px] leading-relaxed">
+            <span className="font-bold">Authentiks</span> is investigating this product identity to protect consumers and brand trust.
+          </p>
+        </div>
+
       </div>
     </div>
   );
@@ -1313,74 +1325,82 @@ function ResultRepeat({ data }: { data: any }) {
 function ResultFake({ data }: { data: any }) {
   const navigate = useNavigate();
   return (
-    <div className="min-h-screen bg-[#F5F5F5] font-sans flex flex-col items-center">
-      <MobileHeader
-        title="Scan Result"
-        onLeftClick={() => navigate("/profile")}
-        onNotificationClick={handleNotificationClick}
-        rightIcon={<div className="w-10" />}
-      />
+    <div className="min-h-screen bg-[#FAFAFA] font-sans flex flex-col relative pb-32">
+      
+      {/* Top Red Header Section */}
+      <div className="bg-[#D10000] pt-8 px-5 relative rounded-b-[40px] overflow-hidden">
+        {/* Subtle background circles */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full border border-white/10 pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full border border-white/5 pointer-events-none" />
+        
+        {/* Top Header Row */}
+        <div className="flex items-center justify-between mb-4 relative z-50">
+          <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-white">
+            <ChevronLeft className="w-7 h-7" strokeWidth={2} />
+          </button>
+          <h1 className="text-white text-[17px] font-bold">Scan Result</h1>
+          <div className="w-7 h-7" /> {/* Spacer */}
+        </div>
 
-      <div className="w-full max-w-md px-4 py-4 flex flex-col pb-24">
-        {/* Counterfeit Card - Matches Repeat Alert Card style */}
-        <div className="bg-[#E30211] rounded-[16px] shadow-[0_10px_20px_rgba(227,2,17,0.3)] text-center text-white flex flex-col items-center gap-3">
-          <div className="flex flex-col justify-center items-center gap-2 mt-4">
-            <div className="w-[80px] h-[80px] bg-white rounded-full flex items-center justify-center">
-              <img
-                src={fakeIcon}
-                alt="Counterfeit"
-                className="w-[64px] h-[64px]"
-              />
+        {/* Main Alert Header Section */}
+        <div className="flex flex-col items-center relative z-10 pb-8 mt-2">
+          <div className="mb-3 w-[72px] h-[72px] bg-white rounded-full flex items-center justify-center p-2">
+            <div className="bg-[#D10000] w-full h-full rounded-full flex items-center justify-center">
+              <X className="w-8 h-8 text-white" strokeWidth={3} />
             </div>
-            <h2 className="text-[20px] font-bold uppercase tracking-wide">
-              WARNING! 
-            </h2>
           </div>
-          <div className="bg-[#444444] p-2 w-full">
-            <p className="text-[14px] font-medium leading-tight  opacity-95">
-              The scanned product is a Counterfeit or its not a registered
-              product with Authentiks
+          <h2 className="text-white text-[28px] font-bold tracking-tight mb-3 text-center">
+            WARNING
+          </h2>
+          <p className="text-white/90 text-[14px] font-medium text-center max-w-[300px] leading-relaxed">
+            This QR code is not registered with Authentiks. This product may be counterfeit or unauthorized.
+          </p>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 px-4 mt-6 relative z-20 flex flex-col gap-4 pb-10">
+        
+        {/* Not Authentic Card */}
+        <div className="bg-white rounded-[12px] p-4 flex gap-4 shadow-sm border border-gray-100">
+          <div className="w-10 h-10 rounded-full bg-[#D10000] flex-shrink-0 flex items-center justify-center mt-0.5">
+            <AlertTriangle className="w-5 h-5 text-white" strokeWidth={2} />
+          </div>
+          <div>
+            <h4 className="text-[#D10000] font-bold text-[14px] mb-1">This QR code is not authentic.</h4>
+            <p className="text-[#333333] text-[13px] font-medium leading-snug">
+              It does not match any product in our database. Please be cautious.
             </p>
           </div>
         </div>
 
-        <div className="bg-white rounded-b-[16px] shadow-sm p-2 pt-4">
-          {/* Health Alert - Styled like Repeat's Details Section */}
-          <div className="bg-[#F8F8F8] rounded-[16px] p-5 shadow-lg space-y-2 border border-gray-200">
-            <h3 className="text-[#6E6D6B] font-bold text-[18px] mb-2">
-              Health & Safety Alert
-            </h3>
-            <p className="text-[#6E6D6B] text-[15px] leading-relaxed font-medium">
-              Millions like you are unknowingly put at risk by consuming or
-              using counterfeit products
-            </p>
+        {/* Warning Indicator Card */}
+        <div className="bg-white rounded-[12px] p-4 flex gap-4 border border-[#D10000] shadow-sm">
+          <div className="w-10 h-10 rounded-full bg-[#D10000] flex-shrink-0 flex items-center justify-center mt-0.5">
+            <X className="w-5 h-5 text-white" strokeWidth={2.5} />
           </div>
-
-          {/* Action Steps - Styled like Repeat's Info Text */}
-          <div className="p-5 space-y-4">
-            <div>
-              <h4 className="font-bold text-[#333] text-[16px] mb-2">
-                What should you do?
-              </h4>
-              <ul className="list-disc pl-5 text-[#666] text-[14px] space-y-1.5 font-medium">
-                <li>Do not use or consume this product</li>
-                <li>Report to local consumer protection agency</li>
-                <li>Contact the brand directly with batch details</li>
-              </ul>
-            </div>
+          <div>
+            <h4 className="text-[#D10000] font-bold text-[14px] mb-1.5">This may indicate:</h4>
+            <ul className="list-disc pl-4 text-[#333333] text-[13px] space-y-1 font-medium">
+              <li>Counterfeit or fake product</li>
+              <li>Tampered or duplicate QR code</li>
+              <li>Unauthorized manufacturing or distribution</li>
+              <li>Product not linked with Authentiks protection</li>
+            </ul>
           </div>
         </div>
 
-        {/* Report CTA */}
-        <div className="text-center mt-4">
-          <p className="text-[#E30211] font-bold text-[15px]">
-            Help us protect others
+        {/* Contact Note */}
+        <div className="bg-white rounded-[12px] p-4 flex gap-4 shadow-sm items-center border border-gray-100">
+          <Headset className="w-7 h-7 text-[#D10000] flex-shrink-0 ml-1" strokeWidth={1.5} />
+          <p className="text-[#1A1A1A] text-[13px] font-medium leading-relaxed">
+            If you believe this is a mistake or you have purchased this product from an authorized seller, please contact our support team.
           </p>
-          <p className="text-[#E30211] font-bold text-[15px] mb-3">
-            Report this product now
-          </p>
+        </div>
 
-          <button
+        {/* Action Buttons */}
+        <div className="flex flex-col gap-3 mt-1">
+          <button 
             onClick={() => navigate("/report", {
               state: {
                 qrCode: data.qrCode,
@@ -1389,14 +1409,29 @@ function ResultFake({ data }: { data: any }) {
                 brand: data.brand,
                 productId: data.productId || null,
                 brandId: data.brandId || null,
-                scanStatus: data.status || "ALREADY_USED"
+                scanStatus: data.status || "FAKE"
               }
             })}
-            className="w-full bg-[#E30211] text-white font-bold text-[20px] py-4 rounded-[30px] shadow-[0_10px_25px_rgba(227,2,17,0.4)] hover:bg-[#c9020f] transition-colors"
+            className="w-full bg-[#D10000] text-white font-bold text-[15px] py-4 rounded-[8px] flex items-center justify-center gap-2 shadow-sm"
           >
-            Click to Report
+            <Flag className="w-5 h-5" strokeWidth={2.5} />
+            REPORT THIS PRODUCT
+          </button>
+          <button className="w-full bg-white text-[#D10000] border border-[#D10000] font-bold text-[15px] py-4 rounded-[8px] flex items-center justify-center gap-2 shadow-sm">
+            <Headset className="w-5 h-5" strokeWidth={2} />
+            CONTACT SUPPORT
           </button>
         </div>
+
+        {/* Footer Note */}
+        <div className="bg-white rounded-[12px] p-4 flex gap-4 shadow-sm items-start mt-2 border border-gray-100">
+          <ShieldCheck className="w-8 h-8 text-[#D10000] flex-shrink-0" strokeWidth={2} />
+          <p className="text-[#1A1A1A] text-[12px] leading-relaxed">
+            <span className="font-bold">Authentiks</span> is committed to protecting consumers and brand integrity.<br/>
+            <span className="text-[#D10000] font-semibold mt-0.5 block">Thank you for helping us fight counterfeits.</span>
+          </p>
+        </div>
+
       </div>
     </div>
   );
@@ -1419,7 +1454,7 @@ function ResultInactive({ data }: { data: any }) {
     <div className="min-h-screen bg-[#F5F5F5] font-sans flex flex-col items-center">
       <MobileHeader
         title="Scan Result"
-        onLeftClick={() => navigate("/profile")}
+        onLeftClick={() => navigate(-1)}
         onNotificationClick={handleNotificationClick}
         rightIcon={<div className="w-10" />}
       />

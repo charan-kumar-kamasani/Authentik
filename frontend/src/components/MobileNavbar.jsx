@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Home, History, Gift, ShieldCheck } from "lucide-react";
+import { Home, QrCode, Clock, Flag, User } from "lucide-react";
 
 export default function MobileNavbar() {
     const navigate = useNavigate();
@@ -8,39 +8,36 @@ export default function MobileNavbar() {
 
     const navItems = [
         { id: "home", label: "Home", icon: Home, path: "/home" },
-        { id: "history", label: "History", icon: History, path: "/scan-history" },
-        { id: "warranty", label: "Warranty", icon: ShieldCheck, path: "/warranty" },
-        { id: "rewards", label: "Rewards", icon: Gift, path: "/rewards" },
+        { id: "scan", label: "Scan", icon: QrCode, path: "/scan" },
+        { id: "history", label: "History", icon: Clock, path: "/scan-history" },
+        { id: "report", label: "Report", icon: Flag, path: "/report" },
+        { id: "profile", label: "Profile", icon: User, path: "/profile" },
     ];
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-white via-[#F9FCFF] to-white border-t-2 border-[#E8F4F9] px-6 py-3 flex justify-between items-center z-50 shadow-[0_-8px_32px_rgba(13,78,150,0.12)] backdrop-blur-sm">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#F1F5F9] px-2 pt-3 pb-6 flex justify-between items-center z-50 shadow-[0_-2px_10px_rgba(0,0,0,0.03)]">
             {navItems.map((item) => {
-                const isActive = location.pathname === item.path;
+                const isActive = location.pathname === item.path || (item.id === "home" && location.pathname === "/");
                 const Icon = item.icon;
+
+                // Make the home icon filled when active
+                const isHomeActive = isActive && item.id === "home";
 
                 return (
                     <button
                         key={item.id}
                         onClick={() => navigate(item.path)}
-                        className="flex flex-col items-center gap-1 group relative"
+                        className="flex flex-col items-center gap-[5px] w-full max-w-[20%] active:opacity-70 transition-opacity"
                     >
-                        <div className={`p-2.5 rounded-[14px] transition-all duration-300 ${
-                            isActive 
-                                ? "bg-gradient-to-br from-[#0D4E96] via-[#1a5fa8] to-[#2CA4D6] text-white scale-110 shadow-[0_4px_16px_rgba(13,78,150,0.35)]" 
-                                : "text-[#1e3a5f] group-hover:bg-[#F0F7FF] group-active:scale-95"
-                            }`}>
-                            <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-                        </div>
-                        <span className={`text-[11px] font-black transition-colors ${
-                            isActive ? "text-[#0D4E96]" : "text-[#1e3a5f]"
-                            }`}>
+                        <Icon 
+                           size={24} 
+                           strokeWidth={isHomeActive ? 0 : 2} 
+                           fill={isHomeActive ? '#105DE4' : 'none'} 
+                           className={isActive ? "text-[#105DE4]" : "text-[#94A3B8]"} 
+                        />
+                        <span className={`text-[11px] font-semibold ${isActive ? "text-[#105DE4]" : "text-[#94A3B8]"}`}>
                             {item.label}
                         </span>
-                        {/* Active indicator dot */}
-                        {isActive && (
-                            <div className="absolute -bottom-1 w-1 h-1 rounded-full bg-[#2CA4D6] animate-pulse" />
-                        )}
                     </button>
                 );
             })}

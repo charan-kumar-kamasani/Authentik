@@ -49,6 +49,44 @@ const DEMO_PRODUCT = {
     description: "This product comes with a 1-Year brand warranty covering all manufacturing defects. Physical damages and unauthorized modifications are not covered under standard terms."
   },
   warrantyClaimStatus: null,
+  recommendations: [
+    {
+      id: 1,
+      productName: 'Daily Fibre+ Greens Unflavoured',
+      mrp: 1299,
+      oldPrice: '₹1,499',
+      discount: '13% OFF',
+      ratingBadge: '4.4g FIBRE',
+      productImage: 'https://res.cloudinary.com/dx4i1w3uf/image/upload/v1776596909/alphali_nig1vq.jpg'
+    },
+    {
+      id: 2,
+      productName: 'Plant Protein Mango Mania',
+      mrp: 1439,
+      oldPrice: '₹1,799',
+      discount: '20% OFF',
+      ratingBadge: '25g PROTEIN',
+      productImage: 'https://res.cloudinary.com/dx4i1w3uf/image/upload/v1776596909/alphali_nig1vq.jpg'
+    },
+    {
+      id: 3,
+      productName: 'Plant Protein Classic Unflavoured',
+      mrp: 1439,
+      oldPrice: '₹1,799',
+      discount: '20% OFF',
+      ratingBadge: '25g PROTEIN',
+      productImage: 'https://res.cloudinary.com/dx4i1w3uf/image/upload/v1776596909/alphali_nig1vq.jpg'
+    },
+    {
+      id: 4,
+      productName: 'Nutrition Mix Chocolate',
+      mrp: 1699,
+      oldPrice: '₹1,999',
+      discount: '15% OFF',
+      ratingBadge: '13 VITAMINS & MINERALS',
+      productImage: 'https://res.cloudinary.com/dx4i1w3uf/image/upload/v1776596909/alphali_nig1vq.jpg'
+    }
+  ]
 };
 
 const getDemoResult = (qrCode, userId, latitude, longitude, place) => {

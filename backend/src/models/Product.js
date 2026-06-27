@@ -33,6 +33,10 @@ const productSchema = new mongoose.Schema(
     // Detailed fields (matching ProductTemplate/Order)
     category: String,
     mrp: Number,
+    price: Number,
+    oldPrice: String,
+    discount: String,
+    ratingBadge: String,
     keyBenefits: String,
     manufacturedBy: String,
     marketedBy: String,

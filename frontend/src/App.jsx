@@ -24,6 +24,7 @@ import WebProblem from "./pages/web/WebProblem";
 import WebVerified from "./pages/web/WebVerified";
 import Scan from "./pages/mobile/scan";
 import Result from "./pages/mobile/Result";
+import ProductDetails from "./pages/mobile/ProductDetails";
 import Profile from "./pages/mobile/profile";
 import EditProfile from "./pages/mobile/EditProfile";
 import ScanHistory from "./pages/mobile/ScanHistory";
@@ -41,6 +42,7 @@ import Warranty from "./pages/mobile/Warranty";
 import RaiseClaim from "./pages/mobile/RaiseClaim";
 import UpdateWarranty from "./pages/mobile/UpdateWarranty";
 import Wallet from "./pages/mobile/Wallet";
+import Recommendations from "./pages/mobile/Recommendations";
 
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -428,6 +430,7 @@ export default function App() {
           <Route path="/terms-conditions" element={<TermsConditions />} />
           <Route path="/privacy-policy" element={<Policies />} />
           <Route path="/support" element={<Support />} />
+          <Route path="/product-details" element={<ProductDetails />} />
 
           {/* User Protected with Global Navbar */}
           <Route element={<PrivateRoute><MobileLayout /></PrivateRoute>}>
@@ -446,6 +449,7 @@ export default function App() {
             <Route path="/raise-claim/:id" element={<RaiseClaim />} />
             <Route path="/update-warranty/:id" element={<UpdateWarranty />} />
             <Route path="/wallet" element={<Wallet />} />
+            <Route path="/recommendations/:brandId" element={<Recommendations />} />
           </Route>
 
           {/* Smart fallback */}

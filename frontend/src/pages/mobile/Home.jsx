@@ -1,23 +1,47 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import API_BASE_URL, { getProfile } from "../../config/api";
-import MobileHeader from "../../components/MobileHeader";
+import logo from "../../assets/logo.svg";
+import highFive from "../../assets/v2/home/high_five.png";
+import { 
+  Bell, 
+  ScanLine, 
+  ShieldCheck, 
+  AlertTriangle, 
+  ShieldAlert, 
+  ShieldX,
+  ChevronRight, 
+  Calendar,
+  HeartHandshake
+} from "lucide-react";
 
-// Assets v2
-import banner1 from "../../assets/v2/home/corosel/corosel_1.svg";
-import banner2 from "../../assets/v2/home/corosel/corosel_2.svg";
-import banner3 from "../../assets/v2/home/corosel/corosel_3.png";
 
-import iconTotalScans from "../../assets/v2/home/header/qr.svg";
-import iconAlert from "../../assets/v2/home/header/warning.svg";
-import iconCounterfeit from "../../assets/v2/home/header/dangerous.svg";
-import iconTopBrands from "../../assets/v2/home/category/Group.svg";
-import iconScanHistory from "../../assets/v2/home/category/Vector.svg";
 
-import statusFake from "../../assets/v2/history/dangerous.svg";
-import statusWarning from "../../assets/v2/history/warning.svg";
-// Fallback for valid status as v2 might not have it or it's named differently
-import statusValid from "../../assets/logo.svg";
+
+
+const BannerShield = () => (
+  <svg viewBox="0 0 24 24" width="28" height="28" fill="#105DE4">
+    <path d="M12 2s8 4 8 10v5l-8 3-8-3v-5c0-6 8-10 8-10z"/>
+    <path d="M12 6s4.5 2 4.5 5.5v3l-4.5 1.5-4.5-1.5v-3C7.5 8 12 6 12 6z" fill="none" stroke="white" strokeWidth="1"/>
+    <path d="M10 12.5l1.5 1.5 3-3" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>
+);
+
+const OrangeAlertTriangle = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#F59E0B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" fill="#FFFBEB"/>
+    <line x1="12" y1="9" x2="12" y2="13" />
+    <line x1="12" y1="17" x2="12.01" y2="17" />
+  </svg>
+);
+
+const RedShieldX = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="#FEF2F2" />
+    <line x1="9" y1="10" x2="15" y2="16" />
+    <line x1="15" y1="10" x2="9" y2="16" />
+  </svg>
+);
 
 export default function Home() {
   const navigate = useNavigate();
@@ -29,15 +53,6 @@ export default function Home() {
     counterfeit: 0,
     alert: 0,
   });
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const banners = [banner1, banner2, banner3];
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % banners.length);
-    }, 3000);
-    return () => clearInterval(timer);
-  }, []);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -49,17 +64,15 @@ export default function Home() {
 
       setLoading(true);
       try {
-        const [statsRes, historyRes, profileData] = await Promise.all([
+        const [statsRes, historyRes] = await Promise.all([
           fetch(`${API_BASE_URL}/scan/stats`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
           fetch(`${API_BASE_URL}/scan/history`, {
             headers: { Authorization: `Bearer ${token}` },
-          }),
-          getProfile(token).catch(() => null),
+          })
         ]);
 
-        // Handle stats
         if (statsRes.ok) {
           const data = await statsRes.json();
           setStats({
@@ -70,7 +83,6 @@ export default function Home() {
           });
         }
 
-        // Handle history
         if (historyRes.ok) {
           const data = await historyRes.json();
           const slicedData = data.slice(0, 10);
@@ -78,74 +90,46 @@ export default function Home() {
           const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
           const mappedData = slicedData.map((item) => {
             const dateObj = new Date(item.createdAt);
-
             const day = String(dateObj.getDate()).padStart(2, "0");
             const monthName = monthNames[dateObj.getMonth()];
             const year = dateObj.getFullYear();
-
             const timeStr = dateObj.toLocaleTimeString("en-US", {
               hour: "2-digit",
               minute: "2-digit",
               hour12: true,
             });
 
-            let title = "Authentic Product";
-            let icon = statusValid;
-            let statusColor = "text-[#214B80]";
+            const title = item.productName || item.brandId?.brandName || "Premium Product";
+            const code = item.productCode || item.batchId || `AUTH-${Math.floor(10000 + Math.random() * 90000)}-${Math.floor(1000 + Math.random() * 9000)}`;
+
             let statusLabel = "Verified";
-            let badgeColor = "text-[#2CA4D6]";
-            let badgeBg = "bg-[#E8F4F9]";
-            let statusBadgeIcon = "verified"; // verified | alert | counterfeit
+            let badgeColor = "text-[#10B981]";
+            let badgeBg = "bg-[#ECFDF5]";
+            let dotColor = "bg-[#10B981]";
 
-            // Extract brand logo from populated brandId or company
-            let brandLogo = item.brandId?.brandLogo || null;
-
-            if (item.status === "FAKE") {
-              title = "Fake or Counterfeit";
-              icon = statusFake;
-              statusColor = "text-red-600";
+            if (item.status === "FAKE" || item.status === "INACTIVE") {
               statusLabel = "Counterfeit";
-              badgeColor = "text-[#DC2626]";
+              badgeColor = "text-[#EF4444]";
               badgeBg = "bg-[#FEF2F2]";
-              statusBadgeIcon = "counterfeit";
-              brandLogo = null;
-            } else if (item.status === "INACTIVE") {
-              title = "Inactive QR Code";
-              icon = statusFake;
-              statusColor = "text-red-600";
-              statusLabel = "Counterfeit";
-              badgeColor = "text-[#DC2626]";
-              badgeBg = "bg-[#FEF2F2]";
-              statusBadgeIcon = "counterfeit";
-              brandLogo = null;
-            } else if (
-              item.status === "ALREADY_USED" ||
-              item.status === "DUPLICATE"
-            ) {
-              title = "Duplicate Scan";
-              icon = statusWarning;
-              statusColor = "text-amber-500";
+              dotColor = "bg-[#EF4444]";
+            } else if (item.status === "ALREADY_USED" || item.status === "DUPLICATE") {
               statusLabel = "Alert";
-              badgeColor = "text-[#EA580C]";
-              badgeBg = "bg-[#FFF7ED]";
-              statusBadgeIcon = "alert";
-            } else {
-              title = item.brandId?.brandName || item.productName || "Product";
+              badgeColor = "text-[#F59E0B]";
+              badgeBg = "bg-[#FFFBEB]";
+              dotColor = "bg-[#F59E0B]";
             }
 
             return {
               id: item._id,
+              status: item.status, // Store status to determine icon inline
               title,
-              productName: item.productName,
+              code,
               date: `${day} ${monthName} ${year}`,
               time: timeStr,
-              icon,
-              brandLogo,
-              statusColor,
               statusLabel,
               badgeColor,
               badgeBg,
-              statusBadgeIcon,
+              dotColor,
               fullData: item
             };
           });
@@ -162,586 +146,208 @@ export default function Home() {
     fetchAllData();
   }, []);
 
-  console.log("Home stats:", recentScans);
-
   const handleRecentScanClick = (scan) => {
-    // Determine the path based on the scan status
     let status = scan.fullData.status || "ORIGINAL";
-    // Map status to what Result.tsx expects if needed
-    // Assuming status in DB matches validStatuses in Result.tsx
     navigate(`/result/${status}`, { state: scan.fullData });
   };
 
   const handleScanClick = () => {
-    // Always allow scanning - don't force profile completion
     navigate("/scan");
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] font-sans flex flex-col relative w-full h-full overflow-hidden">
+    <div className="min-h-screen bg-[#F8F9FA] font-sans flex flex-col relative w-full overflow-y-auto pb-24 overflow-x-hidden">
+      
       {/* Header */}
-      <MobileHeader
-        onLeftClick={() => navigate("/profile")}
-        onNotificationClick={() => navigate("/notifications")}
-        leftIcon={
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        }
-      />
-
-      <div className="flex-1 overflow-y-auto pb-24 bg-[#F8F9FA]">
-        {/* Welcome Text */}
-        <div className="px-6 pt-6 pb-2">
-          <p className="text-[#6F6F6F] text-[15px] font-medium mb-1">
-            Welcome to Authentiks
-          </p>
-          <h2 className="text-[#257DD4] font-extrabold text-[18px] leading-tight">
-            {recentScans.length > 0
-              ? "Stay Protected"
-              : "A Product Authentication Platform"}
-          </h2>
+      <div className="w-full flex items-center justify-between px-5 pt-10 pb-4 bg-[#F8F9FA]">
+        <div className="flex items-center gap-3">
+          <div className="w-[38px] h-[44px]">
+            <img src={logo} alt="Authentiks Logo" className="w-full h-full object-contain" />
+          </div>
+          <div className="flex flex-col mt-[-2px]">
+            <h1 className="text-[#0B1E36] text-[24px] font-extrabold tracking-tight leading-none">
+              Authentiks
+            </h1>
+            <p className="text-[#5A7184] text-[11px] font-medium tracking-wide mt-[3px]">Trusted. Verified. Protected.</p>
+          </div>
         </div>
+        <button onClick={() => navigate('/notifications')} className="relative p-2 mr-[-8px]">
+          <Bell className="w-[24px] h-[24px] text-[#0B1E36] stroke-[2]" />
+          <div className="absolute top-[8px] right-[10px] w-[9px] h-[9px] bg-[#105DE4] rounded-full border-[2px] border-[#F8F9FA]"></div>
+        </button>
+      </div>
 
-        {/* Banner Carousel */}
-        <div className="mt-2 mb-4 w-[92%] mx-auto">
-          <div className="relative rounded-[24px] overflow-hidden bg-black shadow-lg aspect-[340/115]">
-            {banners.map((banner, index) => (
-              <div
-                key={index}
-                className={`transition-opacity duration-700 ease-in-out absolute inset-0 ${
-                  index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"
-                }`}
-              >
-                <img
-                  src={banner}
-                  alt={`Banner ${index + 1}`}
-                  loading="lazy"
-                  className="w-full h-full object-contain"
-                />
-              </div>
-            ))}
+      {/* Main Content Area */}
+      <div className="px-5">
+        
+        {/* Verify with Confidence Banner */}
+        <div className="w-full bg-[#032B77] rounded-[20px] p-5 pb-5 relative overflow-hidden mb-5 flex flex-col shadow-md">
+          {/* Background glowing rings */}
+          <div className="absolute right-[-20%] top-[50%] transform -translate-y-1/2 w-[280px] h-[280px] flex items-center justify-center pointer-events-none">
+            <div className="absolute w-[240px] h-[240px] rounded-full border border-white/10"></div>
+            <div className="absolute w-[180px] h-[180px] rounded-full border border-white/20"></div>
+            <div className="absolute w-[120px] h-[120px] rounded-full border-[1.5px] border-[#3B82F6] opacity-70 blur-[1px]"></div>
+            
+            {/* Dots */}
+            <div className="absolute top-[20%] right-[30%] w-[4px] h-[4px] bg-[#60A5FA] rounded-full shadow-[0_0_10px_#60A5FA]"></div>
+            <div className="absolute bottom-[28%] left-[22%] w-[3px] h-[3px] bg-[#60A5FA] rounded-full shadow-[0_0_10px_#60A5FA]"></div>
+            
+            {/* Bottom glow */}
+            <div className="absolute w-[100px] h-[10px] bg-[#3B82F6] blur-[10px] bottom-[50px] rounded-full"></div>
           </div>
 
-          {/* Dots */}
-          <div className="mt-4 flex justify-center gap-2">
-            {banners.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  index === currentSlide
-                    ? "bg-[#0D4E96] w-6"
-                    : "bg-gray-300 w-2.5"
-                }`}
-              />
-            ))}
+          {/* Content */}
+          <div className="relative z-10 w-[65%]">
+            <h2 className="text-white text-[24px] font-bold leading-[1.2] mb-2 text-shadow-sm">Verify with<br/>Confidence.</h2>
+            <p className="text-[#E2E8F0] text-[12px] leading-[1.4] mb-4 max-w-[150px]">
+              Scan the Authentiks QR code to verify product authenticity in real time.
+            </p>
+            <button onClick={handleScanClick} className="bg-white rounded-[10px] flex items-center justify-center gap-1.5 px-3 py-2.5 shadow-sm active:scale-[0.98] transition-transform w-max">
+              <ScanLine className="w-[18px] h-[18px] text-[#105DE4] stroke-[2.5]" />
+              <span className="text-[#105DE4] text-[12px] font-bold tracking-wide whitespace-nowrap">SCAN TO VERIFY</span>
+            </button>
+          </div>
+
+          {/* Floating Shield Logo */}
+          <div className="absolute right-[5%] top-[60%] transform -translate-y-1/2 w-[110px] h-[120px] z-10 pointer-events-none">
+             <img src={logo} alt="Shield" className="w-full h-full object-contain drop-shadow-xl" style={{ animation: 'float 3s ease-in-out infinite' }} />
           </div>
         </div>
 
-        {loading ? (
-          <div className="px-4">
-            <ScanQrCodeButton onScanClick={() => {}} />
-            <div className="grid grid-cols-4 gap-3 mb-6">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="skeleton h-[90px] rounded-[16px]" />
-              ))}
-            </div>
-            <div className="h-6 w-32 skeleton mb-4" />
-            <div className="flex flex-col gap-3.5">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="skeleton h-20 rounded-[20px]" />
-              ))}
-            </div>
-          </div>
-        ) : recentScans.length > 0 ? (
-          <>
-            <ScanQrCodeButton onScanClick={handleScanClick} />
-            {/* Stats Grid */}
-            <div className="grid grid-cols-4 gap-3 px-4 mb-6">
-              <StatsCard
-                icon={iconTotalScans}
-                count={String(stats.totalScans)}
-                label="Total Scans"
-              />
-              <StatsCard
-                icon={statusValid}
-                count={String(stats.authentiks)}
-                label="Verified"
-                isLogo={true}
-              />
-              <StatsCard
-                icon={iconAlert}
-                count={String(stats.alert)}
-                label="Alert"
-                color="text-amber-500"
-              />
-              <StatsCard
-                icon={iconCounterfeit}
-                count={String(stats.counterfeit)}
-                label="Counterfeit"
-                color="text-red-500"
-              />
-            </div>
-
-            {/* Recent Scans Section */}
-            <div className="px-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-[#1A1A2E] text-[18px] font-black">
-                  Recent Scans
-                </h3>
-                <button 
-                  onClick={() => navigate('/scan-history')}
-                  className="text-[#2563EB] text-[13px] font-bold hover:underline"
-                >
-                  View All
-                </button>
+        {/* Stats Grid - One White Card Container */}
+        <div className="w-full bg-white rounded-[24px] py-[18px] px-2 mb-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#F1F5F9]">
+          <div className="flex items-center justify-between w-full">
+            {/* Stat: Total Scans */}
+            <div className="flex flex-col items-center flex-1">
+              <div className="w-[46px] h-[46px] rounded-full flex items-center justify-center mb-1.5 bg-[#F0F5FF]">
+                <ScanLine className="w-[20px] h-[20px] text-[#105DE4]" />
               </div>
-              <div className="flex flex-col gap-3">
-                {recentScans.slice(0, 5).map((scan, index) => (
-                  <div
-                    key={scan.id}
-                    onClick={() => handleRecentScanClick(scan)}
-                    className="bg-white rounded-[16px] p-3.5 flex items-center cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#F0F0F0] hover:shadow-[0_4px_20px_rgba(0,0,0,0.1)] transition-all duration-300 active:scale-[0.98]"
-                    style={{
-                      animation: `fadeSlideUp 0.5s ease-out forwards`,
-                      animationDelay: `${index * 0.08}s`,
-                      opacity: 0
-                    }}
-                  >
-                    {/* Brand Logo with Status Badge */}
-                    <div className="relative w-[60px] h-[60px] flex-shrink-0 mr-3.5">
-                      {/* Logo Circle */}
-                      <div className="w-full h-full rounded-full bg-[#F5F5F5] border-2 border-[#E8E8E8] flex items-center justify-center overflow-hidden">
-                        {scan.brandLogo ? (
-                          <img
-                            src={scan.brandLogo}
-                            alt={scan.title}
-                            className="w-[40px] h-[40px] object-contain"
-                          />
-                        ) : (
-                          <img
-                            src={scan.icon}
-                            alt={scan.title}
-                            className="w-[32px] h-[32px] object-contain"
-                          />
-                        )}
-                      </div>
-                      
-                      {/* Status Badge Overlay */}
-                      <div className={`absolute -bottom-0.5 -right-0.5 w-[22px] h-[22px] rounded-full flex items-center justify-center border-2 border-white shadow-sm ${
-                        scan.statusBadgeIcon === 'verified' 
-                          ? 'bg-[#2CA4D6]'
-                          : scan.statusBadgeIcon === 'alert'
-                          ? 'bg-[#F59E0B]'
-                          : 'bg-[#DC2626]'
-                      }`}>
-                        {scan.statusBadgeIcon === 'verified' ? (
-                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        ) : scan.statusBadgeIcon === 'alert' ? (
-                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                          </svg>
-                        ) : (
-                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                          </svg>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {/* Text Content */}
-                    <div className="flex-1 min-w-0 flex flex-col justify-center">
-                      <h4 className="font-bold text-[15px] text-[#1A1A2E] leading-tight mb-0.5 truncate">
-                       {scan.productName}
-                      </h4>
-                      {scan.statusBadgeIcon === 'verified' && scan.productName && scan.title !== scan.productName && (
-                        <p className="text-[13px] text-[#6B7280] font-medium mb-1.5 truncate">
-                           {scan.title}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <svg className="w-3.5 h-3.5 text-[#9CA3AF] flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z" />
-                        </svg>
-                        <p className="text-[#6B7280] text-[10px] font-medium">
-                          {scan.date} • {scan.time}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {/* Badge and Chevron */}
-                    <div className="flex items-center flex-shrink-0  gap-1">
-                      <div className={`inline-flex items-center gap-1 text-[10px] font-bold tracking-wide uppercase ${scan.badgeColor} px-2.5 py-1 rounded-full ${scan.badgeBg}`}>
-                        {scan.statusLabel}
-                      </div>
-                      <svg 
-                        className="w-5 h-5 text-[#C4C4C4]" 
-                        fill="none" 
-                        stroke="currentColor" 
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <span className="text-[#0B1E36] font-extrabold text-[22px] leading-none mb-[3px]">{stats.totalScans}</span>
+              <span className="text-[#5A7184] text-[10.5px] font-medium text-center">Total Scans</span>
             </div>
             
-            {/* Animation keyframes */}
-            <style>
-              {`
-                @keyframes fadeSlideUp {
-                  from {
-                    opacity: 0;
-                    transform: translateY(15px);
-                  }
-                  to {
-                    opacity: 1;
-                    transform: translateY(0);
-                  }
-                }
-              `}
-            </style>
+            <div className="w-[1px] h-[55px] bg-[#F1F5F9] mx-1"></div>
 
-            {/* Floating Scan Button */}
-            {/* <div className="fixed bottom-[80px] left 0 right-0 px-6 z-30">
-              <ScanQrCodeButton onScanClick={handleScanClick} />
-            </div> */}
-          </>
-        ) : (
-          <>
-            {/* Scan Button Section */}
-            <ScanQrCodeButton onScanClick={handleScanClick} />
-
-            {/* Trusted By Card */}
-            <div className="mx-5 mb-6 relative group">
-              <style>
-                {`
-                  @keyframes gradient-shift {
-                    0% { background-position: 0% 50%; }
-                    50% { background-position: 100% 50%; }
-                    100% { background-position: 0% 50%; }
-                  }
-                  
-                  @keyframes float-gentle {
-                    0%, 100% { transform: translateY(0px); }
-                    50% { transform: translateY(-4px); }
-                  }
-                `}
-              </style>
-
-              {/* Animated gradient background */}
-              <div
-                className="absolute inset-0 rounded-[24px] opacity-80"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #E8F4F9, #F0F9FF, #E1F5FE, #F0F9FF, #E8F4F9)",
-                  backgroundSize: "300% 300%",
-                  animation: "gradient-shift 6s ease infinite",
-                }}
-              />
-
-              {/* Glow effect */}
-              <div className="absolute inset-0 rounded-[24px] bg-gradient-to-br from-[#2CA4D6]/10 via-transparent to-[#0D4E96]/10 blur-xl" />
-
-              {/* Content */}
-              <div
-                className="relative bg-white/90 backdrop-blur-sm rounded-[24px] p-5 flex items-center gap-5 border border-[#2CA4D6]/20 shadow-[0_10px_40px_rgba(44,164,214,0.15)] transition-all duration-300 hover:shadow-[0_15px_50px_rgba(44,164,214,0.25)]"
-                style={{ animation: "float-gentle 3s ease-in-out infinite" }}
-              >
-                {/* Logo container with gradient border */}
-                <div className="relative w-18 h-18 flex-shrink-0">
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#2CA4D6] to-[#0D4E96] opacity-20 blur-md" />
-                  <div className="relative w-full h-full rounded-full bg-gradient-to-br from-[#E8F4F9] to-[#F0F9FF] flex items-center justify-center border-2 border-[#2CA4D6]/30 shadow-lg">
-                    <img
-                      src="logo.svg"
-                      alt="logo"
-                      className="w-16 h-16 object-contain"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-[#6E6D6B] text-[12px] font-bold mb-1 tracking-wide uppercase">
-                    Trusted by
-                  </p>
-                  <h4
-                    className="font-black text-[24px] leading-tight bg-gradient-to-r from-[#0D4E96] via-[#2CA4D6] to-[#0D4E96] bg-clip-text text-transparent"
-                    style={{
-                      backgroundSize: "200% auto",
-                      animation: "gradient-shift 3s linear infinite",
-                    }}
-                  >
-                    100+ Brands
-                    <br />
-                    2M+ Users
-                  </h4>
-                </div>
-
-                {/* Sparkle accent */}
-                <div className="absolute top-3 right-3 w-2 h-2 rounded-full bg-[#2CA4D6] opacity-50 animate-pulse" />
+            {/* Stat: Verified */}
+            <div className="flex flex-col items-center flex-1">
+              <div className="w-[46px] h-[46px] rounded-full flex items-center justify-center mb-1.5 bg-[#ECFDF5]">
+                <ShieldCheck className="w-[20px] h-[20px] text-[#10B981]" />
               </div>
+              <span className="text-[#0B1E36] font-extrabold text-[22px] leading-none mb-[3px]">{stats.authentiks}</span>
+              <span className="text-[#5A7184] text-[10.5px] font-medium text-center">Verified</span>
             </div>
 
-            {/* Why Scan Card */}
-            <div className="mx-5 mb-8 relative group">
-              {/* Gradient background layer */}
-              <div className="absolute inset-0 rounded-[24px] bg-gradient-to-br from-[#E8F4F9]/50 via-white to-[#F0F9FF]/50 blur-sm" />
+            <div className="w-[1px] h-[55px] bg-[#F1F5F9] mx-1"></div>
 
-              {/* Main card */}
-              <div className="relative bg-white/95 backdrop-blur-sm rounded-[20px] p-4 shadow-[0_15px_50px_rgba(13,78,150,0.12)] border border-[#0D4E96]/10 hover:shadow-[0_20px_60px_rgba(13,78,150,0.18)] transition-all duration-500">
-                {/* Animated corner accents */}
-                <div className="absolute top-1 right-1 w-12 h-12 bg-gradient-to-br from-[#2CA4D6]/10 to-transparent rounded-full blur-2xl" />
-                <div className="absolute bottom-1 left-1 w-12 h-12 bg-gradient-to-tr from-[#0D4E96]/10 to-transparent rounded-full blur-2xl" />
-
-                <h3 className="relative text-[#0D4E96] text-[16px] font-black mb-3 flex items-center gap-2">
-                  Why Scan with Authentiks?
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#2CA4D6] animate-pulse" />
-                </h3>
-
-                <div className="relative flex flex-col gap-2.5">
-                  <div className="flex items-center gap-3 group/item hover:translate-x-1 transition-transform duration-300">
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-[#2CA4D6]/20 rounded-lg blur-md" />
-                      <div className="relative bg-gradient-to-br from-[#E8F4F9] to-[#D4F1F9] p-2 rounded-lg border border-[#2CA4D6]/20 shadow-sm">
-                        <svg
-                          width="12"
-                          height="12"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="#2CA4D6"
-                          strokeWidth="2.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                        </svg>
-                      </div>
-                    </div>
-                    <span className="text-[#444] font-bold text-[12px] flex-1">
-                      Direct Brand Verification
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-3 group/item hover:translate-x-1 transition-transform duration-300">
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-[#FFB300]/20 rounded-lg blur-md" />
-                      <div className="relative bg-gradient-to-br from-[#FFF8E1] to-[#FFECB3] p-2 rounded-lg border border-[#FFB300]/20 shadow-sm">
-                        <svg
-                          width="12"
-                          height="12"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="#FFB300"
-                          strokeWidth="2.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                          <line x1="12" y1="9" x2="12" y2="13" />
-                          <line x1="12" y1="17" x2="12.01" y2="17" />
-                        </svg>
-                      </div>
-                    </div>
-                    <span className="text-[#444] font-bold text-[12px] flex-1">
-                      Identify Reused QR Codes
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-3 group/item hover:translate-x-1 transition-transform duration-300">
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-[#F44336]/20 rounded-lg blur-md" />
-                      <div className="relative bg-gradient-to-br from-[#FFEBEE] to-[#FFCDD2] p-2 rounded-lg border border-[#F44336]/20 shadow-sm">
-                        <svg
-                          width="12"
-                          height="12"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="#F44336"
-                          strokeWidth="2.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <circle cx="12" cy="12" r="10" />
-                          <line x1="15" y1="9" x2="9" y2="15" />
-                          <line x1="9" y1="9" x2="15" y2="15" />
-                        </svg>
-                      </div>
-                    </div>
-                    <span className="text-[#444] font-bold text-[12px] flex-1">
-                      Detect Fake Products Instantly
-                    </span>
-                  </div>
-                </div>
+            {/* Stat: Alert */}
+            <div className="flex flex-col items-center flex-1">
+              <div className="w-[46px] h-[46px] rounded-full flex items-center justify-center mb-1.5 bg-[#FFFBEB]">
+                <AlertTriangle className="w-[20px] h-[20px] text-[#F59E0B]" />
               </div>
+              <span className="text-[#0B1E36] font-extrabold text-[22px] leading-none mb-[3px]">{stats.alert}</span>
+              <span className="text-[#5A7184] text-[10.5px] font-medium text-center">Alert</span>
             </div>
-          </>
-        )}
-      </div>
 
-    </div>
-  );
-}
+            <div className="w-[1px] h-[55px] bg-[#F1F5F9] mx-1"></div>
 
-function StatsCard({
-  icon,
-  count,
-  label,
-  color = "text-[#214B80]",
-  isLogo = false,
-}) {
-  return (
-    <div className="bg-white rounded-[16px] py-3 px-1 flex flex-col items-center justify-center shadow-[0_2px_6px_rgba(0,0,0,0.08)] h-[90px]">
-      <div className="mb-1.5 h-[24px] flex items-center">
-        <img
-          src={icon}
-          alt={label}
-          className={`${isLogo ? "w-5" : "w-6"} h-auto object-contain`}
-        />
-      </div>
-      <span className={`font-bold text-[18px] leading-none mb-1 ${color}`}>
-        {count}
-      </span>
-      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tight">
-        {label}
-      </span>
-    </div>
-  );
-}
-
-function ActionButton({ icon, label, bgColor, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex-1 ${bgColor} rounded-[20px] p-4 flex items-center justify-center shadow-md relative overflow-hidden h-[70px]`}
-    >
-      <div className="flex items-center gap-3 z-10">
-        <div className="w-12 h-12 flex items-center justify-center">
-          <img
-            src={icon}
-            alt={label}
-            className="w-full h-full object-contain "
-          />
+            {/* Stat: Counterfeit */}
+            <div className="flex flex-col items-center flex-1">
+              <div className="w-[46px] h-[46px] rounded-full flex items-center justify-center mb-1.5 bg-[#FEF2F2]">
+                <ShieldX className="w-[20px] h-[20px] text-[#EF4444]" />
+              </div>
+              <span className="text-[#0B1E36] font-extrabold text-[22px] leading-none mb-[3px]">{stats.counterfeit}</span>
+              <span className="text-[#5A7184] text-[10.5px] font-medium text-center">Counterfeit</span>
+            </div>
+          </div>
         </div>
-        <span className="text-white font-bold text-[16px] leading-tight text-left">
-          {label.split(" ").map((word, i) => (
-            <div key={i}>{word}</div>
-          ))}
-        </span>
+
+        {/* Recent Scans Card */}
+        <div className="w-full bg-white rounded-[24px] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#F1F5F9]">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-[#0B1E36] text-[16px] font-bold">Recent Scans</h3>
+            <button onClick={() => navigate('/scan-history')} className="text-[#105DE4] text-[13px] font-bold flex items-center gap-0.5 hover:underline">
+              View All <ChevronRight className="w-[14px] h-[14px]" />
+            </button>
+          </div>
+
+          <div className="flex flex-col">
+            {loading ? (
+              <div className="py-8 flex justify-center">
+                 <div className="w-6 h-6 border-4 border-[#105DE4] border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            ) : recentScans.length === 0 ? (
+              <div className="py-8 text-center text-gray-400 font-medium text-[13px]">
+                No recent scans found.
+              </div>
+            ) : (
+              recentScans.slice(0, 4).map((scan, index) => {
+                let iconComponent = <img src={logo} alt="Verified" className="w-[26px] h-[26px] object-contain drop-shadow-sm" />;
+                let iconContainerBg = "bg-[#F0F5FF]";
+                if (scan.status === "FAKE" || scan.status === "INACTIVE") {
+                  iconComponent = <RedShieldX />;
+                  iconContainerBg = "bg-[#FEF2F2]";
+                } else if (scan.status === "ALREADY_USED" || scan.status === "DUPLICATE") {
+                  iconComponent = <OrangeAlertTriangle />;
+                  iconContainerBg = "bg-[#FFFBEB]";
+                }
+
+                return (
+                  <div key={index} onClick={() => handleRecentScanClick(scan)} className="w-full flex items-center py-3.5 border-b border-gray-100 last:border-0 cursor-pointer active:bg-gray-50 transition-colors">
+                    {/* Icon */}
+                    <div className={`w-[44px] h-[44px] rounded-[12px] flex items-center justify-center mr-4 flex-shrink-0 ${iconContainerBg}`}>
+                       {iconComponent}
+                    </div>
+                    {/* Texts */}
+                    <div className="flex flex-col flex-1 min-w-0 pr-2 gap-[3px]">
+                      <span className="text-[#0B1E36] text-[13.5px] font-extrabold truncate leading-tight">{scan.title}</span>
+                      <span className="text-[#829AB1] text-[11px] truncate">{scan.code}</span>
+                      <div className="flex items-center gap-1.5 text-[#A0AEC0] text-[10px] font-medium mt-[1px]">
+                        <Calendar className="w-[10px] h-[10px]" />
+                        {scan.date}, {scan.time}
+                      </div>
+                    </div>
+                    {/* Pill & Arrow */}
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                       <div className={`flex items-center gap-1.5 px-3 py-[4px] rounded-full text-[11px] font-bold ${scan.badgeColor} ${scan.badgeBg}`}>
+                         <div className={`w-[5px] h-[5px] rounded-full ${scan.dotColor}`}></div>
+                         {scan.statusLabel}
+                       </div>
+                       <ChevronRight className="w-[16px] h-[16px] text-gray-300 stroke-[2.5]" />
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        {/* Bottom Banner Card */}
+        <div className="w-full bg-[#F4F8FE] border border-[#E5EFFF] rounded-[16px] py-[12px] mt-6 mb-2 flex items-center relative overflow-hidden shadow-[0_2px_12px_rgba(16,93,228,0.04)] min-h-[90px]">
+          <div className="mr-2 ml-2 z-10 flex-shrink-0">
+            
+                <img src={logo} alt="Authentiks" className="w-[50px] h-[50px] object-contain drop-shadow-sm" />
+             
+          </div>
+          <div className="flex flex-col z-10 w-[65%]">
+            <h4 className="text-[#0B1E36] font-bold text-[13px] leading-tight mb-[4px]">Your verification makes a difference.</h4>
+            <p className="text-[#5A7184] text-[10px] leading-[1.4] pr-1">Help us build a safer authentication platform by verifying products before you buy.</p>
+          </div>
+          {/* Decorative illustration */}
+          <div className="absolute right-[-5px] bottom-0 top-0 z-0 pointer-events-none flex items-end justify-end">
+             <img src={highFive} alt="High Five" className="h-[75%] w-auto object-contain object-bottom" />
+          </div>
+        </div>
+
       </div>
-    </button>
-  );
-}
 
-function ScanQrCodeButton({ onScanClick }) {
-  const navigate = useNavigate();
-  const handleClick = onScanClick || (() => navigate("/scan"));
-
-  return (
-    <div className="px-5 mb-6">
       <style>
         {`
-          @keyframes wave-gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-          }
-          
-          @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-          }
-
-          @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(13, 78, 150, 0.3), 0 0 40px rgba(44, 164, 214, 0.2); }
-            50% { box-shadow: 0 0 30px rgba(13, 78, 150, 0.5), 0 0 60px rgba(44, 164, 214, 0.3); }
+          @keyframes float {
+            0%, 100% { transform: translateY(-50%) translateY(0); }
+            50% { transform: translateY(-50%) translateY(-6px); }
           }
         `}
       </style>
-      <button
-        onClick={handleClick}
-        className="w-full text-white text-[22px] font-bold h-[65px] rounded-[38px] flex items-center justify-center gap-4 active:scale-[0.97] transition-transform relative overflow-hidden group"
-        style={{
-          background:
-            "linear-gradient(135deg, #0D4E96, #1a5fa8, #2CA4D6, #1a5fa8, #0D4E96)",
-          backgroundSize: "300% 300%",
-          animation:
-            "wave-gradient 4s ease infinite, pulse-glow 3s ease-in-out infinite",
-        }}
-      >
-        {/* Flowing shimmer overlay */}
-        <div
-          className="absolute inset-0 z-0"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent)",
-            transform: "skewX(-20deg)",
-            animation: "shimmer 3s infinite",
-          }}
-        />
-
-        {/* Radial gradient overlay for depth */}
-        <div className="absolute inset-0 z-0 bg-gradient-radial from-white/5 via-transparent to-transparent opacity-50" />
-
-        {/* Content */}
-        <div className="relative z-10 flex items-center justify-center gap-4 drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-          <svg
-            width="32"
-            height="32"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <rect x="3" y="3" width="7" height="7"></rect>
-            <rect x="14" y="3" width="7" height="7"></rect>
-            <rect x="14" y="14" width="7" height="7"></rect>
-            <rect x="3" y="14" width="7" height="7"></rect>
-            <path d="M7 7h.01M17 7h.01M17 17h.01M7 17h.01"></path>
-          </svg>
-          Scan to Verify
-        </div>
-
-        {/* Top highlight */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-white/40 to-transparent z-20" />
-      </button>
     </div>
   );
 }
-<style>
-  {`
-@keyframes shimmer {
-  0% { background-position: -468px 0; }
-  100% { background-position: 468px 0; }
-}
-
-.skeleton {
-  background: linear-gradient(
-    to right,
-    #eeeeee 8%,
-    #dddddd 18%,
-    #eeeeee 33%
-  );
-  background-size: 800px 104px;
-  animation: shimmer 1.6s infinite linear;
-}
-`}
-</style>;
