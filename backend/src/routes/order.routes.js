@@ -479,57 +479,131 @@ router.put('/:id/authorize', protect, authorize('company', 'authorizer'), async 
     }
     
     const required = order.quantity || 0;
-    const available = company.qrCredits || 0;
-    if (available < required) {
-      const shortfall = required - available;
-      const pricing = await calculateQrPrice(shortfall);
-      return res.status(400).json({
-        insufficientCredits: true,
-        required,
-        available,
-        shortfall,
-        topupCostPerQr: pricing.pricePerQr,
-        topupTotalCost: pricing.subtotal,
-        companyId: company._id,
-        companyName: company.companyName,
-        message: `Insufficient QR credits. Need ${required}, have ${available}. ${shortfall} more needed.`
-      });
+
+    // ============================================
+    // AUTOMATIC PROCESSING (MAP PHYSICAL QRS)
+    // ============================================
+    const BlankQr = require('../models/BlankQr');
+    const Product = require('../models/Product');
+    const ProductCoupon = require('../models/ProductCoupon');
+    const totalQty = required;
+    const brandName = order.brand;
+
+    // Find last sequence number for this brand
+    const lastProduct = await Product.findOne({ brand: brandName }).sort({ sequence: -1 });
+    let startSeq = lastProduct && lastProduct.sequence ? lastProduct.sequence + 1 : 1;
+    const brandDoc = await Brand.findOne({ brandName: brandName });
+
+    // Fetch unassigned physical QRs
+    const qrsToUse = await BlankQr.find({ 
+        assignedToCompany: company._id,
+        isAssigned: false,
+        isBlocked: false
+    })
+    .sort({ serialNumber: 1 })
+    .limit(totalQty);
+
+    if (qrsToUse.length < totalQty) {
+        return res.status(400).json({ 
+            message: `Not enough physical Blank QRs available for this company in database. Requested: ${totalQty}, Found: ${qrsToUse.length}. Please ask Superadmin to assign more stock.` 
+        });
     }
 
-    // Deduct credits
-    company.qrCredits -= required;
-    await company.save({ validateModifiedOnly: true });
-    await CreditTransaction.create({
-      companyId: company._id,
-      type: 'spend',
-      amount: -required,
-      balanceAfter: company.qrCredits,
-      orderId: order._id,
-      performedBy: req.user._id,
-      note: `Authorized order ${order.orderId} — ${required} QR credits spent`
-    });
-    // --- End credit check ---
+    const productsToCreate = [];
+    for (let i = 0; i < totalQty; i++) {
+      const currentSeq = startSeq + i;
+      const qrCode = qrsToUse[i].qrCode;
+      
+      productsToCreate.push({
+        qrCode,
+        productName: order.productName,
+        skuNumber: order.skuNumber,
+        brand: brandName,
+        brandId: brandDoc ? brandDoc._id : null,
+        batchNo: order.batchNo,
+        manufactureDate: order.manufactureDate,
+        expiryDate: order.expiryDate,
+        productImage: order.productImage,
+        mfdOn: (order.mfdOn && order.mfdOn.month && order.mfdOn.year) ? order.mfdOn : undefined,
+        bestBefore: (order.bestBefore && order.bestBefore.value) ? order.bestBefore : undefined,
+        calculatedExpiryDate: order.calculatedExpiryDate,
+        dynamicFields: order.dynamicFields,
+        variants: order.variants,
+        warranty: (order.warranty && (order.warranty.duration || order.warranty.warrantyType)) ? order.warranty : undefined,
+        orderLinks: order.orderLinks || [],
+        description: order.description,
+        productInfo: order.productInfo,
+        quantity: 1,
+        sequence: currentSeq,
+        orderId: order._id,
+        isActive: true, // Physical QRs are instantly active
+        createdBy: req.user._id
+      });
+    }
+    
+    const insertedProducts = await Product.insertMany(productsToCreate);
+    
+    // Map Blank QRs to the created products
+    const bulkOps = insertedProducts.map((prod, index) => ({
+        updateOne: {
+            filter: { _id: qrsToUse[index]._id },
+            update: { $set: { isAssigned: true, assignedToProduct: prod._id } }
+        }
+    }));
+    await BlankQr.bulkWrite(bulkOps);
 
-    order.status = 'Authorized';
+    // Sync company qrCredits cache
+    const unassignedForCompanyCount = await BlankQr.countDocuments({
+       assignedToCompany: company._id,
+       isAssigned: false,
+       isBlocked: false
+    });
+    company.qrCredits = unassignedForCompanyCount;
+    await company.save({ validateModifiedOnly: true });
+
+    order.qrCodesGenerated = true;
+    order.qrGeneratedCount = totalQty;
+    order.status = 'Received'; // Mark as Received since they already have the physical QRs
     order.history.push({
-      status: 'Authorized',
+      status: 'Received',
       changedBy: req.user._id,
       role: req.user.role,
-      comment: 'Order authorized and sent to Super Admin for processing'
+      comment: 'Order authorized and physical QRs mapped automatically.'
     });
 
     await order.save();
     
+    // Create ProductCoupon entries if order has coupon data
+    if (order.coupon && order.coupon.title) {
+      try {
+        const createdProducts = await Product.find({ orderId: order._id }).select('_id').lean();
+        const couponDocs = createdProducts.map(p => ({
+          title: order.coupon.title,
+          code: order.coupon.code || '',
+          description: order.coupon.description || '',
+          websiteLink: order.coupon.websiteLink || '',
+          expiryDate: order.coupon.expiryDate || null,
+          productId: p._id,
+          orderId: order._id,
+          brandId: brandDoc ? brandDoc._id : null,
+          companyId: brandDoc ? brandDoc.companyId : null,
+        }));
+        await ProductCoupon.insertMany(couponDocs);
+      } catch (couponErr) {
+        console.warn('Failed to create product coupons:', couponErr.message);
+      }
+    }
+
     // Send email notifications
     const recipients = await getNotificationRecipients(order);
     await sendOrderStatusEmail(recipients, {
       orderId: order.orderId,
       productName: order.productName,
       brand: order.brand,
-      quantity: order.quantity,
+      quantity: totalQty,
       status: order.status,
       changedBy: req.user.name || req.user.email
-    }, `Order authorized by ${req.user.name || req.user.email}. Awaiting Super Admin processing.`);
+    }, `Order authorized by ${req.user.name || req.user.email}. Physical QRs mapped and order completed automatically.`);
     
     res.json(order);
   } catch (error) {
@@ -578,11 +652,47 @@ router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req
     // Try to resolve Brand record for this order if available
     const brandDoc = await Brand.findOne({ brandName: brandName });
 
+    const BlankQr = require('../models/BlankQr');
+    let qrsToUse = [];
+    
+    // Check if this is a company order
+    let targetCompanyId = null;
+    if (brandDoc && brandDoc.companyId) {
+        targetCompanyId = brandDoc.companyId;
+    } else if (order.company) {
+        targetCompanyId = order.company._id || order.company;
+    }
+
+    if (targetCompanyId) {
+        // Find unassigned physical QRs assigned to this company
+        qrsToUse = await BlankQr.find({ 
+            assignedToCompany: targetCompanyId,
+            isAssigned: false,
+            isBlocked: false
+        })
+        .sort({ serialNumber: 1 })
+        .limit(totalQty);
+
+        if (qrsToUse.length < totalQty) {
+            return res.status(400).json({ 
+                message: `Not enough physical Blank QRs available for this company. Requested: ${totalQty}, Available: ${qrsToUse.length}. Please assign more QRs to the company first.` 
+            });
+        }
+    }
+
     for (let i = 0; i < totalQty; i++) {
       const currentSeq = startSeq + i;
-      const seqString = currentSeq.toString().padStart(6, '0');
-      const uniqueSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
-      const qrCode = `${brandName}-${seqString}-${order.orderId}-${uniqueSuffix}`;
+      
+      let qrCode = '';
+      if (qrsToUse.length > 0) {
+          // Use physical QR
+          qrCode = qrsToUse[i].qrCode;
+      } else {
+          // Fallback to generating digital QR
+          const seqString = currentSeq.toString().padStart(6, '0');
+          const uniqueSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+          qrCode = `${brandName}-${seqString}-${order.orderId}-${uniqueSuffix}`;
+      }
       
       productsToCreate.push({
         qrCode,
@@ -611,7 +721,18 @@ router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req
       });
     }
     
-    await Product.insertMany(productsToCreate);
+    const insertedProducts = await Product.insertMany(productsToCreate);
+    
+    if (qrsToUse.length > 0) {
+        // Map Blank QRs to the created products
+        const bulkOps = insertedProducts.map((prod, index) => ({
+            updateOne: {
+                filter: { _id: qrsToUse[index]._id },
+                update: { $set: { isAssigned: true, assignedToProduct: prod._id } }
+            }
+        }));
+        await BlankQr.bulkWrite(bulkOps);
+    }
     
     // Record bonus transaction if needed (admin grant)
     if (bonusQty > 0 && order.company) {
@@ -1105,7 +1226,50 @@ router.get('/:id/download', protect, async (req, res) => {
       res.status(500).json({ message: 'Server Error', error: error.message });
     }
   }
+});
 
+// 10b. DOWNLOAD CSV (For mapped physical QRs)
+router.get('/:id/download-csv', protect, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+    
+    if (!order.qrCodesGenerated) {
+      return res.status(400).json({ message: 'QR codes not generated yet' });
+    }
+
+    const products = await Product.find({ orderId: order._id }).sort({ sequence: 1 });
+    if (products.length === 0) {
+      return res.status(404).json({ message: 'No QR codes found for this order' });
+    }
+
+    let csvContent = 'Serial Number,QR Code,Product Name,Batch No\n';
+    
+    // We need to find the serial numbers. Wait, Product model doesn't store the physical BlankQr serial number directly!
+    // But we can find the BlankQrs that are assigned to these products.
+    const productIds = products.map(p => p._id);
+    const BlankQr = require('../models/BlankQr');
+    const blankQrs = await BlankQr.find({ assignedToProduct: { $in: productIds } });
+    
+    // Map productId -> BlankQr
+    const qrMap = {};
+    for (const bq of blankQrs) {
+      qrMap[bq.assignedToProduct.toString()] = bq;
+    }
+
+    for (const p of products) {
+      const bq = qrMap[p._id.toString()];
+      const sn = bq ? bq.serialNumber : p.sequence;
+      csvContent += `"${sn}","${p.qrCode}","${p.productName}","${p.batchNo || ''}"\n`;
+    }
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=order_${order.orderId || order._id}_qrs.csv`);
+    res.send(csvContent);
+  } catch (error) {
+    console.error('Download CSV error:', error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
 });
 
 // 10b. DOWNLOAD QR IMAGES (ZIP of individual QR images)

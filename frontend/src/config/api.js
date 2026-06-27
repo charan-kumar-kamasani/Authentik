@@ -57,7 +57,8 @@ export default API_BASE_URL;
 export const getOrders = async (token) => {
     try {
         const response = await fetch(`${API_BASE_URL}/orders`, {
-            headers: { Authorization: `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}`, 'Cache-Control': 'no-store' },
+            cache: 'no-store'
         });
         if (response.status === 401) {
             // Clear auth tokens only, preserve other local state
@@ -305,6 +306,21 @@ export const downloadOrderPdf = async (orderId, token) => {
         return await response.blob();
     } catch(error) {
         console.error("PDF Download Error:", error);
+        throw error;
+    }
+};
+export const downloadOrderCsv = async (orderId, token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/orders/${orderId}/download-csv`, {
+             headers: { Authorization: `Bearer ${token}` }
+        });
+        if(!response.ok) {
+             const err = await response.json().catch(() => ({ message: `Server returned ${response.status}` }));
+             throw new Error(err.message || err.error || 'Failed to download CSV');
+        }
+        return await response.blob();
+    } catch(error) {
+        console.error("CSV Download Error:", error);
         throw error;
     }
 };

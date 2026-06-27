@@ -25,6 +25,7 @@ import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { maskPhoneNumber, debounce } from "../../utils/helper";
 import TablePagination from "../../components/TablePagination";
 import { useConfirm } from "../../components/ConfirmModal";
+import CompanyProfileView from "../../components/CompanyProfileView";
 
 const UserManagement = () => {
   const confirmModal = useConfirm();
@@ -74,6 +75,13 @@ const UserManagement = () => {
   // Brand State
   const [brands, setBrands] = useState([]);
   const [companies, setCompanies] = useState([]);
+  
+  // Assign QRs state
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [assignTargetCompany, setAssignTargetCompany] = useState(null);
+  const [assignQty, setAssignQty] = useState('');
+  const [assigning, setAssigning] = useState(false);
+
   const [selectedCompany, setSelectedCompany] = useState("");
   const [companyForm, setCompanyForm] = useState({
     companyName: "",
@@ -426,6 +434,35 @@ const UserManagement = () => {
     setActiveTab("create");
   };
 
+  const handleViewCompany = async (company) => {
+    setEditingUser(null);
+    setEditingBrand(null);
+    setEditingCompany(company);
+    
+    // Fetch brands for this company to display in profile
+    try {
+      const bData = await getBrandsForCompany(token, company._id);
+      if (bData && Array.isArray(bData)) {
+        setCompanyBrands(bData.map(b => ({ 
+          brandName: b.brandName || "", 
+          brandLogo: b.brandLogo || "", 
+          logoType: "url", 
+          _id: b._id,
+          status: b.status || 'active'
+        })));
+      } else {
+        setCompanyBrands([]);
+      }
+    } catch(err) {
+      setCompanyBrands([]);
+    }
+
+    // Note: Staff are already filtered when loading. We will filter them inline in the profile view
+    // by comparing companyId.
+
+    setActiveTab('companyDetails');
+  };
+
   const handleEditUser = (user) => {
     setEditingUser(user);
     setFormData({
@@ -624,7 +661,7 @@ const UserManagement = () => {
         await updateStaffUser(editingUser._id, payload, token);
         await confirmModal({ title: 'Success', description: "User Updated Successfully", cancelText: null });
         setEditingUser(null);
-        setActiveTab("list");
+        setActiveTab(editingCompany ? "companyDetails" : "list");
         loadStaff();
       } else {
         // Create staff
@@ -687,66 +724,71 @@ const UserManagement = () => {
         await updateBrand(editingBrand.id, payload, token);
         await confirmModal({ title: 'Success', description: "Brand Updated Successfully", cancelText: null });
         setEditingBrand(null);
-        setActiveTab("list");
-        loadBrands();
+        if (editingCompany) {
+          handleViewCompany(editingCompany);
+        } else {
+          setActiveTab("list");
+          loadBrands();
+        }
         return;
-      }
-
-      // If admin/superadmin used the multi-row brand inputs (companyBrands), create each brand for selectedCompany
-      const rows = companyBrands.filter((b) => b.brandName && b.brandName.trim() !== "");
-      if (rows.length > 0) {
-        if (!selectedCompany) {
-          await confirmModal({ title: 'Required', description: "Please select a company to associate these brands with.", cancelText: null });
-          return;
-        }
-        // create all brands sequentially to avoid race conditions on backend
-        const created = [];
-        for (const r of rows) {
-          let rowLogo = r.brandLogo;
-          if (r.logoType === 'upload' && r.logoFile) {
-            const uploaded = await uploadToCloudinary(r.logoFile);
-            if (uploaded) rowLogo = uploaded;
-          }
-          const payload = {
-            brandName: r.brandName,
-            brandLogo: rowLogo || null,
-            companyId: selectedCompany,
-          };
-          const res = await createBrand(payload, token);
-          created.push(res);
-        }
-        await confirmModal({ title: 'Success', description: `Created ${created.length} brand(s) successfully`, cancelText: null });
-        // reset brand rows
-        setCompanyBrands([{ brandName: "", brandLogo: "", logoType: "url", logoFile: null }]);
-        setActiveTab("list");
-        loadBrands();
       } else {
-        // fallback: single brand form
-        const payload = { ...brandForm, brandLogo: finalBrandLogo };
-        delete payload.brandLogoFile;
-        payload.supportNumber = brandForm.supportNumber || "";
-        if (selectedCompany) payload.companyId = selectedCompany;
-        await createBrand(payload, token);
-        await confirmModal({ title: 'Success', description: "Brand Created Successfully", cancelText: null });
-        setBrandForm({
-          brandName: "",
-          legalEntity: "",
-          brandLogo: "",
-          brandLogoFile: null,
-          brandWebsite: "",
-          industry: "",
-          country: "",
-          city: "",
-          cinGst: "",
-          registerOfficeAddress: "",
-          dispatchAddress: "",
-          email: "",
-          phoneNumber: "",
-          supportNumber: "",
-          contactPersonName: "",
-        });
-        setActiveTab("list");
-        loadBrands();
+
+        // If admin/superadmin used the multi-row brand inputs (companyBrands), create each brand for selectedCompany
+        const rows = companyBrands.filter((b) => b.brandName && b.brandName.trim() !== "");
+        if (rows.length > 0) {
+          if (!selectedCompany) {
+            await confirmModal({ title: 'Required', description: "Please select a company to associate these brands with.", cancelText: null });
+            return;
+          }
+          // create all brands sequentially to avoid race conditions on backend
+          const created = [];
+          for (const r of rows) {
+            let rowLogo = r.brandLogo;
+            if (r.logoType === 'upload' && r.logoFile) {
+              const uploaded = await uploadToCloudinary(r.logoFile);
+              if (uploaded) rowLogo = uploaded;
+            }
+            const payload = {
+              brandName: r.brandName,
+              brandLogo: rowLogo || null,
+              companyId: selectedCompany,
+            };
+            const res = await createBrand(payload, token);
+            created.push(res);
+          }
+          await confirmModal({ title: 'Success', description: `Created ${created.length} brand(s) successfully`, cancelText: null });
+          // reset brand rows
+          setCompanyBrands([{ brandName: "", brandLogo: "", logoType: "url", logoFile: null }]);
+          setActiveTab(editingCompany ? "companyDetails" : "list");
+          loadBrands();
+        } else {
+          // fallback: single brand form
+          const payload = { ...brandForm, brandLogo: finalBrandLogo };
+          delete payload.brandLogoFile;
+          payload.supportNumber = brandForm.supportNumber || "";
+          if (selectedCompany) payload.companyId = selectedCompany;
+          await createBrand(payload, token);
+          await confirmModal({ title: 'Success', description: "Brand Created Successfully", cancelText: null });
+          setBrandForm({
+            brandName: "",
+            legalEntity: "",
+            brandLogo: "",
+            brandLogoFile: null,
+            brandWebsite: "",
+            industry: "",
+            country: "",
+            city: "",
+            cinGst: "",
+            registerOfficeAddress: "",
+            dispatchAddress: "",
+            email: "",
+            phoneNumber: "",
+            supportNumber: "",
+            contactPersonName: "",
+          });
+          setActiveTab(editingCompany ? "companyDetails" : "list");
+          loadBrands();
+        }
       }
     } catch (error) {
       await confirmModal({ title: 'Error', description: "Error: " + error.message, cancelText: null });
@@ -833,7 +875,8 @@ const UserManagement = () => {
         res = await updateCompany(editingCompany._id, payload, token);
         await confirmModal({ title: 'Success', description: 'Company updated successfully', cancelText: null });
         setEditingCompany(null);
-        setActiveTab("list");
+        setActiveTab(editingCompany ? "companyDetails" : "list");
+        loadCompanies();
       } else {
         res = await createCompany(payload, token);
         await confirmModal({ title: 'Success', description: 'Company created successfully', cancelText: null });
@@ -1473,6 +1516,38 @@ const UserManagement = () => {
 
               {activeTab === 'create' && renderCreateSection()}
 
+              {activeTab === 'companyDetails' && editingCompany && (
+                <CompanyProfileView
+                  company={editingCompany}
+                  brands={companyBrands}
+                  staff={staff.filter(u => String(u.companyId?._id || u.companyId) === String(editingCompany._id))}
+                  onEditCompany={handleEditCompany}
+                  onEditBrand={handleEditBrand}
+                  onEditUser={handleEditUser}
+                  onAddBrand={() => {
+                    setEditingBrand(null);
+                    setBrandForm(resetBrandData);
+                    setSelectedCompany(editingCompany._id);
+                    setActiveTab('createBrand');
+                  }}
+                  onAddUser={() => {
+                    setEditingUser(null);
+                    setFormData({
+                      name: "",
+                      email: "",
+                      password: "",
+                      userRole: "creator",
+                      brandId: "",
+                      brandIds: [],
+                      allBrands: false,
+                    });
+                    setSelectedCompany(editingCompany._id);
+                    setActiveTab('createStaff');
+                  }}
+                  onBack={() => setActiveTab('list')}
+                />
+              )}
+
               {activeTab === "createStaff" && (
                 <div className="bg-white rounded-2xl p-8 shadow-[0_2px_20px_rgba(0,0,0,0.04)] border border-gray-100 ">
                   <h2 className="text-lg font-semibold text-gray-900 mb-4">
@@ -1762,6 +1837,16 @@ const UserManagement = () => {
                                       <td className="px-6 py-4 text-right">
                                         <div className="flex justify-end gap-2">
                                           <button 
+                                            onClick={() => {
+                                              setAssignTargetCompany(item);
+                                              setAssignQty('');
+                                              setShowAssignModal(true);
+                                            }}
+                                            className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Assign Physical QRs"
+                                          >
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                          </button>
+                                          <button 
                                             onClick={() => handleEditCompany(item)}
                                             className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit Company"
                                           >
@@ -1815,12 +1900,21 @@ const UserManagement = () => {
                                       </td>
                                       <td className="px-6 py-4 text-right">
                                         <div className="flex justify-end gap-2">
-                                          <button 
-                                            onClick={() => roleTab === 'company' ? handleEditCompany(item) : handleEditUser(item)}
-                                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit"
-                                          >
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" /></svg>
-                                          </button>
+                                          {roleTab === 'company' ? (
+                                            <button 
+                                              onClick={() => handleViewCompany(item)}
+                                              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg text-xs font-bold transition-colors" title="View Profile"
+                                            >
+                                              <Eye size={14} /> Profile
+                                            </button>
+                                          ) : (
+                                            <button 
+                                              onClick={() => handleEditUser(item)}
+                                              className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit"
+                                            >
+                                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" /></svg>
+                                            </button>
+                                          )}
                                         </div>
                                       </td>
                                     </>
@@ -1866,6 +1960,77 @@ const UserManagement = () => {
             </div>
           </main>
         </div>
+
+        {/* Assign QRs Modal */}
+        {showAssignModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all animate-in fade-in zoom-in-95 duration-200">
+              <div className="flex items-center justify-between p-6 border-b border-slate-100 bg-slate-50/50">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-800">Assign Physical QRs</h3>
+                  <p className="text-sm text-slate-500 mt-1">Assign pre-printed Blank QRs to {assignTargetCompany?.companyName}</p>
+                </div>
+                <button
+                  onClick={() => setShowAssignModal(false)}
+                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-colors"
+                >
+                  <X size={20} strokeWidth={2.5} />
+                </button>
+              </div>
+              <div className="p-6">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Quantity to Assign</label>
+                <input 
+                  type="number"
+                  min="1"
+                  value={assignQty}
+                  onChange={(e) => setAssignQty(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-medium text-slate-800"
+                  placeholder="Enter number of QRs..."
+                />
+                <div className="mt-8 flex gap-3">
+                  <button
+                    onClick={() => setShowAssignModal(false)}
+                    className="flex-1 py-3 px-4 bg-slate-100 text-slate-600 rounded-xl font-bold hover:bg-slate-200 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    disabled={assigning || !assignQty}
+                    onClick={async () => {
+                      setAssigning(true);
+                      try {
+                        const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+                        const res = await fetch(`${API_BASE_URL}/admin/companies/${assignTargetCompany._id}/assign-qrs`, {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${token}`
+                          },
+                          body: JSON.stringify({ quantity: assignQty })
+                        });
+                        const data = await res.json();
+                        if (res.ok) {
+                          alert(data.message);
+                          setShowAssignModal(false);
+                          loadCompanies(); // Refresh balances
+                        } else {
+                          alert(data.message || 'Failed to assign QRs');
+                        }
+                      } catch (e) {
+                        alert('Error assigning QRs');
+                      } finally {
+                        setAssigning(false);
+                      }
+                    }}
+                    className="flex-1 py-3 px-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {assigning ? 'Assigning...' : 'Confirm Assign'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
   );
 };
@@ -2118,3 +2283,4 @@ function MultiBrandSelect({ brands = [], value = [], onChange, allBrands = false
     </div>
   );
 }
+

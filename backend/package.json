@@ -32,6 +32,7 @@
     "pdfkit": "^0.17.2",
     "pg-sdk-node": "^2.0.2",
     "qrcode": "^1.5.4",
+    "qrcode-svg": "^1.1.0",
     "redis": "^5.12.1",
     "svg-to-pdfkit": "^0.1.8"
   },

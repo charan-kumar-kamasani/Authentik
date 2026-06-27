@@ -20,6 +20,7 @@ import {
 // Leaflet
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import StockRequestModal from '../../components/StockRequestModal';
 
 /* ═══════════ CONSTANTS ═══════════ */
 const COLORS = {
@@ -140,7 +141,9 @@ export default function AuthDashboard({ role: propRole }) {
   const [consumerInsights, setConsumerInsights] = useState({});
   const [productPerf, setProductPerf]       = useState({});
   const [skuMetrics, setSkuMetrics]         = useState([]);
-  const [warrantyStats, setWarrantyStats]   = useState({});
+  const [warrantyStats, setWarrantyStats]   = useState(null);
+  
+  const [showStockRequestModal, setShowStockRequestModal] = useState(false);
   
   // Export State
   const [exporting, setExporting] = useState(false);
@@ -685,10 +688,10 @@ export default function AuthDashboard({ role: propRole }) {
         <div className="space-y-6">
           {/* stats cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard icon={Shield}      label="Total Registrations" value={warrantyStats.totalRegistrations} color="blue" />
-            <StatCard icon={ShieldCheck} label="Active Warranties"   value={warrantyStats.activeWarranties}   color="green" />
-            <StatCard icon={AlertTriangle} label="Total Claims"       value={warrantyStats.totalClaims}        color="orange" />
-            <StatCard icon={Activity}    label="Claim Rate (%)"      value={warrantyStats.claimRate}         color="purple" />
+            <StatCard icon={Shield}      label="Total Registrations" value={warrantyStats?.totalRegistrations} color="blue" />
+            <StatCard icon={ShieldCheck} label="Active Warranties"   value={warrantyStats?.activeWarranties}   color="green" />
+            <StatCard icon={AlertTriangle} label="Total Claims"       value={warrantyStats?.totalClaims}        color="orange" />
+            <StatCard icon={Activity}    label="Claim Rate (%)"      value={warrantyStats?.claimRate}         color="purple" />
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -699,10 +702,10 @@ export default function AuthDashboard({ role: propRole }) {
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie 
-                        data={warrantyStats.statusDistribution}
+                        data={warrantyStats?.statusDistribution}
                         cx="50%" cy="50%" innerRadius={70} outerRadius={100} paddingAngle={5} dataKey="value" stroke="none"
                       >
-                        {warrantyStats.statusDistribution?.map((entry, index) => (
+                        {warrantyStats?.statusDistribution?.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                         ))}
                       </Pie>
@@ -710,12 +713,12 @@ export default function AuthDashboard({ role: propRole }) {
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-4xl font-black text-slate-800">{warrantyStats.totalClaims}</span>
+                    <span className="text-4xl font-black text-slate-800">{warrantyStats?.totalClaims}</span>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Claims</span>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-x-8 gap-y-2 mt-4 w-full px-4">
-                  {warrantyStats.statusDistribution?.map((item, i) => (
+                  {warrantyStats?.statusDistribution?.map((item, i) => (
                     <div key={i} className="flex items-center gap-2">
                       <span className="w-3 h-3 rounded-full" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }} />
                       <span className="text-xs font-bold text-slate-600 truncate">{item.name}</span>
@@ -729,7 +732,7 @@ export default function AuthDashboard({ role: propRole }) {
             {/* top claimed products */}
             <ChartCard title="Top Products by Claims" className="xl:col-span-2">
               <div className="space-y-6">
-                {warrantyStats.topClaimedProducts?.map((prod, i) => {
+                {warrantyStats?.topClaimedProducts?.map((prod, i) => {
                   const maxVal = Math.max(...warrantyStats.topClaimedProducts.map(p => p.count), 1);
                   const width = (prod.count / maxVal) * 100;
                   return (
@@ -747,7 +750,7 @@ export default function AuthDashboard({ role: propRole }) {
                     </div>
                   );
                 })}
-                {(!warrantyStats.topClaimedProducts || warrantyStats.topClaimedProducts.length === 0) && (
+                {(!warrantyStats?.topClaimedProducts || warrantyStats.topClaimedProducts.length === 0) && (
                   <div className="h-full flex items-center justify-center py-20 text-slate-400 font-bold">
                     No claim data available
                   </div>

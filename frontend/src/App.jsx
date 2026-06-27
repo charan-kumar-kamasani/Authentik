@@ -48,16 +48,17 @@ import OrderManagement from "./pages/admin/OrderManagement";
 import UserManagement from "./pages/admin/UserManagement";
 import AdminLayout from "./pages/admin/AdminLayout";
 import GenerateQrs from "./pages/admin/GenerateQrs";
+import GenerateBlankQrs from "./pages/admin/GenerateBlankQrs";
+import BatchDetails from "./pages/admin/BatchDetails";
 import QrManagement from "./pages/admin/QrManagement";
 import AdminScannedQrs from "./pages/admin/AdminScannedQrs";
 import AdminReports from "./pages/admin/AdminReports";
-import AdminTransactions from "./pages/admin/AdminTransactions";
-import AdminPricePlans from "./pages/admin/AdminPricePlans";
-import BillingCredits from "./pages/admin/BillingCredits";
+
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminTestAccounts from "./pages/admin/AdminTestAccounts";
 import QrFormConfig from "./pages/admin/QrFormConfig";
 import AuthDashboard from "./pages/admin/AuthDashboard";
+import QRStockDashboard from "./pages/admin/QRStockDashboard";
 import ReportProduct from "./pages/mobile/ReportProduct";
 import MyReports from "./pages/mobile/MyReports";
 import Notifications from "./pages/mobile/Notifications";
@@ -65,7 +66,7 @@ import ProductManager from "./pages/admin/ProductManager";
 import AdminReviews from "./pages/admin/AdminReviews";
 import ProductCoupons from "./pages/admin/ProductCoupons";
 import AdminLeads from "./pages/admin/AdminLeads";
-import QrPricingManagement from "./pages/admin/QrPricingManagement";
+
 import AIPulseDashboard from "./pages/admin/AIPulseDashboard";
 import WarrantyClaims from "./pages/admin/WarrantyClaims";
 import LoyaltyDashboard from "./pages/admin/LoyaltyDashboard";
@@ -269,6 +270,16 @@ export default function App() {
               }
             />
             <Route
+              path="/admin/qr-inventory"
+              element={
+                <AdminRoute>
+                  <AdminLayout>
+                    <QRStockDashboard />
+                  </AdminLayout>
+                </AdminRoute>
+              }
+            />
+            <Route
               path="/orders"
               element={
                 <AdminRoute>
@@ -289,6 +300,26 @@ export default function App() {
               }
             />
             <Route
+              path="/admin/superadmin-qrs"
+              element={
+                <AdminRoute>
+                  <AdminLayout>
+                    <GenerateBlankQrs />
+                  </AdminLayout>
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/superadmin-qrs/batch/:id"
+              element={
+                <AdminRoute>
+                  <AdminLayout>
+                    <BatchDetails />
+                  </AdminLayout>
+                </AdminRoute>
+              }
+            />
+            <Route
               path="/qr-management"
               element={
                 <AdminRoute>
@@ -300,14 +331,12 @@ export default function App() {
             />
             <Route path="/admin/scanned-qrs" element={<AdminRoute><AdminLayout><AdminScannedQrs /></AdminLayout></AdminRoute>} />
             <Route path="/admin/reports" element={<AdminRoute><AdminLayout><AdminReports /></AdminLayout></AdminRoute>} />
-            <Route path="/admin/transactions" element={<AdminRoute><AdminLayout><AdminTransactions /></AdminLayout></AdminRoute>} />
-            <Route path="/admin/price-plans" element={<AdminRoute><AdminLayout><AdminPricePlans /></AdminLayout></AdminRoute>} />
-            <Route path="/admin/billing" element={<AdminRoute><AdminLayout><BillingCredits /></AdminLayout></AdminRoute>} />
+
             <Route path="/admin/settings" element={<AdminRoute><AdminLayout><AdminSettings /></AdminLayout></AdminRoute>} />
             <Route path="/admin/test-accounts" element={<AdminRoute><AdminLayout><AdminTestAccounts /></AdminLayout></AdminRoute>} />
             <Route path="/admin/form-config" element={<AdminRoute><AdminLayout><QrFormConfig /></AdminLayout></AdminRoute>} />
             <Route path="/admin/leads" element={<AdminRoute><AdminLayout><AdminLeads /></AdminLayout></AdminRoute>} />
-            <Route path="/admin/qr-pricing" element={<AdminRoute><AdminLayout><QrPricingManagement /></AdminLayout></AdminRoute>} />
+
             <Route path="/admin/analytics" element={<AdminRoute><AdminLayout><AuthDashboard /></AdminLayout></AdminRoute>} />
             <Route path="/admin/ai-pulse" element={<AdminRoute><AdminLayout><AIPulseDashboard /></AdminLayout></AdminRoute>} />
             <Route path="/admin/reviews" element={<AdminRoute><AdminLayout><AdminReviews /></AdminLayout></AdminRoute>} />

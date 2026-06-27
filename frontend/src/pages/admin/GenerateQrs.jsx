@@ -782,7 +782,9 @@ export default function GenerateQrs() {
             onChange={(v) => handleDynamicFieldChange(field.fieldName, field.fieldType === 'phone' ? v.replace(/[^0-9]/g, '') : v)}
             type={field.fieldType === 'number' ? 'number' : field.fieldType === 'email' ? 'email' : field.fieldType === 'phone' ? 'tel' : 'text'}
             required={field.isMandatory}
-            helpText={field.isQuantity ? "This field determines the number of QRs to be generated." : null}
+            helpText={field.isQuantity 
+              ? (currentUser?.companyId ? `You have ${(currentUser.companyId.qrCredits || 0).toLocaleString()} Physical QRs available.` : "This field determines the number of QRs to be generated.") 
+              : null}
           />
         );
 

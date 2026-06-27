@@ -13,7 +13,7 @@
 import API_BASE_URL from '../config/api';
 
 let pollInterval = null;
-const POLL_INTERVAL_MS = 30_000; // 30 seconds
+const POLL_INTERVAL_MS = 60_000; // 60 seconds
 const STORAGE_KEY = 'leadNotif_lastSeenTimestamp';
 
 /**
@@ -92,7 +92,7 @@ async function pollForNewLeads() {
     const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
     if (!token) return;
 
-    const res = await fetch(`${API_BASE_URL}/leads?page=1&limit=10`, {
+    const res = await fetch(`${API_BASE_URL}/leads?page=1&limit=5`, {
       headers: { Authorization: `Bearer ${token}` }
     });
 
@@ -129,12 +129,12 @@ async function pollForNewLeads() {
  * Start lead notification polling. 
  * Call this once when the superadmin is logged in.
  */
+let pollTimeout = null;
+
 export function startLeadNotifications() {
-  // Don't start if not superadmin
   const role = localStorage.getItem('adminRole');
   if (role !== 'superadmin') return;
 
-  // Request permission (non-blocking, only prompts on first visit)
   requestNotificationPermission().then(granted => {
     if (!granted) {
       console.info('[LeadNotif] Permission not granted, skipping poll setup');
@@ -143,29 +143,32 @@ export function startLeadNotifications() {
 
     console.info('[LeadNotif] Permission granted, starting lead poll');
 
-    // If no lastSeen stored yet, set it to "now" to avoid notifying old leads
     if (!localStorage.getItem(STORAGE_KEY)) {
       localStorage.setItem(STORAGE_KEY, new Date().toISOString());
     }
 
-    // Clear any existing interval
     if (pollInterval) clearInterval(pollInterval);
+    if (pollTimeout) clearTimeout(pollTimeout);
 
-    // Initial poll after a short delay (let the page settle)
-    setTimeout(() => pollForNewLeads(), 3_000);
-
-    // Then poll every 30 seconds
+    pollTimeout = setTimeout(() => pollForNewLeads(), 3_000);
     pollInterval = setInterval(pollForNewLeads, POLL_INTERVAL_MS);
   });
 }
 
-/**
- * Stop lead notification polling.
- * Call on logout or component unmount.
- */
 export function stopLeadNotifications() {
   if (pollInterval) {
     clearInterval(pollInterval);
     pollInterval = null;
   }
+  if (pollTimeout) {
+    clearTimeout(pollTimeout);
+    pollTimeout = null;
+  }
+}
+
+// Clean up intervals during Vite Hot Module Replacement (HMR) to prevent memory leaks
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    stopLeadNotifications();
+  });
 }

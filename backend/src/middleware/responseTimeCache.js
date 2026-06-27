@@ -28,9 +28,10 @@ module.exports = function responseTimeCache(options = {}) {
     }
 
     const key = `cache:${userId}:${req.method}:${req.originalUrl}`;
+    const skipCache = req.headers['cache-control'] === 'no-cache' || req.headers['cache-control'] === 'no-store';
 
     // serve from cache for GET requests matching prefix
-    if (req.method === 'GET' && prefixes.some(p => req.originalUrl.startsWith(p))) {
+    if (!skipCache && req.method === 'GET' && prefixes.some(p => req.originalUrl.startsWith(p))) {
       try {
         if (redisClient.isReady) {
           const cachedData = await redisClient.get(key);
@@ -52,7 +53,10 @@ module.exports = function responseTimeCache(options = {}) {
     const origSend = res.send.bind(res);
     res.send = function (body) {
       const duration = Date.now() - start;
-      console.log(`[TIMING] ${req.method} ${req.originalUrl} -> ${res.statusCode} ${duration}ms`);
+      const isLeadPoll = req.originalUrl.includes('/leads') && (req.originalUrl.includes('limit=5') || req.originalUrl.includes('limit=10'));
+      if (!isLeadPoll) {
+        console.log(`[TIMING] ${req.method} ${req.originalUrl} -> ${res.statusCode} ${duration}ms`);
+      }
 
       try {
         if (req.method === 'GET' && prefixes.some(p => req.originalUrl.startsWith(p)) && res.statusCode === 200) {

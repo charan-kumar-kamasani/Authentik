@@ -417,6 +417,367 @@ router.post(
 );
 
 router.post(
+  "/generate-blank-qrs",
+  protect,
+  authorize("superadmin"),
+  async (req, res) => {
+    let { quantity } = req.body;
+    const qty = parseInt(quantity) > 0 ? parseInt(quantity) : 1;
+    const BlankQr = require("../models/BlankQr");
+    const BlankQrBatch = require("../models/BlankQrBatch");
+    const mongoose = require("mongoose");
+
+    let session = null;
+    try {
+        // Find the max sequence for BlankQr outside transaction to avoid locks
+        const lastBlankQr = await BlankQr.findOne({}).sort({ serialNumber: -1 });
+        let currentSeq = lastBlankQr && lastBlankQr.serialNumber ? lastBlankQr.serialNumber : 0;
+        const startSerialNumber = currentSeq + 1;
+
+        const newQrs = [];
+        for (let i = 0; i < qty; i++) {
+            currentSeq++;
+            const seqString = currentSeq.toString().padStart(13, '0');
+            const uniqueSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+            
+            const qrCode = `SA-${seqString}-${uniqueSuffix}`;
+
+            newQrs.push({
+              qrCode,
+              serialNumber: currentSeq,
+              createdBy: req.user._id,
+              isAssigned: false,
+            });
+        }
+
+        const endSerialNumber = currentSeq;
+
+        // Start transaction for atomic inserts
+        session = await mongoose.startSession();
+        session.startTransaction();
+
+        const createdBlankQrs = await BlankQr.insertMany(newQrs, { session });
+        
+        const batchArr = await BlankQrBatch.create([{
+            batchName: `Batch-${Date.now()}`,
+            quantity: qty,
+            startSerialNumber,
+            endSerialNumber,
+            createdBy: req.user._id
+        }], { session });
+
+        await session.commitTransaction();
+        session.endSession();
+
+        const batch = batchArr[0];
+
+        // Generate PDF after successful commit
+        const pdfOptions = {
+            brand: 'Blank QRs',
+            company: 'Authentiks Superadmin',
+            orderId: batch.batchName,
+            isBlankQr: true
+        };
+        
+        let pdfBase64 = null;
+        try {
+            pdfBase64 = await generateQrPdf(createdBlankQrs, req.user.email, pdfOptions);
+        } catch (pdfErr) {
+            console.error("PDF generation failed, but QRs were created:", pdfErr);
+        }
+        
+        res.status(201).json({ count: createdBlankQrs.length, batch, pdfBase64 });
+    } catch (e) {
+        if (session) {
+            await session.abortTransaction();
+            session.endSession();
+        }
+        console.error("Blank QR Gen Error", e);
+        res.status(500).json({ error: "Failed to generate blank QRs" }); 
+    }
+  }
+);
+
+router.post(
+  "/assign-blank-qrs",
+  protect,
+  authorize("superadmin"),
+  async (req, res) => {
+    const { companyId, quantity } = req.body;
+    const qty = parseInt(quantity) > 0 ? parseInt(quantity) : 0;
+    
+    if (!companyId || qty <= 0) {
+       return res.status(400).json({ error: "Valid Company ID and Quantity are required" });
+    }
+
+    const BlankQr = require("../models/BlankQr");
+    
+    try {
+      // Find `qty` unassigned, unblocked, company-less QRs
+      const unassignedQrs = await BlankQr.find({
+        isAssigned: false,
+        isBlocked: false,
+        assignedToCompany: null,
+      }).limit(qty).select('_id');
+
+      if (unassignedQrs.length < qty) {
+        return res.status(400).json({ error: `Not enough unassigned global QRs. Requested: ${qty}, Available: ${unassignedQrs.length}` });
+      }
+
+      const qrIds = unassignedQrs.map(qr => qr._id);
+
+      await BlankQr.updateMany(
+        { _id: { $in: qrIds } },
+        { $set: { assignedToCompany: companyId } }
+      );
+
+      // Sync company qrCredits cache
+      const Company = require("../models/Company");
+      const unassignedForCompanyCount = await BlankQr.countDocuments({
+         assignedToCompany: companyId,
+         isAssigned: false,
+         isBlocked: false
+      });
+      await Company.findByIdAndUpdate(companyId, { qrCredits: unassignedForCompanyCount });
+
+      res.status(200).json({ message: `${qty} QRs successfully assigned to the company.` });
+    } catch (e) {
+      console.error("Assign QRs Error", e);
+      res.status(500).json({ error: "Failed to assign QRs" });
+    }
+  }
+);
+
+router.get(
+  "/blank-qrs-stats",
+  protect,
+  authorize("superadmin"),
+  async (req, res) => {
+    try {
+      const BlankQr = require("../models/BlankQr");
+      const globalUnassigned = await BlankQr.countDocuments({
+        isAssigned: false,
+        isBlocked: false,
+        assignedToCompany: null,
+      });
+      const totalGenerated = await BlankQr.countDocuments();
+      res.json({ globalUnassigned, totalGenerated });
+    } catch (e) {
+      console.error("Stats Error", e);
+      res.status(500).json({ error: "Failed to get stats" });
+    }
+  }
+);
+
+router.get(
+  "/blank-qr-batches",
+  protect,
+  authorize("superadmin"),
+  async (req, res) => {
+    try {
+      const BlankQrBatch = require("../models/BlankQrBatch");
+      const batches = await BlankQrBatch.find()
+        .populate("createdBy", "name email")
+        .sort({ createdAt: -1 });
+      res.json(batches);
+    } catch (error) {
+      console.error("Error fetching blank QR batches:", error);
+      res.status(500).json({ error: "Failed to fetch batches" });
+    }
+  }
+);
+
+router.get(
+  "/blank-qr-batches/:id",
+  protect,
+  authorize("superadmin"),
+  async (req, res) => {
+    try {
+      const BlankQrBatch = require("../models/BlankQrBatch");
+      const BlankQr = require("../models/BlankQr");
+      
+      const batch = await BlankQrBatch.findById(req.params.id).populate("createdBy", "name email");
+      if (!batch) return res.status(404).json({ error: "Batch not found" });
+
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 250;
+      const skip = (page - 1) * limit;
+
+      const query = { 
+        serialNumber: { $gte: batch.startSerialNumber, $lte: batch.endSerialNumber } 
+      };
+
+      const formatSN = (num) => {
+        const q = Math.floor(num / 50000) + 26;
+        const r = num % 50000;
+        let prefix = "";
+        let temp = q;
+        do {
+          prefix = String.fromCharCode((temp % 26) + 65) + prefix;
+          temp = Math.floor(temp / 26) - 1;
+        } while (temp >= 0);
+        return `${prefix}-${r.toString().padStart(5, '0')}`;
+      };
+
+      const parseSNBackend = (str, batch) => {
+        if (!str || typeof str !== 'string') return null;
+        const parts = str.toUpperCase().split('-');
+        
+        let prefix, numPart;
+        if (parts.length === 1) {
+          prefix = formatSN(batch.startSerialNumber).split('-')[0];
+          numPart = parseInt(parts[0], 10);
+        } else if (parts.length === 2) {
+          prefix = parts[0];
+          numPart = parseInt(parts[1], 10);
+        } else {
+          return null;
+        }
+        
+        if (isNaN(numPart)) return null;
+
+        let q = 0;
+        for (let i = 0; i < prefix.length; i++) {
+          q = q * 26 + (prefix.charCodeAt(i) - 64);
+        }
+        q = q - 1;
+        return q * 10000000 + numPart;
+      };
+
+      if (req.query.startRange || req.query.endRange) {
+        const start = parseSNBackend(req.query.startRange, batch);
+        const end = parseSNBackend(req.query.endRange, batch);
+        
+        if (start !== null) query.serialNumber.$gte = Math.max(batch.startSerialNumber, start);
+        if (end !== null) query.serialNumber.$lte = Math.min(batch.endSerialNumber, end);
+      }
+
+      if (req.query.status) {
+        if (req.query.status === 'blank') {
+          query.isAssigned = false;
+          query.isBlocked = false;
+        } else if (req.query.status === 'assigned') {
+          query.isAssigned = true;
+        } else if (req.query.status === 'blocked') {
+          query.isBlocked = true;
+        }
+      }
+
+      if (req.query.search) {
+        // Simple search for exact qrCode or serialNumber if it's numeric
+        const searchVal = req.query.search.trim();
+        const numSearch = parseInt(searchVal, 10);
+        if (!isNaN(numSearch)) {
+           query.$or = [{ qrCode: searchVal }, { serialNumber: numSearch }];
+        } else {
+           query.qrCode = searchVal;
+        }
+      }
+
+      const qrs = await BlankQr.find(query)
+      .populate('assignedToCompany', 'companyName email')
+      .populate({
+        path: 'assignedToProduct',
+        select: 'productName brand createdBy orderId',
+        populate: [
+          { path: 'createdBy', select: 'name email role' },
+          { path: 'orderId', select: 'history', populate: { path: 'history.changedBy', select: 'name email role' } }
+        ]
+      })
+      .sort({ serialNumber: 1 })
+      .skip(skip)
+      .limit(limit);
+
+      const total = await BlankQr.countDocuments(query);
+
+      res.json({ batch, qrs, total, page, pages: Math.ceil(total / limit) });
+    } catch (error) {
+      console.error("Error fetching batch details:", error);
+      res.status(500).json({ error: "Failed to fetch batch details" });
+    }
+  }
+);
+
+router.get(
+  "/blank-qr-batches/:id/download",
+  protect,
+  authorize("superadmin"),
+  async (req, res) => {
+    try {
+      const BlankQrBatch = require("../models/BlankQrBatch");
+      const BlankQr = require("../models/BlankQr");
+      
+      const batch = await BlankQrBatch.findById(req.params.id);
+      if (!batch) return res.status(404).json({ error: "Batch not found" });
+
+      const qrs = await BlankQr.find({ 
+        serialNumber: { $gte: batch.startSerialNumber, $lte: batch.endSerialNumber } 
+      }).sort({ serialNumber: 1 });
+
+      const pdfOptions = {
+        brand: 'Blank QRs',
+        company: 'Authentiks Superadmin',
+        orderId: batch.batchName,
+        isBlankQr: true
+      };
+      const pdfBase64 = await generateQrPdf(qrs, req.user.email, pdfOptions);
+      
+      res.json({ pdfBase64 });
+    } catch (error) {
+      console.error("Error downloading batch PDF:", error);
+      res.status(500).json({ error: "Failed to download batch PDF" });
+    }
+  }
+);
+
+router.post(
+  "/blank-qr-batches/:id/block",
+  protect,
+  authorize("superadmin"),
+  async (req, res) => {
+    try {
+      const { qrIds, reason } = req.body;
+      
+      if (!['lost', 'damaged', 'other'].includes(reason)) {
+        return res.status(400).json({ error: "Invalid block reason" });
+      }
+      if (!Array.isArray(qrIds) || qrIds.length === 0) {
+        return res.status(400).json({ error: "No QRs selected for blocking" });
+      }
+
+      const BlankQrBatch = require("../models/BlankQrBatch");
+      const BlankQr = require("../models/BlankQr");
+      
+      const batch = await BlankQrBatch.findById(req.params.id);
+      if (!batch) return res.status(404).json({ error: "Batch not found" });
+
+      // Verify all requested QRs belong to this batch
+      const validQrsCount = await BlankQr.countDocuments({
+        _id: { $in: qrIds },
+        serialNumber: { $gte: batch.startSerialNumber, $lte: batch.endSerialNumber },
+        isAssigned: false
+      });
+
+      if (validQrsCount !== qrIds.length) {
+        return res.status(400).json({ error: "Some QRs are not part of this batch or are already assigned." });
+      }
+
+      const result = await BlankQr.updateMany(
+        { _id: { $in: qrIds } },
+        {
+          $set: { isBlocked: true, blockReason: reason }
+        }
+      );
+
+      res.json({ message: `Successfully blocked ${result.modifiedCount} QRs.`, count: result.modifiedCount });
+    } catch (error) {
+      console.error("Error blocking QRs:", error);
+      res.status(500).json({ error: "Failed to block QRs" });
+    }
+  }
+);
+
+router.post(
   "/bulk-upload-qrs",
   protect,
         // Only superadmin allowed to bulk upload QRs. Creators should use the order workflow.
@@ -1050,6 +1411,60 @@ router.post('/companies', protect, authorize('superadmin', 'admin'), async (req,
 
         res.status(201).json({ company, brands: createdBrands, users: createdUsers });
     } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Assign pre-printed Blank QRs to a company
+router.post('/companies/:id/assign-qrs', protect, authorize('superadmin'), async (req, res) => {
+    try {
+        const { quantity } = req.body;
+        const qty = parseInt(quantity);
+        if (!qty || qty <= 0) {
+            return res.status(400).json({ message: 'Valid quantity is required' });
+        }
+
+        const company = await Company.findById(req.params.id);
+        if (!company) {
+            return res.status(404).json({ message: 'Company not found' });
+        }
+
+        const BlankQr = require('../models/BlankQr');
+        
+        // Find available unassigned QRs
+        const availableQrs = await BlankQr.find({ 
+            isAssigned: false, 
+            assignedToCompany: null, 
+            isBlocked: false 
+        })
+        .sort({ serialNumber: 1 })
+        .limit(qty);
+
+        if (availableQrs.length < qty) {
+            return res.status(400).json({ 
+                message: `Not enough available Blank QRs. Requested: ${qty}, Available: ${availableQrs.length}` 
+            });
+        }
+
+        const qrIds = availableQrs.map(qr => qr._id);
+
+        // Update the QRs
+        await BlankQr.updateMany(
+            { _id: { $in: qrIds } },
+            { $set: { assignedToCompany: company._id } }
+        );
+
+        // Update company's physical QR balance (qrCredits)
+        const newBalance = (company.qrCredits || 0) + qty;
+        company.qrCredits = newBalance;
+        await company.save();
+
+        res.json({ 
+            message: `Successfully assigned ${qty} QRs to ${company.companyName}`, 
+            qrCredits: newBalance 
+        });
+    } catch (error) {
+        console.error("POST /companies/:id/assign-qrs Error:", error);
         res.status(500).json({ message: error.message });
     }
 });

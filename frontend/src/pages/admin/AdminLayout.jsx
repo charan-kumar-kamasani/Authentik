@@ -33,6 +33,7 @@ import GenerateQrs from "./GenerateQrs";
 import QrManagement from "./QrManagement";
 import API_BASE_URL, { getCreditsBalance } from "../../config/api";
 import { startLeadNotifications, stopLeadNotifications } from "../../utils/leadNotifications";
+import StockRequestModal from "../../components/StockRequestModal";
 
 // Sidebar item component
 function SidebarItem({ label, onClick, icon: Icon, isActive, hasSubmenu }) {
@@ -114,6 +115,8 @@ export default function AdminLayout({ children }) {
     const saved = localStorage.getItem('sidebarCollapsed');
     return saved === 'true';
   });
+
+  const [showStockRequestModal, setShowStockRequestModal] = useState(false);
 
   const [remainingCredits, setRemainingCredits] = useState(() => {
     const v =
@@ -329,6 +332,12 @@ export default function AdminLayout({ children }) {
                 icon={ShieldCheck}
                 isActive={activePath === "/admin/warranty-claims"}
               />
+              <SidebarItemCollapse
+                label="QR Inventory"
+                onClick={() => navigate("/admin/qr-inventory")}
+                icon={Box}
+                isActive={activePath === "/admin/qr-inventory"}
+              />
             </div>
           ) : (
             <>
@@ -338,6 +347,14 @@ export default function AdminLayout({ children }) {
                 icon={LayoutDashboard}
                 isActive={activePath === "/admin/analytics"}
               />
+              {role === "superadmin" && (
+                <SidebarItemCollapse
+                  label="Generate Blank QRs"
+                  onClick={() => navigate("/admin/superadmin-qrs")}
+                  icon={Box}
+                  isActive={activePath === "/admin/superadmin-qrs"}
+                />
+              )}
               {["superadmin", "authorizer"].includes(role) && (
                 <SidebarItemCollapse
                   label="AI Pulse (Beta)"
@@ -385,9 +402,9 @@ export default function AdminLayout({ children }) {
               {role !== 'superadmin' && (
                 <SidebarItemCollapse
                   label="QR Inventory"
-                  onClick={() => navigate("/admin/dashboard")}
+                  onClick={() => navigate("/admin/qr-inventory")}
                   icon={Package}
-                  isActive={activePath === "/admin/dashboard"}
+                  isActive={activePath === "/admin/qr-inventory"}
                 />
               )}
               <SidebarItemCollapse
@@ -412,35 +429,7 @@ export default function AdminLayout({ children }) {
                 />
               )}
 
-              {["superadmin"].includes(role) && (
-                <div className="pt-4 pb-2">
-                  {!isCollapsed ? (
-                    <p className="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 whitespace-nowrap">
-                      Billing & Pricing
-                    </p>
-                  ) : <div className="h-px w-8 mx-auto bg-slate-200 my-2" />}
-                  <div className="space-y-1.5">
-                    <SidebarItemCollapse
-                      label="Transactions"
-                      onClick={() => navigate("/admin/transactions")}
-                      icon={CreditCard}
-                      isActive={activePath === "/admin/transactions"}
-                    />
-                    <SidebarItemCollapse
-                      label="Price Plans"
-                      onClick={() => navigate("/admin/price-plans")}
-                      icon={Tag}
-                      isActive={activePath === "/admin/price-plans"}
-                    />
-                    <SidebarItemCollapse
-                      label="QR Volume Pricing"
-                      onClick={() => navigate("/admin/qr-pricing")}
-                      icon={Layers}
-                      isActive={activePath === "/admin/qr-pricing"}
-                    />
-                  </div>
-                </div>
-              )}
+
 
               {["superadmin", "admin"].includes(role) && (
                 <div className="pt-4 pb-2">
@@ -476,29 +465,7 @@ export default function AdminLayout({ children }) {
                 </div>
               )}
 
-              {["company", "authorizer"].includes(role) && (
-                <div className="pt-4 pb-2">
-                  {!isCollapsed ? (
-                    <p className="px-4 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 whitespace-nowrap">
-                      Billing
-                    </p>
-                  ) : <div className="h-px w-8 mx-auto bg-slate-200 my-2" />}
-                  <div className="space-y-1.5">
-                    <SidebarItemCollapse
-                      label="Credits & Billing"
-                      onClick={() => navigate("/admin/billing")}
-                      icon={CreditCard}
-                      isActive={activePath === "/admin/billing"}
-                    />
-                    <SidebarItemCollapse
-                      label="Transactions"
-                      onClick={() => navigate("/admin/transactions")}
-                      icon={Receipt}
-                      isActive={activePath === "/admin/transactions"}
-                    />
-                  </div>
-                </div>
-              )}
+
 
               {["superadmin", "admin", "company"].includes(role) && (
                 <div className="pt-4 pb-2">
@@ -571,11 +538,22 @@ export default function AdminLayout({ children }) {
                 </div>
               </div>
 
-              {(role === 'authorizer' || role === 'creator' || remainingCredits !== null) && (
-                <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-lg">
-                  <Coins size={16} className="text-blue-600" />
-                  <div className="text-sm text-slate-700 font-semibold">Credits</div>
-                  <div className="text-blue-600 font-black ml-2">{remainingCredits !== null ? remainingCredits.toLocaleString() : '-'}</div>
+              {(role === 'authorizer' || role === 'creator' || role === 'company' || remainingCredits !== null) && (
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                    <Package size={16} className="text-blue-600" />
+                    <div className="text-xs text-slate-700 font-bold uppercase tracking-wider">Physical QRs</div>
+                    <div className="text-blue-600 font-black ml-1">{remainingCredits !== null ? remainingCredits.toLocaleString() : '-'}</div>
+                  </div>
+                  {['authorizer', 'admin', 'company'].includes(role) && (
+                    <button
+                      onClick={() => setShowStockRequestModal(true)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-black uppercase tracking-wider hover:bg-emerald-700 transition-all shadow-md shadow-emerald-500/20"
+                    >
+                      <Package size={14} />
+                      Request QRs
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -588,6 +566,11 @@ export default function AdminLayout({ children }) {
         <div className="w-full h-full animate-in fade-in duration-500">
           {children}
         </div>
+
+        <StockRequestModal
+          isOpen={showStockRequestModal}
+          onClose={() => setShowStockRequestModal(false)}
+        />
       </main>
 
       <style
