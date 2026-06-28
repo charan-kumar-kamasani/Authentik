@@ -28,6 +28,6 @@ const userRewardSchema = new mongoose.Schema({
 // A user can only earn one reward per product coupon
 userRewardSchema.index({ userId: 1, productCouponId: 1 }, { unique: true });
 // Fast lookup for user's rewards list
-userRewardSchema.index({ userId: 1, createdAt: -1 });
+userRewardSchema.index({ userId: 1, createdAt: -1 }); // Optimize my-rewards API
 
 module.exports = mongoose.model('UserReward', userRewardSchema);

@@ -168,6 +168,14 @@ router.get('/all', protect, authorize('superadmin', 'admin'), async (req, res) =
 router.get('/my-rewards', protect, async (req, res) => {
   try {
     const rewards = await UserReward.find({ userId: req.user._id })
+      .populate({
+        path: 'productId',
+        populate: { path: 'brandId' }
+      })
+      .populate({
+        path: 'productCouponId',
+        populate: { path: 'brandId' }
+      })
       .sort({ createdAt: -1 })
       .lean();
 

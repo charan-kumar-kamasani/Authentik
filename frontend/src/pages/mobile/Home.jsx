@@ -45,11 +45,15 @@ const RedShieldX = () => (
   </svg>
 );
 
+let cachedStats = null;
+let cachedRecentScans = null;
+let lastHomeFetchTime = 0;
+
 export default function Home() {
   const navigate = useNavigate();
-  const [recentScans, setRecentScans] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
+  const [recentScans, setRecentScans] = useState(cachedRecentScans || []);
+  const [loading, setLoading] = useState(!cachedStats);
+  const [stats, setStats] = useState(cachedStats || {
     totalScans: 0,
     authentiks: 0,
     counterfeit: 0,
@@ -64,7 +68,6 @@ export default function Home() {
         return;
       }
 
-      setLoading(true);
       try {
         const [statsRes, historyRes] = await Promise.all([
           fetch(`${API_BASE_URL}/scan/stats`, {
@@ -77,12 +80,14 @@ export default function Home() {
 
         if (statsRes.ok) {
           const data = await statsRes.json();
-          setStats({
+          const newStats = {
             totalScans: data.totalScans || 0,
             authentiks: data.authentiks || 0,
             counterfeit: data.counterfeit || 0,
             alert: data.alert || 0,
-          });
+          };
+          cachedStats = newStats;
+          setStats(newStats);
         }
 
         if (historyRes.ok) {
@@ -142,6 +147,8 @@ export default function Home() {
             };
           });
 
+          cachedRecentScans = mappedData;
+          lastHomeFetchTime = Date.now();
           setRecentScans(mappedData);
         }
       } catch (err) {
@@ -151,6 +158,7 @@ export default function Home() {
       }
     };
 
+    // If cache is present, we still fetch in background to get latest updates silently
     fetchAllData();
   }, []);
 

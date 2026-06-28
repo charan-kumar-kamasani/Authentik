@@ -20,23 +20,7 @@ if [ -z "$SERVER_IP" ] || [ -z "$SERVER_USER" ] || [ -z "$REMOTE_DIR" ] || [ -z 
 fi
 
 # -----------------------------
-# Step 1: Build project
-# -----------------------------
-echo "📦 Installing dependencies..."
-npm install
-
-echo "🏗️ Building project..."
-npm run build
-
-if [ $? -ne 0 ]; then
-  echo "❌ Build failed"
-  exit 1
-fi
-
-echo "✅ Build completed"
-
-# -----------------------------
-# Step 2: Sync files to server
+# Step 1: Sync files to server
 # -----------------------------
 echo "⬆️ Syncing files via rsync..."
 
@@ -46,26 +30,28 @@ if ! command -v rsync &> /dev/null; then
   exit 1
 fi
 
-# Sync only necessary files (IMPORTANT FIX)
+# Sync only necessary files
 rsync -avz --delete \
   --exclude 'node_modules' \
-  --exclude 'build' \
-  --exclude '*.dylib' \
   --exclude '.git' \
   --exclude '.env' \
   -e "ssh -o StrictHostKeyChecking=no" \
-  ./dist/ $SERVER_USER@$SERVER_IP:$REMOTE_DIR
+  ./src/ $SERVER_USER@$SERVER_IP:$REMOTE_DIR/src
+
+rsync -avz --delete \
+  -e "ssh -o StrictHostKeyChecking=no" \
+  ./scripts/ $SERVER_USER@$SERVER_IP:$REMOTE_DIR/scripts
 
 # Sync package.json (needed for server install)
 rsync -avz \
   -e "ssh -o StrictHostKeyChecking=no" \
-  ./package.json $SERVER_USER@$SERVER_IP:$REMOTE_DIR
+  ./package.json $SERVER_USER@$SERVER_IP:$REMOTE_DIR/package.json
 
 # Optional: sync package-lock.json if exists
 if [ -f package-lock.json ]; then
   rsync -avz \
     -e "ssh -o StrictHostKeyChecking=no" \
-    ./package-lock.json $SERVER_USER@$SERVER_IP:$REMOTE_DIR
+    ./package-lock.json $SERVER_USER@$SERVER_IP:$REMOTE_DIR/package-lock.json
 fi
 
 if [ $? -ne 0 ]; then

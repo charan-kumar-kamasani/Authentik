@@ -45,8 +45,6 @@ const blankQrSchema = new mongoose.Schema(
 );
 
 // Performance Indexes
-blankQrSchema.index({ qrCode: 1 });
-blankQrSchema.index({ serialNumber: 1 });
 blankQrSchema.index({ isAssigned: 1 });
 blankQrSchema.index({ assignedToCompany: 1 });
 blankQrSchema.index({ createdAt: -1 });

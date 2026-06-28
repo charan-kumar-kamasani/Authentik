@@ -4,14 +4,17 @@ import { Search, Filter, ShieldCheck, AlertTriangle, XCircle, HelpCircle, Calend
 import API_BASE_URL from "../../config/api";
 import MobileNavbar from "../../components/MobileNavbar";
 
+let cachedHistory = null;
+let lastHistoryFetchTime = 0;
+
 export default function ScanHistory() {
   const navigate = useNavigate();
-  const [historyItems, setHistoryItems] = useState([]);
+  const [historyItems, setHistoryItems] = useState(cachedHistory || []);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("All Scans");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOrder, setSortOrder] = useState("newest");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!cachedHistory);
   const itemsPerPage = 20;
 
   // Reset page when filters change
@@ -77,7 +80,7 @@ export default function ScanHistory() {
             const category = prod.category || item.category || "Product";
             const brandName = item.brandId?.brandName || item.brandName || "";
             const productName = item.productName || prod.productName || "Unknown Product";
-            
+
             // Format title to match design "Brand Model"
             const cardTitle = brandName ? (productName.toLowerCase().includes(brandName.toLowerCase()) ? productName : `${brandName} ${productName}`) : productName;
 
@@ -85,6 +88,8 @@ export default function ScanHistory() {
               id: item._id,
               type,
               cardTitle,
+              productName,
+              brandName,
               category,
               sn: item.qrCode || "Unknown",
               scannedDate: `${day} ${monthName} ${year}`,
@@ -100,6 +105,8 @@ export default function ScanHistory() {
               status: item.status
             };
           });
+          cachedHistory = mappedData;
+          lastHistoryFetchTime = Date.now();
           setHistoryItems(mappedData);
         }
       } catch (err) {
@@ -148,12 +155,11 @@ export default function ScanHistory() {
     { name: "Verified", icon: ShieldCheck, activeBg: "bg-[#10B981]", activeText: "text-white", inactiveText: "text-[#64748B]" },
     { name: "Duplicate", icon: AlertTriangle, activeBg: "bg-[#F59E0B]", activeText: "text-white", inactiveText: "text-[#64748B]" },
     { name: "Counterfeit", icon: XCircle, activeBg: "bg-[#EF4444]", activeText: "text-white", inactiveText: "text-[#64748B]" },
-    { name: "Unverified", icon: HelpCircle, activeBg: "bg-[#6B7280]", activeText: "text-white", inactiveText: "text-[#64748B]" },
   ];
 
   const Card = ({ item }) => {
     return (
-      <div 
+      <div
         onClick={() => {
           const status = item.status || 'ORIGINAL';
           if (status === 'ORIGINAL') {
@@ -172,19 +178,19 @@ export default function ScanHistory() {
             <span className="text-[10px] font-bold text-gray-400">LOGO</span>
           )}
         </div>
-        
+
         {/* Content Container (Flex Column) */}
         <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-          
+
           {/* Top Row: Title & Badge */}
           <div className="flex justify-between items-start gap-2 mb-1">
             <div className="flex-1 min-w-0">
               <h4 className="font-extrabold text-[15px] text-[#0F172A] leading-tight truncate">
-                {item.cardTitle}
+                {item.productName}
               </h4>
-              <p className="text-[12px] text-[#64748B] truncate mt-0.5 font-medium">{item.category}</p>
+              <p className="text-[12px] text-[#64748B] truncate mt-0.5 font-medium">{item.brandName || "Unknown Brand"}</p>
             </div>
-            
+
             {/* Status Badge */}
             <div className={`flex-shrink-0 inline-flex items-center gap-1 text-[9px] font-bold tracking-wider uppercase ${item.badgeColor} px-2 py-1 rounded-[6px] border ${item.badgeBorder} ${item.badgeBg}`}>
               {item.statusIcon === 'verified' && <ShieldCheck className="w-2.5 h-2.5" strokeWidth={3} />}
@@ -192,42 +198,14 @@ export default function ScanHistory() {
               {item.statusLabel}
             </div>
           </div>
-          
-          {/* Middle Row: Serial Number */}
-          <p className="text-[12px] text-[#64748B] font-medium truncate mb-2">
-            SN: {item.sn}
-          </p>
-          
-          {/* Bottom Row: Status Text + Date/Time/Chevron */}
-          <div className="flex justify-between items-end gap-3 mt-auto">
-            {/* Status Icon & Text */}
-            <div className="flex items-start gap-1.5 flex-1 min-w-0">
-              {item.statusIcon === 'verified' ? (
-                <ShieldCheck className="w-4 h-4 text-[#10B981] flex-shrink-0 mt-[1px]" strokeWidth={2.5} />
-              ) : item.statusIcon === 'alert' ? (
-                <AlertTriangle className="w-4 h-4 text-[#F59E0B] flex-shrink-0 mt-[1px]" strokeWidth={2.5} />
-              ) : (
-                <XCircle className="w-4 h-4 text-[#EF4444] flex-shrink-0 mt-[1px]" strokeWidth={2.5} />
-              )}
-              <span className={`text-[12px] font-bold leading-snug line-clamp-2 ${item.statusIcon === 'verified' ? 'text-[#10B981]' : item.statusIcon === 'alert' ? 'text-[#F59E0B]' : 'text-[#EF4444]'}`}>
-                {item.statusText}
-              </span>
-            </div>
 
-            {/* Date, Time & Chevron */}
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <div className="flex flex-col items-end gap-1">
-                <div className="flex items-center gap-1.5 text-[#94A3B8] text-[10px] font-semibold">
-                  <Calendar className="w-3.5 h-3.5" strokeWidth={2} />
-                  {item.scannedDate}
-                </div>
-                <div className="flex items-center gap-1.5 text-[#94A3B8] text-[10px] font-semibold">
-                  <Clock className="w-3.5 h-3.5" strokeWidth={2} />
-                  {item.scannedTime}
-                </div>
-              </div>
-              <ChevronRight className="w-5 h-5 text-[#CBD5E1]" strokeWidth={2.5} />
+          {/* Bottom Row: Date/Time/Chevron */}
+          <div className="flex justify-between items-center mt-auto pt-2">
+            <div className="flex items-center gap-1.5 text-[#94A3B8] text-[11px] font-semibold">
+              <Calendar className="w-3.5 h-3.5" strokeWidth={2} />
+              <span>{item.scannedDate}, {item.scannedTime}</span>
             </div>
+            <ChevronRight className="w-5 h-5 text-[#CBD5E1]" strokeWidth={2.5} />
           </div>
 
         </div>
@@ -245,7 +223,7 @@ export default function ScanHistory() {
             <ArrowLeft className="w-6 h-6 text-[#0F172A]" strokeWidth={2.5} />
           </button>
           <h1 className="text-[18px] font-extrabold text-[#0F172A] tracking-tight">Scan History</h1>
-          <button 
+          <button
             onClick={() => {
               setSortOrder(prev => prev === "newest" ? "oldest" : "newest");
               setCurrentPage(1);
@@ -282,17 +260,15 @@ export default function ScanHistory() {
               <button
                 key={tab.name}
                 onClick={() => setActiveTab(tab.name)}
-                className={`flex items-center gap-2 flex-shrink-0 px-4 py-2.5 rounded-[14px] transition-all duration-300 ${
-                  isActive ? `${tab.activeBg} shadow-[0_4px_12px_rgba(0,0,0,0.1)]` : 'bg-[#F1F5F9] hover:bg-[#E2E8F0]'
-                }`}
+                className={`flex items-center gap-2 flex-shrink-0 px-4 py-2.5 rounded-[14px] transition-all duration-300 ${isActive ? `${tab.activeBg} shadow-[0_4px_12px_rgba(0,0,0,0.1)]` : 'bg-[#F1F5F9] hover:bg-[#E2E8F0]'
+                  }`}
               >
                 <Icon className={`w-4 h-4 ${isActive ? tab.activeText : tab.inactiveText}`} strokeWidth={2.5} />
                 <span className={`text-[13px] font-bold tracking-tight ${isActive ? tab.activeText : tab.inactiveText}`}>
                   {tab.name}
                 </span>
-                <span className={`text-[12px] font-extrabold px-2 py-0.5 rounded-[8px] ml-1 transition-colors ${
-                  isActive ? 'bg-black/15 text-white' : 'bg-white text-[#64748B] shadow-sm'
-                }`}>
+                <span className={`text-[12px] font-extrabold px-2 py-0.5 rounded-[8px] ml-1 transition-colors ${isActive ? 'bg-black/15 text-white' : 'bg-white text-[#64748B] shadow-sm'
+                  }`}>
                   {getTabCount(tab.name)}
                 </span>
               </button>
@@ -304,44 +280,44 @@ export default function ScanHistory() {
       {/* List Content */}
       <div className="px-5 pt-5 pb-6 flex-1 overflow-y-auto">
         {isLoading ? (
-           <div className="flex justify-center items-center h-full pt-20">
-              <div className="w-8 h-8 border-4 border-[#105DE4] border-t-transparent rounded-full animate-spin"></div>
-           </div>
+          <div className="flex justify-center items-center h-full pt-20">
+            <div className="w-8 h-8 border-4 border-[#105DE4] border-t-transparent rounded-full animate-spin"></div>
+          </div>
         ) : filteredItems.length === 0 ? (
-           <div className="flex flex-col items-center justify-center pt-20 text-center">
-             <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-                <Search className="w-8 h-8 text-slate-300" strokeWidth={2} />
-             </div>
-             <h3 className="text-slate-800 font-bold text-[16px] mb-1">No scans found</h3>
-             <p className="text-slate-500 font-medium text-[13px]">Try adjusting your filters or search query.</p>
-           </div>
+          <div className="flex flex-col items-center justify-center pt-20 text-center">
+            <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+              <Search className="w-8 h-8 text-slate-300" strokeWidth={2} />
+            </div>
+            <h3 className="text-slate-800 font-bold text-[16px] mb-1">No scans found</h3>
+            <p className="text-slate-500 font-medium text-[13px]">Try adjusting your filters or search query.</p>
+          </div>
         ) : (
-           <>
-             {currentItems.map(item => <Card key={item.id} item={item} />)}
-             
-             {/* Pagination Controls */}
-             {totalPages > 1 && (
-               <div className="flex items-center justify-between mt-6 mb-4 px-2">
-                 <button 
-                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                   disabled={currentPage === 1}
-                   className={`px-4 py-2 rounded-[10px] text-[13px] font-bold transition-colors ${currentPage === 1 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm'}`}
-                 >
-                   Previous
-                 </button>
-                 <span className="text-[13px] font-semibold text-slate-500">
-                   Page {currentPage} of {totalPages}
-                 </span>
-                 <button 
-                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                   disabled={currentPage === totalPages}
-                   className={`px-4 py-2 rounded-[10px] text-[13px] font-bold transition-colors ${currentPage === totalPages ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-[#105DE4] text-white hover:bg-blue-700 shadow-[0_4px_12px_rgba(16,93,228,0.25)]'}`}
-                 >
-                   Next
-                 </button>
-               </div>
-             )}
-           </>
+          <>
+            {currentItems.map(item => <Card key={item.id} item={item} />)}
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between mt-6 mb-4 px-2">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className={`px-4 py-2 rounded-[10px] text-[13px] font-bold transition-colors ${currentPage === 1 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm'}`}
+                >
+                  Previous
+                </button>
+                <span className="text-[13px] font-semibold text-slate-500">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className={`px-4 py-2 rounded-[10px] text-[13px] font-bold transition-colors ${currentPage === totalPages ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-[#105DE4] text-white hover:bg-blue-700 shadow-[0_4px_12px_rgba(16,93,228,0.25)]'}`}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
 

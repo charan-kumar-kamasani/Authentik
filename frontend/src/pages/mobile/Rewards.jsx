@@ -176,7 +176,7 @@ export default function Rewards() {
           <ArrowLeft className="w-6 h-6" strokeWidth={2} />
         </button>
         <h1 className="text-[18px] font-bold text-[#0F172A] tracking-tight">
-          Coupons
+          Rewards
         </h1>
         <button className="p-2 -mr-2 text-[#0F172A] hover:bg-slate-50 rounded-full transition-colors">
           <HelpCircle className="w-[22px] h-[22px]" strokeWidth={2} />
@@ -185,7 +185,7 @@ export default function Rewards() {
 
       <div className="px-4 mt-1">
         {/* Banner Section */}
-        <div className="bg-[#F8FAFC] border border-[#F1F5F9] rounded-[16px] p-5 flex items-center gap-4 mb-4">
+        <div className="bg-[#FFFFFF] border border-[#F1F5F9] rounded-[16px] p-5 flex items-center gap-4 mb-4">
           <div className="flex-shrink-0 relative w-[80px] h-[60px] flex items-center justify-center">
             <BannerIllustration />
           </div>
@@ -197,19 +197,18 @@ export default function Rewards() {
           </div>
         </div>
 
-        {/* Segmented Tabs */}
         <div className="bg-[#F1F5F9] p-1 rounded-[12px] flex mb-4">
           <button 
             onClick={() => setActiveTab('active')}
-            className={`flex-1 py-1.5 text-[12px] font-bold rounded-[10px] transition-all duration-300 flex items-center justify-center gap-1.5 ${activeTab === 'active' ? 'bg-white text-[#0F172A] shadow-[0_2px_4px_rgba(0,0,0,0.02)]' : 'text-[#64748B]'}`}
+            className={`flex-1 py-1.5 text-[12px] font-bold rounded-[10px] transition-all duration-300 flex items-center justify-center gap-1.5 ${activeTab === 'active' ? 'bg-[#105DE4] text-white shadow-[0_2px_4px_rgba(0,0,0,0.02)]' : 'text-[#64748B]'}`}
           >
-            Active <span className={`px-1.5 py-0.5 rounded-[4px] text-[9px] ${activeTab === 'active' ? 'bg-[#F1F5F9] text-[#0F172A]' : 'bg-[#E2E8F0] text-[#475569]'}`}>{activeRewards.length}</span>
+            Active <span className={`px-1.5 py-0.5 rounded-[4px] text-[9px] ${activeTab === 'active' ? 'bg-white/20 text-white' : 'bg-[#E2E8F0] text-[#475569]'}`}>{activeRewards.length}</span>
           </button>
           <button 
             onClick={() => setActiveTab('expired')}
-            className={`flex-1 py-1.5 text-[12px] font-bold rounded-[10px] transition-all duration-300 flex items-center justify-center gap-1.5 ${activeTab === 'expired' ? 'bg-white text-[#0F172A] shadow-[0_2px_4px_rgba(0,0,0,0.02)]' : 'text-[#64748B]'}`}
+            className={`flex-1 py-1.5 text-[12px] font-bold rounded-[10px] transition-all duration-300 flex items-center justify-center gap-1.5 ${activeTab === 'expired' ? 'bg-[#EF4444] text-white shadow-[0_2px_4px_rgba(0,0,0,0.02)]' : 'text-[#64748B]'}`}
           >
-            Expired <span className={`px-1.5 py-0.5 rounded-[4px] text-[9px] ${activeTab === 'expired' ? 'bg-[#F1F5F9] text-[#0F172A]' : 'bg-[#E2E8F0] text-[#475569]'}`}>{expiredRewards.length}</span>
+            Expired <span className={`px-1.5 py-0.5 rounded-[4px] text-[9px] ${activeTab === 'expired' ? 'bg-white/20 text-white' : 'bg-[#E2E8F0] text-[#475569]'}`}>{expiredRewards.length}</span>
           </button>
         </div>
 
@@ -225,7 +224,7 @@ export default function Rewards() {
             </div>
           ) : (
             displayedRewards.map((reward, index) => {
-            const logo = reward.brandLogo || reward.brandId?.brandLogo || getBrandLogo(reward.brand);
+            const logo = reward.brandLogo || reward.brandId?.brandLogo || reward.productCouponId?.brandId?.brandLogo || reward.productId?.brandId?.brandLogo || getBrandLogo(reward.brand);
             const theme = getTheme(index);
             const discountText = reward.discountText || (reward.couponTitle?.match(/\d+%\s*OFF|₹\d+\s*OFF/i) ? reward.couponTitle.match(/\d+%\s*OFF|₹\d+\s*OFF/i)[0] : 'OFFER');
             const expiryDate = reward.couponExpiry ? new Date(reward.couponExpiry).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'No expiry';
@@ -276,42 +275,47 @@ export default function Rewards() {
                   </div>
                 </div>
 
-                {/* Vertical Dashed Line */}
-                <div className="w-[1px] bg-[repeating-linear-gradient(to_bottom,transparent,transparent_3px,#E2E8F0_3px,#E2E8F0_6px)] mx-1"></div>
+                {/* Right Side (Only if active) */}
+                {activeTab === 'active' && (
+                  <>
+                    {/* Vertical Dashed Line */}
+                    <div className="w-[1px] bg-[repeating-linear-gradient(to_bottom,transparent,transparent_3px,#E2E8F0_3px,#E2E8F0_6px)] mx-1"></div>
 
-                {/* Right: Code & Link */}
-                <div className="w-[125px] flex-shrink-0 flex flex-col justify-center pl-1.5">
-                  <span className="text-[10px] font-normal text-[#64748B] mb-1 ml-1">Code</span>
-                  
-                  {/* The Custom Code Box */}
-                  <div className={`flex items-stretch border border-dashed ${theme.boxBorder} rounded-md overflow-hidden mb-2.5`}>
-                    <div className={`flex-1 flex items-center justify-center px-1.5 py-1 ${theme.boxLeftBg} border-r border-dashed ${theme.boxBorder}`}>
-                      <span className="text-[11px] font-bold text-[#0F172A] tracking-wider truncate w-[50px] text-center">{reward.couponCode}</span>
+                    {/* Right: Code & Link */}
+                    <div className="w-[125px] flex-shrink-0 flex flex-col justify-center pl-1.5">
+                      <span className="text-[10px] font-normal text-[#64748B] mb-1 ml-1">Code</span>
+                      
+                      {/* The Custom Code Box */}
+                      <div className={`flex items-stretch border border-dashed ${theme.boxBorder} rounded-md overflow-hidden mb-2.5`}>
+                        <div className={`flex-1 flex items-center justify-center px-1.5 py-1 ${theme.boxLeftBg} border-r border-dashed ${theme.boxBorder}`}>
+                          <span className="text-[11px] font-bold text-[#0F172A] tracking-wider truncate w-[50px] text-center">{reward.couponCode}</span>
+                        </div>
+                        <button 
+                          onClick={() => copyCode(reward.couponCode, reward._id)}
+                          className={`flex items-center justify-center px-1.5 py-1 bg-white hover:bg-slate-50 transition-colors active:scale-95`}
+                        >
+                          {copiedId === reward._id ? (
+                            <CheckCircle2 className={`w-3 h-3 ${theme.copyIcon}`} strokeWidth={2.5} />
+                          ) : (
+                            <Copy className={`w-3 h-3 ${theme.copyIcon}`} strokeWidth={2} />
+                          )}
+                          <span className={`text-[10px] font-bold ml-1 ${theme.copyIcon}`}>
+                            {copiedId === reward._id ? 'Copied' : 'Copy'}
+                          </span>
+                        </button>
+                      </div>
+
+                      <a 
+                        href={reward.websiteLink || '#'} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className={`text-[10.5px] font-bold ${index < 3 ? 'text-[#2563EB]' : 'text-[#E11D48]'} flex items-center gap-1 ml-0.5 hover:underline overflow-hidden w-full`}
+                      >
+                        <span className="truncate">Visit Website</span> <ExternalLink className="w-2.5 h-2.5 flex-shrink-0" />
+                      </a>
                     </div>
-                    <button 
-                      onClick={() => copyCode(reward.couponCode, reward._id)}
-                      className={`flex items-center justify-center px-1.5 py-1 bg-white hover:bg-slate-50 transition-colors active:scale-95`}
-                    >
-                      {copiedId === reward._id ? (
-                        <CheckCircle2 className={`w-3 h-3 ${theme.copyIcon}`} strokeWidth={2.5} />
-                      ) : (
-                        <Copy className={`w-3 h-3 ${theme.copyIcon}`} strokeWidth={2} />
-                      )}
-                      <span className={`text-[10px] font-bold ml-1 ${theme.copyIcon}`}>
-                        {copiedId === reward._id ? 'Copied' : 'Copy'}
-                      </span>
-                    </button>
-                  </div>
-
-                  <a 
-                    href={reward.websiteLink || '#'} 
-                    target="_blank" 
-                    rel="noreferrer"
-                    className={`text-[10.5px] font-bold ${index < 3 ? 'text-[#2563EB]' : 'text-[#E11D48]'} flex items-center gap-1 ml-0.5 hover:underline overflow-hidden w-full`}
-                  >
-                    <span className="truncate">Apply on {brandDomain}</span> <ExternalLink className="w-2.5 h-2.5 flex-shrink-0" />
-                  </a>
-                </div>
+                  </>
+                )}
               </div>
             );
           })

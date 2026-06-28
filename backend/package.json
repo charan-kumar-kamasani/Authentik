@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
-    "build": "ncc build src/server.js -o dist --external canvas",
+    "build": "ncc build src/server.js -o dist --external canvas --external is-plain-object",
     "seed": "node scripts/seedPricing.js"
   },
   "keywords": [],
@@ -25,6 +25,7 @@
     "dotenv": "^17.2.4",
     "exceljs": "^4.4.0",
     "express": "^5.2.1",
+    "is-plain-object": "^5.0.0",
     "jsonwebtoken": "^9.0.3",
     "lru-cache": "^11.2.7",
     "mongoose": "^9.0.2",
