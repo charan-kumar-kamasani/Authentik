@@ -763,6 +763,7 @@ const OrderManagement = () => {
                 <th className="px-6 py-4">Order ID</th>
                 <th className="px-6 py-4">Product & Brand</th>
                 <th className="px-6 py-4">Quantity</th>
+                <th className="px-6 py-4">QR Serials</th>
                 <th className="px-6 py-4">Warranty</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4">{sortBy === 'updatedAt' ? 'Last Updated' : 'Created At'}</th>
@@ -771,7 +772,7 @@ const OrderManagement = () => {
             </thead>
             <tbody className="divide-y divide-slate-100/80">
               {filtered.length === 0 ? (
-                <tr><td colSpan="7" className="px-6 py-16 text-center">
+                <tr><td colSpan="8" className="px-6 py-16 text-center">
                   <div className="flex flex-col items-center gap-3">
                     <div className="w-14 h-14 bg-slate-50 text-slate-300 rounded-2xl flex items-center justify-center"><Package size={28} /></div>
                     <p className="font-bold text-slate-400">No orders match your filters.</p>
@@ -796,6 +797,15 @@ const OrderManagement = () => {
                   </td>
                   <td className="px-6 py-4">
                     <span className="text-sm font-black text-slate-700">{order.quantity}</span>
+                  </td>
+                  <td className="px-6 py-4">
+                    {order.startSerialNumber && order.endSerialNumber ? (
+                      <div className="text-xs font-mono bg-slate-50 border border-slate-200 text-slate-600 px-2 py-1 rounded-md inline-block">
+                        #{order.startSerialNumber} - #{order.endSerialNumber}
+                      </div>
+                    ) : (
+                      <span className="text-xs text-slate-400 font-medium">N/A</span>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     <button 

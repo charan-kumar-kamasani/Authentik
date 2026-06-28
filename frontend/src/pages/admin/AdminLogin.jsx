@@ -67,7 +67,7 @@ export default function AdminLogin() {
           <div>
             <div className="flex items-center gap-4">
               <div className="bg-white w-12 h-12 rounded-full flex items-center justify-center shadow-inner">
-                <img src="/logo.svg" alt="Logo" className="w-10 h-10" />
+                <img src="/logo-shield.png" alt="Logo" className="w-10 h-10" />
               </div>
               <div>
                 <h1 className="text-2xl font-extrabold tracking-tight">Authentiks</h1>

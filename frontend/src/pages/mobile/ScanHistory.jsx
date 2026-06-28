@@ -1,16 +1,23 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Search, Filter, ShieldCheck, AlertTriangle, XCircle, HelpCircle, Calendar, Clock, ChevronRight, ArrowLeft, ScanLine } from "lucide-react";
 import API_BASE_URL from "../../config/api";
-import MobileHeader from "../../components/MobileHeader";
-
-// Assets
-import StatusValid from "../../assets/logo.svg";
-import StatusFake from "../../assets/v2/history/dangerous.svg";
-import StatusDuplicate from "../../assets/v2/history/warning.svg";
+import MobileNavbar from "../../components/MobileNavbar";
 
 export default function ScanHistory() {
   const navigate = useNavigate();
   const [historyItems, setHistoryItems] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("All Scans");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortOrder, setSortOrder] = useState("newest");
+  const [isLoading, setIsLoading] = useState(true);
+  const itemsPerPage = 20;
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchQuery]);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -37,77 +44,58 @@ export default function ScanHistory() {
               hour12: true
             });
 
-            let type = "valid";
-            let icon = StatusValid;
-            let content = {};
+            let type = "Verified";
             let statusLabel = "Verified";
-            let badgeColor = "text-[#2CA4D6]";
-            let badgeBg = "bg-[#E8F4F9]";
-            let statusBadgeIcon = "verified";
+            let statusText = "Verified Authentic";
+            let badgeColor = "text-[#10B981]";
+            let badgeBorder = "border-[#10B981]/30";
+            let badgeBg = "bg-[#ECFDF5]";
+            let statusIcon = "verified";
 
             // Extract brand logo from populated brandId or company
             let brandLogo = item.brandId?.brandLogo || null;
 
             if (item.status === "FAKE" || item.status === "INACTIVE") {
-              type = item.status.toLowerCase();
-              icon = StatusFake;
-              brandLogo = null;
+              type = "Counterfeit";
               statusLabel = "Counterfeit";
-              badgeColor = "text-[#DC2626]";
+              statusText = "This product is identified as counterfeit. Please be cautious.";
+              badgeColor = "text-[#EF4444]";
+              badgeBorder = "border-[#EF4444]/30";
               badgeBg = "bg-[#FEF2F2]";
-              statusBadgeIcon = "counterfeit";
-              content = {
-                title: item.status === "FAKE" ? "Fake or Counterfeit" : "Inactive QR Code",
-                subtitle: item.status === "FAKE"
-                  ? "This product doesn't match our authenticity records"
-                  : "This product is currently inactive and cannot be verified",
-              };
+              statusIcon = "counterfeit";
             } else if (item.status === "ALREADY_USED" || item.status === "DUPLICATE") {
-              type = "duplicate";
-              icon = StatusDuplicate;
-              statusLabel = "Alert";
-              badgeColor = "text-[#EA580C]";
-              badgeBg = "bg-[#FFF7ED]";
-              statusBadgeIcon = "alert";
-              content = {
-                title: "Duplicate Scan",
-                subtitle: "This QR code has been scanned before. Please check product details carefully."
-              };
-            } else {
-              type = "valid";
-              icon = StatusValid;
-              const prod = item.productId || {};
-              content = {
-                brand: prod.brand || item.productName || "Brand",
-                product: item.productName || prod.productName || "Product",
-                mfdOn: prod.manufactureDate || "--",
-                expOn: prod.expiryDate || "--",
-              };
+              type = "Duplicate";
+              statusLabel = "Duplicate";
+              statusText = "This product has been scanned before";
+              badgeColor = "text-[#F59E0B]";
+              badgeBorder = "border-[#F59E0B]/30";
+              badgeBg = "bg-[#FFFBEB]";
+              statusIcon = "alert";
             }
 
-            // Title for the card (brand name or product name)
-            const cardTitle = type === 'valid' 
-              ? (item.brandId?.brandName || item.productName || content.product)
-              : content.title;
+            const prod = item.productId || {};
+            const category = prod.category || item.category || "Product";
+            const brandName = item.brandId?.brandName || item.brandName || "";
+            const productName = item.productName || prod.productName || "Unknown Product";
+            
+            // Format title to match design "Brand Model"
+            const cardTitle = brandName ? (productName.toLowerCase().includes(brandName.toLowerCase()) ? productName : `${brandName} ${productName}`) : productName;
 
             return {
               id: item._id,
               type,
-              content,
               cardTitle,
-              productName: item.productName,
+              category,
+              sn: item.qrCode || "Unknown",
               scannedDate: `${day} ${monthName} ${year}`,
               scannedTime: timeStr,
-              icon,
               brandLogo,
               statusLabel,
+              statusText,
               badgeColor,
+              badgeBorder,
               badgeBg,
-              statusBadgeIcon,
-              latitude: item.latitude,
-              longitude: item.longitude,
-              place: item.place,
-              originalScan: item.originalScan,
+              statusIcon,
               fullData: item,
               status: item.status
             };
@@ -116,215 +104,259 @@ export default function ScanHistory() {
         }
       } catch (err) {
         console.error("Error fetching scan history:", err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchHistory();
   }, []);
 
-  const Card = ({ item, index }) => {
+  const filteredItems = historyItems.filter(item => {
+    // Filter by tab
+    if (activeTab !== "All Scans" && item.type !== activeTab) {
+      return false;
+    }
+    // Filter by search
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      return (
+        item.cardTitle.toLowerCase().includes(q) ||
+        item.category.toLowerCase().includes(q) ||
+        item.sn.toLowerCase().includes(q)
+      );
+    }
+    return true;
+  });
+
+  const sortedItems = [...filteredItems].sort((a, b) => {
+    const dateA = new Date(a.fullData?.createdAt || 0);
+    const dateB = new Date(b.fullData?.createdAt || 0);
+    return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
+  });
+
+  const getTabCount = (tabName) => {
+    if (tabName === "All Scans") return historyItems.length;
+    return historyItems.filter(item => item.type === tabName).length;
+  };
+
+  const totalPages = Math.ceil(sortedItems.length / itemsPerPage);
+  const currentItems = sortedItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const tabs = [
+    { name: "All Scans", icon: ScanLine, activeBg: "bg-[#105DE4]", activeText: "text-white", inactiveText: "text-[#64748B]" },
+    { name: "Verified", icon: ShieldCheck, activeBg: "bg-[#10B981]", activeText: "text-white", inactiveText: "text-[#64748B]" },
+    { name: "Duplicate", icon: AlertTriangle, activeBg: "bg-[#F59E0B]", activeText: "text-white", inactiveText: "text-[#64748B]" },
+    { name: "Counterfeit", icon: XCircle, activeBg: "bg-[#EF4444]", activeText: "text-white", inactiveText: "text-[#64748B]" },
+    { name: "Unverified", icon: HelpCircle, activeBg: "bg-[#6B7280]", activeText: "text-white", inactiveText: "text-[#64748B]" },
+  ];
+
+  const Card = ({ item }) => {
     return (
       <div 
-        onClick={() => navigate(`/result/${item.status || 'ORIGINAL'}`, { state: item.fullData })}
-        className="bg-white rounded-[16px] p-3.5 flex items-center cursor-pointer shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#F0F0F0] hover:shadow-[0_4px_20px_rgba(0,0,0,0.1)] transition-all duration-300 active:scale-[0.98] mb-3"
-        style={{
-          animation: `fadeSlideUp 0.5s ease-out forwards`,
-          animationDelay: `${index * 0.06}s`,
-          opacity: 0
+        onClick={() => {
+          const status = item.status || 'ORIGINAL';
+          if (status === 'ORIGINAL') {
+            navigate('/product-passport', { state: item.fullData });
+          } else {
+            navigate(`/result/${status}`, { state: item.fullData });
+          }
         }}
+        className="bg-white rounded-[20px] p-3.5 flex gap-3.5 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#F1F5F9] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300 active:scale-[0.98] mb-3"
       >
-        {/* Brand Logo with Status Badge */}
-        <div className="relative w-[60px] h-[60px] flex-shrink-0 mr-3.5">
-          {/* Logo Circle */}
-          <div className="w-full h-full rounded-full bg-[#F5F5F5] border-2 border-[#E8E8E8] flex items-center justify-center overflow-hidden">
-            {item.brandLogo ? (
-              <img
-                src={item.brandLogo}
-                alt={item.cardTitle}
-                className="w-[40px] h-[40px] object-contain"
-              />
-            ) : (
-              <img
-                src={item.icon}
-                alt={item.type}
-                className="w-[32px] h-[32px] object-contain"
-              />
-            )}
+        {/* Brand Logo Container */}
+        <div className="w-[60px] h-[60px] rounded-[14px] border border-[#F1F5F9] flex items-center justify-center flex-shrink-0 overflow-hidden bg-white shadow-sm p-2">
+          {item.brandLogo ? (
+            <img src={item.brandLogo} alt={item.cardTitle} className="w-full h-full object-contain" />
+          ) : (
+            <span className="text-[10px] font-bold text-gray-400">LOGO</span>
+          )}
+        </div>
+        
+        {/* Content Container (Flex Column) */}
+        <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+          
+          {/* Top Row: Title & Badge */}
+          <div className="flex justify-between items-start gap-2 mb-1">
+            <div className="flex-1 min-w-0">
+              <h4 className="font-extrabold text-[15px] text-[#0F172A] leading-tight truncate">
+                {item.cardTitle}
+              </h4>
+              <p className="text-[12px] text-[#64748B] truncate mt-0.5 font-medium">{item.category}</p>
+            </div>
+            
+            {/* Status Badge */}
+            <div className={`flex-shrink-0 inline-flex items-center gap-1 text-[9px] font-bold tracking-wider uppercase ${item.badgeColor} px-2 py-1 rounded-[6px] border ${item.badgeBorder} ${item.badgeBg}`}>
+              {item.statusIcon === 'verified' && <ShieldCheck className="w-2.5 h-2.5" strokeWidth={3} />}
+              {item.statusIcon === 'alert' && <AlertTriangle className="w-2.5 h-2.5" strokeWidth={3} />}
+              {item.statusLabel}
+            </div>
           </div>
           
-          {/* Status Badge Overlay */}
-          <div className={`absolute -bottom-0.5 -right-0.5 w-[22px] h-[22px] rounded-full flex items-center justify-center border-2 border-white shadow-sm ${
-            item.statusBadgeIcon === 'verified' 
-              ? 'bg-[#2CA4D6]'
-              : item.statusBadgeIcon === 'alert'
-              ? 'bg-[#F59E0B]'
-              : 'bg-[#DC2626]'
-          }`}>
-            {item.statusBadgeIcon === 'verified' ? (
-              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-            ) : item.statusBadgeIcon === 'alert' ? (
-              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-            ) : (
-              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-              </svg>
-            )}
+          {/* Middle Row: Serial Number */}
+          <p className="text-[12px] text-[#64748B] font-medium truncate mb-2">
+            SN: {item.sn}
+          </p>
+          
+          {/* Bottom Row: Status Text + Date/Time/Chevron */}
+          <div className="flex justify-between items-end gap-3 mt-auto">
+            {/* Status Icon & Text */}
+            <div className="flex items-start gap-1.5 flex-1 min-w-0">
+              {item.statusIcon === 'verified' ? (
+                <ShieldCheck className="w-4 h-4 text-[#10B981] flex-shrink-0 mt-[1px]" strokeWidth={2.5} />
+              ) : item.statusIcon === 'alert' ? (
+                <AlertTriangle className="w-4 h-4 text-[#F59E0B] flex-shrink-0 mt-[1px]" strokeWidth={2.5} />
+              ) : (
+                <XCircle className="w-4 h-4 text-[#EF4444] flex-shrink-0 mt-[1px]" strokeWidth={2.5} />
+              )}
+              <span className={`text-[12px] font-bold leading-snug line-clamp-2 ${item.statusIcon === 'verified' ? 'text-[#10B981]' : item.statusIcon === 'alert' ? 'text-[#F59E0B]' : 'text-[#EF4444]'}`}>
+                {item.statusText}
+              </span>
+            </div>
+
+            {/* Date, Time & Chevron */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex flex-col items-end gap-1">
+                <div className="flex items-center gap-1.5 text-[#94A3B8] text-[10px] font-semibold">
+                  <Calendar className="w-3.5 h-3.5" strokeWidth={2} />
+                  {item.scannedDate}
+                </div>
+                <div className="flex items-center gap-1.5 text-[#94A3B8] text-[10px] font-semibold">
+                  <Clock className="w-3.5 h-3.5" strokeWidth={2} />
+                  {item.scannedTime}
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-[#CBD5E1]" strokeWidth={2.5} />
+            </div>
           </div>
-        </div>
-        
-        {/* Text Content */}
-        <div className="flex-1 min-w-0 flex flex-col justify-center">
-          <h4 className="font-bold text-[15px] text-[#1A1A2E] leading-tight mb-0.5 truncate">
-            {item.productName}
-          </h4>
-          {item.statusBadgeIcon === 'verified' && item.productName && item.cardTitle !== item.productName && (
-            <p className="text-[13px] text-[#6B7280] font-medium mb-1.5 truncate">
-              {item.cardTitle}
-            </p>
-          )}
-          <div className="flex items-center gap-1.5 mt-0.5">
-            <svg className="w-3.5 h-3.5 text-[#9CA3AF] flex-shrink-0" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z" />
-            </svg>
-            <p className="text-[#6B7280] text-[10px] font-medium">
-              {item.scannedDate} • {item.scannedTime}
-            </p>
-          </div>
-        </div>
-        
-        {/* Badge and Chevron */}
-        <div className="flex items-center flex-shrink-0">
-          <div className={`inline-flex items-center gap-1 text-[10px] font-bold tracking-wide uppercase ${item.badgeColor} px-2.5 py-1 rounded-full ${item.badgeBg}`}>
-            {item.statusLabel}
-          </div>
-          <svg 
-            className="w-5 h-5 text-[#C4C4C4]" 
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
+
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA]">
-      {/* Header */}
-      <MobileHeader
-        title="My History"
-        onBackClick={() => navigate(-1)}
-      />
+    <div className="min-h-screen bg-[#F8FAFC] pb-[100px] flex flex-col relative overflow-hidden">
+      {/* Header Area */}
+      <div className="bg-white px-5 pt-4 pb-2 sticky top-0 z-40 border-b border-[#F1F5F9] shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
+        {/* Top Header */}
+        <div className="flex items-center justify-between mb-5">
+          <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-slate-50 transition-colors">
+            <ArrowLeft className="w-6 h-6 text-[#0F172A]" strokeWidth={2.5} />
+          </button>
+          <h1 className="text-[18px] font-extrabold text-[#0F172A] tracking-tight">Scan History</h1>
+          <button 
+            onClick={() => {
+              setSortOrder(prev => prev === "newest" ? "oldest" : "newest");
+              setCurrentPage(1);
+            }}
+            className={`p-2 -mr-2 rounded-full transition-colors relative ${sortOrder === 'oldest' ? 'bg-[#EEF2FF]' : 'hover:bg-slate-50'}`}
+          >
+            <Filter className={`w-5 h-5 ${sortOrder === 'oldest' ? 'text-[#105DE4]' : 'text-[#0F172A]'}`} strokeWidth={2} />
+            {sortOrder === 'oldest' && (
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#105DE4] rounded-full border border-white"></span>
+            )}
+          </button>
+        </div>
 
-      {/* Content Container */}
-      <div className="px-4 pt-6 pb-24">
-        {historyItems.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-4 pt-24">
-            {/* Gradient Icon */}
-            <div className="relative flex items-center justify-center">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#E8F4F9] to-[#F0F9FF] flex items-center justify-center shadow-lg">
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="url(#historyGradient)" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                  className="w-12 h-12"
-                >
-                  <defs>
-                    <linearGradient id="historyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#0D4E96" />
-                      <stop offset="100%" stopColor="#2CA4D6" />
-                    </linearGradient>
-                  </defs>
-                  <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              
-              {/* Decorative Elements */}
-              <div 
-                className="absolute w-3 h-3 bg-[#2CA4D6] rounded-full opacity-30"
-                style={{
-                  top: '10%',
-                  left: '-20%',
-                  animation: 'pulse 2s infinite'
-                }}
-              />
-              <div 
-                className="absolute w-2 h-2 bg-[#0D4E96] rounded-full opacity-30"
-                style={{
-                  top: '30%',
-                  right: '-15%',
-                  animation: 'pulse 2s infinite',
-                  animationDelay: '0.5s'
-                }}
-              />
-              <div 
-                className="absolute w-2.5 h-2.5 bg-[#1a5fa8] rounded-full opacity-30"
-                style={{
-                  bottom: '20%',
-                  left: '-10%',
-                  animation: 'pulse 2s infinite',
-                  animationDelay: '1s'
-                }}
-              />
-            </div>
-
-            {/* Empty State Text */}
-            <div className="text-center">
-              <h2 className="text-[#0D4E96] font-black text-[20px] mb-2">
-                No Scan History
-              </h2>
-              <p className="text-gray-600 text-[14px] max-w-[280px]">
-                Start scanning products to build your verification history and track authenticity.
-              </p>
-            </div>
-            
-            {/* CTA Button */}
-            <button
-              onClick={() => navigate('/scan')}
-              className="mt-6 px-8 py-3.5 bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] text-white font-bold text-[15px] rounded-[30px] shadow-[0_8px_24px_rgba(13,78,150,0.35)] active:scale-95 transition-all"
-            >
-              Scan Your First Product
-            </button>
+        {/* Search Bar */}
+        <div className="relative mb-6">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Search className="h-[18px] w-[18px] text-[#94A3B8]" strokeWidth={2.5} />
           </div>
+          <input
+            type="text"
+            className="w-full bg-[#F1F5F9] border border-transparent rounded-[14px] py-3 pl-11 pr-4 text-[14px] font-semibold text-[#0F172A] placeholder-[#94A3B8] focus:bg-white focus:border-[#105DE4] focus:ring-4 focus:ring-[#105DE4]/10 transition-all outline-none"
+            placeholder="Search by product or brand"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+
+        {/* Filter Tabs */}
+        <div className="flex gap-3 overflow-x-auto hide-scroll -mx-5 px-5 pt-1 pb-4">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.name;
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.name}
+                onClick={() => setActiveTab(tab.name)}
+                className={`flex items-center gap-2 flex-shrink-0 px-4 py-2.5 rounded-[14px] transition-all duration-300 ${
+                  isActive ? `${tab.activeBg} shadow-[0_4px_12px_rgba(0,0,0,0.1)]` : 'bg-[#F1F5F9] hover:bg-[#E2E8F0]'
+                }`}
+              >
+                <Icon className={`w-4 h-4 ${isActive ? tab.activeText : tab.inactiveText}`} strokeWidth={2.5} />
+                <span className={`text-[13px] font-bold tracking-tight ${isActive ? tab.activeText : tab.inactiveText}`}>
+                  {tab.name}
+                </span>
+                <span className={`text-[12px] font-extrabold px-2 py-0.5 rounded-[8px] ml-1 transition-colors ${
+                  isActive ? 'bg-black/15 text-white' : 'bg-white text-[#64748B] shadow-sm'
+                }`}>
+                  {getTabCount(tab.name)}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* List Content */}
+      <div className="px-5 pt-5 pb-6 flex-1 overflow-y-auto">
+        {isLoading ? (
+           <div className="flex justify-center items-center h-full pt-20">
+              <div className="w-8 h-8 border-4 border-[#105DE4] border-t-transparent rounded-full animate-spin"></div>
+           </div>
+        ) : filteredItems.length === 0 ? (
+           <div className="flex flex-col items-center justify-center pt-20 text-center">
+             <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                <Search className="w-8 h-8 text-slate-300" strokeWidth={2} />
+             </div>
+             <h3 className="text-slate-800 font-bold text-[16px] mb-1">No scans found</h3>
+             <p className="text-slate-500 font-medium text-[13px]">Try adjusting your filters or search query.</p>
+           </div>
         ) : (
-          <div>
-            {historyItems.map((item, index) => <Card key={item.id} item={item} index={index} />)}
-          </div>
+           <>
+             {currentItems.map(item => <Card key={item.id} item={item} />)}
+             
+             {/* Pagination Controls */}
+             {totalPages > 1 && (
+               <div className="flex items-center justify-between mt-6 mb-4 px-2">
+                 <button 
+                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                   disabled={currentPage === 1}
+                   className={`px-4 py-2 rounded-[10px] text-[13px] font-bold transition-colors ${currentPage === 1 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm'}`}
+                 >
+                   Previous
+                 </button>
+                 <span className="text-[13px] font-semibold text-slate-500">
+                   Page {currentPage} of {totalPages}
+                 </span>
+                 <button 
+                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                   disabled={currentPage === totalPages}
+                   className={`px-4 py-2 rounded-[10px] text-[13px] font-bold transition-colors ${currentPage === totalPages ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-[#105DE4] text-white hover:bg-blue-700 shadow-[0_4px_12px_rgba(16,93,228,0.25)]'}`}
+                 >
+                   Next
+                 </button>
+               </div>
+             )}
+           </>
         )}
       </div>
 
-      {/* Animations */}
+      {/* Bottom Nav */}
+      <MobileNavbar />
+
+      {/* Styles */}
       <style>
         {`
-          @keyframes fadeSlideUp {
-            from {
-              opacity: 0;
-              transform: translateY(20px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
+          .hide-scroll::-webkit-scrollbar {
+            display: none;
           }
-          
-          @keyframes shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-          }
-          
-          .animate-shimmer {
-            animation: shimmer 3s infinite linear;
+          .hide-scroll {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
           }
         `}
       </style>

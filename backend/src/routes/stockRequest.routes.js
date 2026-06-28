@@ -226,7 +226,7 @@ router.get('/usage', protect, async (req, res) => {
     }
 
     const usage = await Order.find(filter)
-      .select('orderId productName brand quantity qrGeneratedCount createdAt status createdBy history')
+      .select('orderId productName brand quantity qrGeneratedCount startSerialNumber endSerialNumber createdAt status createdBy history')
       .populate('company', 'companyName')
       .populate('companyId', 'companyName')
       .populate('createdBy', 'name email role')

@@ -34,8 +34,6 @@ export default function GenerateQrs() {
   // Loyalty Points fields
   const [loyalty, setLoyalty] = useState({ isActive: false, pointsPerScan: '', totalPointsFund: '' });
 
-  // Order Links
-  const [orderLinks, setOrderLinks] = useState([]);
 
   // Dynamic fields
   const [dynamicFieldValues, setDynamicFieldValues] = useState({});
@@ -151,9 +149,6 @@ export default function GenerateQrs() {
           pointsPerScan: order.loyalty.pointsPerScan || '',
           totalPointsFund: order.loyalty.totalPointsFund || '',
         });
-      }
-      if (order.orderLinks) {
-        setOrderLinks(order.orderLinks);
       }
     }
     }
@@ -278,8 +273,8 @@ export default function GenerateQrs() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleCreateQr = async (e) => {
-    e.preventDefault();
+  const prepareOrderData = async (e) => {
+    if (e) e.preventDefault();
     if (submitting) return;
 
     // Mobile preview modal now serves as the confirmation step
@@ -307,31 +302,7 @@ export default function GenerateQrs() {
         }
       }
     }
-    // Order Links Validation
-    for (const link of orderLinks) {
-      if (link.title && !link.url) {
-        await confirm({ title: 'Validation Failed', description: `Please provide a URL for the order link: ${link.title}`, cancelText: null });
-        setSubmitting(false);
-        return;
-      }
-      if (link.url) {
-        if (!link.title) {
-          await confirm({ title: 'Validation Failed', description: `Please provide a title for the order link: ${link.url}`, cancelText: null });
-          setSubmitting(false);
-          return;
-        }
-        if (!/^https?:\/\//i.test(link.url)) {
-          await confirm({ title: 'Invalid URL', description: `Order link URL must start with http:// or https://: ${link.url}`, cancelText: null });
-          setSubmitting(false);
-          return;
-        }
-        if (/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi.test(link.url) || /javascript:/i.test(link.url)) {
-          await confirm({ title: 'Invalid URL', description: `Order link URL cannot contain scripts: ${link.url}`, cancelText: null });
-          setSubmitting(false);
-          return;
-        }
-      }
-    }
+
     // Coupon Validation: If title is present, other fields are mandatory
     if (coupon.title) {
       if (!coupon.code || !coupon.expiryDate || !coupon.description || !coupon.websiteLink) {
@@ -417,13 +388,6 @@ export default function GenerateQrs() {
       const qtyValue = (quantityField ? uploadedDynamicFields[quantityField.fieldName] : (uploadedDynamicFields['quantity'] || uploadedDynamicFields['qrQuantity'] || '')) || 1;
       const quantity = Number(qtyValue) || 1;
 
-      // Hard minimum: 1000 units required
-      if (quantity < 1000) {
-        await confirm({ title: 'Quantity Alert', description: `Minimum order quantity is 1000 units. You entered ${quantity}.`, cancelText: null });
-        setSubmitting(false);
-        return;
-      }
-
       // Description word limit: 200 words max
       const descText = (newQr.productInfo || '').trim();
       if (descText) {
@@ -435,17 +399,7 @@ export default function GenerateQrs() {
         }
       }
 
-      // Minimum quantity check (Plan based)
-      const activePlan = currentUser?.companyId?.planId;
-      if (activePlan) {
-        const minStr = activePlan.minQrPerOrder || activePlan.minQr || '';
-        const planMin = Number(String(minStr).replace(/[^\d]/g, '') || 0);
-        if (planMin > 0 && quantity < planMin) {
-          await confirm({ title: 'Plan Restriction', description: `Minimum quantity for your plan (${activePlan.name}) is ${planMin} units.`, cancelText: null });
-          setSubmitting(false);
-          return;
-        }
-      }
+
 
       // Minimum quantity check (Field based)
       if (quantityField && quantityField.validation?.min) {
@@ -496,6 +450,13 @@ export default function GenerateQrs() {
         }
       }
 
+      // Clean up legacy fields from dynamicFields
+      const cleanedDynamicFields = { ...uploadedDynamicFields };
+      delete cleanedDynamicFields['mrp'];
+      delete cleanedDynamicFields['manufacturedBy'];
+      delete cleanedDynamicFields['marketedBy'];
+      delete cleanedDynamicFields['Product Quantity'];
+
       const orderData = {
         productName,
         skuNumber: newQr.skuNumber,
@@ -516,7 +477,7 @@ export default function GenerateQrs() {
           value: instance.value,
         })),
         // Dynamic fields (all custom field values)
-        dynamicFields: uploadedDynamicFields,
+        dynamicFields: cleanedDynamicFields,
         // Coupon (if provided)
         coupon: coupon.title ? {
           title: coupon.title,
@@ -547,16 +508,35 @@ export default function GenerateQrs() {
           pointsPerScan: Number(loyalty.pointsPerScan) || 0,
           totalPointsFund: Number(loyalty.totalPointsFund) || 0,
         } : undefined,
-        // Order Links
-        orderLinks: orderLinks.filter(link => link.title && link.url),
       };
 
-      setMobilePreviewOrder(orderData);
+      return orderData;
     } catch (err) {
       console.error(err);
       await confirm({ title: 'Error', description: err.message || 'Failed to prepare QR order', cancelText: null });
+      return null;
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handlePreviewResultScreen = async (e) => {
+    const data = await prepareOrderData(e);
+    if (data) setMobilePreviewOrder(data);
+  };
+
+  const handleConfirmAndSubmit = async (e) => {
+    const data = await prepareOrderData(e);
+    if (data) {
+      const isConfirmed = await confirm({
+        title: 'Confirm Order Creation',
+        description: 'Are you sure you want to proceed? Once generated, product configuration cannot be changed.',
+        confirmText: 'Yes, Submit',
+        cancelText: 'Cancel'
+      });
+      if (isConfirmed) {
+        submitOrderData(data);
+      }
     }
   };
 
@@ -641,7 +621,6 @@ export default function GenerateQrs() {
     setWarranty({ duration: '', durationUnit: 'months', warrantyType: '', description: '' });
     setCashback({ isActive: false, totalFund: '', minPerUser: '', maxPerUser: '' });
     setLoyalty({ isActive: false, pointsPerScan: '', totalPointsFund: '' });
-    setOrderLinks([]);
   };
 
   useEffect(() => {
@@ -915,7 +894,7 @@ export default function GenerateQrs() {
     { id: 2, title: 'Variants & Specs', icon: LayoutGrid },
     { id: 3, title: 'Dates & Expiry', icon: Calendar },
     { id: 4, title: 'Rewards & Offers', icon: Gift },
-    { id: 5, title: 'Warranty & Links', icon: Shield },
+    { id: 5, title: 'Warranty', icon: Shield },
     { id: 6, title: 'Review', icon: CheckCircle2 }
   ];
 
@@ -974,7 +953,7 @@ export default function GenerateQrs() {
           </div>
         </div>
 
-        <form onSubmit={handleCreateQr} className="grid grid-cols-2 gap-6">
+        <form onSubmit={(e) => e.preventDefault()} className="grid grid-cols-2 gap-6">
 
         {/* STEP 1: Product Basics */}
         <div id="step-1" className={`col-span-2 grid grid-cols-2 gap-6 ${currentStep === 1 ? 'block' : 'hidden'}`}>
@@ -1428,7 +1407,7 @@ export default function GenerateQrs() {
 
         </div> {/* End Step 4 */}
 
-        {/* STEP 5: Warranty & Links */}
+        {/* STEP 5: Warranty */}
         <div id="step-5" className={`col-span-2 grid grid-cols-2 gap-6 ${currentStep === 5 ? 'block' : 'hidden'}`}>
 
         {/* Warranty Information Section */}
@@ -1627,72 +1606,7 @@ export default function GenerateQrs() {
           </>
         )}
 
-        {/* Order Links Section */}
-        <div className="col-span-2 border-t border-slate-200 pt-4 mt-2">
-          <div className="flex items-center gap-2 mb-4">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-blue-600" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
-            <h4 className="text-sm font-semibold text-slate-800">Order Links (Optional)</h4>
-          </div>
-          <p className="text-xs text-slate-500 font-medium mb-4">Add reorder or promotional links to show after scanning</p>
-          <div className="space-y-4">
-            {orderLinks.map((link, index) => (
-              <div key={index} className="flex flex-col sm:flex-row gap-4 p-4 border border-slate-200 rounded-xl bg-slate-50/50">
-                <div className="flex-1 space-y-3">
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-medium text-slate-700 ml-1">Link Title</label>
-                    <input
-                      type="text"
-                      placeholder="e.g., Reorder on Amazon"
-                      value={link.title}
-                      onChange={(e) => {
-                        const newLinks = [...orderLinks];
-                        newLinks[index].title = e.target.value;
-                        setOrderLinks(newLinks);
-                      }}
-                      className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-medium text-slate-700 ml-1">URL</label>
-                    <input
-                      type="url"
-                      placeholder="e.g., https://amazon.in/product..."
-                      value={link.url}
-                      onChange={(e) => {
-                        const newLinks = [...orderLinks];
-                        newLinks[index].url = e.target.value;
-                        setOrderLinks(newLinks);
-                      }}
-                      className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all font-medium"
-                    />
-                  </div>
-                </div>
-                <div className="flex items-start sm:items-center pt-2 sm:pt-0">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const newLinks = [...orderLinks];
-                      newLinks.splice(index, 1);
-                      setOrderLinks(newLinks);
-                    }}
-                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Remove Link"
-                  >
-                    <Trash2 size={20} />
-                  </button>
-                </div>
-              </div>
-            ))}
-            <button
-              type="button"
-              onClick={() => setOrderLinks([...orderLinks, { title: '', url: '' }])}
-              className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors"
-            >
-              <Plus size={18} />
-              Add Link
-            </button>
-          </div>
-        </div>
+        {/* Order Links Section (Removed, handled via Templates) */}
 
         </div> {/* End Step 5 */}
 
@@ -1728,6 +1642,23 @@ export default function GenerateQrs() {
                 <p className="text-slate-500 font-medium mb-1">Best Before</p>
                 <p className="text-slate-900 font-semibold">{bestBefore.value ? `${bestBefore.value} ${bestBefore.unit}` : 'Not provided'}</p>
               </div>
+              
+              {/* Show Variants if any */}
+              {variantInstances.length > 0 && (
+                <div className="col-span-2 pt-4 mt-2 border-t border-slate-200">
+                  <p className="text-slate-500 font-medium mb-3">Variants & Specs</p>
+                  <div className="flex flex-wrap gap-2">
+                    {variantInstances.map((v, i) => (
+                      <span key={i} className="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold border border-indigo-100/50">
+                        <span className="text-indigo-400 font-medium mr-1">{v.variantLabel || v.variantName}:</span> {v.value || 'N/A'}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Purchase Links handled via templates */}
+
               <div className="col-span-2 pt-4 mt-2 border-t border-slate-200 flex flex-wrap gap-4">
                 <span className={`px-3 py-1 rounded-full text-xs font-semibold ${coupon.title ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-500'}`}>
                   Coupon: {coupon.title ? 'Enabled' : 'None'}
@@ -1773,27 +1704,43 @@ export default function GenerateQrs() {
               <ArrowLeft size={16} className="rotate-180" />
             </button>
           ) : (
-            <button 
-              type="submit" 
-              disabled={submitting} 
-              className={`px-6 py-2.5 text-white font-medium rounded-lg transition-all duration-200 flex items-center gap-2 text-sm shadow-sm active:scale-[0.98] ${
-                submitting 
-                  ? 'bg-slate-400 cursor-not-allowed' 
-                  : 'bg-indigo-600 hover:bg-indigo-700'
-              }`}
-            >
-              {submitting ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                  Processing...
-                </div>
-              ) : (
-                <>
-                  {role === 'creator' ? 'Create Order & QRs' : 'Generate Product & QR'}
-                  <CheckCircle2 size={16} />
-                </>
-              )}
-            </button>
+            <div className="flex gap-4 items-center">
+              <button 
+                type="button" 
+                onClick={handlePreviewResultScreen}
+                disabled={submitting} 
+                className={`px-6 py-2.5 font-medium rounded-lg transition-all duration-200 flex items-center gap-2 text-sm shadow-sm active:scale-[0.98] ${
+                  submitting 
+                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-200' 
+                    : 'bg-white border-2 border-indigo-600 text-indigo-700 hover:bg-indigo-50'
+                }`}
+              >
+                Preview Mobile View
+              </button>
+              
+              <button 
+                type="button" 
+                onClick={handleConfirmAndSubmit}
+                disabled={submitting} 
+                className={`px-6 py-2.5 text-white font-medium rounded-lg transition-all duration-200 flex items-center gap-2 text-sm shadow-sm active:scale-[0.98] ${
+                  submitting 
+                    ? 'bg-slate-400 cursor-not-allowed' 
+                    : 'bg-indigo-600 hover:bg-indigo-700'
+                }`}
+              >
+                {submitting ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                    Processing...
+                  </div>
+                ) : (
+                  <>
+                    Confirm & Submit
+                    <CheckCircle2 size={16} />
+                  </>
+                )}
+              </button>
+            </div>
           )}
         </div>
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import logo from '../../assets/logo.svg';
+import logo from '../../assets/logo-text.png';
 import { QrCode, ShieldCheck, Lock, Award, Globe, ChevronRight } from 'lucide-react';
 
 export default function MobileLanding({ onSelectMode }) {

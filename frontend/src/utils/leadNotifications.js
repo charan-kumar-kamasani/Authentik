@@ -63,7 +63,7 @@ function showLeadNotification(lead) {
   try {
     const notification = new Notification(title, {
       body,
-      icon: '/logo.svg',
+      icon: '/logo-shield.png',
       tag: `lead-${lead._id}`, // prevents duplicate notifications for same lead
       requireInteraction: false,
     });

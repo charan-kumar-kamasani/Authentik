@@ -63,6 +63,7 @@ const productTemplateSchema = new mongoose.Schema({
   // Detailed fields
   category: String,
   mrp: Number,
+  price: Number, // Best scraped price
   keyBenefits: String, // Mark downs or newline separated
   manufacturedBy: String,
   marketedBy: String,
@@ -95,7 +96,25 @@ const productTemplateSchema = new mongoose.Schema({
     durationUnit: { type: String, enum: ['months', 'years'] },
     warrantyType: { type: String, trim: true },
     description: { type: String, trim: true },
-  }
+  },
+  
+  // Reorder / Purchase Links
+  orderLinks: [{
+    title: { type: String, trim: true },
+    url: { type: String, trim: true },
+    siteImage: { type: String, trim: true },
+    mrp: { type: Number },
+    price: { type: Number },
+    discount: { type: String },
+    rating: { type: Number },
+    reviewsCount: { type: String },
+    lastScrapedAt: { type: Date }
+  }],
+  educationContent: [{
+    title: { type: String, trim: true },
+    url: { type: String, trim: true },
+    description: { type: String, trim: true }
+  }]
 }, { timestamps: true });
 
 module.exports = mongoose.model('ProductTemplate', productTemplateSchema);

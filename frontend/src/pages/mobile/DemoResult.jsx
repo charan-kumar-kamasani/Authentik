@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import authenticIcon from "../../assets/logo.svg";
+import authenticIcon from "../../assets/logo-shield.png";
 import warningIcon from "../../assets/v2/home/header/warning.svg";
 import fakeIcon from "../../assets/v2/home/header/dangerous.svg";
 import MobileHeader from "../../components/MobileHeader";

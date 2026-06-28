@@ -47,6 +47,14 @@ const userSchema = new mongoose.Schema(
     profileImage: { type: String, default: null }, // URL stored from Cloudinary
     walletBalance: { type: Number, default: 0 }, // Authentik Wallet Balance in Rs
     loyaltyPoints: { type: Number, default: 0 }, // Total Loyalty Points earned
+    
+    // Track usage/scans for Smart Reorder
+    purchaseHistory: [{
+      productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+      lastPurchasedDate: { type: Date, default: Date.now },
+      quantity: { type: Number, default: 1 },
+      servingsRemaining: { type: Number, default: 0 }
+    }],
   },
   { timestamps: true }
 );

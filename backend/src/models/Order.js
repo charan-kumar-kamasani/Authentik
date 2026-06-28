@@ -25,7 +25,16 @@ const orderSchema = new mongoose.Schema({
   brandId: { type: mongoose.Schema.Types.ObjectId, ref: 'Brand' },
 
   // New: Link to a Company consistently
-  companyId: { type: mongoose.Schema.Types.ObjectId, ref: 'Company' },
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Company",
+    default: null,
+  },
+  templateId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "ProductTemplate",
+    default: null,
+  },
 
   // Detailed fields (matching ProductTemplate)
   category: String,
@@ -133,6 +142,11 @@ const orderSchema = new mongoose.Schema({
   subtotal: { type: Number, default: 0 },
   tax: { type: Number, default: 0 },
   pricePerQr: { type: Number, default: 0 },
+  
+  // Assigned QR Serial Ranges
+  startSerialNumber: { type: Number, default: null },
+  endSerialNumber: { type: Number, default: null },
+  
   paymentStatus: {
     type: String,
     enum: ['unpaid', 'pending', 'paid'],

@@ -395,7 +395,7 @@ export default function WebLiveDemo() {
                                     <div className="mt-4 mx-4 bg-[#2CA4D6] rounded-t-[16px] p-4 text-center text-white relative shadow-md z-10">
                                         <div className="flex flex-row justify-center items-center gap-2">
                                             <div className="bg-white rounded-full">
-                                                <img src="/logo.svg" alt="Auth" className="w-10 h-10 object-contain m-1" />
+                                                <img src="/logo-shield.png" alt="Auth" className="w-10 h-10 object-contain m-1" />
                                             </div>
                                             <div className="text-left">
                                                 <h2 className="text-[16px] font-bold leading-tight">Authentic Product</h2>

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import API_BASE_URL from "../../config/api";
-import logo from "../../assets/logo.svg";
+import logo from "../../assets/logo-text.png";
 
 export default function OTP() {
   const { state } = useLocation();

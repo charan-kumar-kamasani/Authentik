@@ -169,3 +169,29 @@ body {
   margin: 0;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
+@keyframes ripple {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+.animate-ripple {
+  animation: ripple 3s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+.animate-ripple-delayed {
+  animation: ripple 3s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+  animation-delay: 1.5s;
+}
+
+@keyframes flashShimmer {
+  0% { transform: translateX(-150%) skewX(-15deg); }
+  50% { transform: translateX(150%) skewX(-15deg); }
+  100% { transform: translateX(150%) skewX(-15deg); }
+}
+.animate-flash-shimmer {
+  animation: flashShimmer 2.5s infinite linear;
+}

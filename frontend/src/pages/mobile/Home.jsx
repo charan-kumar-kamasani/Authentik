@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import API_BASE_URL, { getProfile } from "../../config/api";
-import logo from "../../assets/logo.svg";
+import logo from "../../assets/logo-text.png";
+import logoShield from "../../assets/logo-shield.png";
 import highFive from "../../assets/v2/home/high_five.png";
 import { 
   Bell, 
@@ -12,7 +13,8 @@ import {
   ShieldX,
   ChevronRight, 
   Calendar,
-  HeartHandshake
+  HeartHandshake,
+  Menu
 } from "lucide-react";
 
 
@@ -106,6 +108,11 @@ export default function Home() {
             let badgeColor = "text-[#10B981]";
             let badgeBg = "bg-[#ECFDF5]";
             let dotColor = "bg-[#10B981]";
+            
+            let brandLogo = item.brandId?.brandLogo || null;
+            if (item.status === "FAKE" || item.status === "INACTIVE") {
+              brandLogo = null;
+            }
 
             if (item.status === "FAKE" || item.status === "INACTIVE") {
               statusLabel = "Counterfeit";
@@ -130,6 +137,7 @@ export default function Home() {
               badgeColor,
               badgeBg,
               dotColor,
+              brandLogo,
               fullData: item
             };
           });
@@ -148,7 +156,11 @@ export default function Home() {
 
   const handleRecentScanClick = (scan) => {
     let status = scan.fullData.status || "ORIGINAL";
-    navigate(`/result/${status}`, { state: scan.fullData });
+    // if (status === "ORIGINAL") {
+    //   navigate('/product-passport', { state: scan.fullData });
+    // } else {
+      navigate(`/result/${status}`, { state: scan.fullData });
+    // }
   };
 
   const handleScanClick = () => {
@@ -159,16 +171,15 @@ export default function Home() {
     <div className="min-h-screen bg-[#F8F9FA] font-sans flex flex-col relative w-full overflow-y-auto pb-24 overflow-x-hidden">
       
       {/* Header */}
-      <div className="w-full flex items-center justify-between px-5 pt-10 pb-4 bg-[#F8F9FA]">
+      <div className="w-full flex items-center justify-between px-5 pt-4 pb-4 bg-[#F8F9FA]">
         <div className="flex items-center gap-3">
-          <div className="w-[38px] h-[44px]">
-            <img src={logo} alt="Authentiks Logo" className="w-full h-full object-contain" />
-          </div>
-          <div className="flex flex-col mt-[-2px]">
-            <h1 className="text-[#0B1E36] text-[24px] font-extrabold tracking-tight leading-none">
-              Authentiks
-            </h1>
-            <p className="text-[#5A7184] text-[11px] font-medium tracking-wide mt-[3px]">Trusted. Verified. Protected.</p>
+          <button onClick={() => navigate('/profile')} className="p-1.5 -ml-1.5 rounded-full active:bg-slate-200 transition-colors">
+            <Menu className="w-[26px] h-[26px] text-[#0B1E36]" strokeWidth={2} />
+          </button>
+          <div className="flex flex-col items-start justify-center gap-0.5">
+            <div className="w-[145px] h-auto">
+              <img src={logo} alt="Authentiks Logo" className="w-full h-auto object-contain" />
+            </div>
           </div>
         </div>
         <button onClick={() => navigate('/notifications')} className="relative p-2 mr-[-8px]">
@@ -210,7 +221,7 @@ export default function Home() {
 
           {/* Floating Shield Logo */}
           <div className="absolute right-[5%] top-[60%] transform -translate-y-1/2 w-[110px] h-[120px] z-10 pointer-events-none">
-             <img src={logo} alt="Shield" className="w-full h-full object-contain drop-shadow-xl" style={{ animation: 'float 3s ease-in-out infinite' }} />
+             <img src={logoShield} alt="Shield" className="w-full h-full object-contain drop-shadow-xl" style={{ animation: 'float 3s ease-in-out infinite' }} />
           </div>
         </div>
 
@@ -281,21 +292,56 @@ export default function Home() {
               </div>
             ) : (
               recentScans.slice(0, 4).map((scan, index) => {
-                let iconComponent = <img src={logo} alt="Verified" className="w-[26px] h-[26px] object-contain drop-shadow-sm" />;
-                let iconContainerBg = "bg-[#F0F5FF]";
+                let statusBadgeIcon = "verified";
+                let iconComponent = <img src={logoShield} alt="Verified" className="w-[26px] h-[26px] object-contain drop-shadow-sm" />;
+                
                 if (scan.status === "FAKE" || scan.status === "INACTIVE") {
+                  statusBadgeIcon = "counterfeit";
                   iconComponent = <RedShieldX />;
-                  iconContainerBg = "bg-[#FEF2F2]";
                 } else if (scan.status === "ALREADY_USED" || scan.status === "DUPLICATE") {
+                  statusBadgeIcon = "alert";
                   iconComponent = <OrangeAlertTriangle />;
-                  iconContainerBg = "bg-[#FFFBEB]";
                 }
 
                 return (
                   <div key={index} onClick={() => handleRecentScanClick(scan)} className="w-full flex items-center py-3.5 border-b border-gray-100 last:border-0 cursor-pointer active:bg-gray-50 transition-colors">
-                    {/* Icon */}
-                    <div className={`w-[44px] h-[44px] rounded-[12px] flex items-center justify-center mr-4 flex-shrink-0 ${iconContainerBg}`}>
-                       {iconComponent}
+                    {/* Brand Logo with Status Badge */}
+                    <div className="relative w-[46px] h-[46px] flex-shrink-0 mr-4">
+                      {/* Logo Circle */}
+                      <div className="w-full h-full rounded-full bg-[#F5F5F5] border-2 border-[#E8E8E8] flex items-center justify-center overflow-hidden">
+                        {scan.brandLogo ? (
+                          <img
+                            src={scan.brandLogo}
+                            alt={scan.title}
+                            className="w-[30px] h-[30px] object-contain"
+                          />
+                        ) : (
+                          <div className="w-[26px] h-[26px] flex items-center justify-center">
+                            {iconComponent}
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Status Badge Overlay */}
+                      <div className={`absolute -bottom-0.5 -right-0.5 w-[20px] h-[20px] rounded-full flex items-center justify-center border-2 border-white shadow-sm ${
+                        statusBadgeIcon === 'verified' 
+                          ? 'bg-[#2CA4D6]'
+                          : statusBadgeIcon === 'alert'
+                          ? 'bg-[#F59E0B]'
+                          : 'bg-[#DC2626]'
+                      }`}>
+                        {statusBadgeIcon === 'verified' ? (
+                          <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        ) : statusBadgeIcon === 'alert' ? (
+                          <span className="text-white text-[11px] font-bold leading-none mb-[1px]">!</span>
+                        ) : (
+                          <svg className="w-2 h-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        )}
+                      </div>
                     </div>
                     {/* Texts */}
                     <div className="flex flex-col flex-1 min-w-0 pr-2 gap-[3px]">
@@ -325,7 +371,7 @@ export default function Home() {
         <div className="w-full bg-[#F4F8FE] border border-[#E5EFFF] rounded-[16px] py-[12px] mt-6 mb-2 flex items-center relative overflow-hidden shadow-[0_2px_12px_rgba(16,93,228,0.04)] min-h-[90px]">
           <div className="mr-2 ml-2 z-10 flex-shrink-0">
             
-                <img src={logo} alt="Authentiks" className="w-[50px] h-[50px] object-contain drop-shadow-sm" />
+                <img src={logoShield} alt="Authentiks" className="w-[50px] h-[50px] object-contain drop-shadow-sm" />
              
           </div>
           <div className="flex flex-col z-10 w-[65%]">

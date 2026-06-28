@@ -227,6 +227,7 @@ const QRStockDashboard = () => {
                         <>
                           <th className="py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Used Date</th>
                           <th className="py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Quantity Used</th>
+                          <th className="py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">QR Serials</th>
                           <th className="py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Order ID</th>
                           <th className="py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Product & Brand</th>
                         </>
@@ -278,7 +279,7 @@ const QRStockDashboard = () => {
                     ) : (
                       usage.length === 0 ? (
                         <tr>
-                          <td colSpan="4" className="py-12 px-6 text-center text-slate-400 font-medium">
+                          <td colSpan="5" className="py-12 px-6 text-center text-slate-400 font-medium">
                             No QR usage history found.
                           </td>
                         </tr>
@@ -300,6 +301,15 @@ const QRStockDashboard = () => {
                                 </span>
                               </td>
                               <td className="py-4 px-6">
+                                {u.startSerialNumber && u.endSerialNumber ? (
+                                  <div className="text-xs font-mono bg-slate-50 border border-slate-200 text-slate-600 px-2 py-1 rounded-md inline-block">
+                                    #{u.startSerialNumber} - #{u.endSerialNumber}
+                                  </div>
+                                ) : (
+                                  <span className="text-xs text-slate-400 font-medium">N/A</span>
+                                )}
+                              </td>
+                              <td className="py-4 px-6">
                                 <span className="font-mono text-xs bg-slate-100 text-slate-600 px-2.5 py-1.5 rounded-lg border border-slate-200">
                                   {u.orderId || u._id?.slice(-6)}
                                 </span>
@@ -318,7 +328,7 @@ const QRStockDashboard = () => {
                             </tr>
                             {isExpanded && (
                               <tr className="bg-slate-50 border-b border-slate-200">
-                                <td colSpan="4" className="p-6">
+                                <td colSpan="5" className="p-6">
                                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     <div>
                                       <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Company</div>
@@ -333,6 +343,22 @@ const QRStockDashboard = () => {
                                       <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Status</div>
                                       <div className="text-sm font-semibold text-slate-800">{u.status}</div>
                                     </div>
+                                    {u.startSerialNumber && u.endSerialNumber && (
+                                      <div className="col-span-full mt-2 p-4 bg-indigo-50/50 rounded-xl border border-indigo-100">
+                                        <div className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">QR Serial Numbers Assigned</div>
+                                        <div className="flex items-center space-x-3">
+                                          <div className="flex items-center px-3 py-1.5 bg-white border border-indigo-200 rounded-lg shadow-sm">
+                                            <span className="text-slate-400 text-xs mr-2">From:</span>
+                                            <span className="font-mono text-indigo-700 font-bold">#{u.startSerialNumber}</span>
+                                          </div>
+                                          <span className="text-indigo-300">→</span>
+                                          <div className="flex items-center px-3 py-1.5 bg-white border border-indigo-200 rounded-lg shadow-sm">
+                                            <span className="text-slate-400 text-xs mr-2">To:</span>
+                                            <span className="font-mono text-indigo-700 font-bold">#{u.endSerialNumber}</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
                                     <div>
                                       <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Creator</div>
                                       <div className="text-sm font-semibold text-slate-800">{u.createdBy?.name || 'N/A'}</div>

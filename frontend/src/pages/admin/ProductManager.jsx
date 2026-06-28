@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import API_BASE_URL, { getProductTemplates, createProductTemplate, authorizeProductTemplate, deleteProductTemplate, getBrands, updateProductTemplate } from '../../config/api';
-import { Package, Plus, CheckCircle, Clock, Trash2, Search, Filter, ShieldCheck, Info, Image as ImageIcon, Edit } from 'lucide-react';
+import { Package, Plus, CheckCircle, Clock, Trash2, Search, Filter, ShieldCheck, Info, Image as ImageIcon, Edit, ShoppingCart, BookOpen } from 'lucide-react';
 import { useConfirm } from '../../components/ConfirmModal';
 
 const ProductManager = () => {
@@ -21,6 +21,8 @@ const ProductManager = () => {
     productInfo: '',
     productImage: null,
     imagePreview: null,
+    orderLinks: [],
+    educationContent: [],
   });
 
   const resetForm = () => {
@@ -31,6 +33,8 @@ const ProductManager = () => {
       productInfo: '',
       productImage: null,
       imagePreview: null,
+      orderLinks: [],
+      educationContent: [],
     });
     setEditProductId(null);
   };
@@ -115,11 +119,40 @@ const ProductManager = () => {
         return;
       }
 
+      const finalOrderLinks = [];
+      for (const link of formData.orderLinks || []) {
+        if (!link.url) continue;
+        let siteImageUrl = link.siteImage || '';
+        if (link.siteImageFile) {
+          const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+          const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+          const uploadFormData = new FormData();
+          uploadFormData.append('file', link.siteImageFile);
+          uploadFormData.append('upload_preset', uploadPreset);
+          const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: 'POST', body: uploadFormData });
+          const data = await res.json();
+          siteImageUrl = data.secure_url;
+        }
+        let generatedTitle = '';
+        try {
+          generatedTitle = new URL(link.url).hostname.replace('www.', '').split('.')[0];
+          generatedTitle = generatedTitle.charAt(0).toUpperCase() + generatedTitle.slice(1);
+        } catch(e) {}
+        
+        finalOrderLinks.push({
+          title: generatedTitle,
+          url: link.url,
+          siteImage: siteImageUrl
+        });
+      }
+
       const productPayload = {
         productName: formData.productName,
         skuNumber: formData.skuNumber,
         brandId: formData.brandId,
         productInfo: formData.productInfo,
+        orderLinks: finalOrderLinks,
+        educationContent: formData.educationContent || [],
       };
 
       if (finalImageUrl) {
@@ -155,6 +188,8 @@ const ProductManager = () => {
       productInfo: product.productInfo || '',
       productImage: null,
       imagePreview: product.productImage || null,
+      orderLinks: product.orderLinks || [],
+      educationContent: product.educationContent || [],
     });
     setEditProductId(product._id);
     setActiveTab('create');
@@ -353,6 +388,135 @@ const ProductManager = () => {
                             )}
                         </div>
                     </div>
+                  </div>
+                </div>
+
+                <div className="p-8 bg-blue-50/30 rounded-[2rem] border border-blue-100/50">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <ShoppingCart size={18} className="text-blue-600" />
+                      <h4 className="text-lg font-bold text-gray-800">Purchase / Reorder Links</h4>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, orderLinks: [...(formData.orderLinks || []), { title: '', url: '' }] })}
+                      className="text-blue-600 text-sm font-bold flex items-center gap-1 hover:text-blue-700 bg-blue-100/50 px-3 py-1.5 rounded-lg"
+                    >
+                      <Plus size={16} /> Add Link
+                    </button>
+                  </div>
+                  <p className="text-sm text-gray-500 mb-6">Add links to Amazon, Flipkart, or your own website so customers can reorder.</p>
+                  
+                  <div className="space-y-4">
+                    {!(formData.orderLinks && formData.orderLinks.length > 0) ? (
+                      <div className="text-center py-6 bg-white rounded-2xl border border-gray-100">
+                        <p className="text-gray-400 text-sm font-medium">No purchase links added yet.</p>
+                      </div>
+                    ) : (
+                      formData.orderLinks.map((link, index) => (
+                        <div key={index} className="flex gap-4 items-start p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                          <div className="flex-1 space-y-3">
+                            <input
+                              type="url"
+                              placeholder="https://..."
+                              value={link.url}
+                              onChange={(e) => {
+                                const newLinks = [...formData.orderLinks];
+                                newLinks[index].url = e.target.value;
+                                setFormData({ ...formData, orderLinks: newLinks });
+                              }}
+                              className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-500"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newLinks = [...formData.orderLinks];
+                              newLinks.splice(index, 1);
+                              setFormData({ ...formData, orderLinks: newLinks });
+                            }}
+                            className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors shrink-0 mt-1"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                <div className="bg-gray-50/50 p-6 rounded-[2rem] border border-gray-100/80 mt-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-3">
+                      <BookOpen size={18} className="text-blue-600" />
+                      <h4 className="text-lg font-bold text-gray-800">Product Education Resources</h4>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, educationContent: [...(formData.educationContent || []), { title: '', description: '', url: '' }] })}
+                      className="text-blue-600 text-sm font-bold flex items-center gap-1 hover:text-blue-700 bg-blue-100/50 px-3 py-1.5 rounded-lg"
+                    >
+                      <Plus size={16} /> Add Resource
+                    </button>
+                  </div>
+                  <p className="text-sm text-gray-500 mb-6">Add links to instructional videos, blog posts, or images to educate your customers.</p>
+                  
+                  <div className="space-y-4">
+                    {!(formData.educationContent && formData.educationContent.length > 0) ? (
+                      <div className="text-center py-6 bg-white rounded-2xl border border-gray-100">
+                        <p className="text-gray-400 text-sm font-medium">No education resources added yet.</p>
+                      </div>
+                    ) : (
+                      formData.educationContent.map((item, index) => (
+                        <div key={index} className="flex gap-4 items-start p-4 bg-white rounded-2xl border border-gray-100 shadow-sm flex-col sm:flex-row">
+                          <div className="flex-1 space-y-3 w-full">
+                            <input
+                              type="text"
+                              placeholder="Resource Title (e.g. How to assemble)"
+                              value={item.title}
+                              onChange={(e) => {
+                                const newContent = [...formData.educationContent];
+                                newContent[index].title = e.target.value;
+                                setFormData({ ...formData, educationContent: newContent });
+                              }}
+                              className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 font-medium"
+                            />
+                            <textarea
+                              placeholder="Brief description..."
+                              value={item.description}
+                              onChange={(e) => {
+                                const newContent = [...formData.educationContent];
+                                newContent[index].description = e.target.value;
+                                setFormData({ ...formData, educationContent: newContent });
+                              }}
+                              className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 min-h-[60px]"
+                            />
+                            <input
+                              type="url"
+                              placeholder="https://... (Video, Image, or Doc URL)"
+                              value={item.url}
+                              onChange={(e) => {
+                                const newContent = [...formData.educationContent];
+                                newContent[index].url = e.target.value;
+                                setFormData({ ...formData, educationContent: newContent });
+                              }}
+                              className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-500"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newContent = [...formData.educationContent];
+                              newContent.splice(index, 1);
+                              setFormData({ ...formData, educationContent: newContent });
+                            }}
+                            className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors shrink-0 sm:mt-1 self-end sm:self-auto"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
 

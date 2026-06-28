@@ -13,7 +13,7 @@ app.use(compression()); // Compress all responses
 app.use(cors({
   origin: ["https://localhost:5173", "http://localhost:5173", "https://authentiks.in"],
   credentials: true,
-  allowedHeaders: ["Content-Type", "Authorization"],
+  allowedHeaders: ["Content-Type", "Authorization", "Cache-Control"],
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
 }));
 
@@ -56,6 +56,10 @@ const HOST = "0.0.0.0";
 
     const { startNotificationCron } = require('./cron/notificationCron');
     startNotificationCron();
+    
+    // Start background price scraper for e-commerce links
+    const { startPriceScraperJob } = require('./jobs/priceScraperJob');
+    startPriceScraperJob();
 
   } catch (error) {
     console.error("❌ Failed to start server:", error);

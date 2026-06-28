@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLoading } from '../context/LoadingContext';
-import logo from '../assets/logo.svg';
+import logo from '../assets/logo-shield.png';
 import { Lock, ShieldCheck, UserCheck } from 'lucide-react';
 
 export default function GlobalLoader() {

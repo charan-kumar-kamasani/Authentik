@@ -21,6 +21,11 @@ const productSchema = new mongoose.Schema(
       ref: "Order",
       default: null 
     },
+    templateId: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "ProductTemplate",
+      default: null 
+    },
     isActive: { 
       type: Boolean, 
       default: false 
@@ -58,6 +63,12 @@ const productSchema = new mongoose.Schema(
     },
     // Auto-calculated expiry based on mfdOn + bestBefore
     calculatedExpiryDate: String, // MM/YYYY format
+    
+    // Usage stats for Smart Reorder
+    totalServings: { type: Number, default: 15 },
+    servingSize: { type: String, default: "500g" },
+    averageUsagePerWeek: { type: Number, default: 3 },
+    
     // Store variants (repeatable fields like Color, Size, Model)
     variants: [{
       variantName: String,  // e.g., "Color", "Size", "Model"
@@ -84,7 +95,18 @@ const productSchema = new mongoose.Schema(
     // Order Links (e.g. reorder links)
     orderLinks: [{
       title: { type: String, trim: true },
-      url: { type: String, trim: true }
+      url: { type: String, trim: true },
+      mrp: { type: Number },
+      price: { type: Number },
+      discount: { type: String },
+      rating: { type: Number },
+      reviewsCount: { type: String },
+      lastScrapedAt: { type: Date }
+    }],
+    educationContent: [{
+      title: { type: String, trim: true },
+      url: { type: String, trim: true },
+      description: { type: String, trim: true }
     }],
   },
   { timestamps: true }

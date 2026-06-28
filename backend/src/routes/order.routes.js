@@ -156,19 +156,9 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       try {
         const PricePlan = require('../models/PricePlan');
         const plan = await PricePlan.findById(effectivePlanId);
-        if (plan) {
-          const minStr = plan.minQrPerOrder || plan.minQr || '';
-          const min = Number(String(minStr).replace(/[^\d]/g, '') || 0);
-          if (min > 0 && quantityNumber < min) {
-            return res.status(400).json({ 
-              message: `Minimum quantity for the active plan (${plan.name}) is ${min}`, 
-              minRequired: min 
-            });
-          }
-        }
+        // Minimum quantity check removed as requested
       } catch (e) {
         console.warn('Plan validation failed:', e.message);
-        // continue silently; don't block request on plan lookup failure
       }
     }
 
@@ -488,6 +478,14 @@ router.put('/:id/authorize', protect, authorize('company', 'authorizer'), async 
     const ProductCoupon = require('../models/ProductCoupon');
     const totalQty = required;
     const brandName = order.brand;
+    
+    // Fetch ProductTemplate and copy orderLinks
+    const ProductTemplate = require('../models/ProductTemplate');
+    let templateOrderLinks = [];
+    if (order.templateId) {
+      const tpl = await ProductTemplate.findById(order.templateId).lean();
+      if (tpl && tpl.orderLinks) templateOrderLinks = tpl.orderLinks;
+    }
 
     // Find last sequence number for this brand
     const lastProduct = await Product.findOne({ brand: brandName }).sort({ sequence: -1 });
@@ -530,7 +528,7 @@ router.put('/:id/authorize', protect, authorize('company', 'authorizer'), async 
         dynamicFields: order.dynamicFields,
         variants: order.variants,
         warranty: (order.warranty && (order.warranty.duration || order.warranty.warrantyType)) ? order.warranty : undefined,
-        orderLinks: order.orderLinks || [],
+        orderLinks: (order.orderLinks && order.orderLinks.length > 0) ? order.orderLinks : templateOrderLinks,
         description: order.description,
         productInfo: order.productInfo,
         quantity: 1,
@@ -563,6 +561,10 @@ router.put('/:id/authorize', protect, authorize('company', 'authorizer'), async 
 
     order.qrCodesGenerated = true;
     order.qrGeneratedCount = totalQty;
+    if (qrsToUse.length > 0) {
+      order.startSerialNumber = qrsToUse[0].serialNumber;
+      order.endSerialNumber = qrsToUse[qrsToUse.length - 1].serialNumber;
+    }
     order.status = 'Received'; // Mark as Received since they already have the physical QRs
     order.history.push({
       status: 'Received',
@@ -639,8 +641,17 @@ router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req
     // GENERATE QR CODES
     const productsToCreate = [];
     const bonusQty = parseInt(req.body?.bonusQuantity) || 0;
-    const totalQty = order.quantity + bonusQty;
+    const required = order.quantity || 0;
+    const totalQty = Math.max(required, bonusQty);
     const brandName = order.brand;
+    
+    // Fetch ProductTemplate and copy orderLinks
+    const ProductTemplate = require('../models/ProductTemplate');
+    let templateOrderLinks = [];
+    if (order.templateId) {
+      const tpl = await ProductTemplate.findById(order.templateId).lean();
+      if (tpl && tpl.orderLinks) templateOrderLinks = tpl.orderLinks;
+    }
     
     // Track bonus in order
     order.bonusQuantity = bonusQty;
@@ -755,6 +766,10 @@ router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req
     // Update order
     order.qrCodesGenerated = true;
     order.qrGeneratedCount = totalQty;
+    if (qrsToUse.length > 0) {
+      order.startSerialNumber = qrsToUse[0].serialNumber;
+      order.endSerialNumber = qrsToUse[qrsToUse.length - 1].serialNumber;
+    }
     await order.save();
 
     // Create ProductCoupon entries if order has coupon data

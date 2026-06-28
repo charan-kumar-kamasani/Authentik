@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API_BASE_URL from "../../config/api";
 import indianIcon from "../../assets/v2/login/indian_icon.png";
-import logo from "../../assets/logo.svg";
+import logo from "../../assets/logo-text.png";
 import { useConfirm } from "../../components/ConfirmModal";
 import { ShieldCheck, Lock, User, Users, ChevronDown, MessageCircleMore, Award, Package, Gift } from "lucide-react";
 

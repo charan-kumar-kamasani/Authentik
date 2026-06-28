@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const Product = require("../models/Product");
 const Scan = require("../models/Scan");
 const Report = require("../models/Report");
@@ -149,15 +150,30 @@ router.get("/history", protect, async (req, res) => {
     const claimStatusMap = new Map();
     userClaims.forEach(c => claimStatusMap.set(c.productId.toString(), c.status));
 
+    // Fetch ProductTemplates
+    const allTemplateIds = rawScans
+      .filter(s => s.productId && (s.productId.templateId || s.productId.orderId?.templateId))
+      .map(s => s.productId.templateId || s.productId.orderId?.templateId);
+    
+    const ProductTemplate = require("../models/ProductTemplate"); const templates = await ProductTemplate.find({ _id: { $in: allTemplateIds } }).lean();
+    const templateMap = new Map();
+    templates.forEach(t => templateMap.set(t._id.toString(), t));
+
     // 3. Process scans with pre-fetched data
     const scans = rawScans.map(s => {
       const obj = s;
       
-      // Expose warranty at the root level for frontend consistency
+      // Expose warranty and links at the root level for frontend consistency
       if (obj.productId) {
         obj.warranty = obj.productId.warranty || obj.productId.orderId?.warranty || null;
+        obj.orderLinks = obj.productId.orderLinks || obj.productId.orderId?.orderLinks || [];
         obj.alreadyReviewed = reviewedProductIds.has(obj.productId._id.toString());
         obj.warrantyClaimStatus = claimStatusMap.get(obj.productId._id.toString()) || null;
+        
+        const tId = obj.productId.templateId || obj.productId.orderId?.templateId;
+        if (tId) {
+          obj.templateData = templateMap.get(tId.toString()) || null;
+        }
       }
       
       // Inject companyName
@@ -287,7 +303,17 @@ console.log(qrCode)
     }
 
     if (!product) {
-      return res.json({ status: "FAKE", isActive: false, product: null });
+      return res.json({ 
+        status: "FAKE", 
+        isActive: false, 
+        product: null,
+        alertReasons: [
+          "Counterfeit or fake product",
+          "Tampered or duplicate QR code",
+          "Unauthorized manufacturing or distribution",
+          "Product not linked with Authentiks protection"
+        ]
+      });
     }
 
     // If product exists but is inactive, return INACTIVE status with product details for UI context
@@ -484,6 +510,12 @@ router.post("/", async (req, res, next) => {
       return res.json({
         status: "FAKE",
         data: {
+          alertReasons: [
+            "Counterfeit or fake product",
+            "Tampered or duplicate QR code",
+            "Unauthorized manufacturing or distribution",
+            "Product not linked with Authentiks protection"
+          ],
           recommendations: [],
           qrCode,
           productId: null,
@@ -500,16 +532,53 @@ router.post("/", async (req, res, next) => {
     }
 
     // Resolve final brand data from product or prefix
-    const finalBrandId = product.brandId || brandIdFromPrefix;
+    const finalBrandId = product.brandId?._id || product.brandId || brandIdFromPrefix;
     const finalBrandName = product.brand || brandNameFromPrefix;
 
     let recommendations = [];
+    let templateData = { orderLinks: [], price: null, productInfo: null, description: null, keyBenefits: null };
     if (finalBrandId) {
-      recommendations = await Product.find({
-        brandId: finalBrandId,
-        _id: { $ne: product._id },
-        isActive: true
-      }).limit(4).select("_id productName mrp productImage category discount oldPrice ratingBadge price").lean();
+      try {
+        const ProductTemplate = require("../models/ProductTemplate");
+        const matchBrandId = mongoose.isValidObjectId(finalBrandId) 
+          ? new mongoose.Types.ObjectId(finalBrandId) 
+          : finalBrandId;
+
+        recommendations = await ProductTemplate.find({
+          brandId: matchBrandId,
+          status: 'active'
+        }).limit(4).select("_id productName mrp productImage category discount oldPrice ratingBadge price orderLinks").lean();
+
+        // Also fetch the template for THIS specific product to get its price and orderLinks
+        if (product.templateId || product.orderId?.templateId || product.productName) {
+           console.log("Searching template for:", product.productName, matchBrandId);
+           let query = {};
+           if (product.templateId) {
+             query = { _id: product.templateId };
+           } else if (product.orderId && product.orderId.templateId) {
+             query = { _id: product.orderId.templateId };
+           } else {
+             query = { productName: product.productName, brandId: matchBrandId, status: 'active' };
+           }
+           
+           const template = await ProductTemplate.findOne(query).lean();
+           console.log("Found template?", !!template);
+           if (template) {
+              templateData.orderLinks = template.orderLinks || [];
+              templateData.price = template.price || null;
+              templateData.mrp = template.mrp || null;
+              templateData.category = template.category || null;
+              templateData.productImage = template.productImage || null;
+              templateData.productInfo = template.productInfo || null;
+              templateData.description = template.description || null;
+              templateData.keyBenefits = template.keyBenefits || null;
+              templateData.dynamicFields = template.dynamicFields || {};
+              templateData.variants = template.variants || [];
+           }
+        }
+      } catch (err) {
+        console.error("Error fetching scan recommendations:", err);
+      }
     }
 
     /* =======================
@@ -553,10 +622,10 @@ router.post("/", async (req, res, next) => {
           website: product.website || product.orderId?.website,
           supportEmail: product.supportEmail || product.orderId?.supportEmail,
           customerCare: product.customerCare || product.orderId?.customerCare,
-          keyBenefits: product.keyBenefits || product.orderId?.keyBenefits,
+          keyBenefits: product.keyBenefits || product.orderId?.keyBenefits || templateData.keyBenefits,
           mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
-          description: product.description || product.orderId?.description,
-          productInfo: product.productInfo || product.orderId?.productInfo,
+          description: product.description || product.orderId?.description || templateData.description,
+          productInfo: product.productInfo || product.orderId?.productInfo || templateData.productInfo,
           bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
           calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
           dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
@@ -595,9 +664,9 @@ router.post("/", async (req, res, next) => {
           batchNo: product.batchNo || product.orderId?.batchNo,
           manufactureDate: product.manufactureDate || product.orderId?.manufactureDate,
           expiryDate: product.expiryDate || product.orderId?.expiryDate,
-          productImage: product.productImage || product.orderId?.productImage,
-          category: product.category || product.orderId?.category,
-          mrp: product.mrp || product.orderId?.mrp,
+          productImage: product.productImage || product.orderId?.productImage || templateData.productImage,
+          category: product.category || product.orderId?.category || templateData.category,
+          mrp: product.mrp || product.orderId?.mrp || templateData.mrp,
           manufacturedBy: product.manufacturedBy || product.orderId?.manufacturedBy,
           marketedBy: product.marketedBy || product.orderId?.marketedBy,
           importMarketedBy: product.importMarketedBy || product.orderId?.importMarketedBy,
@@ -606,15 +675,17 @@ router.post("/", async (req, res, next) => {
           website: product.website || product.orderId?.website,
           supportEmail: product.supportEmail || product.orderId?.supportEmail,
           customerCare: product.customerCare || product.orderId?.customerCare,
-          keyBenefits: product.keyBenefits || product.orderId?.keyBenefits,
+          keyBenefits: product.keyBenefits || product.orderId?.keyBenefits || templateData.keyBenefits,
           mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
-          description: product.description || product.orderId?.description,
-          productInfo: product.productInfo || product.orderId?.productInfo,
+          description: product.description || product.orderId?.description || templateData.description,
+          productInfo: product.productInfo || product.orderId?.productInfo || templateData.productInfo,
           bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
           calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
-          dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
-          variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
+          dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && product.orderId.dynamicFields.size > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
+          variants: (product.variants && product.variants.length > 0) ? product.variants : ((product.orderId?.variants && product.orderId.variants.length > 0) ? product.orderId.variants : templateData.variants),
           warranty: product.warranty || product.orderId?.warranty || null,
+          orderLinks: (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((product.orderId?.orderLinks && product.orderId.orderLinks.length > 0) ? product.orderId.orderLinks : templateData.orderLinks),
+          price: product.price || templateData.price,
         fieldLabels,
           alreadyReviewed,
           warrantyClaimStatus,
@@ -664,6 +735,11 @@ router.post("/", async (req, res, next) => {
       return res.json({
         status: "ALREADY_USED",
         data: {
+          alertReasons: [
+            "Product sharing or resale",
+            "Unauthorized distribution",
+            "Potential counterfeit activity"
+          ],
           recommendations,
           qrCode,
           productId: product._id,
@@ -674,9 +750,9 @@ router.post("/", async (req, res, next) => {
           batchNo: product.batchNo || product.orderId?.batchNo,
           manufactureDate: product.manufactureDate || product.orderId?.manufactureDate,
           expiryDate: product.expiryDate || product.orderId?.expiryDate,
-          productImage: product.productImage || product.orderId?.productImage,
-          category: product.category || product.orderId?.category,
-          mrp: product.mrp || product.orderId?.mrp,
+          productImage: product.productImage || product.orderId?.productImage || templateData.productImage,
+          category: product.category || product.orderId?.category || templateData.category,
+          mrp: product.mrp || product.orderId?.mrp || templateData.mrp,
           manufacturedBy: product.manufacturedBy || product.orderId?.manufacturedBy,
           marketedBy: product.marketedBy || product.orderId?.marketedBy,
           importMarketedBy: product.importMarketedBy || product.orderId?.importMarketedBy,
@@ -685,15 +761,17 @@ router.post("/", async (req, res, next) => {
           website: product.website || product.orderId?.website,
           supportEmail: product.supportEmail || product.orderId?.supportEmail,
           customerCare: product.customerCare || product.orderId?.customerCare,
-          keyBenefits: product.keyBenefits || product.orderId?.keyBenefits,
+          keyBenefits: product.keyBenefits || product.orderId?.keyBenefits || templateData.keyBenefits,
           mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
-          description: product.description || product.orderId?.description,
-          productInfo: product.productInfo || product.orderId?.productInfo,
+          description: product.description || product.orderId?.description || templateData.description,
+          productInfo: product.productInfo || product.orderId?.productInfo || templateData.productInfo,
           bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
           calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
-          dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
-          variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
+          dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && product.orderId.dynamicFields.size > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
+          variants: (product.variants && product.variants.length > 0) ? product.variants : ((product.orderId?.variants && product.orderId.variants.length > 0) ? product.orderId.variants : templateData.variants),
           warranty: product.warranty || product.orderId?.warranty || null,
+          orderLinks: (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((product.orderId?.orderLinks && product.orderId.orderLinks.length > 0) ? product.orderId.orderLinks : templateData.orderLinks),
+          price: product.price || templateData.price,
           fieldLabels,
           alreadyReviewed,
           warrantyClaimStatus,
@@ -809,20 +887,33 @@ router.post("/", async (req, res, next) => {
         productId: product._id,
         brandId: finalBrandId,
         companyName: product.brandId?.companyId?.companyName || null,
-        productName: product.productName,
+        productName: product.productName || product.orderId?.productName,
         brand: product.brand || finalBrandName,
-        batchNo: product.batchNo,
-        manufactureDate: product.manufactureDate,
-        expiryDate: product.expiryDate,
-        productImage: product.productImage || product.orderId?.productImage,
+        batchNo: product.batchNo || product.orderId?.batchNo,
+        manufactureDate: product.manufactureDate || product.orderId?.manufactureDate,
+        expiryDate: product.expiryDate || product.orderId?.expiryDate,
+        productImage: product.productImage || product.orderId?.productImage || templateData.productImage,
+        category: product.category || product.orderId?.category || templateData.category,
+        mrp: product.mrp || product.orderId?.mrp || templateData.mrp,
+        manufacturedBy: product.manufacturedBy || product.orderId?.manufacturedBy,
+        marketedBy: product.marketedBy || product.orderId?.marketedBy,
+        importMarketedBy: product.importMarketedBy || product.orderId?.importMarketedBy,
+        importerRegNo: product.importerRegNo || product.orderId?.importerRegNo,
+        countryOfOrigin: product.countryOfOrigin || product.orderId?.countryOfOrigin,
+        website: product.website || product.orderId?.website,
+        supportEmail: product.supportEmail || product.orderId?.supportEmail,
+        customerCare: product.customerCare || product.orderId?.customerCare,
         mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
-        description: product.description || product.orderId?.description,
-        productInfo: product.productInfo || product.orderId?.productInfo,
+        description: product.description || product.orderId?.description || templateData.description,
+        productInfo: product.productInfo || product.orderId?.productInfo || templateData.productInfo,
         bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
         calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
-        dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
-        variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
+        dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && product.orderId.dynamicFields.size > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
+        variants: (product.variants && product.variants.length > 0) ? product.variants : ((product.orderId?.variants && product.orderId.variants.length > 0) ? product.orderId.variants : templateData.variants),
         warranty: product.warranty || product.orderId?.warranty || null,
+        keyBenefits: product.keyBenefits || product.orderId?.keyBenefits || templateData.keyBenefits,
+        orderLinks: (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((product.orderId?.orderLinks && product.orderId.orderLinks.length > 0) ? product.orderId.orderLinks : templateData.orderLinks),
+        price: product.price || templateData.price,
         fieldLabels,
         alreadyReviewed,
         warrantyClaimStatus,
@@ -1038,19 +1129,169 @@ router.put("/reports/:id/status", protect, async (req, res) => {
 });
 
 
+// Get brand details
+router.get("/brand/:brandId", async (req, res) => {
+  try {
+    const Brand = require("../models/Brand");
+    const { brandId } = req.params;
+    
+    if (brandId === "0000000000000000000bdemo") {
+      return res.json({
+        _id: brandId,
+        brandName: "Origin Nutrition",
+        brandLogo: "https://origin-nutrition.com/wp-content/uploads/2021/05/origin-logo-1.png",
+        industry: "Health & Supplements",
+        companyId: { companyName: "Origin Nutrition Official" }
+      });
+    }
+
+    let brand = await Brand.findById(brandId).populate('companyId').lean();
+    
+    // If not found by Brand ID, check if it's a Company ID
+    if (!brand) {
+      brand = await Brand.findOne({ companyId: brandId }).populate('companyId').lean();
+    }
+    
+    // If still not found, construct a synthetic brand using the Company
+    if (!brand) {
+      const Company = require("../models/Company");
+      const company = await Company.findById(brandId).lean();
+      if (company) {
+        brand = {
+          _id: company._id,
+          brandName: company.companyName,
+          industry: company.industry,
+          companyId: company
+        };
+      }
+    }
+
+    if (!brand) return res.status(404).json({ error: "Brand not found" });
+
+    res.json(brand);
+  } catch (err) {
+    console.error("Error fetching brand:", err);
+    res.status(500).json({ error: "Failed to fetch brand" });
+  }
+});
+
+// Get user usage stats for a brand's featured product
+router.get("/user-stats/:brandId", protect, async (req, res) => {
+  try {
+    const { brandId } = req.params;
+    const Product = require("../models/Product");
+    const Coupon = require("../models/Coupon");
+    const User = require("../models/User");
+
+    // Get featured product for this brand
+    const featuredProduct = await Product.findOne({ brandId, isActive: true })
+      .sort({ createdAt: -1 })
+      .select("_id totalServings servingSize averageUsagePerWeek");
+
+    if (!featuredProduct) {
+      return res.json({ hasStats: false, message: "No active products found for this brand." });
+    }
+
+    // Get total valid coupons
+    const activeCouponsCount = await Coupon.countDocuments({ isActive: true });
+
+    // Check user's purchase history for this product
+    const user = await User.findById(req.user.id);
+    const purchase = user?.purchaseHistory?.find(
+      (p) => p.productId && p.productId.toString() === featuredProduct._id.toString()
+    );
+
+    if (!purchase) {
+      // User hasn't purchased it yet
+      return res.json({
+        hasStats: false,
+        couponCount: activeCouponsCount
+      });
+    }
+
+    // Calculate usage data
+    const { lastPurchasedDate, quantity, servingsRemaining } = purchase;
+    const totalServings = featuredProduct.totalServings || 15;
+    const averageUsagePerWeek = featuredProduct.averageUsagePerWeek || 3;
+    const servingSize = featuredProduct.servingSize || "500g";
+    
+    // Calculate percentage left
+    const usagePercent = Math.round((servingsRemaining / totalServings) * 100);
+
+    // Calculate next reorder date
+    let nextReorderDate = null;
+    let daysUntilReorder = null;
+    
+    if (averageUsagePerWeek > 0) {
+      const weeksRemaining = servingsRemaining / averageUsagePerWeek;
+      const daysRemaining = Math.floor(weeksRemaining * 7);
+      
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() + daysRemaining);
+      nextReorderDate = targetDate.toISOString();
+      daysUntilReorder = daysRemaining;
+    }
+
+    res.json({
+      hasStats: true,
+      couponCount: activeCouponsCount,
+      usage: {
+        servingsRemaining,
+        totalServings,
+        usagePercent,
+        averageUsagePerWeek,
+        lastPurchasedDate: lastPurchasedDate.toISOString(),
+        lastQuantity: `${quantity} x ${servingSize}`,
+        nextReorderDate,
+        daysUntilReorder
+      }
+    });
+
+  } catch (err) {
+    console.error("Error fetching user stats:", err);
+    res.status(500).json({ error: "Failed to fetch user stats" });
+  }
+});
+
 // Get all recommendations (products) for a specific brand
 router.get("/recommendations/:brandId", async (req, res) => {
   try {
-    const Product = require("../models/Product");
+    const ProductTemplate = require("../models/ProductTemplate");
     const { brandId } = req.params;
     
-    // We only return active products. No pagination for now to keep it simple.
-    const recommendations = await Product.find({
-      brandId: brandId,
-      isActive: true
-    }).select("_id productName mrp productImage category discount oldPrice ratingBadge").sort({ createdAt: -1 }).lean();
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 20;
+    const skip = (page - 1) * limit;
+
+    const query = {
+      $or: [
+        { brandId: brandId },
+        { companyId: brandId }
+      ],
+      status: 'active'
+    };
+
+    const totalItems = await ProductTemplate.countDocuments(query);
+    const totalPages = Math.ceil(totalItems / limit);
+
+    const sortParam = req.query.sort || 'newest';
+    let sortObj = { createdAt: -1 };
+    if (sortParam === 'price_low') sortObj = { price: 1 };
+    else if (sortParam === 'price_high') sortObj = { price: -1 };
+    else if (sortParam === 'oldest') sortObj = { createdAt: 1 };
+
+    const products = await ProductTemplate.find(query)
+      .sort(sortObj)
+      .skip(skip)
+      .limit(limit)
+      .lean();
     
-    res.json(recommendations);
+    res.json({
+      products,
+      totalPages,
+      currentPage: page,
+      totalItems
+    });
   } catch (err) {
     console.error("Error fetching recommendations:", err);
     res.status(500).json({ error: "Failed to fetch recommendations" });
@@ -1058,3 +1299,61 @@ router.get("/recommendations/:brandId", async (req, res) => {
 });
 
 module.exports = router;
+// Smart Reorder Route (Add to scan.routes.js)
+router.get("/smart-reorder/:productId", async (req, res) => {
+  try {
+    const { productId } = req.params;
+    const Product = require("../models/Product");
+    const ProductTemplate = require("../models/ProductTemplate");
+
+    const product = await Product.findById(productId).populate({
+      path: 'brandId',
+      populate: { path: 'companyId' }
+    });
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    // Try to find the ProductTemplate
+    let templateData = null;
+    if (product.brandId) {
+      templateData = await ProductTemplate.findOne({
+        productName: product.productName,
+        brandId: product.brandId._id,
+        status: 'active'
+      }).lean();
+    }
+
+    // Build the dynamic payload
+    const orderLinks = (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : (templateData?.orderLinks || []);
+    const price = product.price || templateData?.price || null;
+    const mrp = product.mrp || templateData?.mrp || null;
+
+    // We can extract custom 'usage' related dynamic fields
+    const dynamicFields = (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : (templateData?.dynamicFields || {});
+
+    // You can also check if the user is authenticated and get their purchase history for this product
+    // For now, return standard product stats
+    const responseData = {
+      productId: product._id,
+      productName: product.productName,
+      productImage: product.productImage || templateData?.productImage,
+      brand: product.brand || product.brandId?.brandName,
+      companyName: product.brandId?.companyId?.companyName,
+      variants: product.variants || templateData?.variants || [],
+      orderLinks,
+      price,
+      mrp,
+      dynamicFields,
+      // For usage tracking UI
+      createdAt: product.createdAt,
+      expiryDate: product.expiryDate || product.calculatedExpiryDate
+    };
+
+    res.json(responseData);
+  } catch (err) {
+    console.error("Error fetching smart reorder data:", err);
+    res.status(500).json({ error: "Failed to fetch smart reorder data" });
+  }
+});

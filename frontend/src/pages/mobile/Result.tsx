@@ -1,10 +1,10 @@
-import { ChevronLeft, Share, FileText, BookOpen, MessageSquare, ShieldCheck, Gift, ChevronRight, XCircle, AlertTriangle, Headset, Flag, X, ShieldAlert, Calendar, Phone, MapPin, RefreshCcw } from "lucide-react";
+import { ChevronLeft, Share, FileText, BookOpen, MessageSquare, ShieldCheck, Gift, ChevronRight, XCircle, AlertTriangle, Headset, Flag, X, ShieldAlert, Calendar, Phone, MapPin, RefreshCcw, ScanLine, CheckCircle2 } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import API_BASE_URL from "../../config/api";
 
 // Assets
-import authenticIcon from "../../assets/logo.svg";
+import authenticIcon from "../../assets/logo-shield.png";
 import warningIcon from "../../assets/v2/home/header/warning.svg"; // Triangle
 import fakeIcon from "../../assets/v2/home/header/dangerous.svg"; // Red X
 
@@ -87,6 +87,20 @@ function Header({ title = "Authentiks", showBell = true }) {
 function ResultAuthentic({ data }: { data: any }) {
   const navigate = useNavigate();
   const confirmModal = useConfirm() as any;
+
+  const productObj = data.productId || {};
+  const orderObj = productObj.orderId || data.orderId || {};
+  const templateObj = productObj.templateId || data.templateData || {};
+
+  const scanDate = data.scanDate || data.createdAt ? new Date(data.scanDate || data.createdAt) : null;
+  const scanDateStr = scanDate ? `${scanDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}\n${scanDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}` : 'N/A';
+  
+  const extractMfd = data.manufactureDate || data.mfdOn || productObj.mfdOn || orderObj.mfdOn;
+  const mfdDate = typeof extractMfd === 'object' && extractMfd?.month ? `${extractMfd.month}/${extractMfd.year}` : (extractMfd || 'N/A');
+  
+  const expDate = data.expiryDate || productObj.expiryDate || orderObj.expiryDate || data.calculatedExpiryDate || productObj.calculatedExpiryDate || orderObj.calculatedExpiryDate || templateObj.calculatedExpiryDate || 'N/A';
+  const batchNo = data.batchNo || productObj.batchNo || orderObj.batchNo || 'N/A';
+
   const [showAll, setShowAll] = useState(false);
   const [showMore, setShowMore] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
@@ -317,7 +331,9 @@ function ResultAuthentic({ data }: { data: any }) {
       fetch(`${API_BASE_URL}/scan/recommendations/${bId}`)
         .then(res => res.json())
         .then(resData => {
-          if (Array.isArray(resData)) {
+          if (resData && Array.isArray(resData.products)) {
+            setRecommendations(resData.products.slice(0, 4));
+          } else if (Array.isArray(resData)) {
             setRecommendations(resData.slice(0, 4));
           }
         })
@@ -347,9 +363,21 @@ function ResultAuthentic({ data }: { data: any }) {
     <div className="min-h-screen bg-[#FAFAFA] font-sans flex flex-col relative pb-32">
       
       {/* Top Blue Header Section */}
-      <div className="bg-[#01227E] pt-8 px-5 relative rounded-b-[40px] overflow-hidden">
+      <div className="bg-[#01227E] pt-4 px-5 relative rounded-b-[40px] overflow-hidden">
         {/* Subtle glowing effect behind shield */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-[#105DE4] rounded-full opacity-30 blur-[40px] pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-[#105DE4] rounded-full opacity-40 blur-[40px] pointer-events-none" />
+        
+        {/* Animated Rings & Expanding Ping */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full border-[3px] border-[#105DE4]/40 pointer-events-none animate-ping" style={{ animationDuration: '3s' }} />
+        
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full border border-dashed border-white/30 pointer-events-none animate-[spin_15s_linear_infinite]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full border border-dashed border-white/20 pointer-events-none animate-[spin_20s_linear_infinite_reverse]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] aspect-square rounded-full border border-dashed border-white/10 pointer-events-none animate-[spin_25s_linear_infinite]" />
+        
+        {/* Floating Sparkles/Particles */}
+        <div className="absolute top-[30%] left-[20%] w-6 h-6 opacity-40 text-[#4CC9F0] animate-pulse" style={{ animationDuration: '2s' }}>✨</div>
+        <div className="absolute top-[20%] right-[25%] w-8 h-8 opacity-40 text-[#4CC9F0] animate-bounce" style={{ animationDuration: '3s' }}>✨</div>
+        <div className="absolute bottom-[40%] right-[15%] w-5 h-5 opacity-40 text-white animate-pulse" style={{ animationDuration: '1.5s', animationDelay: '0.5s' }}>⭐</div>
         
         {/* Top Header Row */}
         <div className="flex items-center justify-between mb-6 relative z-50">
@@ -362,8 +390,8 @@ function ResultAuthentic({ data }: { data: any }) {
         </div>
 
         {/* Main Authentic Header Section */}
-        <div className="flex flex-col items-center relative z-10 top-[-60px]">
-          <div className="w-20 h-20 mb-4">
+        <div className="flex flex-col items-center relative z-10 top-[-50px]  animate-[slide-up_0.5s_ease-out]">
+          <div className="w-20 h-20 animate-bounce" style={{ animationDuration: '2s' }}>
              <img src={authenticIcon} alt="Authentic" className="w-full h-full object-contain drop-shadow-xl" />
           </div>
           <h2 className="text-white text-[24px] font-bold tracking-tight mb-1.5">Authentic Product</h2>
@@ -396,17 +424,54 @@ function ResultAuthentic({ data }: { data: any }) {
               <p className="text-[#5A7184] text-[13px] font-medium mb-2">{data.category || data.productId?.category}</p>
             )}
             
-            <div className="flex flex-wrap gap-2 mt-1">
+            <div className="flex flex-wrap gap-2 mt-1 mb-2.5">
               {(data.variants || data.productId?.variants || []).map((v: any, index: number) => (
                 <span 
                   key={index}
                   className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wide ${index % 2 === 0 ? 'bg-[#EEF2FF] text-[#4F46E5]' : 'bg-[#ECFDF5] text-[#059669]'}`}
                 >
-                  {v.variantLabel || v.value || v.name}
+                  {v.value || v.variantLabel || v.name}
                 </span>
               ))}
             </div>
+            
+            <div className="mt-auto pt-1 flex items-center gap-1.5">
+              <div className="w-3.5 h-3.5 bg-[#105DE4] rounded-full flex items-center justify-center shadow-[0_2px_4px_rgba(16,93,228,0.2)]">
+                <CheckCircle2 size={9} className="text-white" strokeWidth={3} />
+              </div>
+              <span className="text-[#105DE4] text-[10.5px] font-bold tracking-wide">100% Authentic</span>
+            </div>
           </div>
+        </div>
+
+        {/* Tracking Grid */}
+        <div className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex justify-between divide-x divide-slate-100">
+          <div className="flex flex-col items-center flex-1 px-1">
+            <ScanLine size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
+            <h4 className="text-[10px] font-bold text-slate-900 mb-1">Scanned On</h4>
+            <p className="text-[9px] text-slate-500 font-medium text-center leading-tight whitespace-pre-line">{scanDateStr}</p>
+          </div>
+          {mfdDate !== 'N/A' && (
+            <div className="flex flex-col items-center flex-1 px-1">
+              <Calendar size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
+              <h4 className="text-[10px] font-bold text-slate-900 mb-1">Mfd On</h4>
+              <p className="text-[9px] text-slate-500 font-medium text-center leading-tight">{mfdDate}</p>
+            </div>
+          )}
+          {expDate !== 'N/A' && (
+            <div className="flex flex-col items-center flex-1 px-1">
+              <Calendar size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
+              <h4 className="text-[10px] font-bold text-slate-900 mb-1">Expiry On</h4>
+              <p className="text-[9px] text-slate-500 font-medium text-center leading-tight">{expDate}</p>
+            </div>
+          )}
+          {batchNo !== 'N/A' && (
+            <div className="flex flex-col items-center flex-1 px-1">
+              <ShieldCheck size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
+              <h4 className="text-[10px] font-bold text-slate-900 mb-1">Batch No.</h4>
+              <p className="text-[9px] text-slate-500 font-medium text-center leading-tight">{batchNo}</p>
+            </div>
+          )}
         </div>
 
         {/* Action Menu Cards */}
@@ -419,7 +484,7 @@ function ResultAuthentic({ data }: { data: any }) {
              </div>
            </button>
 
-           <button className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
+           <button onClick={() => navigate("/product-education", { state: data })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
              <BookOpen className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
              <div className="flex items-end justify-between w-full mt-auto">
                <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Product Education</span>
@@ -427,71 +492,42 @@ function ResultAuthentic({ data }: { data: any }) {
              </div>
            </button>
 
-           <button className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
-             <MessageSquare className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
+           <button onClick={() => navigate("/consumer-support", { state: data })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
+             <Headset className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
              <div className="flex items-end justify-between w-full mt-auto">
-               <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Consumer Feedback</span>
+               <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Consumer Support</span>
                <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
              </div>
            </button>
         </div>
 
-        {/* Why Authenticity Matters Banner */}
-        <div className="bg-white rounded-[16px] p-4 flex items-center gap-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100">
-           <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center">
-             <ShieldCheck className="w-8 h-8 text-[#105DE4]" strokeWidth={1.5} />
-           </div>
-           <div className="flex flex-col flex-1">
-             <h4 className="text-[14px] font-bold text-[#0B1E36] mb-0.5">Why Authenticity Matters</h4>
-             <p className="text-[11px] text-[#5A7184] font-medium leading-tight">Every scan helps us fight counterfeit products and ensure you get the best quality and safety.</p>
-           </div>
-           <ChevronRight className="w-5 h-5 text-gray-300" />
-        </div>
 
-        {/* Recommendations Section */}
-        {recommendations.length > 0 && (
-          <div className="mt-4">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[16px] font-extrabold text-[#0B1E36]">Recommendation for You</h3>
-              <button onClick={() => navigate(`/recommendations/${data?.brandId?._id || data?.brandId || data?.product?.brandId || data?.productId?.brandId}`)} className="text-[12px] font-bold text-[#105DE4] flex items-center gap-0.5">
-                View All <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
+        {/* Warranty Claim Banner */}
+        {data.warranty && (data.warranty.duration || data.warranty.warrantyType) && (
+          <button
+            onClick={() => {
+              if (warrantyClaimed) return;
+              setShowWarrantyModal(true);
+            }}
+            disabled={warrantyClaimed}
+            className={`relative overflow-hidden w-full mt-3 ${warrantyClaimed ? 'bg-gray-400' : 'bg-emerald-600'} text-white rounded-[24px] p-4 flex items-center shadow-[0_8px_25px_rgba(5,150,105,0.25)] active:scale-[0.98] transition-transform`}
+          >
+            {!warrantyClaimed && (
+              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-flash-shimmer" style={{ animationDelay: '2s' }} />
+            )}
             
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
-               {recommendations.map((item: any, index: number) => (
-                 <div key={item.id || item._id || index} className="snap-start flex-shrink-0 w-[170px] bg-white rounded-[20px] p-4 flex flex-col shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-gray-100 relative">
-                   <div className="w-full h-[150px] bg-[#F8F9FA] rounded-[14px] p-2 flex items-center justify-center mb-4 relative">
-                     <img src={item.image || item.productImage || 'https://via.placeholder.com/150'} alt={item.title || item.productName} className="w-full h-full object-contain mix-blend-multiply" />
-                     {/* Rating/Feature Badge overlapping bottom right */}
-                     {item.ratingBadge && (
-                       <div className="absolute -bottom-3 -right-3 bg-[#F3F6E8] text-[#4F5927] border-2 border-white text-[9.5px] font-extrabold px-1.5 py-1 rounded-full text-center leading-[1.1] shadow-sm flex items-center justify-center w-[46px] h-[46px] whitespace-pre-wrap break-words">
-                         {item.ratingBadge}
-                       </div>
-                     )}
-                   </div>
-                   <h4 className="text-[13px] font-bold text-[#0B1E36] leading-snug mb-3 line-clamp-2 min-h-[36px]">{item.title || item.productName}</h4>
-                   <div className="flex items-baseline gap-2 mb-2 mt-auto">
-                     <span className="text-[17px] font-extrabold text-[#0B1E36]">{item.price || (item.mrp ? `₹${item.mrp}` : '')}</span>
-                     {item.oldPrice && (
-                       <span className="text-[13px] font-semibold text-[#829AB1] line-through">{item.oldPrice}</span>
-                     )}
-                   </div>
-                   {item.discount && (
-                     <div className="bg-[#E8F8F0] text-[#059669] text-[10px] font-extrabold px-2.5 py-1 rounded-[6px] w-max tracking-wide">
-                       {item.discount}
-                     </div>
-                   )}
-                 </div>
-               ))}
+            <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center flex-shrink-0 mr-3 relative z-10">
+               <ShieldCheck className="w-[20px] h-[20px] text-emerald-600" strokeWidth={2} />
             </div>
-          </div>
+            <div className="flex flex-col flex-1 text-left relative z-10">
+               <span className="text-[15px] font-extrabold mb-0.5">{warrantyClaimed ? "Warranty Registered" : "Register Warranty"}</span>
+               <span className="text-[11px] font-medium text-emerald-100">Activate your product protection</span>
+            </div>
+            <ChevronRight className="w-5 h-5 text-white/80 relative z-10" />
+          </button>
         )}
-
-      </div>
-
-      {/* Bottom Review & Claim Reward Button (Floating above tab bar) */}
-      <div className="fixed bottom-[70px] left-0 right-0 px-4 py-3 bg-gradient-to-t from-[#FAFAFA] via-[#FAFAFA] to-transparent z-40">
+        
+        {/* Review & Claim Reward Banner */}
         <button
           onClick={async () => {
             const token = localStorage.getItem("token");
@@ -512,18 +548,63 @@ function ResultAuthentic({ data }: { data: any }) {
             }
           }}
           disabled={isReviewed}
-          className={`w-full ${isReviewed ? 'bg-gray-400' : 'bg-[#01227E]'} text-white rounded-[24px] p-3.5 flex items-center shadow-[0_8px_25px_rgba(1,34,126,0.25)] active:scale-[0.98] transition-transform`}
+          className={`relative overflow-hidden w-full ${isReviewed ? 'bg-gray-400' : 'bg-[#01227E]'} text-white rounded-[24px] p-4 flex items-center shadow-[0_8px_25px_rgba(1,34,126,0.25)] active:scale-[0.98] transition-transform`}
         >
-          <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center flex-shrink-0 mr-3">
+          {/* Flash animation layer */}
+          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-flash-shimmer" />
+          
+          <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center flex-shrink-0 mr-3 relative z-10">
              <Gift className="w-[20px] h-[20px] text-[#01227E]" strokeWidth={2} />
           </div>
-          <div className="flex flex-col flex-1 text-left">
+          <div className="flex flex-col flex-1 text-left relative z-10">
              <span className="text-[15px] font-extrabold mb-0.5">{isReviewed ? "Product Reviewed" : "Review & Claim Reward"}</span>
              <span className="text-[11px] font-medium text-[#B3C8F9]">Share your experience and earn exciting rewards!</span>
           </div>
-          <ChevronRight className="w-5 h-5 text-white/80" />
+          <ChevronRight className="w-5 h-5 text-white/80 relative z-10" />
         </button>
+
+        {/* Recommendations Section */}
+        {recommendations.length > 0 && (
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-[16px] font-extrabold text-[#0B1E36]">Recommendation for You</h3>
+              <button onClick={() => navigate(`/brand-portfolio/${data?.brandId?._id || data?.brandId || data?.product?.brandId || data?.productId?.brandId}`)} className="text-[12px] font-bold text-[#105DE4] flex items-center gap-0.5">
+                View All <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
+               {recommendations.map((item: any, index: number) => (
+                 <div key={item.id || item._id || index} className="snap-start flex-shrink-0 w-[170px] bg-white rounded-[20px] p-4 flex flex-col shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-gray-100 relative">
+                   <div className="w-full h-[150px] bg-[#F8F9FA] rounded-[14px] p-2 flex items-center justify-center mb-4 relative">
+                     <img src={item.image || item.productImage || 'https://via.placeholder.com/150'} alt={item.title || item.productName} className="w-full h-full object-contain mix-blend-multiply" />
+                     {/* Rating/Feature Badge overlapping bottom right */}
+                     {item.ratingBadge && (
+                       <div className="absolute -bottom-3 -right-3 bg-[#F3F6E8] text-[#4F5927] border-2 border-white text-[9.5px] font-extrabold px-1.5 py-1 rounded-full text-center leading-[1.1] shadow-sm flex items-center justify-center w-[46px] h-[46px] whitespace-pre-wrap break-words">
+                         {item.ratingBadge}
+                       </div>
+                     )}
+                   </div>
+                   <h4 className="text-[13px] font-bold text-[#0B1E36] leading-snug mb-3 line-clamp-2 min-h-[36px]">{item.title || item.productName}</h4>
+                   <div className="flex items-baseline gap-2 mb-2 mt-auto">
+                     <span className="text-[17px] font-extrabold text-[#0B1E36]">{item.price ? `₹${item.price}` : (item.mrp ? `₹${item.mrp}` : '')}</span>
+                     {item.oldPrice && (
+                       <span className="text-[13px] font-semibold text-[#829AB1] line-through">{item.oldPrice}</span>
+                     )}
+                   </div>
+                   {item.discount && (
+                     <div className="bg-[#E8F8F0] text-[#059669] text-[10px] font-extrabold px-2.5 py-1 rounded-[6px] w-max tracking-wide">
+                       {item.discount}
+                     </div>
+                   )}
+                 </div>
+               ))}
+            </div>
+          </div>
+        )}
+
       </div>
+
 
         {/* Review Modal — Premium Bottom Sheet */}
         {showReviewModal && (
@@ -1166,40 +1247,48 @@ function ResultAuthentic({ data }: { data: any }) {
 
 function ResultRepeat({ data }: { data: any }) {
   const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans flex flex-col relative pb-32">
-      
-      {/* Top Orange Header Section */}
-      <div className="bg-[#FF6B00] pt-8 px-5 relative rounded-b-[40px] overflow-hidden">
-        {/* Subtle background circles */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full border border-white/10 pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full border border-white/5 pointer-events-none" />
+      {/* Top Header Row - WHITE background */}
+      <div className="bg-white sticky top-0 z-[100] px-5 py-4 flex items-center justify-between border-b border-gray-100">
+        <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-[#0B1E36]">
+          <ChevronLeft className="w-7 h-7" strokeWidth={2.5} />
+        </button>
+        <h1 className="text-[#0B1E36] text-[17px] font-bold">Scan Result</h1>
+        <div className="w-7 h-7" />
+      </div>
+
+      {/* Main Orange Banner Section */}
+      <div className="bg-[#FF6B00] px-5 pt-8 pb-12 relative overflow-hidden">
+        {/* Animated background circles (Rotating) */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full border border-dashed border-white/30 pointer-events-none animate-[spin_15s_linear_infinite]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full border border-dashed border-white/20 pointer-events-none animate-[spin_20s_linear_infinite_reverse]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] aspect-square rounded-full border border-dashed border-white/10 pointer-events-none animate-[spin_25s_linear_infinite]" />
         
-        {/* Top Header Row */}
-        <div className="flex items-center justify-between mb-4 relative z-50">
-          <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-white">
-            <ChevronLeft className="w-7 h-7" strokeWidth={2} />
-          </button>
-          <h1 className="text-white text-[17px] font-bold">Scan Result</h1>
-          <div className="w-7 h-7" /> {/* Spacer */}
+        {/* Curved bottom edge using SVG wave */}
+        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none z-10 translate-y-[2px]">
+          <svg viewBox="0 0 1440 100" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" className="w-full h-[40px] md:h-[60px]">
+            <path d="M0,0 C320,80 420,80 720,40 C1020,0 1120,0 1440,80 L1440,120 L0,120 Z" fill="#FAFAFA"></path>
+          </svg>
         </div>
 
         {/* Main Alert Header Section */}
-        <div className="flex flex-col items-center relative z-10 pb-8 mt-2">
-          <div className="mb-3 text-white">
-            <ShieldAlert className="w-[60px] h-[60px]" strokeWidth={1.5} />
+        <div className="flex flex-col items-center relative z-20 pb-4">
+          <div className="mb-3 w-[72px] h-[72px] bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center animate-pulse">
+            <AlertTriangle className="w-10 h-10 text-white animate-bounce" style={{ animationDuration: '2s' }} strokeWidth={2.5} />
           </div>
-          <h2 className="text-white text-[24px] font-bold tracking-tight mb-2 text-center leading-tight">
-            DUPLICATE SCAN<br/>DETECTED
+          <h2 className="text-white text-[28px] font-bold tracking-tight mb-3 text-center uppercase leading-tight px-12">
+            DUPLICATE SCAN DETECTED
           </h2>
-          <p className="text-white/90 text-[14px] font-medium text-center max-w-[280px] leading-relaxed">
+          <p className="text-white/90 text-[14px] font-medium text-center max-w-[320px] leading-relaxed">
             This product has already been registered and authenticated on another account.
           </p>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 px-4 mt-6 relative z-20 flex flex-col gap-4 pb-10">
+      <div className="flex-1 px-4 -mt-14 relative z-30 flex flex-col gap-4 pb-10">
         
         {/* Scan Details Card */}
         <div className="bg-white rounded-[12px] shadow-sm flex flex-col overflow-hidden">
@@ -1213,7 +1302,7 @@ function ResultRepeat({ data }: { data: any }) {
                 <Calendar className="w-4 h-4 text-[#FF6B00]" strokeWidth={2} />
               </div>
               <div className="flex-1 flex justify-between items-center">
-                <span className="text-[13px] font-semibold text-[#1A1A1A]">First Authenticated:</span>
+                <span className="text-[13px] font-semibold text-[#1A1A1A]">First Verified On:</span>
                 <span className="text-[13px] font-bold text-[#1A1A1A]">
                   {data.originalScan?.scannedAt
                     ? new Date(data.originalScan.scannedAt).toLocaleString("en-GB", {
@@ -1229,7 +1318,7 @@ function ResultRepeat({ data }: { data: any }) {
                 <Phone className="w-4 h-4 text-[#FF6B00]" strokeWidth={2} />
               </div>
               <div className="flex-1 flex justify-between items-center">
-                <span className="text-[13px] font-semibold text-[#1A1A1A]">First Authenticated By:</span>
+                <span className="text-[13px] font-semibold text-[#1A1A1A]">First Verified By:</span>
                 <span className="text-[13px] font-bold text-[#1A1A1A]">
                   {maskPhoneNumber(data.originalScan?.scannedBy) || "988XXXX144"}
                 </span>
@@ -1241,7 +1330,7 @@ function ResultRepeat({ data }: { data: any }) {
                 <MapPin className="w-4 h-4 text-[#FF6B00]" strokeWidth={2} />
               </div>
               <div className="flex-1 flex justify-between items-center">
-                <span className="text-[13px] font-semibold text-[#1A1A1A]">First Scan Location:</span>
+                <span className="text-[13px] font-semibold text-[#1A1A1A]">First Verified Location:</span>
                 <span className="text-[13px] font-bold text-[#1A1A1A]">
                   {data.originalScan?.location || "Chennai, India"}
                 </span>
@@ -1263,15 +1352,19 @@ function ResultRepeat({ data }: { data: any }) {
 
         {/* Warning Indicator Card */}
         <div className="bg-white rounded-[12px] p-4 flex gap-4 border border-[#FF6B00] shadow-sm">
-          <div className="w-10 h-10 rounded-full bg-[#FF6B00] flex-shrink-0 flex items-center justify-center mt-0.5">
+          <div className="w-10 h-10 rounded-full bg-[#FF6B00] flex-shrink-0 flex items-center justify-center mt-0.5 animate-pulse">
             <AlertTriangle className="w-5 h-5 text-white" strokeWidth={2} />
           </div>
           <div>
             <h4 className="text-[#FF6B00] font-bold text-[14px] mb-1.5">This may indicate:</h4>
             <ul className="list-disc pl-4 text-[#333333] text-[13px] space-y-1 font-medium">
-              <li>Product sharing or resale</li>
-              <li>Unauthorized distribution</li>
-              <li>Potential counterfeit activity</li>
+              {(data.alertReasons || [
+                "Product sharing or resale",
+                "Unauthorized distribution",
+                "Potential counterfeit activity"
+              ]).map((reason: string, idx: number) => (
+                <li key={idx}>{reason}</li>
+              ))}
             </ul>
           </div>
         </div>
@@ -1303,7 +1396,10 @@ function ResultRepeat({ data }: { data: any }) {
             <Flag className="w-5 h-5" strokeWidth={2.5} />
             REPORT PRODUCT
           </button>
-          <button className="w-full bg-white text-[#0D4E96] border border-[#0D4E96] font-bold text-[15px] py-4 rounded-[8px] flex items-center justify-center gap-2 shadow-sm">
+          <button 
+            onClick={() => navigate("/support")}
+            className="w-full bg-white text-[#0D4E96] border border-[#0D4E96] font-bold text-[15px] py-4 rounded-[8px] flex items-center justify-center gap-2 shadow-sm"
+          >
             <Headset className="w-5 h-5" strokeWidth={2} />
             CONTACT SUPPORT
           </button>
@@ -1324,32 +1420,38 @@ function ResultRepeat({ data }: { data: any }) {
 
 function ResultFake({ data }: { data: any }) {
   const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans flex flex-col relative pb-32">
-      
-      {/* Top Red Header Section */}
-      <div className="bg-[#D10000] pt-8 px-5 relative rounded-b-[40px] overflow-hidden">
-        {/* Subtle background circles */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full border border-white/10 pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full border border-white/5 pointer-events-none" />
+      {/* Top Header Row - WHITE background */}
+      <div className="bg-white sticky top-0 z-[100] px-5 py-4 flex items-center justify-between border-b border-gray-100">
+        <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-[#0B1E36]">
+          <ChevronLeft className="w-7 h-7" strokeWidth={2.5} />
+        </button>
+        <h1 className="text-[#0B1E36] text-[17px] font-bold">Scan Result</h1>
+        <div className="w-7 h-7" />
+      </div>
+
+      {/* Main Red Banner Section */}
+      <div className="bg-[#D10000] px-5 pt-8 pb-12 relative overflow-hidden">
+        {/* Animated background circles (Rotating) */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full border border-dashed border-white/30 pointer-events-none animate-[spin_15s_linear_infinite]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full border border-dashed border-white/20 pointer-events-none animate-[spin_20s_linear_infinite_reverse]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] aspect-square rounded-full border border-dashed border-white/10 pointer-events-none animate-[spin_25s_linear_infinite]" />
         
-        {/* Top Header Row */}
-        <div className="flex items-center justify-between mb-4 relative z-50">
-          <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-white">
-            <ChevronLeft className="w-7 h-7" strokeWidth={2} />
-          </button>
-          <h1 className="text-white text-[17px] font-bold">Scan Result</h1>
-          <div className="w-7 h-7" /> {/* Spacer */}
+        {/* Curved bottom edge using SVG wave */}
+        <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none z-10 translate-y-[2px]">
+          <svg viewBox="0 0 1440 100" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" className="w-full h-[40px] md:h-[60px]">
+            <path d="M0,0 C320,80 420,80 720,40 C1020,0 1120,0 1440,80 L1440,120 L0,120 Z" fill="#FAFAFA"></path>
+          </svg>
         </div>
 
         {/* Main Alert Header Section */}
-        <div className="flex flex-col items-center relative z-10 pb-8 mt-2">
-          <div className="mb-3 w-[72px] h-[72px] bg-white rounded-full flex items-center justify-center p-2">
-            <div className="bg-[#D10000] w-full h-full rounded-full flex items-center justify-center">
-              <X className="w-8 h-8 text-white" strokeWidth={3} />
-            </div>
+        <div className="flex flex-col items-center relative z-20 pb-4">
+          <div className="mb-3 w-[72px] h-[72px] bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center animate-pulse">
+            <X className="w-10 h-10 text-white animate-bounce" style={{ animationDuration: '2s' }} strokeWidth={3} />
           </div>
-          <h2 className="text-white text-[28px] font-bold tracking-tight mb-3 text-center">
+          <h2 className="text-white text-[28px] font-bold tracking-tight mb-3 text-center uppercase leading-tight max-w-[280px]">
             WARNING
           </h2>
           <p className="text-white/90 text-[14px] font-medium text-center max-w-[300px] leading-relaxed">
@@ -1359,7 +1461,7 @@ function ResultFake({ data }: { data: any }) {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 px-4 mt-6 relative z-20 flex flex-col gap-4 pb-10">
+      <div className="flex-1 px-4 -mt-14 relative z-30 flex flex-col gap-4 pb-10">
         
         {/* Not Authentic Card */}
         <div className="bg-white rounded-[12px] p-4 flex gap-4 shadow-sm border border-gray-100">
@@ -1376,16 +1478,20 @@ function ResultFake({ data }: { data: any }) {
 
         {/* Warning Indicator Card */}
         <div className="bg-white rounded-[12px] p-4 flex gap-4 border border-[#D10000] shadow-sm">
-          <div className="w-10 h-10 rounded-full bg-[#D10000] flex-shrink-0 flex items-center justify-center mt-0.5">
+          <div className="w-10 h-10 rounded-full bg-[#D10000] flex-shrink-0 flex items-center justify-center mt-0.5 animate-pulse">
             <X className="w-5 h-5 text-white" strokeWidth={2.5} />
           </div>
           <div>
             <h4 className="text-[#D10000] font-bold text-[14px] mb-1.5">This may indicate:</h4>
             <ul className="list-disc pl-4 text-[#333333] text-[13px] space-y-1 font-medium">
-              <li>Counterfeit or fake product</li>
-              <li>Tampered or duplicate QR code</li>
-              <li>Unauthorized manufacturing or distribution</li>
-              <li>Product not linked with Authentiks protection</li>
+              {(data.alertReasons || [
+                "Counterfeit or fake product",
+                "Tampered or duplicate QR code",
+                "Unauthorized manufacturing or distribution",
+                "Product not linked with Authentiks protection"
+              ]).map((reason: string, idx: number) => (
+                <li key={idx}>{reason}</li>
+              ))}
             </ul>
           </div>
         </div>
@@ -1417,7 +1523,10 @@ function ResultFake({ data }: { data: any }) {
             <Flag className="w-5 h-5" strokeWidth={2.5} />
             REPORT THIS PRODUCT
           </button>
-          <button className="w-full bg-white text-[#D10000] border border-[#D10000] font-bold text-[15px] py-4 rounded-[8px] flex items-center justify-center gap-2 shadow-sm">
+          <button 
+            onClick={() => navigate("/support")}
+            className="w-full bg-white text-[#D10000] border border-[#D10000] font-bold text-[15px] py-4 rounded-[8px] flex items-center justify-center gap-2 shadow-sm"
+          >
             <Headset className="w-5 h-5" strokeWidth={2} />
             CONTACT SUPPORT
           </button>

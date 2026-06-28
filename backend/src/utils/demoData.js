@@ -110,6 +110,11 @@ const getDemoResult = (qrCode, userId, latitude, longitude, place) => {
     return {
       status: "ALREADY_USED",
       data: {
+        alertReasons: [
+          "Product sharing or resale",
+          "Unauthorized distribution",
+          "Potential counterfeit activity"
+        ],
         ...DEMO_PRODUCT,
         qrCode,
         latitude,
@@ -129,6 +134,12 @@ const getDemoResult = (qrCode, userId, latitude, longitude, place) => {
     return {
       status: "FAKE",
       data: {
+        alertReasons: [
+          "Counterfeit or fake product",
+          "Tampered or duplicate QR code",
+          "Unauthorized manufacturing or distribution",
+          "Product not linked with Authentiks protection"
+        ],
         qrCode,
         productId: null,
         productName: null,

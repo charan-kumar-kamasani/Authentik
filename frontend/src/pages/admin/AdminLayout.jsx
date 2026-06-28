@@ -285,7 +285,7 @@ export default function AdminLayout({ children }) {
 
         <div className={`p-6 border-b border-slate-100 flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
           <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md shrink-0">
-            <img src="/logo.svg" alt="Logo" className="w-8 h-8" />
+            <img src="/logo-shield.png" alt="Logo" className="w-8 h-8" />
           </div>
           {!isCollapsed && (
             <div className="overflow-hidden transition-all duration-300 whitespace-nowrap">
