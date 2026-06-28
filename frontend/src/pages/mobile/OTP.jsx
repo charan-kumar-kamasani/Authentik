@@ -165,13 +165,10 @@ export default function OTP() {
           <ArrowLeft className="w-[24px] h-[24px]" />
         </button>
         <div className="w-full flex flex-col items-center mt-[-6px]">
-          <div className="w-[36px] h-[40px] mb-1">
+          <div className="w-[156px] h-[40px] mb-1">
              <img src={logo} alt="Shield" className="w-full h-full object-contain drop-shadow-[0_4px_8px_rgba(16,110,234,0.3)]" />
           </div>
-          <h1 className="text-[#102A43] text-[22px] font-extrabold tracking-wide">
-            Authen<span className="text-[#106EEA]">tiks</span>
-          </h1>
-          <p className="text-[#64748B] text-[11px] font-medium tracking-wide mt-[1px]">Trusted. Verified. Protected.</p>
+
         </div>
       </div>
 

@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import API_BASE_URL from "../../config/api";
 import indianIcon from "../../assets/v2/login/indian_icon.png";
 import logo from "../../assets/logo-text.png";
+import logoShield from "../../assets/logo-shield.png";
 import { useConfirm } from "../../components/ConfirmModal";
 import { ShieldCheck, Lock, User, Users, ChevronDown, MessageCircleMore, Award, Package, Gift } from "lucide-react";
 
@@ -78,12 +79,8 @@ export default function Login() {
         
         {/* Header Logo & Tagline (Top Left aligned) */}
         <div className="flex items-start self-start mb-6">
-          <div className="w-[30px] h-[34px] relative flex items-center justify-center mr-2">
+          <div className="w-[150px] h-[54px] relative flex items-center justify-center mr-2">
              <img src={logo} alt="Shield" className="w-full h-full object-contain" />
-          </div>
-          <div className="flex flex-col mt-[-2px]">
-            <h1 className="text-white text-[22px] font-bold tracking-wide leading-tight">Authentiks</h1>
-            <p className="text-blue-100/90 text-[10px] font-medium tracking-wide">Trusted. Verified. Protected.</p>
           </div>
         </div>
 
@@ -112,7 +109,7 @@ export default function Login() {
 
           {/* Huge Central 3D Shield */}
           <div className="relative w-[160px] h-[180px] z-20 flex items-center justify-center mt-4">
-            <img src={logo} alt="Authentiks Shield" className="w-[150px] h-auto object-contain drop-shadow-[0_15px_25px_rgba(16,110,234,0.4)]" />
+            <img src={logoShield} alt="Authentiks Shield" className="w-[150px] h-auto object-contain drop-shadow-[0_15px_25px_rgba(16,110,234,0.4)]" />
           </div>
         </div>
 
@@ -213,7 +210,7 @@ export default function Login() {
         <div className="w-full flex items-center justify-center gap-3 mb-8 px-2">
           <ShieldCheck className="w-[20px] h-[20px] text-[#106EEA] stroke-[2]" />
           <p className="text-[#555555] text-[12px] font-medium leading-relaxed">
-            By continuing, you agree to our <a href="/terms-conditions" className="font-bold text-[#106EEA]">Terms of Use</a> and <a href="/privacy-policy" className="font-bold text-[#106EEA]">Privacy Policy</a>.
+            By continuing, you agree to our <Link to="/terms-conditions" className="font-bold text-[#106EEA]">Terms of Use</Link> and <Link to="/privacy-policy" className="font-bold text-[#106EEA]">Privacy Policy</Link>.
           </p>
         </div>
 

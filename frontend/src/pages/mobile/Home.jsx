@@ -228,7 +228,7 @@ export default function Home() {
           </div>
 
           {/* Floating Shield Logo */}
-          <div className="absolute right-[5%] top-[60%] transform -translate-y-1/2 w-[110px] h-[120px] z-10 pointer-events-none">
+          <div className="absolute right-[3%] top-[70%] transform -translate-y-1/2 w-[110px] h-[120px] z-10 pointer-events-none">
              <img src={logoShield} alt="Shield" className="w-full h-full object-contain drop-shadow-xl" style={{ animation: 'float 3s ease-in-out infinite' }} />
           </div>
         </div>

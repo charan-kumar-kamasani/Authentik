@@ -2,6 +2,8 @@ import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { User, Menu, ChevronLeft } from "lucide-react";
 import bell from "../assets/v2/home/header/bell.svg";
+import logo from "../assets/logo-text.png";
+
 export default function MobileHeader({
   onLeftClick,
   title,
@@ -41,9 +43,9 @@ export default function MobileHeader({
         {title ? (
           <span className="text-[20px] font-black text-[#0D4E96]">{title}</span>
         ) : (
-          <h1 className="text-[28px] font-black tracking-tight">
-            <span className="bg-gradient-to-r from-[#0D4E96] to-[#1e3a5f] bg-clip-text text-transparent">Authen</span><span className="bg-gradient-to-r from-[#2CA4D6] to-[#1a5fa8] bg-clip-text text-transparent">tiks</span>
-          </h1>
+          <div className="w-[185px] h-auto">
+            <img src={logo} alt="Authentiks Logo" className="w-full h-auto object-contain" />
+          </div>
         )}
       </div>
 
@@ -57,9 +59,9 @@ export default function MobileHeader({
             rightIcon
           ) : (
             <>
-            <img src={bell} alt="notifications" className="w-6 h-6" />
-            {/* Optional notification dot indicator */}
-            {/* <div className="absolute top-2 right-2 w-2 h-2 bg-[#FF4444] rounded-full animate-pulse" /> */}
+              <img src={bell} alt="notifications" className="w-6 h-6" />
+              {/* Optional notification dot indicator */}
+              {/* <div className="absolute top-2 right-2 w-2 h-2 bg-[#FF4444] rounded-full animate-pulse" /> */}
             </>
           )}
         </button>
