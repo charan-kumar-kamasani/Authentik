@@ -410,6 +410,13 @@ export default function GenerateQrs() {
         }
       }
 
+      // Quantity multiple of 250 check
+      if (quantity % 250 !== 0) {
+        await confirm({ title: 'Validation Failed', description: `QR Quantity must be a multiple of 250 (e.g., 250, 500, 750). Current: ${quantity}`, cancelText: null });
+        setSubmitting(false);
+        return;
+      }
+
       // Warranty fields validation
       const hasAnyWarrantyField = !!(
         warranty.duration ||

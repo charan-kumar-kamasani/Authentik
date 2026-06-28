@@ -54,7 +54,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-white font-sans relative overflow-x-hidden flex flex-col items-center">
-      
+
       {/* Top Header Background SVG */}
       <div className="absolute top-0 left-0 right-0 h-[280px] z-0 overflow-hidden bg-gradient-to-tr from-[#022A85] via-[#053BAE] to-[#106EEA]">
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute top-0 left-0 w-full h-full opacity-30">
@@ -76,21 +76,21 @@ export default function Login() {
 
       {/* Main Content */}
       <div className="relative z-10 w-full max-w-[400px] px-5 pt-8 flex flex-col items-center">
-        
+
         {/* Header Logo & Tagline (Top Left aligned) */}
-        <div className="flex items-start self-start mb-6">
-          <div className="w-[150px] h-[54px] relative flex items-center justify-center mr-2">
-             <img src={logo} alt="Shield" className="w-full h-full object-contain" />
+        <div className="flex items-end self-end mb-6">
+          <div className="w-[170px] h-[54px] relative flex items-center justify-center mr-2">
+            <img src={logo} alt="Shield" className="w-full h-full object-contain" />
           </div>
         </div>
 
         {/* Orbiting Icons & Main Shield */}
         <div className="relative w-full flex justify-center items-center mt-[10px] mb-[20px] h-[220px]">
-          
+
           {/* Faint Concentric Arcs */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-30">
-             <div className="w-[180px] h-[180px] border-[1px] border-[#106EEA] rounded-full absolute"></div>
-             <div className="w-[260px] h-[260px] border-[0.5px] border-[#106EEA] rounded-full absolute"></div>
+            <div className="w-[180px] h-[180px] border-[1px] border-[#106EEA] rounded-full absolute"></div>
+            <div className="w-[260px] h-[260px] border-[0.5px] border-[#106EEA] rounded-full absolute"></div>
           </div>
 
           {/* Orbiting Icons */}
@@ -117,14 +117,14 @@ export default function Login() {
         <h2 className="text-[26px] font-black text-[#1a1a1a] leading-tight text-center mb-1.5 tracking-tight">
           Welcome to <span className="text-[#106EEA]">Authentiks</span>
         </h2>
-        <p className="text-gray-500 text-[14px] mb-8 text-center max-w-[300px] leading-[1.6]">
+        <p className="text-gray-500 text-[13px] mb-8 text-center max-w-[300px] leading-[1.4]">
           Verify products, claim ownership, unlock rewards, and access your product passports.
         </p>
 
         {/* Form Container */}
         <div className="w-full flex flex-col">
           <label className="text-[#1a1a1a] font-bold text-[14px] mb-2.5 ml-1">Enter Mobile Number</label>
-          
+
           {/* Input Field */}
           <div className="relative mb-3.5">
             <div className="bg-white border border-gray-300 rounded-[12px] flex items-center h-[56px] px-3 relative z-0 transition-all shadow-[0_2px_8px_rgba(0,0,0,0.02)] focus-within:border-[#106EEA] focus-within:shadow-[0_0_0_3px_rgba(16,110,234,0.1)]">
@@ -134,7 +134,7 @@ export default function Login() {
                 <ChevronDown className="w-[14px] h-[14px] text-gray-700 stroke-[2.5]" />
                 <span className="text-[#1a1a1a] font-bold text-[15px] ml-1">+91</span>
               </div>
-              
+
               {/* Vertical Divider */}
               <div className="w-[1px] h-[24px] bg-gray-200 mx-3"></div>
 
@@ -152,11 +152,11 @@ export default function Login() {
               />
             </div>
           </div>
-          
+
           {/* Security note with lock icon */}
           <div className="flex items-center gap-2 mb-6 text-gray-500 text-[12px] px-1">
             <div className="w-[20px] h-[20px] rounded-[6px] bg-[#EEF4FF] flex items-center justify-center flex-shrink-0">
-               <Lock className="w-[12px] h-[12px] text-[#106EEA] stroke-[2.5]" />
+              <Lock className="w-[12px] h-[12px] text-[#106EEA] stroke-[2.5]" />
             </div>
             <p>We'll send a One-Time Password (OTP) to verify your identity.</p>
           </div>
@@ -179,37 +179,37 @@ export default function Login() {
         </div>
 
         {/* 4 Feature Highlights Strip */}
-        <div className="w-full bg-white rounded-[16px] py-4 px-2 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 flex justify-between mb-6">
+        <div className="w-full bg-white rounded-[16px] py-4 px-2 shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-gray-100 flex justify-between mb-4">
           <div className="flex flex-col items-center gap-2 w-1/4">
             <div className="w-10 h-10 rounded-full border-[1.5px] border-[#EBF2FC] bg-white flex items-center justify-center shadow-sm">
               <ShieldCheck className="w-[18px] h-[18px] text-[#106EEA] stroke-[2]" />
             </div>
-            <span className="text-[10px] text-center font-semibold text-gray-600 leading-[1.2]">Secure<br/>Login</span>
+            <span className="text-[10px] text-center font-semibold text-gray-600 leading-[1.2]">Secure<br />Login</span>
           </div>
           <div className="flex flex-col items-center gap-2 w-1/4 border-l border-gray-100">
             <div className="w-10 h-10 rounded-full border-[1.5px] border-[#EBF2FC] bg-white flex items-center justify-center shadow-sm">
               <Lock className="w-[18px] h-[18px] text-[#106EEA] stroke-[2]" />
             </div>
-            <span className="text-[10px] text-center font-semibold text-gray-600 leading-[1.2]">Privacy<br/>Protected</span>
+            <span className="text-[10px] text-center font-semibold text-gray-600 leading-[1.2]">Privacy<br />Protected</span>
           </div>
           <div className="flex flex-col items-center gap-2 w-1/4 border-l border-gray-100">
             <div className="w-10 h-10 rounded-full border-[1.5px] border-[#EBF2FC] bg-white flex items-center justify-center shadow-sm">
               <User className="w-[18px] h-[18px] text-[#106EEA] stroke-[2]" />
             </div>
-            <span className="text-[10px] text-center font-semibold text-gray-600 leading-[1.2]">No Password<br/>Required</span>
+            <span className="text-[10px] text-center font-semibold text-gray-600 leading-[1.2]">No Password<br />Required</span>
           </div>
           <div className="flex flex-col items-center gap-2 w-1/4 border-l border-gray-100">
             <div className="w-10 h-10 rounded-full border-[1.5px] border-[#EBF2FC] bg-white flex items-center justify-center shadow-sm">
               <Users className="w-[18px] h-[18px] text-[#106EEA] stroke-[2]" />
             </div>
-            <span className="text-[10px] text-center font-semibold text-gray-600 leading-[1.2]">One Account<br/>For All Products</span>
+            <span className="text-[10px] text-center font-semibold text-gray-600 leading-[1.2]">One Account<br />For All Products</span>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="w-full flex items-center justify-center gap-3 mb-8 px-2">
-          <ShieldCheck className="w-[20px] h-[20px] text-[#106EEA] stroke-[2]" />
-          <p className="text-[#555555] text-[12px] font-medium leading-relaxed">
+        <div className="w-full flex items-center justify-center gap-2 mb-8 px-2">
+          <ShieldCheck className="w-[16px] h-[16px] text-[#106EEA] stroke-[2]" />
+          <p className="text-[#555555] text-[8px] font-medium leading-relaxed">
             By continuing, you agree to our <Link to="/terms-conditions" className="font-bold text-[#106EEA]">Terms of Use</Link> and <Link to="/privacy-policy" className="font-bold text-[#106EEA]">Privacy Policy</Link>.
           </p>
         </div>

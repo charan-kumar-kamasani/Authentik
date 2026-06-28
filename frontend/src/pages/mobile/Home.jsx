@@ -103,47 +103,63 @@ export default function Home() {
             const timeStr = dateObj.toLocaleTimeString("en-US", {
               hour: "2-digit",
               minute: "2-digit",
-              hour12: true,
+              hour12: true
             });
 
-            const title = item.productName || item.brandId?.brandName || "Premium Product";
-            const code = item.productCode || item.batchId || `AUTH-${Math.floor(10000 + Math.random() * 90000)}-${Math.floor(1000 + Math.random() * 9000)}`;
-
+            let type = "Verified";
             let statusLabel = "Verified";
+            let statusText = "Verified Authentic";
             let badgeColor = "text-[#10B981]";
+            let badgeBorder = "border-[#10B981]/30";
             let badgeBg = "bg-[#ECFDF5]";
-            let dotColor = "bg-[#10B981]";
-            
+            let statusIcon = "verified";
+
             let brandLogo = item.brandId?.brandLogo || null;
-            if (item.status === "FAKE" || item.status === "INACTIVE") {
-              brandLogo = null;
-            }
 
             if (item.status === "FAKE" || item.status === "INACTIVE") {
+              type = "Counterfeit";
               statusLabel = "Counterfeit";
+              statusText = "This product is identified as counterfeit. Please be cautious.";
               badgeColor = "text-[#EF4444]";
+              badgeBorder = "border-[#EF4444]/30";
               badgeBg = "bg-[#FEF2F2]";
-              dotColor = "bg-[#EF4444]";
+              statusIcon = "counterfeit";
             } else if (item.status === "ALREADY_USED" || item.status === "DUPLICATE") {
-              statusLabel = "Alert";
+              type = "Duplicate";
+              statusLabel = "Duplicate";
+              statusText = "This product has been scanned before";
               badgeColor = "text-[#F59E0B]";
+              badgeBorder = "border-[#F59E0B]/30";
               badgeBg = "bg-[#FFFBEB]";
-              dotColor = "bg-[#F59E0B]";
+              statusIcon = "alert";
             }
+
+            const prod = item.productId || {};
+            const category = prod.category || item.category || "Product";
+            const brandName = item.brandId?.brandName || item.brandName || "";
+            const productName = item.productName || prod.productName || "Unknown Product";
+
+            const cardTitle = brandName ? (productName.toLowerCase().includes(brandName.toLowerCase()) ? productName : `${brandName} ${productName}`) : productName;
 
             return {
               id: item._id,
-              status: item.status, // Store status to determine icon inline
-              title,
-              code,
-              date: `${day} ${monthName} ${year}`,
-              time: timeStr,
-              statusLabel,
-              badgeColor,
-              badgeBg,
-              dotColor,
+              type,
+              cardTitle,
+              productName,
+              brandName,
+              category,
+              sn: item.qrCode || "Unknown",
+              scannedDate: `${day} ${monthName} ${year}`,
+              scannedTime: timeStr,
               brandLogo,
-              fullData: item
+              statusLabel,
+              statusText,
+              badgeColor,
+              badgeBorder,
+              badgeBg,
+              statusIcon,
+              fullData: item,
+              status: item.status
             };
           });
 
@@ -300,73 +316,50 @@ export default function Home() {
               </div>
             ) : (
               recentScans.slice(0, 4).map((scan, index) => {
-                let statusBadgeIcon = "verified";
-                let iconComponent = <img src={logoShield} alt="Verified" className="w-[26px] h-[26px] object-contain drop-shadow-sm" />;
-                
-                if (scan.status === "FAKE" || scan.status === "INACTIVE") {
-                  statusBadgeIcon = "counterfeit";
-                  iconComponent = <RedShieldX />;
-                } else if (scan.status === "ALREADY_USED" || scan.status === "DUPLICATE") {
-                  statusBadgeIcon = "alert";
-                  iconComponent = <OrangeAlertTriangle />;
-                }
-
                 return (
-                  <div key={index} onClick={() => handleRecentScanClick(scan)} className="w-full flex items-center py-3.5 border-b border-gray-100 last:border-0 cursor-pointer active:bg-gray-50 transition-colors">
-                    {/* Brand Logo with Status Badge */}
-                    <div className="relative w-[46px] h-[46px] flex-shrink-0 mr-4">
-                      {/* Logo Circle */}
-                      <div className="w-full h-full rounded-full bg-[#F5F5F5] border-2 border-[#E8E8E8] flex items-center justify-center overflow-hidden">
-                        {scan.brandLogo ? (
-                          <img
-                            src={scan.brandLogo}
-                            alt={scan.title}
-                            className="w-[30px] h-[30px] object-contain"
-                          />
-                        ) : (
-                          <div className="w-[26px] h-[26px] flex items-center justify-center">
-                            {iconComponent}
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* Status Badge Overlay */}
-                      <div className={`absolute -bottom-0.5 -right-0.5 w-[20px] h-[20px] rounded-full flex items-center justify-center border-2 border-white shadow-sm ${
-                        statusBadgeIcon === 'verified' 
-                          ? 'bg-[#2CA4D6]'
-                          : statusBadgeIcon === 'alert'
-                          ? 'bg-[#F59E0B]'
-                          : 'bg-[#DC2626]'
-                      }`}>
-                        {statusBadgeIcon === 'verified' ? (
-                          <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        ) : statusBadgeIcon === 'alert' ? (
-                          <span className="text-white text-[11px] font-bold leading-none mb-[1px]">!</span>
-                        ) : (
-                          <svg className="w-2 h-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        )}
-                      </div>
+                  <div
+                    key={index}
+                    onClick={() => handleRecentScanClick(scan)}
+                    className="bg-white rounded-[20px] p-3.5 flex gap-3.5 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#F1F5F9] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300 active:scale-[0.98] mb-3"
+                  >
+                    {/* Brand Logo Container */}
+                    <div className="w-[60px] h-[60px] rounded-[14px] border border-[#F1F5F9] flex items-center justify-center flex-shrink-0 overflow-hidden bg-white shadow-sm p-2">
+                      {scan.brandLogo ? (
+                        <img src={scan.brandLogo} alt={scan.cardTitle} className="w-full h-full object-contain" />
+                      ) : (
+                        <span className="text-[10px] font-bold text-gray-400">LOGO</span>
+                      )}
                     </div>
-                    {/* Texts */}
-                    <div className="flex flex-col flex-1 min-w-0 pr-2 gap-[3px]">
-                      <span className="text-[#0B1E36] text-[13.5px] font-extrabold truncate leading-tight">{scan.title}</span>
-                      <span className="text-[#829AB1] text-[11px] truncate">{scan.code}</span>
-                      <div className="flex items-center gap-1.5 text-[#A0AEC0] text-[10px] font-medium mt-[1px]">
-                        <Calendar className="w-[10px] h-[10px]" />
-                        {scan.date}, {scan.time}
+
+                    {/* Content Container (Flex Column) */}
+                    <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+
+                      {/* Top Row: Title & Badge */}
+                      <div className="flex justify-between items-start gap-2 mb-1">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-extrabold text-[15px] text-[#0F172A] leading-tight truncate">
+                            {scan.productName}
+                          </h4>
+                          <p className="text-[12px] text-[#64748B] truncate mt-0.5 font-medium">{scan.brandName || "Unknown Brand"}</p>
+                        </div>
+
+                        {/* Status Badge */}
+                        <div className={`flex-shrink-0 inline-flex items-center gap-1 text-[9px] font-bold tracking-wider uppercase ${scan.badgeColor} px-2 py-1 rounded-[6px] border ${scan.badgeBorder} ${scan.badgeBg}`}>
+                          {scan.statusIcon === 'verified' && <ShieldCheck className="w-2.5 h-2.5" strokeWidth={3} />}
+                          {scan.statusIcon === 'alert' && <AlertTriangle className="w-2.5 h-2.5" strokeWidth={3} />}
+                          {scan.statusLabel}
+                        </div>
                       </div>
-                    </div>
-                    {/* Pill & Arrow */}
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
-                       <div className={`flex items-center gap-1.5 px-3 py-[4px] rounded-full text-[11px] font-bold ${scan.badgeColor} ${scan.badgeBg}`}>
-                         <div className={`w-[5px] h-[5px] rounded-full ${scan.dotColor}`}></div>
-                         {scan.statusLabel}
-                       </div>
-                       <ChevronRight className="w-[16px] h-[16px] text-gray-300 stroke-[2.5]" />
+
+                      {/* Bottom Row: Date/Time/Chevron */}
+                      <div className="flex justify-between items-center mt-auto pt-2">
+                        <div className="flex items-center gap-1.5 text-[#94A3B8] text-[11px] font-semibold">
+                          <Calendar className="w-3.5 h-3.5" strokeWidth={2} />
+                          <span>{scan.scannedDate}, {scan.scannedTime}</span>
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-[#CBD5E1]" strokeWidth={2.5} />
+                      </div>
+
                     </div>
                   </div>
                 );
