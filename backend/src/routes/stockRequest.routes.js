@@ -25,7 +25,8 @@ router.post('/', protect, authorize('company', 'authorizer', 'admin'), async (re
       companyId,
       requestedBy: req.user._id,
       quantity,
-      notes
+      notes,
+      amount: quantity * 1 // Default pricing: 1 Rs per QR
     });
 
     res.status(201).json(request);
@@ -98,6 +99,11 @@ router.put('/:id/status', protect, authorize('superadmin'), async (req, res) => 
       return res.status(404).json({ error: 'Stock request not found' });
     }
 
+    // Ensure payment is completed before dispatching
+    if (["Preparing for Dispatch", "Dispatched"].includes(status) && request.paymentStatus !== "paid") {
+      return res.status(400).json({ error: 'Cannot dispatch unpaid stock requests. Ensure payment is completed first.' });
+    }
+
     request.status = status;
     request.fulfilledBy = req.user._id;
     await request.save();
@@ -106,6 +112,35 @@ router.put('/:id/status', protect, authorize('superadmin'), async (req, res) => 
   } catch (error) {
     console.error('Update Stock Request Status Error:', error);
     res.status(500).json({ error: 'Failed to update stock request status' });
+  }
+});
+
+// @route   PUT /api/stock-requests/:id/update-amount
+// @desc    Update stock request payment amount
+// @access  Superadmin
+router.put('/:id/update-amount', protect, authorize('superadmin'), async (req, res) => {
+  try {
+    const { amount } = req.body;
+    if (amount === undefined || amount < 0) {
+      return res.status(400).json({ error: 'Valid amount is required' });
+    }
+
+    const request = await StockRequest.findById(req.params.id);
+    if (!request) {
+      return res.status(404).json({ error: 'Stock request not found' });
+    }
+
+    if (request.paymentStatus === 'paid') {
+      return res.status(400).json({ error: 'Cannot update amount for a paid request' });
+    }
+
+    request.amount = amount;
+    await request.save();
+
+    res.json({ message: 'Payment amount updated', request });
+  } catch (error) {
+    console.error('Update Stock Request Amount Error:', error);
+    res.status(500).json({ error: 'Failed to update amount' });
   }
 });
 

@@ -377,7 +377,7 @@ function ResultAuthentic({ data }: { data: any }) {
         {/* Floating Sparkles/Particles */}
         <div className="absolute top-[30%] left-[20%] w-6 h-6 opacity-40 text-[#4CC9F0] animate-pulse" style={{ animationDuration: '2s' }}>✨</div>
         <div className="absolute top-[20%] right-[25%] w-8 h-8 opacity-40 text-[#4CC9F0] animate-bounce" style={{ animationDuration: '3s' }}>✨</div>
-        <div className="absolute bottom-[40%] right-[15%] w-5 h-5 opacity-40 text-white animate-pulse" style={{ animationDuration: '1.5s', animationDelay: '0.5s' }}>⭐</div>
+        <div className="absolute bottom-[40%] right-[15%] w-5 h-5 opacity-40 text-[#4CC9F0] animate-pulse" style={{ animationDuration: '1.5s', animationDelay: '0.5s' }}>✨</div>
         
         {/* Top Header Row */}
         <div className="flex items-center justify-between mb-6 relative z-50">
@@ -521,7 +521,9 @@ function ResultAuthentic({ data }: { data: any }) {
             </div>
             <div className="flex flex-col flex-1 text-left relative z-10">
                <span className="text-[15px] font-extrabold mb-0.5">{warrantyClaimed ? "Warranty Registered" : "Register Warranty"}</span>
-               <span className="text-[11px] font-medium text-emerald-100">Activate your product protection</span>
+               <span className="text-[11px] font-medium text-emerald-100">
+                 {warrantyClaimed ? "Your product warranty is active" : "Activate your product protection"}
+               </span>
             </div>
             <ChevronRight className="w-5 h-5 text-white/80 relative z-10" />
           </button>
@@ -558,7 +560,9 @@ function ResultAuthentic({ data }: { data: any }) {
           </div>
           <div className="flex flex-col flex-1 text-left relative z-10">
              <span className="text-[15px] font-extrabold mb-0.5">{isReviewed ? "Product Reviewed" : "Review & Claim Reward"}</span>
-             <span className="text-[11px] font-medium text-[#B3C8F9]">Share your experience and earn exciting rewards!</span>
+             <span className="text-[11px] font-medium text-[#B3C8F9]">
+               {isReviewed ? "Thank you for your valuable feedback!" : "Share your experience and earn exciting rewards!"}
+             </span>
           </div>
           <ChevronRight className="w-5 h-5 text-white/80 relative z-10" />
         </button>
@@ -575,7 +579,17 @@ function ResultAuthentic({ data }: { data: any }) {
             
             <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
                {recommendations.map((item: any, index: number) => (
-                 <div key={item.id || item._id || index} className="snap-start flex-shrink-0 w-[170px] bg-white rounded-[20px] p-4 flex flex-col shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-gray-100 relative">
+                 <div 
+                   key={item.id || item._id || index} 
+                   onClick={() => navigate("/product-details", { 
+                     state: { 
+                       ...item, 
+                       productName: item.title || item.productName, 
+                       productImage: item.image || item.productImage 
+                     } 
+                   })}
+                   className="snap-start flex-shrink-0 w-[170px] bg-white rounded-[20px] p-4 flex flex-col shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-gray-100 relative cursor-pointer active:scale-95 transition-transform"
+                 >
                    <div className="w-full h-[150px] bg-[#F8F9FA] rounded-[14px] p-2 flex items-center justify-center mb-4 relative">
                      <img src={item.image || item.productImage || 'https://via.placeholder.com/150'} alt={item.title || item.productName} className="w-full h-full object-contain mix-blend-multiply" />
                      {/* Rating/Feature Badge overlapping bottom right */}

@@ -10,9 +10,10 @@ const paymentChargeSchema = new mongoose.Schema({
 const paymentSchema = new mongoose.Schema({
     companyId:            { type: mongoose.Schema.Types.ObjectId, ref: 'Company', required: true },
     creditTransactionId:  { type: mongoose.Schema.Types.ObjectId, ref: 'CreditTransaction', default: null },
-    type:                 { type: String, enum: ['plan', 'topup', 'order'], required: true },
+    type:                 { type: String, enum: ['plan', 'topup', 'order', 'stock_request'], required: true },
     planId:               { type: mongoose.Schema.Types.ObjectId, ref: 'PricePlan', default: null },
     orderId:              { type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: null },
+    stockRequestId:       { type: mongoose.Schema.Types.ObjectId, ref: 'StockRequest', default: null },
     quantity:             { type: Number, default: 0 }, // for topup
 
     baseAmount:           { type: Number, required: true },

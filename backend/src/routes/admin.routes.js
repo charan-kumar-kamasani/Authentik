@@ -1969,7 +1969,13 @@ router.put('/test-accounts/:id', protect, authorize('superadmin'), async (req, r
 // Delete test account (superadmin only)
 router.delete('/test-accounts/:id', protect, authorize('superadmin'), async (req, res) => {
     try {
-        const testAccount = await TestAccount.findById(req.params.id);
+        let testAccount;
+        if (req.params.id.length === 24) {
+            testAccount = await TestAccount.findOne({ 
+                $or: [ { _id: req.params.id }, { companyId: req.params.id } ] 
+            });
+        }
+        
         if (!testAccount) {
             return res.status(404).json({ 
                 success: false, 

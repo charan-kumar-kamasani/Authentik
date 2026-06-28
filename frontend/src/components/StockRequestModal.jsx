@@ -19,8 +19,12 @@ export default function StockRequestModal({ isOpen, onClose }) {
     setSuccess('');
 
     const qty = parseInt(quantity);
-    if (!qty || qty < 1) {
-      setError('Please enter a valid quantity.');
+    if (!qty || qty < 5000) {
+      setError('Minimum request quantity is 5000.');
+      return;
+    }
+    if (qty % 1000 !== 0) {
+      setError('Quantity must be in multiples of 1000 (e.g., 5000, 6000, 7000).');
       return;
     }
 
@@ -90,13 +94,17 @@ export default function StockRequestModal({ isOpen, onClose }) {
               <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Quantity Required</label>
               <input
                 type="number"
-                min="1"
+                min="5000"
+                step="1000"
                 required
                 value={quantity}
                 onChange={e => setQuantity(e.target.value)}
                 placeholder="e.g. 5000"
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
               />
+              <p className="text-xs text-slate-500 mt-2">
+                Minimum 5000 QRs. Requests must be in increments of 1000 (e.g., 5000, 6000, 7000).
+              </p>
             </div>
             <div>
               <label className="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Notes (Optional)</label>

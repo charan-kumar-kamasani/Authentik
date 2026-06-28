@@ -381,16 +381,16 @@ const OrderManagement = () => {
         reject: 'Order rejected successfully.'
       };
 
+      if (action === 'dispatch') setShowDispatchModal(null);
+      if (action === 'process') setProcessModal({ isOpen: false, order: null, bonusQuantity: 0 });
+      await fetchOrders();
+
       await confirm({
         title: 'Success!',
         description: successMessages[action] || 'Action completed successfully!',
         confirmText: 'Done',
         cancelText: null
       });
-      
-      if (action === 'dispatch') setShowDispatchModal(null);
-      if (action === 'process') setProcessModal({ isOpen: false, order: null, bonusQuantity: 0 });
-      await fetchOrders();
     } catch (e) {
       await confirm({ title: 'Action Failed', description: 'Failed: ' + e.message, cancelText: null });
     } finally {

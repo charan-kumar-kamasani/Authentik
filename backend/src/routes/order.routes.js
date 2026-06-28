@@ -104,14 +104,7 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
 
     const quantityNumber = Number(quantityFinal) || 0;
 
-    // Hard minimum: 1000 units required
-    if (quantityNumber < 1000) {
-      return res.status(400).json({
-        message: `Minimum order quantity is 1000 units. You entered ${quantityNumber}.`,
-        minRequired: 1000
-      });
-    }
-
+    // Minimum quantity validation removed.
     // Description word limit: 200 words max
     const descText = (req.body.description || req.body.productInfo || '').trim();
     if (descText) {

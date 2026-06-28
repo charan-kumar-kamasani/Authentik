@@ -82,8 +82,8 @@ async function calculateBreakdown(baseAmount, couponCode) {
 // ─── Initiate Payment ───
 router.post('/initiate', protect, async (req, res) => {
     try {
-        const { type, planId, orderId, quantity, couponCode, redirectUrl: customRedirectUrl } = req.body;
-        if (!['plan', 'topup', 'order'].includes(type)) return res.status(400).json({ message: 'Invalid payment type' });
+        const { type, planId, orderId, stockRequestId, quantity, couponCode, redirectUrl: customRedirectUrl } = req.body;
+        if (!['plan', 'topup', 'order', 'stock_request'].includes(type)) return res.status(400).json({ message: 'Invalid payment type' });
 
         const user = await User.findById(req.user._id);
         if (!user || !user.companyId) return res.status(400).json({ message: 'User not linked to a company' });
@@ -94,6 +94,7 @@ router.post('/initiate', protect, async (req, res) => {
         let plan = null;
         let topupQty = 0;
         let order = null;
+        let stockRequest = null;
 
         if (type === 'plan') {
             plan = await PricePlan.findById(planId);
@@ -112,6 +113,11 @@ router.post('/initiate', protect, async (req, res) => {
 
             const pricing = await calculateQrPrice(order.quantity);
             baseAmount = pricing.amount;
+        } else if (type === 'stock_request') {
+            const StockRequest = require('../models/StockRequest');
+            stockRequest = await StockRequest.findById(stockRequestId);
+            if (!stockRequest) return res.status(404).json({ message: 'Stock request not found' });
+            baseAmount = stockRequest.amount;
         } else {
             topupQty = parseInt(quantity) || 0;
             if (topupQty <= 0) return res.status(400).json({ message: 'Invalid quantity' });
@@ -149,6 +155,7 @@ router.post('/initiate', protect, async (req, res) => {
             type,
             planId: plan ? plan._id : null,
             orderId: order ? order._id : null,
+            stockRequestId: stockRequestId || null,
             quantity: topupQty,
             baseAmount,
             gstPercentage: breakdown.gstPercentage,
@@ -317,6 +324,18 @@ async function addCreditsFromPayment(payment, company, user) {
         if (order) {
             creditsToAdd = order.quantity || 0;
         }
+    } else if (payment.type === 'stock_request' && payment.stockRequestId) {
+        // Stock requests don't add digital QR credits immediately.
+        // We just need to mark the stock request as paid.
+        const StockRequest = require('../models/StockRequest');
+        const stockReq = await StockRequest.findById(payment.stockRequestId);
+        if (stockReq) {
+            stockReq.paymentStatus = 'paid';
+            stockReq.paymentId = payment._id;
+            await stockReq.save();
+            console.log(`✅ Stock Request ${stockReq._id} marked as paid.`);
+        }
+        return { stockRequestPaid: true }; // early return since no digital credits to add
     }
 
     // Common logic for adding purchased credits to balance

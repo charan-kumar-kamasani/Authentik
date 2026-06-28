@@ -75,67 +75,102 @@ const QRStockDashboard = () => {
     }
   };
 
+  const handlePayment = async (requestId) => {
+    try {
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      const res = await fetch(`${API_BASE_URL}/payments/initiate`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}` 
+        },
+        body: JSON.stringify({
+          type: 'stock_request',
+          stockRequestId: requestId,
+          redirectUrl: `${window.location.origin}/admin/qr-inventory`
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.redirectUrl) {
+        window.location.href = data.redirectUrl;
+      } else {
+        alert(data.message || 'Failed to initiate payment');
+      }
+    } catch (err) {
+      alert('An error occurred while initiating payment.');
+    }
+  };
+
   const getStatusBadge = (status) => {
     switch (status) {
       case 'Received':
       case 'Fulfilled':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">
-            <CheckCircle2 size={12} /> Received
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+            <CheckCircle2 size={12} className="text-emerald-500" /> Received
           </span>
         );
       case 'Dispatched':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700 border border-purple-200">
-            <Package size={12} /> Dispatched
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black bg-purple-500/10 text-purple-600 border border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
+            <Package size={12} className="text-purple-500 animate-bounce" /> Dispatched
           </span>
         );
       case 'Preparing for Dispatch':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-200">
-            <Box size={12} /> Preparing
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black bg-blue-500/10 text-blue-600 border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.15)]">
+            <Box size={12} className="text-blue-500" /> Preparing
           </span>
         );
       case 'Approved':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700 border border-indigo-200">
-            <CheckCircle2 size={12} /> Approved
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black bg-indigo-500/10 text-indigo-600 border border-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.15)]">
+            <CheckCircle2 size={12} className="text-indigo-500" /> Approved
           </span>
         );
       case 'Rejected':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-700 border border-rose-200">
-            <XCircle size={12} /> Rejected
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black bg-rose-500/10 text-rose-600 border border-rose-500/20 shadow-[0_0_15px_rgba(244,63,94,0.15)]">
+            <XCircle size={12} className="text-rose-500" /> Rejected
           </span>
         );
       case 'Pending':
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-200">
-            <Clock size={12} /> Pending
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-black bg-amber-500/10 text-amber-600 border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
+            <Clock size={12} className="text-amber-500" /> Pending
           </span>
         );
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-8">
-      <div className="max-w-[1700px] mx-auto">
-        <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6 px-4">
+    <div className="min-h-screen bg-slate-50 relative overflow-hidden p-4 md:p-8">
+      {/* Decorative Background Elements */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-400/20 rounded-full blur-3xl mix-blend-multiply opacity-70 animate-pulse pointer-events-none"></div>
+      <div className="absolute top-[20%] right-[-5%] w-[30%] h-[50%] bg-indigo-400/20 rounded-full blur-3xl mix-blend-multiply opacity-70 animate-pulse pointer-events-none" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute bottom-[-10%] left-[20%] w-[40%] h-[40%] bg-emerald-400/20 rounded-full blur-3xl mix-blend-multiply opacity-70 animate-pulse pointer-events-none" style={{ animationDelay: '4s' }}></div>
+
+      <div className="max-w-[1700px] mx-auto relative z-10">
+        <header className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6 px-4">
           <div className="animate-in slide-in-from-left duration-700">
-            <h2 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-3 flex items-center gap-4">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">QR Inventory</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-100/50 border border-blue-200/50 mb-4 backdrop-blur-sm">
+              <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+              <span className="text-xs font-bold text-blue-800 tracking-wide uppercase">Inventory Dashboard</span>
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-3 flex items-center gap-4">
+              QR Stock Center
             </h2>
-            <p className="text-gray-500 font-bold text-lg max-w-2xl">
-              Manage your company's physical QR stock and view request history.
+            <p className="text-slate-500 font-medium text-lg max-w-2xl leading-relaxed">
+              Monitor your physical QR stock, track generation history, and seamlessly request new batches.
             </p>
           </div>
           <div className="flex gap-3 animate-in slide-in-from-right duration-700">
             <button
               onClick={() => setShowRequestModal(true)}
-              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-[1.25rem] font-black text-sm hover:shadow-xl hover:shadow-blue-500/30 active:scale-95 transition-all uppercase tracking-widest flex items-center gap-2"
+              className="px-8 py-3.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 bg-[length:200%_auto] text-white rounded-2xl font-black text-sm shadow-[0_0_40px_-10px_rgba(79,70,229,0.5)] hover:shadow-[0_0_60px_-15px_rgba(79,70,229,0.7)] hover:bg-[position:right_center] active:scale-95 transition-all uppercase tracking-widest flex items-center gap-2 group"
             >
-              <Box className="w-5 h-5" />
+              <Box className="w-5 h-5 group-hover:rotate-12 transition-transform" />
               Request QR Stock
             </button>
           </div>
@@ -148,44 +183,45 @@ const QRStockDashboard = () => {
         ) : (
           <div className="space-y-6">
             {/* Stats Cards */}
+            {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="bg-white rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
-                <div className="relative">
-                  <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mb-6">
+              <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 relative overflow-hidden group hover:-translate-y-2 transition-all duration-300 hover:shadow-[0_20px_40px_rgb(16,185,129,0.1)]">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-bl-full -mr-16 -mt-16 transition-transform duration-500 group-hover:scale-150 blur-2xl"></div>
+                <div className="relative z-10">
+                  <div className="w-14 h-14 bg-emerald-100/80 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 shadow-inner border border-emerald-200/50 group-hover:scale-110 transition-transform duration-300">
                     <ShieldCheck size={28} />
                   </div>
-                  <p className="text-slate-500 font-bold mb-2">Available QRs</p>
-                  <h3 className="text-5xl font-black text-slate-800 tracking-tight">{stats.available.toLocaleString()}</h3>
-                  <p className="text-sm text-emerald-600 font-medium mt-3 flex items-center gap-1.5">
-                    <CheckCircle2 size={14} /> Ready to be mapped
+                  <p className="text-slate-500 font-bold mb-2 uppercase tracking-wider text-xs">Available QRs</p>
+                  <h3 className="text-5xl font-black text-slate-800 tracking-tighter drop-shadow-sm">{stats.available.toLocaleString()}</h3>
+                  <p className="text-sm text-emerald-600 font-bold mt-4 flex items-center gap-2 bg-emerald-50/80 inline-flex px-3 py-1.5 rounded-lg border border-emerald-100/50">
+                    <CheckCircle2 size={16} className="animate-pulse" /> Ready to be mapped
                   </p>
                 </div>
               </div>
 
-              <div className="bg-white rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
-                <div className="relative">
-                  <div className="w-14 h-14 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mb-6">
+              <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 relative overflow-hidden group hover:-translate-y-2 transition-all duration-300 hover:shadow-[0_20px_40px_rgb(79,70,229,0.1)]">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-bl-full -mr-16 -mt-16 transition-transform duration-500 group-hover:scale-150 blur-2xl"></div>
+                <div className="relative z-10">
+                  <div className="w-14 h-14 bg-indigo-100/80 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-inner border border-indigo-200/50 group-hover:scale-110 transition-transform duration-300">
                     <Layers size={28} />
                   </div>
-                  <p className="text-slate-500 font-bold mb-2">Total QRs Bought</p>
-                  <h3 className="text-5xl font-black text-slate-800 tracking-tight">{stats.total.toLocaleString()}</h3>
-                  <p className="text-sm text-indigo-600 font-medium mt-3 flex items-center gap-1.5">
-                    <Activity size={14} /> Total allocated to company
+                  <p className="text-slate-500 font-bold mb-2 uppercase tracking-wider text-xs">Total QRs Bought</p>
+                  <h3 className="text-5xl font-black text-slate-800 tracking-tighter drop-shadow-sm">{stats.total.toLocaleString()}</h3>
+                  <p className="text-sm text-indigo-600 font-bold mt-4 flex items-center gap-2 bg-indigo-50/80 inline-flex px-3 py-1.5 rounded-lg border border-indigo-100/50">
+                    <Activity size={16} /> Total allocated
                   </p>
                 </div>
               </div>
 
-              <div className="bg-white rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-bl-full -mr-16 -mt-16 transition-transform group-hover:scale-110"></div>
-                <div className="relative">
-                  <div className="w-14 h-14 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center mb-6">
+              <div className="bg-white/70 backdrop-blur-xl rounded-[2rem] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 relative overflow-hidden group hover:-translate-y-2 transition-all duration-300 hover:shadow-[0_20px_40px_rgb(100,116,139,0.1)]">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-slate-500/10 rounded-bl-full -mr-16 -mt-16 transition-transform duration-500 group-hover:scale-150 blur-2xl"></div>
+                <div className="relative z-10">
+                  <div className="w-14 h-14 bg-slate-100/80 text-slate-600 rounded-2xl flex items-center justify-center mb-6 shadow-inner border border-slate-200/50 group-hover:scale-110 transition-transform duration-300">
                     <Package size={28} />
                   </div>
-                  <p className="text-slate-500 font-bold mb-2">Used QRs</p>
-                  <h3 className="text-5xl font-black text-slate-800 tracking-tight">{stats.used.toLocaleString()}</h3>
-                  <p className="text-sm text-slate-500 font-medium mt-3 flex items-center gap-1.5">
+                  <p className="text-slate-500 font-bold mb-2 uppercase tracking-wider text-xs">Used QRs</p>
+                  <h3 className="text-5xl font-black text-slate-800 tracking-tighter drop-shadow-sm">{stats.used.toLocaleString()}</h3>
+                  <p className="text-sm text-slate-600 font-bold mt-4 flex items-center gap-2 bg-slate-100/80 inline-flex px-3 py-1.5 rounded-lg border border-slate-200/50">
                     Generated and mapped
                   </p>
                 </div>
@@ -193,18 +229,18 @@ const QRStockDashboard = () => {
             </div>
 
             {/* Tabs & Table */}
-            <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700">
-              <div className="border-b border-slate-100 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex px-6 pt-4 gap-8">
+            <div className="bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white/50 overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700 mt-8">
+              <div className="p-6 border-b border-slate-100/50 flex flex-col items-center sm:flex-row sm:justify-between gap-6">
+                <div className="bg-slate-100/80 p-1.5 rounded-2xl inline-flex shadow-inner">
                   <button 
                     onClick={() => setActiveTab('requests')}
-                    className={`pb-4 text-sm font-bold border-b-2 transition-colors ${activeTab === 'requests' ? 'border-blue-600 text-blue-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                    className={`px-6 py-2.5 text-sm font-black rounded-xl transition-all duration-300 ${activeTab === 'requests' ? 'bg-white text-blue-700 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
                   >
                     Stock Request History
                   </button>
                   <button 
                     onClick={() => setActiveTab('usage')}
-                    className={`pb-4 text-sm font-bold border-b-2 transition-colors ${activeTab === 'usage' ? 'border-indigo-600 text-indigo-700' : 'border-transparent text-slate-500 hover:text-slate-700'}`}
+                    className={`px-6 py-2.5 text-sm font-black rounded-xl transition-all duration-300 ${activeTab === 'usage' ? 'bg-white text-indigo-700 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'}`}
                   >
                     QR Usage History
                   </button>
@@ -214,27 +250,27 @@ const QRStockDashboard = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-white border-b border-slate-100">
+                    <tr className="bg-slate-50/80 border-b border-slate-100/50">
                       {activeTab === 'requests' ? (
                         <>
-                          <th className="py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Requested Date</th>
-                          <th className="py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Quantity</th>
-                          <th className="py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Requested By</th>
-                          <th className="py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Notes</th>
-                          <th className="py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Status</th>
+                          <th className="py-5 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap rounded-tl-xl">Requested Date</th>
+                          <th className="py-5 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Quantity</th>
+                          <th className="py-5 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Requested By</th>
+                          <th className="py-5 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Notes</th>
+                          <th className="py-5 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right rounded-tr-xl">Status</th>
                         </>
                       ) : (
                         <>
-                          <th className="py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">Used Date</th>
-                          <th className="py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Quantity Used</th>
-                          <th className="py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">QR Serials</th>
-                          <th className="py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Order ID</th>
-                          <th className="py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Product & Brand</th>
+                          <th className="py-5 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap rounded-tl-xl">Used Date</th>
+                          <th className="py-5 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Quantity Used</th>
+                          <th className="py-5 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">QR Serials</th>
+                          <th className="py-5 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Order ID</th>
+                          <th className="py-5 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest rounded-tr-xl">Product & Brand</th>
                         </>
                       )}
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-slate-50">
                     {activeTab === 'requests' ? (
                       requests.length === 0 ? (
                         <tr>
@@ -244,29 +280,47 @@ const QRStockDashboard = () => {
                         </tr>
                       ) : (
                         requests.map(req => (
-                          <tr key={req._id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                            <td className="py-4 px-6 text-sm font-semibold text-slate-700 whitespace-nowrap">
+                          <tr key={req._id} className="hover:bg-blue-50/30 transition-all duration-300 group">
+                            <td className="py-5 px-6 text-sm font-bold text-slate-700 whitespace-nowrap">
                               {new Date(req.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
                             </td>
-                            <td className="py-4 px-6">
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-bold text-sm">
+                            <td className="py-5 px-6">
+                              <span className="inline-flex items-center px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 text-blue-700 font-black text-sm border border-blue-500/20 shadow-sm">
                                 {req.quantity.toLocaleString()} QRs
                               </span>
                             </td>
-                            <td className="py-4 px-6">
-                              <div className="text-sm font-bold text-slate-800">{req.requestedBy?.name || 'Unknown'}</div>
-                              <div className="text-xs font-medium text-slate-500">{req.requestedBy?.email}</div>
+                            <td className="py-5 px-6">
+                              <div className="text-sm font-black text-slate-800">{req.requestedBy?.name || 'Unknown'}</div>
+                              <div className="text-xs font-bold text-slate-400">{req.requestedBy?.email}</div>
                             </td>
-                            <td className="py-4 px-6">
-                              <p className="text-sm text-slate-600 line-clamp-2 max-w-xs">{req.notes || '-'}</p>
+                            <td className="py-5 px-6">
+                              <p className="text-sm text-slate-500 font-medium line-clamp-2 max-w-xs">{req.notes || '-'}</p>
                             </td>
-                            <td className="py-4 px-6 text-right">
-                              <div className="flex flex-col items-end gap-2">
-                                {getStatusBadge(req.status)}
+                            <td className="py-5 px-6 text-right">
+                              <div className="flex flex-col items-end gap-3">
+                                <div className="flex items-center gap-3">
+                                  {req.paymentStatus === 'paid' && (
+                                    <span className="inline-flex items-center px-3 py-1 rounded-xl text-[10px] font-black bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 shadow-sm uppercase tracking-widest">Paid</span>
+                                  )}
+                                  {req.paymentStatus !== 'paid' && (
+                                    <span className="inline-flex items-center px-3 py-1 rounded-xl text-[10px] font-black bg-slate-100 text-slate-600 border border-slate-200 shadow-sm">₹{req.amount}</span>
+                                  )}
+                                  {getStatusBadge(req.status)}
+                                </div>
+                                
+                                {req.paymentStatus !== 'paid' && req.amount > 0 && !['Rejected', 'Received', 'Dispatched', 'Fulfilled'].includes(req.status) && (
+                                  <button
+                                    onClick={() => handlePayment(req._id)}
+                                    className="px-4 py-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 bg-[length:200%_auto] text-white rounded-xl text-xs font-black shadow-[0_4px_15px_-3px_rgba(79,70,229,0.4)] hover:shadow-[0_8px_25px_-5px_rgba(79,70,229,0.5)] hover:bg-[position:right_center] hover:-translate-y-0.5 active:scale-95 transition-all w-32"
+                                  >
+                                    PAY NOW
+                                  </button>
+                                )}
+                                
                                 {req.status === 'Dispatched' && (
                                   <button
                                     onClick={() => handleReceiveRequest(req._id)}
-                                    className="px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white rounded-lg text-xs font-bold hover:shadow-md hover:-translate-y-0.5 transition-all shadow-emerald-500/20"
+                                    className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-400 text-white rounded-xl text-xs font-black shadow-[0_4px_15px_-3px_rgba(16,185,129,0.4)] hover:shadow-[0_8px_25px_-5px_rgba(16,185,129,0.5)] hover:-translate-y-0.5 active:scale-95 transition-all"
                                   >
                                     Mark as Received
                                   </button>
@@ -289,88 +343,92 @@ const QRStockDashboard = () => {
                           return (
                           <React.Fragment key={u._id}>
                             <tr 
-                              className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                              className="hover:bg-indigo-50/30 transition-all duration-300 cursor-pointer group"
                               onClick={() => setExpandedUsage(isExpanded ? null : u._id)}
                             >
-                              <td className="py-4 px-6 text-sm font-semibold text-slate-700 whitespace-nowrap">
+                              <td className="py-5 px-6 text-sm font-bold text-slate-700 whitespace-nowrap">
                                 {new Date(u.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
                               </td>
-                              <td className="py-4 px-6">
-                                <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-bold text-sm">
+                              <td className="py-5 px-6">
+                                <span className="inline-flex items-center px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500/10 to-purple-500/10 text-indigo-700 font-black text-sm border border-indigo-500/20 shadow-sm">
                                   {(u.qrGeneratedCount || u.quantity || 0).toLocaleString()} QRs
                                 </span>
                               </td>
-                              <td className="py-4 px-6">
+                              <td className="py-5 px-6">
                                 {u.startSerialNumber && u.endSerialNumber ? (
-                                  <div className="text-xs font-mono bg-slate-50 border border-slate-200 text-slate-600 px-2 py-1 rounded-md inline-block">
+                                  <div className="text-xs font-mono font-bold bg-white border border-slate-200 text-slate-600 px-3 py-1.5 rounded-xl shadow-sm">
                                     #{u.startSerialNumber} - #{u.endSerialNumber}
                                   </div>
                                 ) : (
-                                  <span className="text-xs text-slate-400 font-medium">N/A</span>
+                                  <span className="text-xs text-slate-300 font-bold">N/A</span>
                                 )}
                               </td>
-                              <td className="py-4 px-6">
-                                <span className="font-mono text-xs bg-slate-100 text-slate-600 px-2.5 py-1.5 rounded-lg border border-slate-200">
+                              <td className="py-5 px-6">
+                                <span className="font-mono text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
                                   {u.orderId || u._id?.slice(-6)}
                                 </span>
                               </td>
-                              <td className="py-4 px-6">
+                              <td className="py-5 px-6">
                                 <div className="flex items-center justify-between">
                                   <div>
-                                    <div className="text-sm font-bold text-slate-800">{u.productName || 'Unknown'}</div>
-                                    <div className="text-xs font-medium text-slate-500">{u.brand || '-'}</div>
+                                    <div className="text-sm font-black text-slate-800">{u.productName || 'Unknown'}</div>
+                                    <div className="text-xs font-bold text-slate-400">{u.brand || '-'}</div>
                                   </div>
-                                  <span className="text-slate-400 text-xs ml-4">
-                                    {isExpanded ? 'Hide Details' : 'View Details'}
+                                  <span className="text-slate-400 text-xs ml-4 font-bold group-hover:text-indigo-500 transition-colors bg-white px-3 py-1.5 rounded-xl shadow-sm border border-slate-100">
+                                    {isExpanded ? 'Hide' : 'View'}
                                   </span>
                                 </div>
                               </td>
                             </tr>
                             {isExpanded && (
-                              <tr className="bg-slate-50 border-b border-slate-200">
-                                <td colSpan="5" className="p-6">
-                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    <div>
-                                      <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Company</div>
-                                      <div className="text-sm font-semibold text-slate-800">{u.company?.companyName || u.companyId?.companyName || 'N/A'}</div>
-                                    </div>
-                                    <div>
-                                      <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Product Details</div>
-                                      <div className="text-sm font-semibold text-slate-800">{u.productName || 'N/A'}</div>
-                                      <div className="text-xs text-slate-500">{u.brand || '-'}</div>
-                                    </div>
-                                    <div>
-                                      <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Status</div>
-                                      <div className="text-sm font-semibold text-slate-800">{u.status}</div>
-                                    </div>
-                                    {u.startSerialNumber && u.endSerialNumber && (
-                                      <div className="col-span-full mt-2 p-4 bg-indigo-50/50 rounded-xl border border-indigo-100">
-                                        <div className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2">QR Serial Numbers Assigned</div>
-                                        <div className="flex items-center space-x-3">
-                                          <div className="flex items-center px-3 py-1.5 bg-white border border-indigo-200 rounded-lg shadow-sm">
-                                            <span className="text-slate-400 text-xs mr-2">From:</span>
-                                            <span className="font-mono text-indigo-700 font-bold">#{u.startSerialNumber}</span>
+                              <tr className="bg-slate-50/50">
+                                <td colSpan="5" className="p-0 border-b border-slate-100">
+                                  <div className="p-8 animate-in slide-in-from-top-4 duration-300">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-6 bg-white rounded-2xl shadow-sm border border-slate-100">
+                                      <div>
+                                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Company</div>
+                                        <div className="text-sm font-black text-slate-800">{u.company?.companyName || u.companyId?.companyName || 'N/A'}</div>
+                                      </div>
+                                      <div>
+                                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Product Details</div>
+                                        <div className="text-sm font-black text-slate-800">{u.productName || 'N/A'}</div>
+                                        <div className="text-xs font-bold text-slate-400">{u.brand || '-'}</div>
+                                      </div>
+                                      <div>
+                                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Status</div>
+                                        <div className="text-sm font-black text-slate-800">{u.status}</div>
+                                      </div>
+                                      {u.startSerialNumber && u.endSerialNumber && (
+                                        <div className="col-span-full mt-2 p-5 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-2xl border border-indigo-100/50 shadow-inner">
+                                          <div className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                            <Layers size={14} /> Assigned Serial Numbers
                                           </div>
-                                          <span className="text-indigo-300">→</span>
-                                          <div className="flex items-center px-3 py-1.5 bg-white border border-indigo-200 rounded-lg shadow-sm">
-                                            <span className="text-slate-400 text-xs mr-2">To:</span>
-                                            <span className="font-mono text-indigo-700 font-bold">#{u.endSerialNumber}</span>
+                                          <div className="flex items-center space-x-4">
+                                            <div className="flex items-center px-4 py-2.5 bg-white border border-indigo-100 rounded-xl shadow-sm">
+                                              <span className="text-slate-400 text-xs font-bold mr-3 uppercase tracking-wider">From</span>
+                                              <span className="font-mono text-indigo-600 font-black text-sm">#{u.startSerialNumber}</span>
+                                            </div>
+                                            <div className="text-indigo-300 animate-pulse">→</div>
+                                            <div className="flex items-center px-4 py-2.5 bg-white border border-indigo-100 rounded-xl shadow-sm">
+                                              <span className="text-slate-400 text-xs font-bold mr-3 uppercase tracking-wider">To</span>
+                                              <span className="font-mono text-indigo-600 font-black text-sm">#{u.endSerialNumber}</span>
+                                            </div>
                                           </div>
                                         </div>
+                                      )}
+                                      <div>
+                                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Creator</div>
+                                        <div className="text-sm font-black text-slate-800">{u.createdBy?.name || 'N/A'}</div>
+                                        <div className="text-xs font-bold text-slate-400">{u.createdBy?.email || ''}</div>
                                       </div>
-                                    )}
-                                    <div>
-                                      <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Creator</div>
-                                      <div className="text-sm font-semibold text-slate-800">{u.createdBy?.name || 'N/A'}</div>
-                                      <div className="text-xs text-slate-500">{u.createdBy?.email || ''}</div>
-                                    </div>
-                                    <div>
-                                      <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Authorizer</div>
-                                      <div className="text-sm font-semibold text-slate-800">
-                                        {u.history?.find(h => h.status === 'Received' || h.status === 'Completed')?.changedBy?.name || 'N/A'}
-                                      </div>
-                                      <div className="text-xs text-slate-500">
-                                        {u.history?.find(h => h.status === 'Received' || h.status === 'Completed')?.changedBy?.email || ''}
+                                      <div>
+                                        <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Authorizer</div>
+                                        <div className="text-sm font-black text-slate-800">
+                                          {u.history?.find(h => h.status === 'Received' || h.status === 'Completed')?.changedBy?.name || 'N/A'}
+                                        </div>
+                                        <div className="text-xs font-bold text-slate-400">
+                                          {u.history?.find(h => h.status === 'Received' || h.status === 'Completed')?.changedBy?.email || ''}
+                                        </div>
                                       </div>
                                     </div>
                                   </div>

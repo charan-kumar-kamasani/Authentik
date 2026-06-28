@@ -120,7 +120,7 @@ export default function MobileLanding({ onSelectMode }) {
         <div className="flex items-center justify-center gap-3 text-gray-500">
           <div className="flex items-center gap-1.5">
             <ShieldCheck size={14} fill="#164e9a" color="white" />
-            <span className="text-[11px] font-bold tracking-wide">Trusted. Transparent. Authentic.</span>
+            <span className="text-[11px] font-bold tracking-wide">Trusted. Transparent. Authentiks.</span>
           </div>
           <span className="text-gray-300">|</span>
           <span className="text-[11px] font-bold text-[#164e9a] tracking-wide">www.authentiks.in</span>

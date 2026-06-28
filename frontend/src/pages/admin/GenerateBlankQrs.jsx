@@ -188,6 +188,36 @@ export default function GenerateBlankQrs() {
     }
   };
 
+  const handleUpdateAmount = async (requestId, currentAmount) => {
+    const newAmountStr = window.prompt("Enter new amount (in ₹):", currentAmount);
+    if (newAmountStr === null) return;
+    
+    const newAmount = parseFloat(newAmountStr);
+    if (isNaN(newAmount) || newAmount < 0) {
+      alert("Please enter a valid amount.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/stock-requests/${requestId}/update-amount`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ amount: newAmount })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        await fetchStockRequests();
+      } else {
+        alert(data.error || "Failed to update amount.");
+      }
+    } catch (err) {
+      alert("An error occurred while updating the amount.");
+    }
+  };
+
   const handleUpdateStatus = async (requestId, newStatus) => {
     if (!window.confirm(`Are you sure you want to mark this request as '${newStatus}'?`)) return;
     try {
@@ -341,6 +371,7 @@ export default function GenerateBlankQrs() {
                   <th className="p-4 md:px-8">Company</th>
                   <th className="p-4 md:px-8">Quantity Requested</th>
                   <th className="p-4 md:px-8">Requested By</th>
+                  <th className="p-4 md:px-8">Payment</th>
                   <th className="p-4 md:px-8">Status</th>
                   <th className="p-4 md:px-8">Actions</th>
                 </tr>
@@ -363,6 +394,21 @@ export default function GenerateBlankQrs() {
                       <td className="p-4 md:px-8 font-medium text-slate-600">
                         {req.requestedBy?.name || req.requestedBy?.email}
                         {req.notes && <div className="text-xs text-slate-400 mt-1 italic max-w-xs truncate" title={req.notes}>"{req.notes}"</div>}
+                      </td>
+                      <td className="p-4 md:px-8">
+                        {req.paymentStatus === 'paid' ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">PAID (₹{req.amount})</span>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">₹{req.amount}</span>
+                            <button
+                              onClick={() => handleUpdateAmount(req._id, req.amount)}
+                              className="text-xs text-blue-600 hover:text-blue-800 underline"
+                            >
+                              Edit
+                            </button>
+                          </div>
+                        )}
                       </td>
                       <td className="p-4 md:px-8">
                         <span className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase tracking-wider ${
@@ -396,8 +442,15 @@ export default function GenerateBlankQrs() {
                           )}
                           {req.status === 'Approved' && (
                             <button
-                              onClick={() => handleUpdateStatus(req._id, 'Preparing for Dispatch')}
-                              className="px-3 py-1.5 bg-blue-600 text-white font-bold text-xs rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                              onClick={() => {
+                                if (req.paymentStatus !== 'paid') {
+                                  alert('Cannot dispatch! Payment has not been completed by the company.');
+                                  return;
+                                }
+                                handleUpdateStatus(req._id, 'Preparing for Dispatch');
+                              }}
+                              className={`px-3 py-1.5 font-bold text-xs rounded-lg transition-colors shadow-sm ${req.paymentStatus === 'paid' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}
+                              title={req.paymentStatus !== 'paid' ? "Payment required before dispatch" : ""}
                             >
                               Prepare Dispatch
                             </button>

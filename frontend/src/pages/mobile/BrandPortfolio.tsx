@@ -106,7 +106,7 @@ export default function BrandPortfolio() {
               </div>
             </div>
             <p className="text-blue-100 text-[12px] leading-snug mb-3 pr-2">
-              {brandData?.industry ? `Premium ${brandData.industry} Brand.` : "Official Authentic Brand Partner."}
+              {brandData?.industry ? `Premium ${brandData.industry} Brand.` : "Official Authentiks Brand Partner."}
             </p>
             <div className="inline-flex items-center gap-1.5 px-2 py-1 bg-[#1A3385] border border-[#2B47A1] rounded-full self-start">
               <div className="w-3.5 h-3.5 bg-blue-500 rounded-full flex items-center justify-center">
