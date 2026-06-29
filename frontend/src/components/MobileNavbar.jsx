@@ -15,7 +15,7 @@ export default function MobileNavbar() {
     ];
 
     return (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#F1F5F9] px-2 pt-2 pb-6 flex justify-between items-end z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] h-[80px]">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-[#F1F5F9] px-2 pt-2 pb-2 flex justify-between items-end z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] h-[70px]">
             {navItems.map((item) => {
                 const isActive = location.pathname === item.path || (item.id === "home" && location.pathname === "/");
                 const Icon = item.icon;

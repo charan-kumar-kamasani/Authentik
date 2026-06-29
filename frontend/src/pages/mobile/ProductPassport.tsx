@@ -339,7 +339,17 @@ const ProductPassport = () => {
             
             <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide snap-x px-1">
               {recommendations.map((rec: any, idx: number) => (
-                <div key={idx} className="snap-start flex-shrink-0 w-[140px] bg-white rounded-[20px] p-3 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex flex-col">
+                <div 
+                  key={idx} 
+                  onClick={() => navigate("/product-details", { 
+                    state: { 
+                      ...rec, 
+                      productName: rec.title || rec.productName, 
+                      productImage: rec.image || rec.productImage 
+                    } 
+                  })}
+                  className="snap-start flex-shrink-0 w-[140px] bg-white rounded-[20px] p-3 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex flex-col cursor-pointer active:scale-95 transition-transform"
+                >
                   <div className="w-full h-[110px] bg-slate-50/80 rounded-[12px] mb-3 relative flex items-center justify-center p-2">
                     <img src={rec.productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"} className="w-full h-full object-contain mix-blend-multiply" alt={rec.productName} />
                     {rec.mrp && rec.price && (

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import API_BASE_URL from "../../config/api";
 import logo from "../../assets/logo-text.png";
 import phoneIllustration from "../../assets/v2/login/phone_illustration.png";
@@ -315,12 +315,13 @@ export default function OTP() {
       <div className="flex-1"></div>
 
       {/* Footer */}
-      <div className="w-full max-w-[400px] flex items-start gap-2.5 px-6 mt-auto">
-        <Lock className="w-[18px] h-[18px] text-[#5A7184] stroke-[1.5] flex-shrink-0 mt-[2px]" />
-        <p className="text-[#5A7184] text-[13px] font-medium leading-[1.5]">
-          By continuing, you agree to our <a href="/terms-conditions" className="font-bold text-[#105DE4] hover:underline">Terms of Use</a> and <a href="/privacy-policy" className="font-bold text-[#105DE4] hover:underline">Privacy Policy</a>.
-        </p>
-      </div>
+       <div className="w-full flex items-center justify-center gap-2 mb-8 px-2">
+          <ShieldCheck className="w-[16px] h-[16px] text-[#106EEA] stroke-[2]" />
+          <p className="text-[#555555] text-[8px] font-medium leading-relaxed">
+            By continuing, you agree to our <Link to="/terms-conditions" className="font-bold text-[#106EEA]">Terms of Use</Link> and <Link to="/privacy-policy" className="font-bold text-[#106EEA]">Privacy Policy</Link>.
+          </p>
+        </div>
+
 
     </div>
   );
