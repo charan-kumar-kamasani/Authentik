@@ -45,57 +45,10 @@ export default function Rewards() {
       try {
         const token = localStorage.getItem('token');
         const data = await getMyRewards(token);
-        if (data && data.length > 0) {
+        if (data) {
           setRewards(data);
         } else {
-          // Dummy data mimicking the screenshot
-          setRewards([
-            {
-              _id: '1',
-              brand: 'Nike',
-              couponTitle: 'Get 20% off on orders above ₹2499',
-              couponCode: 'NIKE20',
-              couponExpiry: '2024-05-31T00:00:00.000Z',
-              discountText: '20% OFF',
-              websiteLink: 'https://nike.com'
-            },
-            {
-              _id: '2',
-              brand: 'Amazon',
-              couponTitle: 'Get 10% cashback up to ₹200',
-              couponCode: 'AMZ10',
-              couponExpiry: '2024-05-25T00:00:00.000Z',
-              discountText: '10% OFF',
-              websiteLink: 'https://amazon.in'
-            },
-            {
-              _id: '3',
-              brand: 'Myntra',
-              couponTitle: 'Get 15% off on minimum purchase of ₹1599',
-              couponCode: 'MYNTRA15',
-              couponExpiry: '2024-05-20T00:00:00.000Z',
-              discountText: '15% OFF',
-              websiteLink: 'https://myntra.com'
-            },
-            {
-              _id: '4',
-              brand: 'Flipkart',
-              couponTitle: 'Flat ₹100 off on orders above ₹999',
-              couponCode: 'FK100',
-              couponExpiry: '2024-05-18T00:00:00.000Z',
-              discountText: '₹100 OFF',
-              websiteLink: 'https://flipkart.com'
-            },
-            {
-              _id: '5',
-              brand: 'Puma',
-              couponTitle: 'Get 25% off on Puma footwear',
-              couponCode: 'PUMA25',
-              couponExpiry: '2024-05-30T00:00:00.000Z',
-              discountText: '25% OFF',
-              websiteLink: 'https://puma.com'
-            }
-          ]);
+          setRewards([]);
         }
       } catch (err) {
         console.error('Failed to fetch rewards:', err);

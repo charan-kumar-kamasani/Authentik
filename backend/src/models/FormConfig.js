@@ -133,13 +133,25 @@ formConfigSchema.statics.getGlobalFormConfig = async function() {
     config = {
       isGlobal: true,
       formName: 'QR Creation Form',
-      customFields: [],
+      customFields: [
+        { fieldName: "sku", fieldLabel: "SKU/Model Number", fieldType: "text", isMandatory: false, order: 0 },
+        { fieldName: "mrp", fieldLabel: "MRP", fieldType: "number", isMandatory: false, order: 1 },
+        { fieldName: "countryOfOrigin", fieldLabel: "Country of Origin", fieldType: "text", isMandatory: false, order: 2 },
+        { fieldName: "manufacturedBy", fieldLabel: "Manufactured by", fieldType: "text", isMandatory: false, order: 3 },
+        { fieldName: "website", fieldLabel: "Website", fieldType: "text", isMandatory: false, order: 4 },
+        { fieldName: "customerCare", fieldLabel: "Customer Care", fieldType: "text", isMandatory: false, order: 5 },
+        { fieldName: "supportEmail", fieldLabel: "Support Email", fieldType: "email", isMandatory: false, order: 6 }
+      ],
       staticFields: {
         brand: { enabled: true, isMandatory: true },
         mfdOn: { enabled: true, isMandatory: true },
         bestBefore: { enabled: true, isMandatory: true },
       },
-      variants: []
+      variants: [
+        { variantName: "color", variantLabel: "Color", inputType: "text", order: 0 },
+        { variantName: "size", variantLabel: "Size", inputType: "text", order: 1 },
+        { variantName: "model_series", variantLabel: "Model / Series", inputType: "text", order: 2 }
+      ]
     };
   }
 

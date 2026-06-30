@@ -37,7 +37,34 @@ export default function GenerateQrs() {
 
   // Dynamic fields
   const [dynamicFieldValues, setDynamicFieldValues] = useState({});
-  const [formConfig, setFormConfig] = useState(null);
+  const [formConfig, setFormConfig] = useState({
+    customFields: [
+      { fieldName: "sku", fieldLabel: "SKU", fieldType: "text", isMandatory: true, placeholder: "e.g. WH-1000XM4" },
+      { fieldName: "batchNo", fieldLabel: "Batch Number", fieldType: "text", isMandatory: true, isBatchNo: true, placeholder: "e.g. BT-2023-10-X" },
+      { fieldName: "mrp", fieldLabel: "MRP", fieldType: "number", isMandatory: true, placeholder: "e.g. 2999" },
+      { fieldName: "manufacturedBy", fieldLabel: "Manufactured by", fieldType: "text", isMandatory: false, placeholder: "e.g. Alpha Industries" },
+      { fieldName: "marketedBy", fieldLabel: "Marketed by", fieldType: "text", isMandatory: false, placeholder: "e.g. Beta Retail Pvt. Ltd." },
+      { fieldName: "countryOfOrigin", fieldLabel: "Country of Origin", fieldType: "text", isMandatory: false, placeholder: "e.g. India" },
+      { fieldName: "importedAndMktBy", fieldLabel: "Imported and Mkt by", fieldType: "text", isMandatory: false, placeholder: "e.g. Global Impex" },
+      { fieldName: "importedRgNo", fieldLabel: "Imported Rg. No", fieldType: "text", isMandatory: false, placeholder: "e.g. IMP-49281" },
+      { fieldName: "importedOn", fieldLabel: "Imported on (MM/YYYY)", fieldType: "text", isMandatory: false, placeholder: "e.g. 10/2023" },
+      { fieldName: "website", fieldLabel: "Website", fieldType: "text", isMandatory: false, placeholder: "e.g. www.example.com" },
+      { fieldName: "customerCare", fieldLabel: "Customer Care", fieldType: "text", isMandatory: false, placeholder: "e.g. 1800-103-7799" },
+      { fieldName: "supportEmail", fieldLabel: "Support Email", fieldType: "email", isMandatory: false, placeholder: "e.g. support@example.com" },
+      { fieldName: "quantity", fieldLabel: "QR Quantity", fieldType: "number", isMandatory: true, isQuantity: true, placeholder: "e.g. 1000" },
+      { fieldName: "additionalInfo", fieldLabel: "Additional Info", fieldType: "textarea", isMandatory: false, placeholder: "Enter any additional product information, materials used, care instructions, etc." }
+    ],
+    staticFields: {
+      brand: { enabled: true, isMandatory: true },
+      mfdOn: { enabled: true, isMandatory: true },
+      bestBefore: { enabled: true, isMandatory: true },
+    },
+    variants: [
+      { variantName: "color", variantLabel: "Color", inputType: "color" },
+      { variantName: "size", variantLabel: "Size", inputType: "text" },
+      { variantName: "model_series", variantLabel: "Model / Series", inputType: "text" }
+    ]
+  });
   const [loadingConfig, setLoadingConfig] = useState(true);
   const [isCatalogProduct, setIsCatalogProduct] = useState(false);
 
@@ -208,7 +235,34 @@ export default function GenerateQrs() {
   };
 
   const handleDynamicFieldChange = (fieldName, value) => {
-    setDynamicFieldValues(prev => ({ ...prev, [fieldName]: value }));
+    let formattedValue = value;
+
+    if (fieldName === 'importedOn' && typeof value === 'string') {
+      let numericVal = value.replace(/\D/g, '');
+      
+      if (numericVal.length > 2) {
+        let month = numericVal.slice(0, 2);
+        let year = numericVal.slice(2, 6);
+        
+        let m = parseInt(month, 10);
+        if (m > 12) month = '12';
+        if (m === 0 && month.length === 2) month = '01';
+
+        if (year.length === 4) {
+          let y = parseInt(year, 10);
+          if (y > 2050) year = '2050';
+        }
+        
+        formattedValue = `${month}/${year}`;
+      } else {
+        let m = parseInt(numericVal, 10);
+        if (m > 12) numericVal = '12';
+        if (m === 0 && numericVal.length === 2) numericVal = '01';
+        formattedValue = numericVal;
+      }
+    }
+
+    setDynamicFieldValues(prev => ({ ...prev, [fieldName]: formattedValue }));
   };
 
   // Variant management functions
@@ -349,6 +403,21 @@ export default function GenerateQrs() {
     };
 
     try {
+      // Validate Website and Support Email in custom fields
+      const dynamicEmail = dynamicFieldValues['supportEmail'];
+      if (dynamicEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dynamicEmail)) {
+        await confirm({ title: 'Invalid Email', description: 'Please enter a valid Support Email address.', cancelText: null });
+        setSubmitting(false);
+        return;
+      }
+
+      const dynamicWebsite = dynamicFieldValues['website'];
+      if (dynamicWebsite && !/^(https?:\/\/)?([\w\-]+(\.[\w\-]+)+.*)$/.test(dynamicWebsite)) {
+        await confirm({ title: 'Invalid Website', description: 'Please enter a valid Website URL.', cancelText: null });
+        setSubmitting(false);
+        return;
+      }
+
       let productImage = null;
       if (imageFile) {
         productImage = await uploadImage(imageFile);
@@ -566,7 +635,7 @@ export default function GenerateQrs() {
         setMobilePreviewOrder(null);
         await confirm({
           title: 'Success!',
-          description: 'Order created successfully. The authorizer will process it to generate QRs.',
+          description: 'Order created successfully. The Authorizer will review it.',
           confirmText: 'Done',
           cancelText: null
         });
@@ -645,20 +714,8 @@ export default function GenerateQrs() {
           const u = await res.json();
           setCurrentUser(u);
 
-          // Fetch global form configuration
-          try {
-            const configRes = await fetch(`${API_BASE_URL}/admin/form-config`, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
-            if (configRes.ok) {
-              const configData = await configRes.json();
-              setFormConfig(configData.formConfig || null);
-            }
-          } catch (err) {
-            console.warn('Could not load form config', err);
-          } finally {
-            setLoadingConfig(false);
-          }
+          // Using hardcoded formConfig
+          setLoadingConfig(false);
 
           // Load brands for the company only
           if (u?.companyId?._id) {
@@ -1630,17 +1687,32 @@ export default function GenerateQrs() {
                 <p className="text-slate-900 font-semibold">{newQr.productName || 'Not provided'}</p>
               </div>
               <div>
-                <p className="text-slate-500 font-medium mb-1">SKU Number</p>
-                <p className="text-slate-900 font-semibold">{newQr.skuNumber || 'Not provided'}</p>
+                <p className="text-slate-500 font-medium mb-1">Brand</p>
+                <p className="text-slate-900 font-semibold">{newQr.brand || 'Not provided'}</p>
               </div>
-              <div>
-                <p className="text-slate-500 font-medium mb-1">Batch Number</p>
-                <p className="text-slate-900 font-semibold">{newQr.batchNo || 'Not provided'}</p>
+              <div className="col-span-2">
+                <p className="text-slate-500 font-medium mb-1">Product Info</p>
+                <p className="text-slate-900 font-medium whitespace-pre-wrap">{newQr.productInfo || 'Not provided'}</p>
               </div>
-              <div>
-                <p className="text-slate-500 font-medium mb-1">Quantity</p>
-                <p className="text-slate-900 font-semibold">{newQr.quantity || 0} QRs</p>
+              <div className="col-span-2 mb-2">
+                <p className="text-slate-500 font-medium mb-1">Product Image</p>
+                {imagePreview ? (
+                  <img src={imagePreview} alt="Preview" className="h-16 w-16 object-cover rounded-lg border border-slate-200" />
+                ) : (
+                  <p className="text-slate-900 font-medium">Not provided</p>
+                )}
               </div>
+              {/* Render all Custom Fields (Specs) dynamically */}
+              {(formConfig?.customFields || []).map((field, idx) => (
+                <div key={idx} className={field.fieldType === 'textarea' ? 'col-span-2' : ''}>
+                  <p className="text-slate-500 font-medium mb-1">{field.fieldLabel}</p>
+                  <p className="text-slate-900 font-semibold whitespace-pre-wrap">
+                    {dynamicFieldValues[field.fieldName] 
+                      ? (field.isQuantity ? `${dynamicFieldValues[field.fieldName]} QRs` : dynamicFieldValues[field.fieldName]) 
+                      : (field.isQuantity ? '0 QRs' : 'Not provided')}
+                  </p>
+                </div>
+              ))}
               <div>
                 <p className="text-slate-500 font-medium mb-1">Mfd On</p>
                 <p className="text-slate-900 font-semibold">{mfdOn.month && mfdOn.year ? `${mfdOn.month}/${mfdOn.year}` : 'Not provided'}</p>

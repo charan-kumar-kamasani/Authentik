@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Package, CheckCircle2, Clock, XCircle, AlertCircle, Box, Layers, ShieldCheck, Activity } from 'lucide-react';
-import API_BASE_URL from '../../config/api';
+import { Package, CheckCircle2, Clock, XCircle, AlertCircle, Box, Layers, ShieldCheck, Activity, CreditCard } from 'lucide-react';
+import API_BASE_URL, { payStockRequest } from '../../config/api';
 import StockRequestModal from '../../components/StockRequestModal';
+import { useConfirm } from '../../components/ConfirmModal';
 
 const QRStockDashboard = () => {
   const [stats, setStats] = useState({ total: 0, used: 0, available: 0 });
@@ -11,6 +12,7 @@ const QRStockDashboard = () => {
   const [expandedUsage, setExpandedUsage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showRequestModal, setShowRequestModal] = useState(false);
+  const confirm = useConfirm();
 
   const fetchDashboardData = async () => {
     try {
@@ -77,27 +79,48 @@ const QRStockDashboard = () => {
 
   const handlePayment = async (requestId) => {
     try {
-      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-      const res = await fetch(`${API_BASE_URL}/payments/initiate`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
-        },
-        body: JSON.stringify({
-          type: 'stock_request',
-          stockRequestId: requestId,
-          redirectUrl: `${window.location.origin}/admin/qr-inventory`
-        })
+      const ok = await confirm({
+        title: 'Complete Payment',
+        description: 'Proceed to securely complete your payment for this stock request? You will be redirected to the payment gateway.',
+        confirmText: 'Pay Now',
+        cancelText: 'Cancel'
       });
-      const data = await res.json();
-      if (res.ok && data.redirectUrl) {
-        window.location.href = data.redirectUrl;
-      } else {
-        alert(data.message || 'Failed to initiate payment');
+      if (ok) {
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+        const res = await fetch(`${API_BASE_URL}/payments/initiate`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}` 
+          },
+          body: JSON.stringify({
+            type: 'stock_request',
+            stockRequestId: requestId,
+            redirectUrl: `${window.location.origin}/admin/qr-inventory`
+          })
+        });
+        const data = await res.json();
+        if (res.ok && data.redirectUrl) {
+          window.location.href = data.redirectUrl;
+        } else {
+          await confirm({ title: 'Error', description: data.message || 'Failed to initiate payment', cancelText: null });
+        }
       }
     } catch (err) {
-      alert('An error occurred while initiating payment.');
+      await confirm({ title: 'Error', description: 'Payment initialization failed: ' + err.message, cancelText: null });
+    }
+  };
+
+  const handleRequestCreated = async (requestId) => {
+    await fetchDashboardData();
+    const ok = await confirm({
+      title: 'Request Created - Payment Required',
+      description: 'Your stock request was created successfully. You have 15 minutes to complete the payment before it is cancelled.',
+      confirmText: 'Proceed to Pay',
+      cancelText: 'Cancel'
+    });
+    if (ok) {
+      handlePayment(requestId);
     }
   };
 
@@ -285,9 +308,16 @@ const QRStockDashboard = () => {
                               {new Date(req.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
                             </td>
                             <td className="py-5 px-6">
-                              <span className="inline-flex items-center px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 text-blue-700 font-black text-sm border border-blue-500/20 shadow-sm">
-                                {req.quantity.toLocaleString()} QRs
-                              </span>
+                              <div className="flex flex-col gap-1.5 items-start">
+                                <span className="inline-flex items-center px-3 py-1.5 rounded-xl bg-gradient-to-r from-blue-500/10 to-indigo-500/10 text-blue-700 font-black text-sm border border-blue-500/20 shadow-sm">
+                                  {req.quantity.toLocaleString()} QRs
+                                </span>
+                                {req.startSerialNumber && req.endSerialNumber && (
+                                  <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">
+                                    SN: {req.startSerialNumber} - {req.endSerialNumber}
+                                  </span>
+                                )}
+                              </div>
                             </td>
                             <td className="py-5 px-6">
                               <div className="text-sm font-black text-slate-800">{req.requestedBy?.name || 'Unknown'}</div>
@@ -310,12 +340,12 @@ const QRStockDashboard = () => {
                                   {getStatusBadge(req.status)}
                                 </div>
                                 
-                                {req.paymentStatus !== 'paid' && req.amount > 0 && !['Rejected', 'Received', 'Dispatched', 'Fulfilled'].includes(req.status) && (
+                                {req.paymentStatus !== 'paid' && req.amount > 0 && !['Rejected', 'Received', 'Dispatched', 'Fulfilled'].includes(req.status) && (new Date() - new Date(req.createdAt) < 15 * 60 * 1000) && (
                                   <button
                                     onClick={() => handlePayment(req._id)}
-                                    className="px-4 py-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 bg-[length:200%_auto] text-white rounded-xl text-xs font-black shadow-[0_4px_15px_-3px_rgba(79,70,229,0.4)] hover:shadow-[0_8px_25px_-5px_rgba(79,70,229,0.5)] hover:bg-[position:right_center] hover:-translate-y-0.5 active:scale-95 transition-all w-32"
+                                    className="px-4 py-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 bg-[length:200%_auto] text-white rounded-xl text-xs font-black shadow-[0_4px_15px_-3px_rgba(79,70,229,0.4)] hover:shadow-[0_8px_25px_-5px_rgba(79,70,229,0.5)] hover:bg-[position:right_center] hover:-translate-y-0.5 active:scale-95 transition-all w-32 flex items-center justify-center gap-1.5"
                                   >
-                                    PAY NOW
+                                    <CreditCard size={14} /> PAY NOW
                                   </button>
                                 )}
                                 
@@ -448,12 +478,11 @@ const QRStockDashboard = () => {
           </div>
         )}
 
+        {/* Request Modal */}
         <StockRequestModal 
           isOpen={showRequestModal} 
-          onClose={() => {
-            setShowRequestModal(false);
-            fetchDashboardData();
-          }} 
+          onClose={() => setShowRequestModal(false)}
+          onRequestCreated={handleRequestCreated}
         />
       </div>
     </div>

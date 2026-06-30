@@ -92,7 +92,7 @@ router.get('/', protect, async (req, res) => {
 // @access  Private (Creator, Authorizer, Company, Admin, SuperAdmin)
 router.post('/', protect, async (req, res) => {
   try {
-    const { productName, productImage, productInfo, description, brandId, companyId, skuNumber, variants, dynamicFields, bestBefore, warranty, orderLinks } = req.body;
+    const { productName, productImage, productInfo, description, brandId, companyId, skuNumber, variants, dynamicFields, bestBefore, warranty, orderLinks, educationContent } = req.body;
 
     // Default to user's company/brand if not specified
     const finalBrandId = brandId || req.user.brandId;
@@ -121,6 +121,7 @@ router.post('/', protect, async (req, res) => {
         description: warranty.description || '',
       } : undefined,
       orderLinks: orderLinks || [],
+      educationContent: educationContent || [],
       isAuthorized: true,
       authorizedBy: req.user._id
     });
@@ -175,6 +176,20 @@ router.patch('/:id', protect, async (req, res) => {
     Object.keys(updates).forEach(key => template[key] = updates[key]);
 
     const updatedTemplate = await template.save();
+    
+    // Cascade update to all associated Products so they immediately reflect in the scanning app
+    const Product = require('../models/Product');
+    const cascadeUpdates = {};
+    if (updates.educationContent !== undefined) cascadeUpdates.educationContent = updates.educationContent;
+    if (updates.orderLinks !== undefined) cascadeUpdates.orderLinks = updates.orderLinks;
+    if (updates.productInfo !== undefined) cascadeUpdates.productInfo = updates.productInfo;
+    if (updates.description !== undefined) cascadeUpdates.description = updates.description;
+    if (updates.productImage !== undefined) cascadeUpdates.productImage = updates.productImage;
+    
+    if (Object.keys(cascadeUpdates).length > 0) {
+      await Product.updateMany({ templateId: template._id }, { $set: cascadeUpdates });
+    }
+
     const finalTemplate = await syncScrapeTemplate(updatedTemplate._id);
     res.json(finalTemplate || updatedTemplate);
   } catch (err) {

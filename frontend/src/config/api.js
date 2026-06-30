@@ -110,6 +110,46 @@ export const createOrder = async (orderData, token) => {
     }
 };
 
+export const payStockRequest = async (requestId, token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/stock-requests/${requestId}/pay`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}` 
+            }
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Payment failed');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Stock Request Payment Error:', error);
+        throw error;
+    }
+};
+
+export const payOrder = async (orderId, token) => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/orders/${orderId}/pay`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}` 
+            }
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Payment failed');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Payment Error:', error);
+        throw error;
+    }
+};
+
 export const updateOrderStatus = async (orderId, action, data, token) => {
     // action can be: 'authorize', 'process', 'dispatching', 'dispatch', 'received', 'reject'
     try {

@@ -84,7 +84,8 @@ const orderSchema = new mongoose.Schema({
       'Order Processing',           // Step 3: Super Admin accepts & generates QRs
       'Dispatching',                // Step 4: Super Admin preparing dispatch
       'Dispatched',                 // Step 5: Super Admin dispatched to factory
-      'Received',                   // Step 6: Authorizer marks as received (FINAL - activates QRs)
+      'In Transit',                 // Step 6: Order is on the way
+      'Received',                   // Step 7: Authorizer marks as received (FINAL - activates QRs)
       'Rejected'                    // Can be rejected at any stage
     ],
     default: 'Pending Authorization'

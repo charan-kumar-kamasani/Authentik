@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Printer, AlertCircle, History, List, Download, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import API_BASE_URL, { getAllCompanies } from '../../config/api';
+import { useConfirm } from '../../components/ConfirmModal';
 
 export default function GenerateBlankQrs() {
   const [quantity, setQuantity] = useState('');
@@ -9,7 +10,9 @@ export default function GenerateBlankQrs() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const navigate = useNavigate();
+  const confirm = useConfirm();
 
+  const [rejectModal, setRejectModal] = useState({ show: false, requestId: null, reason: '' });
   const [batches, setBatches] = useState([]);
   const [loadingBatches, setLoadingBatches] = useState(true);
 
@@ -246,7 +249,15 @@ export default function GenerateBlankQrs() {
   };
 
   const handleUpdateStatus = async (requestId, newStatus, bypassPaymentCheck = false, skipConfirm = false) => {
-    if (!skipConfirm && !window.confirm(`Are you sure you want to mark this request as '${newStatus}'?`)) return;
+    if (!skipConfirm) {
+      const ok = await confirm({
+        title: 'Update Status',
+        description: `Are you sure you want to mark this request as '${newStatus}'?`,
+        confirmText: 'Yes, update status',
+        cancelText: 'Cancel'
+      });
+      if (!ok) return;
+    }
     try {
       const res = await fetch(`${API_BASE_URL}/stock-requests/${requestId}/status`, {
         method: 'PUT',
@@ -261,16 +272,19 @@ export default function GenerateBlankQrs() {
         await fetchStockRequests();
         await fetchStats();
       } else {
-        alert(data.error || "Failed to update request status.");
+        await confirm({ title: 'Error', description: data.error || "Failed to update request status.", cancelText: null });
       }
     } catch (err) {
-      alert("An error occurred while updating the request.");
+      await confirm({ title: 'Error', description: "An error occurred while updating the request.", cancelText: null });
     }
   };
 
-  const handleRejectRequest = async (requestId) => {
-    const reason = window.prompt("Reason for rejection (optional):");
-    if (reason === null) return; // User cancelled
+  const handleRejectRequest = (requestId) => {
+    setRejectModal({ show: true, requestId, reason: '' });
+  };
+
+  const submitRejectRequest = async () => {
+    const { requestId, reason } = rejectModal;
     try {
       const res = await fetch(`${API_BASE_URL}/stock-requests/${requestId}/reject`, {
         method: 'PUT',
@@ -282,13 +296,13 @@ export default function GenerateBlankQrs() {
       });
       const data = await res.json();
       if (res.ok) {
-        alert("Request rejected.");
+        setRejectModal({ show: false, requestId: null, reason: '' });
         fetchStockRequests();
       } else {
-        alert(data.error || "Failed to reject request.");
+        await confirm({ title: 'Error', description: data.error || "Failed to reject request.", cancelText: null });
       }
     } catch (err) {
-      alert("An error occurred while rejecting the request.");
+      await confirm({ title: 'Error', description: "An error occurred while rejecting the request.", cancelText: null });
     }
   };
 
@@ -417,7 +431,18 @@ export default function GenerateBlankQrs() {
                   stockRequests.map(req => (
                     <tr key={req._id} className="hover:bg-slate-50 transition-colors">
                       <td className="p-4 md:px-8 font-bold text-slate-800">{req.companyId?.companyName || 'Unknown'}</td>
-                      <td className="p-4 md:px-8 font-black text-indigo-600 text-base">{req.quantity.toLocaleString()}</td>
+                      <td className="p-4 md:px-8">
+                        <div className="flex flex-col gap-1.5 items-start">
+                          <span className="font-black text-indigo-600 text-base">
+                            {req.quantity.toLocaleString()}
+                          </span>
+                          {req.startSerialNumber && req.endSerialNumber && (
+                            <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">
+                              SN: {req.startSerialNumber} - {req.endSerialNumber}
+                            </span>
+                          )}
+                        </div>
+                      </td>
                       <td className="p-4 md:px-8 font-medium text-slate-600">
                         {req.requestedBy?.name || req.requestedBy?.email}
                         {req.notes && <div className="text-xs text-slate-400 mt-1 italic max-w-xs truncate" title={req.notes}>"{req.notes}"</div>}
@@ -454,38 +479,19 @@ export default function GenerateBlankQrs() {
                       <td className="p-4 md:px-8">
                         <div className="flex flex-col gap-2 items-start">
                           {req.status === 'Pending' && (
-                            <div className="flex gap-2">
-                              <button
-                                onClick={async () => {
-                                  if (req.amount === null || req.amount === undefined || req.amount === 0) {
-                                    const newAmountStr = window.prompt("Payment amount is not set or is 0. Please set the payment amount before approving (Enter 0 if free):", req.amount || "0");
-                                    if (newAmountStr === null) return;
-                                    const newAmount = parseFloat(newAmountStr);
-                                    if (isNaN(newAmount) || newAmount < 0) {
-                                      alert("Please enter a valid amount.");
-                                      return;
-                                    }
-                                    try {
-                                      const res = await fetch(`${API_BASE_URL}/stock-requests/${req._id}/update-amount`, {
-                                        method: 'PUT',
-                                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                                        body: JSON.stringify({ amount: newAmount })
-                                      });
-                                      if (!res.ok) {
-                                        alert("Failed to update amount.");
-                                        return;
-                                      }
-                                    } catch(err) {
-                                      alert("Error updating amount.");
-                                      return;
-                                    }
-                                  }
-                                  handleUpdateStatus(req._id, 'Approved');
-                                }}
-                                className="px-3 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
-                              >
-                                Approve
-                              </button>
+                            <div className="flex items-center gap-2">
+                              {req.paymentStatus !== 'paid' && req.amount > 0 ? (
+                                <span className="px-3 py-1.5 bg-amber-100 text-amber-700 font-bold text-[10px] rounded-lg border border-amber-200 uppercase tracking-wider flex items-center gap-1.5 shadow-sm">
+                                  Payment Pending
+                                </span>
+                              ) : (
+                                <button
+                                  onClick={() => handleUpdateStatus(req._id, 'Approved')}
+                                  className="px-3 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
+                                >
+                                  Approve
+                                </button>
+                              )}
                               <button
                                 onClick={() => handleRejectRequest(req._id)}
                                 className="px-3 py-1.5 bg-red-100 text-red-700 font-bold text-xs rounded-lg hover:bg-red-200 transition-colors"
@@ -496,16 +502,7 @@ export default function GenerateBlankQrs() {
                           )}
                           {req.status === 'Approved' && (
                             <button
-                              onClick={() => {
-                                if (req.paymentStatus !== 'paid' && req.amount > 0) {
-                                  if (!window.confirm(`Warning: Payment of ₹${req.amount} has not been completed by the company. Are you sure you want to dispatch anyway?`)) {
-                                    return;
-                                  }
-                                  handleUpdateStatus(req._id, 'Preparing for Dispatch', true, true);
-                                } else {
-                                  handleUpdateStatus(req._id, 'Preparing for Dispatch', true);
-                                }
-                              }}
+                              onClick={() => handleUpdateStatus(req._id, 'Preparing for Dispatch')}
                               className="px-3 py-1.5 font-bold text-xs rounded-lg transition-colors shadow-sm bg-blue-600 text-white hover:bg-blue-700"
                             >
                               Prepare Dispatch
@@ -513,7 +510,13 @@ export default function GenerateBlankQrs() {
                           )}
                           {req.status === 'Preparing for Dispatch' && (
                             <button
-                              onClick={() => handleUpdateStatus(req._id, 'Dispatched')}
+                              onClick={() => {
+                                if (qrStats.globalUnassigned < req.quantity) {
+                                  alert(`Not enough Global QRs available. You need ${req.quantity}, but only have ${qrStats.globalUnassigned}. Please generate more QRs first.`);
+                                  return;
+                                }
+                                handleUpdateStatus(req._id, 'Dispatched');
+                              }}
                               className="px-3 py-1.5 bg-purple-600 text-white font-bold text-xs rounded-lg hover:bg-purple-700 transition-colors shadow-sm"
                             >
                               Mark Dispatched
@@ -813,6 +816,53 @@ export default function GenerateBlankQrs() {
                   )}
                 </button>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Modal */}
+      {rejectModal.show && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+              <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+                <AlertCircle size={20} className="text-red-500" />
+                Reject Request
+              </h3>
+              <button 
+                onClick={() => setRejectModal({ show: false, requestId: null, reason: '' })}
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <label className="block text-sm font-bold text-slate-700 mb-2">
+                Reason for rejection (optional)
+              </label>
+              <textarea
+                value={rejectModal.reason}
+                onChange={(e) => setRejectModal(prev => ({ ...prev, reason: e.target.value }))}
+                placeholder="E.g., Payment failed, insufficient stock..."
+                className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-red-500 focus:ring-4 focus:ring-red-500/10 outline-none transition-all resize-none h-32"
+              />
+            </div>
+
+            <div className="p-5 border-t border-slate-100 flex items-center justify-end gap-3 bg-slate-50">
+              <button
+                onClick={() => setRejectModal({ show: false, requestId: null, reason: '' })}
+                className="px-5 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitRejectRequest}
+                className="px-5 py-2.5 text-sm font-bold bg-red-600 text-white hover:bg-red-700 rounded-xl transition-colors shadow-sm"
+              >
+                Reject Request
+              </button>
             </div>
           </div>
         </div>

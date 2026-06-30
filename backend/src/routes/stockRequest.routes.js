@@ -75,6 +75,34 @@ router.get('/', protect, async (req, res) => {
       .populate('fulfilledBy', 'name email')
       .sort({ createdAt: -1 });
 
+    // Auto-cancel expired unpaid requests
+    const now = new Date();
+    const expiryTime = 15 * 60 * 1000; // 15 minutes
+    let updatedCount = 0;
+    
+    for (let reqDoc of requests) {
+      if (
+        reqDoc.paymentStatus !== 'paid' && 
+        reqDoc.amount > 0 && 
+        !['Rejected', 'Received', 'Dispatched', 'Fulfilled'].includes(reqDoc.status) &&
+        (now - new Date(reqDoc.createdAt) > expiryTime)
+      ) {
+        reqDoc.status = 'Rejected';
+        reqDoc.notes = reqDoc.notes ? `${reqDoc.notes} | Auto-cancelled: Payment timeout` : 'Auto-cancelled: Payment timeout';
+        await reqDoc.save();
+        updatedCount++;
+      }
+    }
+
+    if (updatedCount > 0) {
+      const refreshedRequests = await StockRequest.find(filter)
+        .populate('companyId', 'companyName')
+        .populate('requestedBy', 'name email')
+        .populate('fulfilledBy', 'name email')
+        .sort({ createdAt: -1 });
+      return res.json(refreshedRequests);
+    }
+
     res.json(requests);
   } catch (error) {
     console.error('Get Stock Requests Error:', error);
@@ -104,6 +132,19 @@ router.put('/:id/status', protect, authorize('superadmin'), async (req, res) => 
       return res.status(400).json({ error: 'Cannot dispatch unpaid stock requests. Ensure payment is completed first.' });
     }
 
+    // Ensure we have enough global QRs
+    if (["Preparing for Dispatch", "Dispatched"].includes(status)) {
+      const availableQrs = await BlankQr.countDocuments({
+        isAssigned: false,
+        isBlocked: false,
+        assignedToCompany: null
+      });
+      
+      if (availableQrs < request.quantity) {
+        return res.status(400).json({ error: `Not enough Global QRs available. Requested: ${request.quantity}, Available: ${availableQrs}` });
+      }
+    }
+
     request.status = status;
     request.fulfilledBy = req.user._id;
     await request.save();
@@ -112,6 +153,28 @@ router.put('/:id/status', protect, authorize('superadmin'), async (req, res) => 
   } catch (error) {
     console.error('Update Stock Request Status Error:', error);
     res.status(500).json({ error: 'Failed to update stock request status' });
+  }
+});
+
+// @route   POST /api/stock-requests/:id/pay
+// @desc    Mock payment for stock request
+// @access  Company/Authorizer
+router.post('/:id/pay', protect, async (req, res) => {
+  try {
+    const request = await StockRequest.findById(req.params.id);
+    if (!request) return res.status(404).json({ error: 'Stock request not found' });
+    
+    if (request.paymentStatus === 'paid') {
+      return res.status(400).json({ error: 'Request is already paid' });
+    }
+    
+    request.paymentStatus = 'paid';
+    await request.save();
+    
+    res.json({ message: 'Payment successful', request });
+  } catch (error) {
+    console.error('Payment Error:', error);
+    res.status(500).json({ error: 'Server Error' });
   }
 });
 
@@ -175,7 +238,7 @@ router.put('/:id/receive', protect, async (req, res) => {
       isAssigned: false,
       isBlocked: false,
       assignedToCompany: null,
-    }).limit(qty).select('_id');
+    }).sort({ serialNumber: 1 }).limit(qty).select('_id serialNumber');
 
     if (unassignedQrs.length < qty) {
       return res.status(400).json({ 
@@ -199,9 +262,13 @@ router.put('/:id/receive', protect, async (req, res) => {
     });
     await Company.findByIdAndUpdate(companyId, { qrCredits: unassignedForCompanyCount });
 
-    // Update Request Status
+    // Update request status and QR range
     request.status = 'Received';
     request.fulfilledBy = req.user._id;
+    if (unassignedQrs.length > 0) {
+      request.startSerialNumber = unassignedQrs[0].serialNumber;
+      request.endSerialNumber = unassignedQrs[unassignedQrs.length - 1].serialNumber;
+    }
     await request.save();
 
     res.json({ message: 'Request received and QRs successfully assigned', request });

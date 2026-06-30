@@ -43,6 +43,14 @@ const stockRequestSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Payment",
       default: null
+    },
+    startSerialNumber: {
+      type: Number,
+      default: null
+    },
+    endSerialNumber: {
+      type: Number,
+      default: null
     }
   },
   { timestamps: true }

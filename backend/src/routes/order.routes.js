@@ -475,9 +475,11 @@ router.put('/:id/authorize', protect, authorize('company', 'authorizer'), async 
     // Fetch ProductTemplate and copy orderLinks
     const ProductTemplate = require('../models/ProductTemplate');
     let templateOrderLinks = [];
+    let templateEducationContent = [];
     if (order.templateId) {
       const tpl = await ProductTemplate.findById(order.templateId).lean();
       if (tpl && tpl.orderLinks) templateOrderLinks = tpl.orderLinks;
+      if (tpl && tpl.educationContent) templateEducationContent = tpl.educationContent;
     }
 
     // Find last sequence number for this brand
@@ -522,6 +524,7 @@ router.put('/:id/authorize', protect, authorize('company', 'authorizer'), async 
         variants: order.variants,
         warranty: (order.warranty && (order.warranty.duration || order.warranty.warrantyType)) ? order.warranty : undefined,
         orderLinks: (order.orderLinks && order.orderLinks.length > 0) ? order.orderLinks : templateOrderLinks,
+        educationContent: templateEducationContent,
         description: order.description,
         productInfo: order.productInfo,
         quantity: 1,
@@ -641,9 +644,11 @@ router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req
     // Fetch ProductTemplate and copy orderLinks
     const ProductTemplate = require('../models/ProductTemplate');
     let templateOrderLinks = [];
+    let templateEducationContent = [];
     if (order.templateId) {
       const tpl = await ProductTemplate.findById(order.templateId).lean();
       if (tpl && tpl.orderLinks) templateOrderLinks = tpl.orderLinks;
+      if (tpl && tpl.educationContent) templateEducationContent = tpl.educationContent;
     }
     
     // Track bonus in order
@@ -714,7 +719,8 @@ router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req
         dynamicFields: order.dynamicFields,
         variants: order.variants,
         warranty: (order.warranty && (order.warranty.duration || order.warranty.warrantyType)) ? order.warranty : undefined,
-        orderLinks: order.orderLinks || [],
+        orderLinks: (order.orderLinks && order.orderLinks.length > 0) ? order.orderLinks : templateOrderLinks,
+        educationContent: templateEducationContent,
         description: order.description,
         productInfo: order.productInfo,
         quantity: 1,
@@ -900,6 +906,47 @@ router.put('/:id/dispatch', protect, authorize('admin', 'superadmin'), async (re
   }
 });
 
+// 5.5 IN TRANSIT
+router.put('/:id/in-transit', protect, authorize('admin', 'superadmin'), async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    if (order.status !== 'Dispatched') {
+      return res.status(400).json({ message: 'Order must be dispatched first' });
+    }
+
+    order.status = 'In Transit';
+    
+    order.history.push({
+      status: 'In Transit',
+      changedBy: req.user._id,
+      role: req.user.role,
+      comment: 'Order is now in transit'
+    });
+
+    await order.save();
+    
+    const recipients = await getNotificationRecipients(order);
+    await sendOrderStatusEmail(recipients, {
+      orderId: order.orderId,
+      productName: order.productName,
+      brand: order.brand,
+      quantity: order.quantity,
+      status: order.status,
+      changedBy: req.user.name || req.user.email
+    }, `Order is now In Transit.`);
+    
+    res.json(order);
+  } catch (error) {
+    console.error('In transit error:', error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
+
 // 8. MARK AS RECEIVED - FINAL STEP (Authorizer or Company) - ACTIVATES QRs
 router.put('/:id/received', protect, authorize('company', 'authorizer'), async (req, res) => {
   try {
@@ -924,8 +971,8 @@ router.put('/:id/received', protect, authorize('company', 'authorizer'), async (
       return res.status(403).json({ message: 'Not authorized for this order' });
     }
 
-    if (order.status !== 'Dispatched') {
-      return res.status(400).json({ message: 'Order must be dispatched first' });
+    if (order.status !== 'In Transit') {
+      return res.status(400).json({ message: 'Order must be In Transit first' });
     }
 
     // ACTIVATE ALL QR CODES FOR THIS ORDER
@@ -962,6 +1009,25 @@ router.put('/:id/received', protect, authorize('company', 'authorizer'), async (
     });
   } catch (error) {
     console.error('Receive order error:', error);
+    res.status(500).json({ message: 'Server Error', error: error.message });
+  }
+});
+
+// 8.5 MOCK PAYMENT
+router.post('/:id/pay', protect, async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+    
+    if (order.paymentStatus === 'paid') {
+      return res.status(400).json({ message: 'Order is already paid' });
+    }
+    
+    order.paymentStatus = 'paid';
+    await order.save();
+    
+    res.json({ message: 'Payment successful', order });
+  } catch (error) {
     res.status(500).json({ message: 'Server Error', error: error.message });
   }
 });

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Package, AlertCircle, X, Send } from 'lucide-react';
 import API_BASE_URL from '../config/api';
 
-export default function StockRequestModal({ isOpen, onClose }) {
+export default function StockRequestModal({ isOpen, onClose, onRequestCreated }) {
   const [quantity, setQuantity] = useState('');
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -40,13 +40,13 @@ export default function StockRequestModal({ isOpen, onClose }) {
       });
       const data = await res.json();
       if (res.ok) {
-        setSuccess('Stock request submitted successfully. Superadmin will review and assign QRs soon.');
-        setTimeout(() => {
-          onClose();
-          setSuccess('');
+        onClose();
+        if (typeof onRequestCreated === 'function') {
+          onRequestCreated(data._id);
+        } else {
           setQuantity('');
           setNotes('');
-        }, 3000);
+        }
       } else {
         setError(data.error || 'Failed to submit request.');
       }
