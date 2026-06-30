@@ -1,8 +1,53 @@
 const express = require('express');
+const { scrapeProductPrice } = require('../utils/scraper');
 const ProductTemplate = require('../models/ProductTemplate');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
 const router = express.Router();
+
+
+const syncScrapeTemplate = async (templateId) => {
+  try {
+    const template = await ProductTemplate.findById(templateId);
+    if (!template || !template.orderLinks || template.orderLinks.length === 0) return template;
+    
+    let templateUpdated = false;
+    let overallBestPrice = Infinity;
+    
+    for (const link of template.orderLinks) {
+      if (link.url) {
+        const scrapedDetails = await scrapeProductPrice(link.url);
+        if (scrapedDetails) {
+          if (scrapedDetails.price) link.price = scrapedDetails.price;
+          if (scrapedDetails.mrp) link.mrp = scrapedDetails.mrp;
+          if (scrapedDetails.discount) link.discount = scrapedDetails.discount;
+          if (scrapedDetails.rating) link.rating = scrapedDetails.rating;
+          if (scrapedDetails.reviewsCount) link.reviewsCount = scrapedDetails.reviewsCount;
+          if (scrapedDetails.siteImage && !link.siteImage) link.siteImage = scrapedDetails.siteImage;
+          link.lastScrapedAt = new Date();
+          templateUpdated = true;
+          
+          if (scrapedDetails.price && scrapedDetails.price < overallBestPrice) {
+            overallBestPrice = scrapedDetails.price;
+          }
+        }
+      }
+    }
+    
+    if (templateUpdated) {
+      if (overallBestPrice !== Infinity) {
+        template.price = overallBestPrice;
+      }
+      return await template.save();
+    }
+    return template;
+  } catch (err) {
+    console.error('Sync scrape failed for template', templateId, err);
+    return null;
+  }
+};
+
+
 
 // @desc    Get all product templates for a brand or company
 // @route   GET /api/product-templates
@@ -81,7 +126,8 @@ router.post('/', protect, async (req, res) => {
     });
 
     const savedTemplate = await template.save();
-    res.status(201).json(savedTemplate);
+    const finalTemplate = await syncScrapeTemplate(savedTemplate._id);
+    res.status(201).json(finalTemplate || savedTemplate);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -129,7 +175,8 @@ router.patch('/:id', protect, async (req, res) => {
     Object.keys(updates).forEach(key => template[key] = updates[key]);
 
     const updatedTemplate = await template.save();
-    res.json(updatedTemplate);
+    const finalTemplate = await syncScrapeTemplate(updatedTemplate._id);
+    res.json(finalTemplate || updatedTemplate);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

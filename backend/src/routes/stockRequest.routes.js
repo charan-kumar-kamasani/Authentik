@@ -100,7 +100,7 @@ router.put('/:id/status', protect, authorize('superadmin'), async (req, res) => 
     }
 
     // Ensure payment is completed before dispatching
-    if (["Preparing for Dispatch", "Dispatched"].includes(status) && request.paymentStatus !== "paid") {
+    if (["Preparing for Dispatch", "Dispatched"].includes(status) && request.paymentStatus !== "paid" && request.amount > 0 && !req.body.bypassPaymentCheck) {
       return res.status(400).json({ error: 'Cannot dispatch unpaid stock requests. Ensure payment is completed first.' });
     }
 

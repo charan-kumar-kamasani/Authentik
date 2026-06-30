@@ -33,117 +33,159 @@ const closeBrowser = async () => {
   }
 };
 
+
+const cleanPrice = (str) => {
+  if (!str) return null;
+  const num = parseFloat(str.toString().replace(/,/g, '').replace(/[^0-9.]/g, ''));
+  return isNaN(num) ? null : num;
+};
+
+
 const getUniversalData = (html) => {
   const $ = cheerio.load(html);
   const result = { price: null, mrp: null, discount: null, rating: null, reviewsCount: null };
 
-  // 1. JSON-LD Schema.org extraction
+  const checkSchema = (obj) => {
+    if (!obj || typeof obj !== 'object') return;
+    if (obj['@type'] === 'Product' || obj['@type'] === 'http://schema.org/Product') {
+      if (obj.offers && obj.offers.price && !result.price) {
+        result.price = cleanPrice(obj.offers.price);
+      }
+      if (obj.offers && obj.offers.highPrice && !result.mrp) {
+        result.mrp = cleanPrice(obj.offers.highPrice);
+      }
+      if (obj.aggregateRating) {
+        if (obj.aggregateRating.ratingValue && !result.rating) result.rating = parseFloat(obj.aggregateRating.ratingValue);
+        if (obj.aggregateRating.ratingCount) result.reviewsCount = obj.aggregateRating.ratingCount;
+        else if (obj.aggregateRating.reviewCount && !result.reviewsCount) result.reviewsCount = obj.aggregateRating.reviewCount;
+      }
+    }
+    Object.values(obj).forEach(val => checkSchema(val));
+  };
+
   $('script[type="application/ld+json"]').each((i, el) => {
     try {
       const data = JSON.parse($(el).html());
-      const checkSchema = (obj) => {
-        if (!obj || typeof obj !== 'object') return;
-        
-        if (obj['@type'] === 'Product' || obj['@type'] === 'http://schema.org/Product') {
-          if (obj.offers && obj.offers.price && !result.price) {
-            result.price = parseFloat(obj.offers.price);
-          }
-          if (obj.aggregateRating) {
-            if (obj.aggregateRating.ratingValue && !result.rating) result.rating = parseFloat(obj.aggregateRating.ratingValue);
-            if (obj.aggregateRating.ratingCount) result.reviewsCount = obj.aggregateRating.ratingCount;
-            else if (obj.aggregateRating.reviewCount && !result.reviewsCount) result.reviewsCount = obj.aggregateRating.reviewCount;
-          }
-        }
-        Object.values(obj).forEach(val => checkSchema(val));
-      };
-      
       if (Array.isArray(data)) data.forEach(d => checkSchema(d));
       else checkSchema(data);
     } catch(e) {}
   });
 
-    // 2. Aggressive Text Heuristics for Price, MRP, Discount
-  const textNodes = [];
+  // Extract from meta tags (OpenGraph, etc)
+  if (!result.price) {
+    const metaPrice = $('meta[property="product:price:amount"], meta[name="twitter:data1"], meta[itemprop="price"]').first().attr('content');
+    if (metaPrice) result.price = cleanPrice(metaPrice);
+  }
+
+  // DOM Heuristics for MRP (usually struck through)
+  $('del, s, strike, span[style*="line-through"], div[style*="line-through"]').each((i, el) => {
+    const txt = $(el).text().trim();
+    if (txt.match(/₹|rs.?/i)) {
+      const p = cleanPrice(txt);
+      if (p && p < 1000000 && (!result.mrp || p > result.mrp)) result.mrp = p;
+    }
+  });
+
+  // Fallback for price and MRP if JSON-LD/meta failed
+  const potentialPrices = [];
+  $('*').not('script, style, noscript, svg, path').each((i, el) => {
+    const txt = $(el).text().trim();
+    if ($(el).children().length === 0 && txt.match(/^(?:₹|rs.?)s*[0-9,]+(?:.[0-9]{1,2})?$/i)) {
+       const p = cleanPrice(txt);
+       if (p && p < 1000000) potentialPrices.push(p);
+    }
+  });
+
+  if (!result.price && potentialPrices.length > 0) {
+     result.price = potentialPrices[0];
+  }
+
+  if (!result.mrp) {
+     $('*').not('script, style, noscript, svg, path').each((i, el) => {
+       const txt = $(el).text().trim().toLowerCase();
+       if ($(el).children().length === 0 && txt.includes('mrp') && txt.match(/[0-9]/)) {
+          const p = cleanPrice(txt);
+          if (p && p < 1000000 && p >= (result.price || 0)) result.mrp = p;
+       }
+     });
+  }
+
+  if (!result.mrp && potentialPrices.length > 1) {
+      const p1 = potentialPrices[0];
+      const p2 = potentialPrices[1];
+      if (Math.abs(p1 - p2) > 0) {
+         result.price = Math.min(p1, p2);
+         result.mrp = Math.max(p1, p2);
+      }
+  }
+
+  if (!result.mrp || result.mrp < result.price) result.mrp = result.price;
+
+  // Find Discount
+  $('*').not('script, style, noscript, svg, path').each((i, el) => {
+    if ($(el).children().length === 0) {
+      const txt = $(el).text().trim().toLowerCase();
+      if ((txt.includes('%') && txt.includes('off') && txt.length < 20) || txt.match(/^[0-9]{1,2}%$/)) {
+        if (!result.discount) result.discount = txt.replace(/[^0-9%]/g, '');
+      }
+    }
+  });
+
+  // Find Rating/Reviews
+  let foundRating = null;
+  let foundReviews = null;
   $('*').not('script, style, noscript, svg, path').each((i, el) => {
     if ($(el).children().length === 0) {
       const txt = $(el).text().trim();
-      if (txt) textNodes.push(txt);
-    }
-  });
-
-  const prices = [];
-  const discounts = [];
-  let foundRating = null;
-  let foundReviews = null;
-
-  textNodes.forEach(text => {
-    // Discounts
-    if (text.includes('%') && text.toLowerCase().includes('off') && text.length < 20) {
-      discounts.push(text.replace(/[^0-9%]/g, ''));
-    } else if (text.match(/^[0-9]{1,2}%$/)) {
-      discounts.push(text);
-    }
-
-    // Ratings
-    if (!foundRating && text.match(/^[0-5].[0-9]\s*(★|\*|star)/i) && text.length < 15) {
-      foundRating = parseFloat(text);
-    }
-
-    // Reviews
-    if (!foundReviews && text.match(/^\([0-9,]+\)$/)) {
-      foundReviews = text.replace(/[^0-9]/g, '');
-    } else if (!foundReviews && text.toLowerCase().includes('rating') && text.match(/[0-9,]+/) && text.length < 30) {
-      foundReviews = text.replace(/[^0-9]/g, '');
-    }
-  });
-
-  // Extract prices using regex on the entire body text to handle separated currency symbols (e.g. Zepto)
-  const bodyText = $('body').text().replace(/\s+/g, ' ');
-  const regexMatches = [...bodyText.matchAll(/(?:₹|rs\.?)\s*([0-9,]+(?:\.[0-9]{1,2})?)/gi)];
-  regexMatches.forEach(m => {
-    const p = parseFloat(m[1].replace(/,/g, ''));
-    if (!isNaN(p) && p > 0 && p < 500000) prices.push(p);
-  });
-
-  // If JSON-LD found a price, use regex prices to find discounts or MRP
-  if (result.price) {
-    const validPrices = prices.slice(0, 10).filter(p => p > 0);
-    if (validPrices.length > 0) {
-      const minP = Math.min(...validPrices);
-      const maxP = Math.max(...validPrices);
-      
-      if (minP < result.price && minP >= result.price * 0.2) {
-        result.price = minP; // Found a discounted price that JSON-LD missed
+      if (!foundRating && txt.match(/^[0-5]\.[0-9]\s*(★|\*|star)/i) && txt.length < 15) {
+        foundRating = parseFloat(txt);
       }
-      if (maxP > result.price && maxP <= result.price * 5) {
-        result.mrp = maxP; // Found a valid MRP
-      } else if (!result.mrp) {
-        result.mrp = result.price;
+      if (!foundReviews && txt.match(/^\([0-9,]+\)$/)) {
+        foundReviews = txt.replace(/[^0-9]/g, '');
+      } else if (!foundReviews && txt.toLowerCase().includes('rating') && txt.match(/[0-9,]+/) && txt.length < 30) {
+        foundReviews = txt.replace(/[^0-9]/g, '');
       }
     }
-  } else {
-    if (prices.length >= 2) {
-      const p1 = prices[0];
-      const p2 = prices[1];
-      result.price = Math.min(p1, p2);
-      result.mrp = Math.max(p1, p2);
-    } else if (prices.length === 1) {
-      result.price = prices[0];
-      result.mrp = prices[0];
-    }
-  }
+  });
 
-  if (discounts.length > 0) {
-    result.discount = discounts[0].includes('%') ? discounts[0] : discounts[0] + '%';
-  }
-
-  
   if (foundRating && !result.rating) result.rating = foundRating;
   if (foundReviews && !result.reviewsCount) result.reviewsCount = foundReviews;
+  
+  if (result.discount && !result.discount.includes('%')) result.discount += '%';
 
   return result;
 };
 
+
+const getONPrice = (html) => {
+  const result = getUniversalData(html);
+  const $ = require('cheerio').load(html);
+  
+  const salePrice = $('.selling-price-div .price-item').first().text();
+  if (salePrice) {
+    const p = cleanPrice(salePrice);
+    if (p) result.price = p;
+  }
+  
+  const regularPrice = $('.compare-price-div s').first().text();
+  if (regularPrice) {
+    const p = cleanPrice(regularPrice);
+    if (p && p < 1000000) result.mrp = p;
+  }
+  
+  const discountText = $('.sale-percentage').first().text();
+  if (discountText) {
+    result.discount = discountText.replace(/[^0-9%]/g, '');
+  }
+  
+  if (result.price && result.mrp && result.mrp > result.price && !result.discount) {
+    const diff = result.mrp - result.price;
+    const pct = Math.round((diff / result.mrp) * 100);
+    result.discount = pct + '%';
+  }
+
+  return result;
+};
 
 const getFlipkartPrice = (html) => {
   const result = getUniversalData(html);
@@ -162,14 +204,14 @@ const getFlipkartPrice = (html) => {
     $('*').not('script, style, svg, noscript').each((i, el) => {
       const txt = $(el).text().trim();
       if (txt.startsWith('₹') && txt.length < 15 && $(el).children().length === 0) {
-         potentialPrices.push(parseFloat(txt.replace(/[^0-9.]/g, '')));
+         potentialPrices.push(cleanPrice(txt));
       }
     });
     
     // Try specific Mobile MRP class provided by user
     let mobileMrpText = $('.css-146c3p1.r-11wrixw').first().text().trim();
     if (mobileMrpText) {
-      result.mrp = parseFloat(mobileMrpText.replace(/[^0-9.]/g, ''));
+      result.mrp = cleanPrice(mobileMrpText);
     } else if (result.price) {
       // Find the first MRP that is greater than the JSON-LD price (but not astronomically higher)
       const higherPrices = potentialPrices.filter(p => p > result.price && p < result.price * 3);
@@ -190,13 +232,40 @@ const getFlipkartPrice = (html) => {
       }
     }
   } else {
-    if (priceText) result.price = parseFloat(priceText.replace(/[^0-9.]/g, ''));
-    if (mrpText) result.mrp = parseFloat(mrpText.replace(/[^0-9.]/g, ''));
+    if (priceText) result.price = cleanPrice(priceText);
+    if (mrpText) result.mrp = cleanPrice(mrpText);
   }
 
   if (discountText) result.discount = discountText.replace(/[^0-9%]/g, '');
   if (ratingText) result.rating = parseFloat(ratingText);
   if (reviewsText) result.reviewsCount = reviewsText.split(' ')[0].replace(/[^0-9,]/g, '');
+
+  return result;
+};
+
+
+const getCromaPrice = (html) => {
+  const result = getUniversalData(html); // Fallback to universal first
+  const $ = require('cheerio').load(html);
+  
+  const pdpPrice = $('#pdp-product-price').attr('value') || $('#pdp-product-price').text();
+  if (pdpPrice) {
+    const p = cleanPrice(pdpPrice);
+    if (p) result.price = p;
+  }
+  
+  const oldPrice = $('#old-price').attr('data-value') || $('#old-price').text();
+  if (oldPrice) {
+    const p = cleanPrice(oldPrice);
+    if (p) result.mrp = p;
+  }
+  
+  // Recalculate discount if mrp and price found
+  if (result.price && result.mrp && result.mrp > result.price) {
+    const diff = result.mrp - result.price;
+    const pct = Math.round((diff / result.mrp) * 100);
+    result.discount = pct + '%';
+  }
 
   return result;
 };
@@ -208,12 +277,12 @@ const getAmazonPrice = (html) => {
   
   if (!result.price) {
     let priceText = $('.a-price-whole').first().text().trim() || $('#priceblock_ourprice').text().trim() || $('.a-price .a-offscreen').first().text().trim();
-    if (priceText) result.price = parseFloat(priceText.replace(/[^0-9.]/g, ''));
+    if (priceText) result.price = cleanPrice(priceText);
   }
   
   if (!result.mrp) {
     let mrpText = $('.a-text-price .a-offscreen').first().text().trim() || $('.priceBlockStrikePriceString').text().trim();
-    if (mrpText) result.mrp = parseFloat(mrpText.replace(/[^0-9.]/g, ''));
+    if (mrpText) result.mrp = cleanPrice(mrpText);
   }
   
   if (!result.discount) {
@@ -239,8 +308,9 @@ const getAmazonPrice = (html) => {
   return result;
 };
 
-const scrapeProductPrice = async (url) => {
-  if (!url) return null;
+const scrapeProductPrice = async (rawUrl) => {
+  if (!rawUrl) return null;
+  const url = rawUrl.split(' ')[0].trim();
   let page;
   try {
     const browser = await getBrowser();
@@ -262,16 +332,29 @@ const scrapeProductPrice = async (url) => {
       result = getAmazonPrice(html);
     } else if (lowerUrl.includes('flipkart.com')) {
       result = getFlipkartPrice(html);
+    } else if (lowerUrl.includes('croma.com')) {
+      result = getCromaPrice(html);
+    } else if (lowerUrl.includes('optimumnutrition.co.in')) {
+      result = getONPrice(html);
     } else {
-      // Use Universal Scraper for Flipkart, Myntra, Meesho, Nykaa, etc.
       result = getUniversalData(html);
     }
     
-    if (result && result.price) {
+    if (result) {
       try {
+        const cheerio = require('cheerio');
+        const $ = cheerio.load(html);
+        let siteImage = $('link[rel="icon"]').attr('href') || $('link[rel="shortcut icon"]').attr('href') || $('meta[property="og:image"]').attr('content');
         const urlObj = new URL(url);
-        result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${urlObj.origin}&size=64`;
+        
+        if (siteImage) {
+          result.siteImage = new URL(siteImage, url).href;
+        } else {
+          result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${urlObj.origin}&size=128`;
+        }
       } catch(e) {}
+      
+      // We return the result even if price is missing so we can at least save the logo/rating if found
       return result;
     }
     return null;

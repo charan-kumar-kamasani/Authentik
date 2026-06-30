@@ -303,7 +303,9 @@ const QRStockDashboard = () => {
                                     <span className="inline-flex items-center px-3 py-1 rounded-xl text-[10px] font-black bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 shadow-sm uppercase tracking-widest">Paid</span>
                                   )}
                                   {req.paymentStatus !== 'paid' && (
-                                    <span className="inline-flex items-center px-3 py-1 rounded-xl text-[10px] font-black bg-slate-100 text-slate-600 border border-slate-200 shadow-sm">₹{req.amount}</span>
+                                    <span className="inline-flex items-center px-3 py-1 rounded-xl text-[10px] font-black bg-slate-100 text-slate-600 border border-slate-200 shadow-sm">
+                                      {req.amount === null || req.amount === undefined ? 'Amount Pending' : req.amount === 0 ? 'Free' : `₹${req.amount}`}
+                                    </span>
                                   )}
                                   {getStatusBadge(req.status)}
                                 </div>

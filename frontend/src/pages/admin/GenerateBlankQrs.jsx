@@ -28,6 +28,9 @@ export default function GenerateBlankQrs() {
   const [activeTab, setActiveTab] = useState('requests');
   const [showGenerateModal, setShowGenerateModal] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [expandedBatch, setExpandedBatch] = useState(null);
+  const [batchAssignments, setBatchAssignments] = useState({});
+  const [loadingAssignments, setLoadingAssignments] = useState({});
   
   const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
 
@@ -90,6 +93,30 @@ export default function GenerateBlankQrs() {
       setLoadingRequests(false);
     }
   }, [token]);
+
+  const handleToggleBatch = async (batchId) => {
+    if (expandedBatch === batchId) {
+      setExpandedBatch(null);
+      return;
+    }
+    setExpandedBatch(batchId);
+    if (!batchAssignments[batchId]) {
+      setLoadingAssignments(prev => ({ ...prev, [batchId]: true }));
+      try {
+        const res = await fetch(`${API_BASE_URL}/admin/blank-qr-batches/${batchId}/assignments`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setBatchAssignments(prev => ({ ...prev, [batchId]: data }));
+        }
+      } catch (err) {
+        console.error("Failed to fetch assignments", err);
+      } finally {
+        setLoadingAssignments(prev => ({ ...prev, [batchId]: false }));
+      }
+    }
+  };
 
   useEffect(() => {
     fetchBatches();
@@ -218,8 +245,8 @@ export default function GenerateBlankQrs() {
     }
   };
 
-  const handleUpdateStatus = async (requestId, newStatus) => {
-    if (!window.confirm(`Are you sure you want to mark this request as '${newStatus}'?`)) return;
+  const handleUpdateStatus = async (requestId, newStatus, bypassPaymentCheck = false, skipConfirm = false) => {
+    if (!skipConfirm && !window.confirm(`Are you sure you want to mark this request as '${newStatus}'?`)) return;
     try {
       const res = await fetch(`${API_BASE_URL}/stock-requests/${requestId}/status`, {
         method: 'PUT',
@@ -227,7 +254,7 @@ export default function GenerateBlankQrs() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify({ status: newStatus, bypassPaymentCheck })
       });
       const data = await res.json();
       if (res.ok) {
@@ -400,7 +427,9 @@ export default function GenerateBlankQrs() {
                           <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">PAID (₹{req.amount})</span>
                         ) : (
                           <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">₹{req.amount}</span>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">
+                              {req.amount === null || req.amount === undefined ? 'Pending' : req.amount === 0 ? 'Free' : `₹${req.amount}`}
+                            </span>
                             <button
                               onClick={() => handleUpdateAmount(req._id, req.amount)}
                               className="text-xs text-blue-600 hover:text-blue-800 underline"
@@ -427,7 +456,32 @@ export default function GenerateBlankQrs() {
                           {req.status === 'Pending' && (
                             <div className="flex gap-2">
                               <button
-                                onClick={() => handleUpdateStatus(req._id, 'Approved')}
+                                onClick={async () => {
+                                  if (req.amount === null || req.amount === undefined || req.amount === 0) {
+                                    const newAmountStr = window.prompt("Payment amount is not set or is 0. Please set the payment amount before approving (Enter 0 if free):", req.amount || "0");
+                                    if (newAmountStr === null) return;
+                                    const newAmount = parseFloat(newAmountStr);
+                                    if (isNaN(newAmount) || newAmount < 0) {
+                                      alert("Please enter a valid amount.");
+                                      return;
+                                    }
+                                    try {
+                                      const res = await fetch(`${API_BASE_URL}/stock-requests/${req._id}/update-amount`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                        body: JSON.stringify({ amount: newAmount })
+                                      });
+                                      if (!res.ok) {
+                                        alert("Failed to update amount.");
+                                        return;
+                                      }
+                                    } catch(err) {
+                                      alert("Error updating amount.");
+                                      return;
+                                    }
+                                  }
+                                  handleUpdateStatus(req._id, 'Approved');
+                                }}
                                 className="px-3 py-1.5 bg-indigo-600 text-white font-bold text-xs rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
                               >
                                 Approve
@@ -443,14 +497,16 @@ export default function GenerateBlankQrs() {
                           {req.status === 'Approved' && (
                             <button
                               onClick={() => {
-                                if (req.paymentStatus !== 'paid') {
-                                  alert('Cannot dispatch! Payment has not been completed by the company.');
-                                  return;
+                                if (req.paymentStatus !== 'paid' && req.amount > 0) {
+                                  if (!window.confirm(`Warning: Payment of ₹${req.amount} has not been completed by the company. Are you sure you want to dispatch anyway?`)) {
+                                    return;
+                                  }
+                                  handleUpdateStatus(req._id, 'Preparing for Dispatch', true, true);
+                                } else {
+                                  handleUpdateStatus(req._id, 'Preparing for Dispatch', true);
                                 }
-                                handleUpdateStatus(req._id, 'Preparing for Dispatch');
                               }}
-                              className={`px-3 py-1.5 font-bold text-xs rounded-lg transition-colors shadow-sm ${req.paymentStatus === 'paid' ? 'bg-blue-600 text-white hover:bg-blue-700' : 'bg-slate-200 text-slate-500 cursor-not-allowed'}`}
-                              title={req.paymentStatus !== 'paid' ? "Payment required before dispatch" : ""}
+                              className="px-3 py-1.5 font-bold text-xs rounded-lg transition-colors shadow-sm bg-blue-600 text-white hover:bg-blue-700"
                             >
                               Prepare Dispatch
                             </button>
@@ -519,8 +575,13 @@ export default function GenerateBlankQrs() {
                     </td>
                   </tr>
                 ) : (
-                  batches.map((batch) => (
-                    <tr key={batch._id} className="hover:bg-slate-50 transition-colors group">
+                  batches.map((batch) => {
+                    const isExpanded = expandedBatch === batch._id;
+                    const assignments = batchAssignments[batch._id] || [];
+                    const isLoading = loadingAssignments[batch._id];
+                    return (
+                    <React.Fragment key={batch._id}>
+                    <tr className="hover:bg-slate-50 transition-colors group cursor-pointer" onClick={() => handleToggleBatch(batch._id)}>
                       <td className="p-4 text-slate-600 whitespace-nowrap">
                         {formatDate(batch.createdAt)}
                       </td>
@@ -544,7 +605,7 @@ export default function GenerateBlankQrs() {
                       </td>
                       <td className="p-4 whitespace-nowrap text-right">
                         <button
-                          onClick={() => navigate(`/admin/superadmin-qrs/batch/${batch._id}`)}
+                          onClick={(e) => { e.stopPropagation(); navigate(`/admin/superadmin-qrs/batch/${batch._id}`); }}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg text-sm font-semibold transition-colors mr-2"
                         >
                           <ExternalLink size={16} />
@@ -552,7 +613,41 @@ export default function GenerateBlankQrs() {
                         </button>
                       </td>
                     </tr>
-                  ))
+                    {isExpanded && (
+                      <tr className="bg-slate-50/50">
+                        <td colSpan="6" className="p-0 border-b border-slate-100">
+                          <div className="p-6 animate-in slide-in-from-top-2 duration-200">
+                            <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Company Assignments</h4>
+                            {isLoading ? (
+                              <div className="flex items-center gap-2 text-sm text-slate-500">
+                                <div className="w-4 h-4 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+                                Loading assignments...
+                              </div>
+                            ) : assignments.length === 0 ? (
+                              <div className="text-sm text-slate-500 italic">No QRs from this batch have been assigned to any company yet.</div>
+                            ) : (
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {assignments.map((seg, idx) => (
+                                  <div key={idx} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-2">
+                                    <div className="font-bold text-slate-800 text-sm">{seg.company?.companyName || 'Unknown Company'}</div>
+                                    <div className="flex items-center gap-2 font-mono text-xs bg-slate-100 px-2 py-1 rounded text-slate-600 w-fit">
+                                      <span className="font-semibold">{formatSN(seg.startSerialNumber)}</span>
+                                      <span className="text-slate-400">➔</span>
+                                      <span className="font-semibold">{formatSN(seg.endSerialNumber)}</span>
+                                    </div>
+                                    <div className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded w-fit">
+                                      {seg.count.toLocaleString()} QRs Assigned
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                    </React.Fragment>
+                  )})
                 )}
               </tbody>
             </table>
