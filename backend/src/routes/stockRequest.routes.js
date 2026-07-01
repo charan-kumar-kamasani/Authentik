@@ -110,6 +110,37 @@ router.get('/', protect, async (req, res) => {
   }
 });
 
+// @route   GET /api/stock-requests/:id/preview-allocation
+// @desc    Preview QR allocation range for dispatch
+// @access  Superadmin
+router.get('/:id/preview-allocation', protect, authorize('superadmin'), async (req, res) => {
+  try {
+    const request = await StockRequest.findById(req.params.id);
+    if (!request) return res.status(404).json({ error: 'Stock request not found' });
+    
+    const qty = request.quantity;
+    const unassignedQrs = await BlankQr.find({
+      isAssigned: false,
+      isBlocked: false,
+      assignedToCompany: null,
+    }).sort({ serialNumber: 1 }).limit(qty).select('serialNumber');
+
+    if (unassignedQrs.length < qty) {
+      return res.status(400).json({ 
+        error: `Not enough unassigned global QRs. Requested: ${qty}, Available: ${unassignedQrs.length}` 
+      });
+    }
+
+    const startSerialNumber = unassignedQrs[0].serialNumber;
+    const endSerialNumber = unassignedQrs[unassignedQrs.length - 1].serialNumber;
+
+    res.json({ startSerialNumber, endSerialNumber, availableCount: unassignedQrs.length });
+  } catch (error) {
+    console.error('Preview Allocation Error:', error);
+    res.status(500).json({ error: 'Failed to preview allocation' });
+  }
+});
+
 // @route   PUT /api/stock-requests/:id/status
 // @desc    Update stock request status (logistics workflow)
 // @access  Superadmin
@@ -142,6 +173,25 @@ router.put('/:id/status', protect, authorize('superadmin'), async (req, res) => 
       
       if (availableQrs < request.quantity) {
         return res.status(400).json({ error: `Not enough Global QRs available. Requested: ${request.quantity}, Available: ${availableQrs}` });
+      }
+    }
+
+    // Allocate QRs when preparing for dispatch
+    if (status === "Preparing for Dispatch" && !request.startSerialNumber) {
+      const unassignedQrs = await BlankQr.find({
+        isAssigned: false,
+        isBlocked: false,
+        assignedToCompany: null,
+      }).sort({ serialNumber: 1 }).limit(request.quantity).select('_id serialNumber');
+      
+      if (unassignedQrs.length === request.quantity) {
+        const qrIds = unassignedQrs.map(qr => qr._id);
+        await BlankQr.updateMany(
+          { _id: { $in: qrIds } },
+          { $set: { assignedToCompany: request.companyId } }
+        );
+        request.startSerialNumber = unassignedQrs[0].serialNumber;
+        request.endSerialNumber = unassignedQrs[unassignedQrs.length - 1].serialNumber;
       }
     }
 
@@ -231,29 +281,6 @@ router.put('/:id/receive', protect, async (req, res) => {
       return res.status(400).json({ error: `Cannot receive a request that is currently ${request.status}. It must be Dispatched first.` });
     }
 
-    const qty = request.quantity;
-
-    // Find `qty` unassigned, unblocked, company-less QRs
-    const unassignedQrs = await BlankQr.find({
-      isAssigned: false,
-      isBlocked: false,
-      assignedToCompany: null,
-    }).sort({ serialNumber: 1 }).limit(qty).select('_id serialNumber');
-
-    if (unassignedQrs.length < qty) {
-      return res.status(400).json({ 
-        error: `Not enough unassigned global QRs. Requested: ${qty}, Available: ${unassignedQrs.length}` 
-      });
-    }
-
-    const qrIds = unassignedQrs.map(qr => qr._id);
-
-    // Assign QRs to the company
-    await BlankQr.updateMany(
-      { _id: { $in: qrIds } },
-      { $set: { assignedToCompany: companyId } }
-    );
-
     // Sync company qrCredits cache
     const unassignedForCompanyCount = await BlankQr.countDocuments({
       assignedToCompany: companyId,
@@ -262,13 +289,9 @@ router.put('/:id/receive', protect, async (req, res) => {
     });
     await Company.findByIdAndUpdate(companyId, { qrCredits: unassignedForCompanyCount });
 
-    // Update request status and QR range
+    // Update request status
     request.status = 'Received';
     request.fulfilledBy = req.user._id;
-    if (unassignedQrs.length > 0) {
-      request.startSerialNumber = unassignedQrs[0].serialNumber;
-      request.endSerialNumber = unassignedQrs[unassignedQrs.length - 1].serialNumber;
-    }
     await request.save();
 
     res.json({ message: 'Request received and QRs successfully assigned', request });

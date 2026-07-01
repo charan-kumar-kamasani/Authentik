@@ -6,6 +6,7 @@ import { useConfirm } from '../../components/ConfirmModal';
 
 export default function GenerateBlankQrs() {
   const [quantity, setQuantity] = useState('');
+  const [format, setFormat] = useState('pdf');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -148,7 +149,7 @@ export default function GenerateBlankQrs() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ quantity: qtyNum }),
+        body: JSON.stringify({ quantity: qtyNum, format }),
       });
 
       const data = await res.json();
@@ -156,7 +157,10 @@ export default function GenerateBlankQrs() {
       if (res.ok) {
         setSuccess(`Successfully generated ${data.count} blank QRs!`);
         if (data.pdfBase64) {
-          downloadPdf(data.pdfBase64, `blank_qrs_${data.batch?.batchName || Date.now()}.pdf`);
+          const isZip = ['tiff', 'tif', 'cdr'].includes(data.format || format);
+          const ext = isZip ? 'zip' : 'pdf';
+          const formatStr = (data.format || format).toUpperCase();
+          downloadFile(data.pdfBase64, `blank_qrs_${formatStr}_${data.batch?.batchName || Date.now()}.${ext}`);
         }
         setQuantity('');
         fetchBatches(); // refresh the table
@@ -248,11 +252,55 @@ export default function GenerateBlankQrs() {
     }
   };
 
+  const formatSN = (num) => {
+    const q = Math.floor(num / 50000) + 26;
+    const r = num % 50000;
+    let prefix = "";
+    let temp = q;
+    do {
+      prefix = String.fromCharCode((temp % 26) + 65) + prefix;
+      temp = Math.floor(temp / 26) - 1;
+    } while (temp >= 0);
+    return `${prefix}-${r.toString().padStart(5, '0')}`;
+  };
+
   const handleUpdateStatus = async (requestId, newStatus, bypassPaymentCheck = false, skipConfirm = false) => {
     if (!skipConfirm) {
+      let description = `Are you sure you want to mark this request as '${newStatus}'?`;
+
+      if (newStatus === 'Preparing for Dispatch') {
+        try {
+          const previewRes = await fetch(`${API_BASE_URL}/stock-requests/${requestId}/preview-allocation`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (previewRes.ok) {
+            const previewData = await previewRes.json();
+            description = (
+              <div className="flex flex-col gap-3">
+                <p className="text-slate-700 font-medium">Are you sure you want to mark this request as <strong>Preparing for Dispatch</strong>?</p>
+                <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-3 text-sm">
+                  <p className="text-indigo-800 font-semibold mb-1">QRs to be allocated and deducted from Global Inventory:</p>
+                  <p className="font-mono font-bold text-indigo-900 bg-white px-2 py-1 rounded inline-block shadow-sm">
+                    {formatSN(previewData.startSerialNumber)} ➔ {formatSN(previewData.endSerialNumber)}
+                  </p>
+                </div>
+              </div>
+            );
+          } else {
+            const errorData = await previewRes.json();
+            await confirm({ title: 'Allocation Error', description: errorData.error || "Failed to preview allocation. Not enough global QRs available?", cancelText: null });
+            return;
+          }
+        } catch (err) {
+          console.error("Preview allocation error:", err);
+          await confirm({ title: 'Error', description: "An error occurred while fetching allocation preview.", cancelText: null });
+          return;
+        }
+      }
+
       const ok = await confirm({
         title: 'Update Status',
-        description: `Are you sure you want to mark this request as '${newStatus}'?`,
+        description: description,
         confirmText: 'Yes, update status',
         cancelText: 'Cancel'
       });
@@ -306,9 +354,13 @@ export default function GenerateBlankQrs() {
     }
   };
 
-  const downloadPdf = (base64, filename) => {
+  const downloadFile = (base64, filename) => {
     const link = document.createElement('a');
-    link.href = `data:application/pdf;base64,${base64}`;
+    let mimeType = 'application/pdf';
+    if (filename.endsWith('.zip')) {
+      mimeType = 'application/zip';
+    }
+    link.href = `data:${mimeType};base64,${base64}`;
     link.download = filename;
     document.body.appendChild(link);
     link.click();
@@ -320,17 +372,7 @@ export default function GenerateBlankQrs() {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
-  const formatSN = (num) => {
-    const q = Math.floor(num / 50000) + 26;
-    const r = num % 50000;
-    let prefix = "";
-    let temp = q;
-    do {
-      prefix = String.fromCharCode((temp % 26) + 65) + prefix;
-      temp = Math.floor(temp / 26) - 1;
-    } while (temp >= 0);
-    return `${prefix}-${r.toString().padStart(5, '0')}`;
-  };
+
 
   return (
     <div className="max-w-6xl mx-auto pb-12 p-4 md:p-8">
@@ -437,8 +479,8 @@ export default function GenerateBlankQrs() {
                             {req.quantity.toLocaleString()}
                           </span>
                           {req.startSerialNumber && req.endSerialNumber && (
-                            <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200">
-                              SN: {req.startSerialNumber} - {req.endSerialNumber}
+                            <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200 mt-1">
+                              SN: {formatSN(req.startSerialNumber)} - {formatSN(req.endSerialNumber)}
                             </span>
                           )}
                         </div>
@@ -699,8 +741,27 @@ export default function GenerateBlankQrs() {
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
                     required
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">
+                    Download Format
+                  </label>
+                  <select
+                    value={format}
+                    onChange={(e) => setFormat(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
+                  >
+                    <option value="pdf">PDF Layout (Recommended)</option>
+                    <option value="tiff">TIFF Layout (ZIP)</option>
+                    <option value="cdr">CDR - CorelDRAW (ZIP)</option>
+                  </select>
                   <p className="mt-2 text-xs text-slate-500 leading-relaxed">
-                    A3 sheets will be generated with exactly 240 QRs per page to leave a 15mm margin and clear space for serial numbers.
+                    {format === 'pdf' 
+                      ? 'A3+ sheets will be generated with exactly 240 QRs per page to leave a 15mm margin.' 
+                      : format === 'cdr'
+                      ? 'A ZIP file with vector SVG pages (A3+ layout) will be generated. These open directly in CorelDRAW with perfect quality.'
+                      : `A ZIP file containing exactly formatted A3+ pages in ${format.toUpperCase()} format (with 240 QRs per page) will be generated.`}
                   </p>
                 </div>
 
@@ -721,7 +782,7 @@ export default function GenerateBlankQrs() {
                   ) : (
                     <span className="flex items-center gap-2">
                       <Printer size={18} />
-                      Generate & Download PDF
+                      Generate & Download
                     </span>
                   )}
                 </button>

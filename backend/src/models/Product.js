@@ -12,6 +12,11 @@ const productSchema = new mongoose.Schema(
     expiryDate: String,
     description: String,
     productInfo: String,
+    ingredients: { type: String, default: '' },
+    certificates: [{
+      name: String,
+      image: String
+    }],
     quantity: Number,
     productImage: String,
     sequence: { type: Number, default: 0 },

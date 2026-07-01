@@ -337,8 +337,8 @@ console.log(qrCode)
           importerRegNo: product.importerRegNo || product.orderId?.importerRegNo,
           countryOfOrigin: product.countryOfOrigin || product.orderId?.countryOfOrigin,
           website: product.website || product.orderId?.website,
-          supportEmail: product.supportEmail || product.orderId?.supportEmail,
-          customerCare: product.customerCare || product.orderId?.customerCare,
+          supportEmail: product.supportEmail || product.orderId?.supportEmail || product.dynamicFields?.supportEmail || product.orderId?.dynamicFields?.supportEmail || product.warranty?.supportEmail || product.orderId?.warranty?.supportEmail,
+          customerCare: product.customerCare || product.orderId?.customerCare || product.dynamicFields?.customerCare || product.orderId?.dynamicFields?.customerCare || product.warranty?.customerCare || product.orderId?.warranty?.customerCare,
           keyBenefits: product.keyBenefits || product.orderId?.keyBenefits,
           mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
           description: product.description || product.orderId?.description,
@@ -348,6 +348,7 @@ console.log(qrCode)
           dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
           variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
           warranty: product.warranty || product.orderId?.warranty || null,
+          educationContent: product.educationContent || product.orderId?.educationContent || [],
           fieldLabels,
           alreadyReviewed,
         }
@@ -372,8 +373,8 @@ console.log(qrCode)
         importerRegNo: product.importerRegNo || product.orderId?.importerRegNo,
         countryOfOrigin: product.countryOfOrigin || product.orderId?.countryOfOrigin,
         website: product.website || product.orderId?.website,
-        supportEmail: product.supportEmail || product.orderId?.supportEmail,
-        customerCare: product.customerCare || product.orderId?.customerCare,
+        supportEmail: product.supportEmail || product.orderId?.supportEmail || product.dynamicFields?.supportEmail || product.orderId?.dynamicFields?.supportEmail || product.warranty?.supportEmail || product.orderId?.warranty?.supportEmail,
+        customerCare: product.customerCare || product.orderId?.customerCare || product.dynamicFields?.customerCare || product.orderId?.dynamicFields?.customerCare || product.warranty?.customerCare || product.orderId?.warranty?.customerCare,
         keyBenefits: product.keyBenefits || product.orderId?.keyBenefits,
         mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
         description: product.description || product.orderId?.description,
@@ -383,6 +384,7 @@ console.log(qrCode)
         dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
         variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
         warranty: product.warranty || product.orderId?.warranty || null,
+        educationContent: product.educationContent || product.orderId?.educationContent || [],
         fieldLabels,
         alreadyReviewed,
       },
@@ -536,7 +538,7 @@ router.post("/", async (req, res, next) => {
     const finalBrandName = product.brand || brandNameFromPrefix;
 
     let recommendations = [];
-    let templateData = { orderLinks: [], price: null, productInfo: null, description: null, keyBenefits: null };
+    let templateData = { orderLinks: [], price: null, productInfo: null, description: null, keyBenefits: null, educationContent: [], supportEmail: null, customerCare: null };
     if (finalBrandId) {
       try {
         const ProductTemplate = require("../models/ProductTemplate");
@@ -574,6 +576,9 @@ router.post("/", async (req, res, next) => {
               templateData.keyBenefits = template.keyBenefits || null;
               templateData.dynamicFields = template.dynamicFields || {};
               templateData.variants = template.variants || [];
+              templateData.educationContent = template.educationContent || [];
+              templateData.supportEmail = template.supportEmail || null;
+              templateData.customerCare = template.customerCare || null;
            }
         }
       } catch (err) {
@@ -620,8 +625,8 @@ router.post("/", async (req, res, next) => {
           importerRegNo: product.importerRegNo || product.orderId?.importerRegNo,
           countryOfOrigin: product.countryOfOrigin || product.orderId?.countryOfOrigin,
           website: product.website || product.orderId?.website,
-          supportEmail: product.supportEmail || product.orderId?.supportEmail,
-          customerCare: product.customerCare || product.orderId?.customerCare,
+          supportEmail: product.supportEmail || product.orderId?.supportEmail || product.dynamicFields?.supportEmail || product.orderId?.dynamicFields?.supportEmail || product.warranty?.supportEmail || product.orderId?.warranty?.supportEmail || templateData.supportEmail,
+          customerCare: product.customerCare || product.orderId?.customerCare || product.dynamicFields?.customerCare || product.orderId?.dynamicFields?.customerCare || product.warranty?.customerCare || product.orderId?.warranty?.customerCare || templateData.customerCare,
           keyBenefits: product.keyBenefits || product.orderId?.keyBenefits || templateData.keyBenefits,
           mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
           description: product.description || product.orderId?.description || templateData.description,
@@ -631,6 +636,7 @@ router.post("/", async (req, res, next) => {
           dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
           variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
           warranty: product.warranty || product.orderId?.warranty || null,
+          educationContent: product.educationContent || product.orderId?.educationContent || templateData.educationContent || [],
           fieldLabels,
           alreadyReviewed,
           warrantyClaimStatus,
@@ -673,8 +679,8 @@ router.post("/", async (req, res, next) => {
           importerRegNo: product.importerRegNo || product.orderId?.importerRegNo,
           countryOfOrigin: product.countryOfOrigin || product.orderId?.countryOfOrigin,
           website: product.website || product.orderId?.website,
-          supportEmail: product.supportEmail || product.orderId?.supportEmail,
-          customerCare: product.customerCare || product.orderId?.customerCare,
+          supportEmail: product.supportEmail || product.orderId?.supportEmail || product.dynamicFields?.supportEmail || product.orderId?.dynamicFields?.supportEmail || product.warranty?.supportEmail || product.orderId?.warranty?.supportEmail || templateData.supportEmail,
+          customerCare: product.customerCare || product.orderId?.customerCare || product.dynamicFields?.customerCare || product.orderId?.dynamicFields?.customerCare || product.warranty?.customerCare || product.orderId?.warranty?.customerCare || templateData.customerCare,
           keyBenefits: product.keyBenefits || product.orderId?.keyBenefits || templateData.keyBenefits,
           mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
           description: product.description || product.orderId?.description || templateData.description,
@@ -684,6 +690,7 @@ router.post("/", async (req, res, next) => {
           dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && product.orderId.dynamicFields.size > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
           variants: (product.variants && product.variants.length > 0) ? product.variants : ((product.orderId?.variants && product.orderId.variants.length > 0) ? product.orderId.variants : templateData.variants),
           warranty: product.warranty || product.orderId?.warranty || null,
+          educationContent: product.educationContent || product.orderId?.educationContent || templateData.educationContent || [],
           orderLinks: (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((product.orderId?.orderLinks && product.orderId.orderLinks.length > 0) ? product.orderId.orderLinks : templateData.orderLinks),
           price: product.price || templateData.price,
         fieldLabels,
@@ -759,8 +766,8 @@ router.post("/", async (req, res, next) => {
           importerRegNo: product.importerRegNo || product.orderId?.importerRegNo,
           countryOfOrigin: product.countryOfOrigin || product.orderId?.countryOfOrigin,
           website: product.website || product.orderId?.website,
-          supportEmail: product.supportEmail || product.orderId?.supportEmail,
-          customerCare: product.customerCare || product.orderId?.customerCare,
+          supportEmail: product.supportEmail || product.orderId?.supportEmail || product.dynamicFields?.supportEmail || product.orderId?.dynamicFields?.supportEmail || product.warranty?.supportEmail || product.orderId?.warranty?.supportEmail || templateData.supportEmail,
+          customerCare: product.customerCare || product.orderId?.customerCare || product.dynamicFields?.customerCare || product.orderId?.dynamicFields?.customerCare || product.warranty?.customerCare || product.orderId?.warranty?.customerCare || templateData.customerCare,
           keyBenefits: product.keyBenefits || product.orderId?.keyBenefits || templateData.keyBenefits,
           mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
           description: product.description || product.orderId?.description || templateData.description,
@@ -770,6 +777,7 @@ router.post("/", async (req, res, next) => {
           dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && product.orderId.dynamicFields.size > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
           variants: (product.variants && product.variants.length > 0) ? product.variants : ((product.orderId?.variants && product.orderId.variants.length > 0) ? product.orderId.variants : templateData.variants),
           warranty: product.warranty || product.orderId?.warranty || null,
+          educationContent: product.educationContent || product.orderId?.educationContent || templateData.educationContent || [],
           orderLinks: (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((product.orderId?.orderLinks && product.orderId.orderLinks.length > 0) ? product.orderId.orderLinks : templateData.orderLinks),
           price: product.price || templateData.price,
           fieldLabels,
@@ -901,8 +909,8 @@ router.post("/", async (req, res, next) => {
         importerRegNo: product.importerRegNo || product.orderId?.importerRegNo,
         countryOfOrigin: product.countryOfOrigin || product.orderId?.countryOfOrigin,
         website: product.website || product.orderId?.website,
-        supportEmail: product.supportEmail || product.orderId?.supportEmail,
-        customerCare: product.customerCare || product.orderId?.customerCare,
+        supportEmail: product.supportEmail || product.orderId?.supportEmail || product.dynamicFields?.supportEmail || product.orderId?.dynamicFields?.supportEmail || product.warranty?.supportEmail || product.orderId?.warranty?.supportEmail || templateData.supportEmail,
+        customerCare: product.customerCare || product.orderId?.customerCare || product.dynamicFields?.customerCare || product.orderId?.dynamicFields?.customerCare || product.warranty?.customerCare || product.orderId?.warranty?.customerCare || templateData.customerCare,
         mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
         description: product.description || product.orderId?.description || templateData.description,
         productInfo: product.productInfo || product.orderId?.productInfo || templateData.productInfo,
@@ -914,6 +922,7 @@ router.post("/", async (req, res, next) => {
         keyBenefits: product.keyBenefits || product.orderId?.keyBenefits || templateData.keyBenefits,
         orderLinks: (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((product.orderId?.orderLinks && product.orderId.orderLinks.length > 0) ? product.orderId.orderLinks : templateData.orderLinks),
         price: product.price || templateData.price,
+        educationContent: product.educationContent || product.orderId?.educationContent || templateData.educationContent || [],
         fieldLabels,
         alreadyReviewed,
         warrantyClaimStatus,
@@ -1275,7 +1284,7 @@ router.get("/recommendations/:brandId", async (req, res) => {
     const totalPages = Math.ceil(totalItems / limit);
 
     const sortParam = req.query.sort || 'newest';
-    let sortObj = { createdAt: -1 };
+    let sortObj = { displayOrder: 1, createdAt: -1 };
     if (sortParam === 'price_low') sortObj = { price: 1 };
     else if (sortParam === 'price_high') sortObj = { price: -1 };
     else if (sortParam === 'oldest') sortObj = { createdAt: 1 };

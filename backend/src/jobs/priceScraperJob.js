@@ -67,10 +67,8 @@ const runScraper = async () => {
 };
 
 const startPriceScraperJob = () => {
-  setTimeout(() => runScraper(), 3000); 
-  
-  // Run every 1 hour (as requested by user)
-  cron.schedule('0 * * * *', runScraper);
+  // Run every day at midnight (12:00 AM)
+  cron.schedule('0 0 * * *', runScraper);
 };
 
 module.exports = { startPriceScraperJob, runScraper };

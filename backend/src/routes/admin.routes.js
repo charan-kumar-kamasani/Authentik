@@ -11,6 +11,7 @@ const ProductCoupon = require("../models/ProductCoupon");
 const UserReward = require("../models/UserReward");
 const { protect, authorize } = require("../middleware/authMiddleware");
 const { generateQrPdf } = require("../utils/pdfGenerator");
+const { generateLayoutZip } = require("../utils/layoutCanvasGenerator");
 
 const router = express.Router();
 
@@ -421,7 +422,7 @@ router.post(
   protect,
   authorize("superadmin"),
   async (req, res) => {
-    let { quantity } = req.body;
+    let { quantity, format } = req.body;
     const qty = parseInt(quantity) > 0 ? parseInt(quantity) : 1;
     const BlankQr = require("../models/BlankQr");
     const BlankQrBatch = require("../models/BlankQrBatch");
@@ -471,7 +472,7 @@ router.post(
 
         const batch = batchArr[0];
 
-        // Generate PDF after successful commit
+        // Generate PDF or ZIP after successful commit
         const pdfOptions = {
             brand: 'Blank QRs',
             company: 'Authentiks Superadmin',
@@ -479,14 +480,21 @@ router.post(
             isBlankQr: true
         };
         
-        let pdfBase64 = null;
+        let fileBase64 = null;
         try {
-            pdfBase64 = await generateQrPdf(createdBlankQrs, req.user.email, pdfOptions);
+            if (format === 'tiff' || format === 'tif') {
+                fileBase64 = await generateLayoutZip(createdBlankQrs, pdfOptions, format);
+            } else if (format === 'cdr') {
+                // CDR is proprietary; generate SVG which CorelDRAW opens natively as vectors
+                fileBase64 = await generateLayoutZip(createdBlankQrs, pdfOptions, 'svg');
+            } else {
+                fileBase64 = await generateQrPdf(createdBlankQrs, req.user.email, pdfOptions);
+            }
         } catch (pdfErr) {
-            console.error("PDF generation failed, but QRs were created:", pdfErr);
+            console.error("File generation failed, but QRs were created:", pdfErr);
         }
         
-        res.status(201).json({ count: createdBlankQrs.length, batch, pdfBase64 });
+        res.status(201).json({ count: createdBlankQrs.length, batch, pdfBase64: fileBase64, format: format || 'pdf' });
     } catch (e) {
         if (session) {
             await session.abortTransaction();
@@ -768,6 +776,7 @@ router.get(
     try {
       const BlankQrBatch = require("../models/BlankQrBatch");
       const BlankQr = require("../models/BlankQr");
+      const format = req.query.format || 'pdf';
       
       const batch = await BlankQrBatch.findById(req.params.id);
       if (!batch) return res.status(404).json({ error: "Batch not found" });
@@ -782,12 +791,25 @@ router.get(
         orderId: batch.batchName,
         isBlankQr: true
       };
-      const pdfBase64 = await generateQrPdf(qrs, req.user.email, pdfOptions);
+
+      let fileBase64 = null;
+      try {
+        if (format === 'tiff' || format === 'tif') {
+          fileBase64 = await generateLayoutZip(qrs, pdfOptions, format);
+        } else if (format === 'cdr') {
+          fileBase64 = await generateLayoutZip(qrs, pdfOptions, 'svg');
+        } else {
+          fileBase64 = await generateQrPdf(qrs, req.user.email, pdfOptions);
+        }
+      } catch (genErr) {
+        console.error("File generation failed:", genErr);
+        return res.status(500).json({ error: "Failed to generate file" });
+      }
       
-      res.json({ pdfBase64 });
+      res.json({ pdfBase64: fileBase64, format });
     } catch (error) {
-      console.error("Error downloading batch PDF:", error);
-      res.status(500).json({ error: "Failed to download batch PDF" });
+      console.error("Error downloading batch:", error);
+      res.status(500).json({ error: "Failed to download batch" });
     }
   }
 );

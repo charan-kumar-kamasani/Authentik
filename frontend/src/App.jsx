@@ -28,6 +28,8 @@ import ConsumerSupport from "./pages/mobile/ConsumerSupport";
 
 import ProductDetails from "./pages/mobile/ProductDetails";
 import BrandPortfolio from "./pages/mobile/BrandPortfolio";
+import Ingredients from "./pages/mobile/Ingredients";
+import Certificates from "./pages/mobile/Certificates";
 
 import ProductEducation from "./pages/mobile/ProductEducation";
 import Profile from "./pages/mobile/profile";
@@ -444,6 +446,8 @@ export default function App() {
           <Route path="/support" element={<Support />} />
           <Route path="/product-details" element={<ProductDetails />} />
           <Route path="/product-education" element={<ProductEducation />} />
+          <Route path="/ingredients" element={<Ingredients />} />
+          <Route path="/certificates" element={<Certificates />} />
           <Route path="/consumer-support" element={<ConsumerSupport />} />
 
           {/* User Protected with Global Navbar */}

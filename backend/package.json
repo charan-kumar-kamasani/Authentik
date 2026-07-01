@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
-    "build": "ncc build src/server.js -o dist --external canvas --external is-plain-object",
+    "build": "ncc build src/server.js -o dist --external canvas --external is-plain-object --external sharp --external puppeteer --external puppeteer-extra --external puppeteer-extra-plugin-stealth",
     "seed": "node scripts/seedPricing.js"
   },
   "keywords": [],
@@ -40,6 +40,7 @@
     "qrcode": "^1.5.4",
     "qrcode-svg": "^1.1.0",
     "redis": "^5.12.1",
+    "sharp": "^0.35.3",
     "svg-to-pdfkit": "^0.1.8"
   },
   "devDependencies": {

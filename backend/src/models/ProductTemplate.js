@@ -31,6 +31,15 @@ const productTemplateSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  ingredients: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  certificates: [{
+    name: { type: String, trim: true },
+    image: { type: String, trim: true }
+  }],
   brandId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Brand',
@@ -48,7 +57,7 @@ const productTemplateSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['active', 'archived'],
+    enum: ['active', 'inactive', 'archived'],
     default: 'active'
   },
   isAuthorized: {
@@ -59,6 +68,10 @@ const productTemplateSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     default: null
+  },
+  displayOrder: {
+    type: Number,
+    default: 0
   },
   // Detailed fields
   category: String,

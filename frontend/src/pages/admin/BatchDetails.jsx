@@ -11,6 +11,7 @@ export default function BatchDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [downloading, setDownloading] = useState(false);
+  const [downloadFormat, setDownloadFormat] = useState('pdf');
 
   // Filtering state
   const [statusFilter, setStatusFilter] = useState('all');
@@ -89,7 +90,7 @@ export default function BatchDetails() {
     try {
       setDownloading(true);
       setError('');
-      const res = await fetch(`${API_BASE_URL}/admin/blank-qr-batches/${id}/download`, {
+      const res = await fetch(`${API_BASE_URL}/admin/blank-qr-batches/${id}/download?format=${downloadFormat}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         }
@@ -98,13 +99,16 @@ export default function BatchDetails() {
       
       if (res.ok && data.pdfBase64) {
         const link = document.createElement('a');
-        link.href = `data:application/pdf;base64,${data.pdfBase64}`;
-        link.download = `blank_qrs_${batch.batchName}.pdf`;
+        const isZip = ['tiff', 'tif', 'cdr'].includes(data.format || downloadFormat);
+        const ext = isZip ? 'zip' : 'pdf';
+        const mimeType = isZip ? 'application/zip' : 'application/pdf';
+        link.href = `data:${mimeType};base64,${data.pdfBase64}`;
+        link.download = `blank_qrs_${(data.format || downloadFormat).toUpperCase()}_${batch.batchName}.${ext}`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
       } else {
-        setError(data.error || 'Failed to download PDF');
+        setError(data.error || 'Failed to download');
       }
     } catch (err) {
       console.error(err);
@@ -265,22 +269,34 @@ export default function BatchDetails() {
               Batch generated on {formatDate(batch?.createdAt)}
             </p>
           </div>
-          <button
-            onClick={handleDownload}
-            disabled={downloading}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white shadow-lg transition-all ${
-              downloading 
-                ? 'bg-slate-400 cursor-not-allowed' 
-                : 'bg-emerald-600 hover:bg-emerald-700 hover:shadow-emerald-600/30 hover:-translate-y-0.5 shadow-emerald-600/20'
-            }`}
-          >
-            {downloading ? (
-               <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Download size={20} />
-            )}
-            {downloading ? 'Preparing PDF...' : 'Download PDF Sheets'}
-          </button>
+          <div className="flex items-center gap-3">
+            <select
+              value={downloadFormat}
+              onChange={(e) => setDownloadFormat(e.target.value)}
+              disabled={downloading}
+              className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all"
+            >
+              <option value="pdf">PDF</option>
+              <option value="tiff">TIFF</option>
+              <option value="cdr">CDR</option>
+            </select>
+            <button
+              onClick={handleDownload}
+              disabled={downloading}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white shadow-lg transition-all ${
+                downloading 
+                  ? 'bg-slate-400 cursor-not-allowed' 
+                  : 'bg-emerald-600 hover:bg-emerald-700 hover:shadow-emerald-600/30 hover:-translate-y-0.5 shadow-emerald-600/20'
+              }`}
+            >
+              {downloading ? (
+                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <Download size={20} />
+              )}
+              {downloading ? 'Preparing...' : 'Download'}
+            </button>
+          </div>
         </div>
       </div>
 

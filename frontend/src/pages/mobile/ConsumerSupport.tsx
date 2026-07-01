@@ -1,44 +1,56 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Share, Mail, Phone, HeadphonesIcon, ChevronRight, Calendar, CheckCircle2, ScanLine, ShieldCheck } from "lucide-react";
-import API_BASE_URL from '../../config/api';
+import { ChevronLeft, Mail, ChevronRight, Clock, ShieldCheck } from "lucide-react";
+
+// Inline WhatsApp SVG for exact matching
+const WhatsAppIcon = () => (
+  <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z" />
+  </svg>
+);
+
+const HeadsetIcon = () => (
+  <svg width="110" height="110" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0 -mr-2 mt-1">
+    <circle cx="70" cy="70" r="55" fill="#F4F7FF"/>
+    {/* Decorative dots */}
+    <circle cx="25" cy="50" r="1.5" fill="#105DE4"/>
+    <circle cx="110" cy="40" r="2.5" fill="#105DE4"/>
+    <circle cx="105" cy="100" r="1.5" fill="#105DE4"/>
+    <circle cx="115" cy="75" r="2" fill="#105DE4"/>
+    <circle cx="125" cy="85" r="1.5" fill="#4F8BFF"/>
+    <path d="M110 50 L112 51 L111 53 Z" fill="#105DE4"/>
+    <path d="M30 90 L33 88 L34 91 Z" fill="#4F8BFF"/>
+    {/* Headset arc */}
+    <path d="M40 75 C40 58.4315 53.4315 45 70 45 C86.5685 45 100 58.4315 100 75" stroke="#105DE4" strokeWidth="8" strokeLinecap="round"/>
+    {/* Earpieces */}
+    <rect x="34" y="65" width="12" height="32" rx="6" fill="#105DE4"/>
+    <rect x="94" y="65" width="12" height="32" rx="6" fill="#105DE4"/>
+    {/* Mic boom */}
+    <path d="M100 90 C100 102 85 108 75 110" stroke="#105DE4" strokeWidth="3" strokeLinecap="round"/>
+    <circle cx="73" cy="110" r="3" fill="#105DE4"/>
+    {/* Chat bubble */}
+    <path d="M55 58 H85 C91.6274 58 97 63.3726 97 70 V82 C97 88.6274 91.6274 94 85 94 H73 L60 102 V94 C53.3726 94 48 88.6274 48 82 V70 C48 63.3726 53.3726 58 55 58 Z" fill="#4F8BFF"/>
+    <circle cx="63" cy="76" r="3.5" fill="white"/>
+    <circle cx="73" cy="76" r="3.5" fill="white"/>
+    <circle cx="83" cy="76" r="3.5" fill="white"/>
+  </svg>
+);
 
 const ConsumerSupport = () => {
   const navigate = useNavigate();
   const rawData = useLocation().state as any;
 
-  // Normalize data in case it comes from ScanHistory (raw MongoDB document) rather than a fresh scan payload
+  // Normalize data to extract supportEmail and customerCare safely
   const normalizeData = React.useCallback((d: any) => {
     if (!d) return null;
     if (d.productId && typeof d.productId === 'object') {
       const product = d.productId;
       const order = product.orderId || {};
       const template = d.templateData || {};
-      
       return {
         ...d,
-        productName: product.productName || order.productName || template.productName || d.productName,
-        brand: d.brand || product.brand || order.brand,
-        brandId: d.brandId || product.brandId,
-        category: product.category || order.category || template.category || d.category,
-        batchNo: product.batchNo || order.batchNo || d.batchNo,
-        manufactureDate: product.manufactureDate || order.manufactureDate || d.manufactureDate,
-        expiryDate: product.expiryDate || order.expiryDate || d.expiryDate,
-        mfdOn: product.mfdOn?.month ? product.mfdOn : (order.mfdOn?.month ? order.mfdOn : d.mfdOn),
-        bestBefore: product.bestBefore?.value ? product.bestBefore : (order.bestBefore?.value ? order.bestBefore : template.bestBefore),
-        calculatedExpiryDate: product.calculatedExpiryDate || order.calculatedExpiryDate || template.calculatedExpiryDate || d.calculatedExpiryDate,
-        productImage: product.productImage || order.productImage || template.productImage || d.productImage,
-        manufacturedBy: product.manufacturedBy || order.manufacturedBy || template.manufacturedBy || d.manufacturedBy,
-        marketedBy: product.marketedBy || order.marketedBy || template.marketedBy || d.marketedBy,
-        countryOfOrigin: product.countryOfOrigin || order.countryOfOrigin || template.countryOfOrigin || d.countryOfOrigin,
-        productInfo: product.productInfo || order.productInfo || template.productInfo || d.productInfo,
-        description: product.description || order.description || template.description || d.description,
-        dynamicFields: (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : ((order.dynamicFields && Object.keys(order.dynamicFields).length > 0) ? order.dynamicFields : template.dynamicFields),
-        variants: (product.variants && product.variants.length > 0) ? product.variants : ((order.variants && order.variants.length > 0) ? order.variants : template.variants),
-        orderLinks: (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((order.orderLinks && order.orderLinks.length > 0) ? order.orderLinks : template.orderLinks),
-        website: product.website || order.website || template.website || d.website,
-        supportEmail: product.supportEmail || order.supportEmail || template.supportEmail || d.supportEmail,
         customerCare: product.customerCare || order.customerCare || template.customerCare || d.customerCare,
+        supportEmail: product.supportEmail || order.supportEmail || template.supportEmail || d.supportEmail,
       };
     }
     return d;
@@ -46,219 +58,116 @@ const ConsumerSupport = () => {
 
   const data = React.useMemo(() => normalizeData(rawData), [rawData, normalizeData]);
 
-  const [recommendations, setRecommendations] = useState<any[]>(data?.recommendations || []);
-  const [detailsOpen, setDetailsOpen] = useState(true);
+  const supportEmail = data?.supportEmail || "support@authentiks.com";
+  const supportPhone = data?.customerCare || "+919876543210"; // Default phone
 
-  useEffect(() => {
-    if ((!data?.recommendations || data.recommendations.length === 0) && (data?.brandId || data?.product?.brandId || data?.productId?.brandId || data?.brandId?._id)) {
-      const bId = data.brandId?._id || data.brandId || data.product?.brandId || data.productId?.brandId;
-      fetch(`${API_BASE_URL}/scan/recommendations/${bId}`)
-        .then(res => res.json())
-        .then(resData => {
-          if (resData.products) setRecommendations(resData.products.slice(0, 4));
-          else if (Array.isArray(resData)) setRecommendations(resData.slice(0, 4));
-        })
-        .catch(err => console.error("Failed to fetch recommendations:", err));
-    }
-  }, [data]);
-
-  if (!data) {
-    return (
-      <div className="min-h-screen bg-[#001466] flex flex-col items-center justify-center p-6 text-center">
-        <h2 className="text-white text-xl font-bold mb-4">Passport Not Found</h2>
-        <button onClick={() => navigate(-1)} className="px-6 py-2 bg-white text-[#001466] rounded-xl font-bold">Go Back</button>
-      </div>
-    );
-  }
-
-  const scanDate = data.scanDate || data.createdAt ? new Date(data.scanDate || data.createdAt) : null;
-  const scanDateStr = scanDate ? `${scanDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}\n${scanDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}` : 'N/A';
-  
-  const mfdDate = data.manufactureDate || (data.mfdOn?.month ? `${data.mfdOn.month}/${data.mfdOn.year}` : 'N/A');
-  const expDate = data.expiryDate || data.calculatedExpiryDate || 'N/A';
-  const batchNo = data.batchNo || 'N/A';
-
-  // Dynamic Product Details mapping
-  const extractVariants = () => {
-    if (!data.variants || !Array.isArray(data.variants)) return {};
-    return data.variants.reduce((acc: any, v: any) => {
-      const key = v.variantLabel || v.variantName || v.name || 'Variant';
-      if (v.value) acc[key] = v.value;
-      return acc;
-    }, {});
-  };
-
-  const dynFields = (data.dynamicFields && typeof data.dynamicFields === 'object' && !(data.dynamicFields instanceof Map)) 
-    ? data.dynamicFields 
-    : ((data.dynamicFields && data.dynamicFields.size > 0) ? Object.fromEntries(data.dynamicFields) : {});
-
-  const mappedDynFields: any = {};
-  if (dynFields) {
-    Object.keys(dynFields).forEach(key => {
-      const label = data.fieldLabels?.[key] || data.fieldLabels?.[key.toLowerCase()] || data.fieldLabels?.[key.toUpperCase()] || key;
-      mappedDynFields[label] = dynFields[key];
-    });
-  }
-
-  const rawDetails = {
-    Brand: data.brand || data.companyName,
-    'Product Name': data.productName,
-    ...extractVariants(),
-    Category: data.category || null,
-    ...mappedDynFields,
-    'Country of Origin': data.countryOfOrigin || null,
-    'Manufactured By': data.manufacturedBy || null,
-    'Marketed By': data.marketedBy || null,
-    'Shelf Life': data.bestBefore?.value ? `${data.bestBefore.value} ${data.bestBefore.unit}` : null,
-  };
-  const filteredDetails = Object.entries(rawDetails).filter(([_, v]) => v !== undefined && v !== null && v !== '');
-
-  // Mocking usage left for the Reorder widget
-  const estimatedDaysTotal = 30; 
-  const scanTime = new Date(data.createdAt || Date.now());
-  const daysSinceScan = Math.floor((new Date().getTime() - scanTime.getTime()) / (1000 * 3600 * 24));
-  const daysLeft = Math.max(0, estimatedDaysTotal - daysSinceScan);
-  const percentageLeft = Math.max(0, Math.min(100, Math.round((daysLeft / estimatedDaysTotal) * 100)));
+  // Clean phone number for WhatsApp link
+  const waNumber = supportPhone.replace(/[^0-9]/g, '');
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] relative pb-24 overflow-x-hidden font-sans">
-      {/* Dark Blue Header Section */}
-      <div className="bg-[#001466] text-white pt-8 pb-12 px-5 relative">
-        {/* Top Nav */}
-        <div className="flex items-center justify-between mb-4">
-          <button onClick={() => navigate(-1)} className="p-1 -ml-1 rounded-full hover:bg-white/10 transition-colors">
-            <ChevronLeft size={24} strokeWidth={2.5} />
-          </button>
-          <h1 className="text-white text-[15px] font-bold tracking-wide">Consumer Support</h1>
-          <button className="p-1 -mr-1 rounded-full hover:bg-white/10 transition-colors">
-            <Share size={20} strokeWidth={2.5} />
-          </button>
-        </div>
-
-        {/* Product Header Content */}
-        <div className="flex gap-4 items-center mb-4">
-          <div className="w-[120px] h-[140px] flex-shrink-0 relative flex items-center justify-center bg-transparent -ml-2">
-            <img 
-              src={data.productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"} 
-              alt={data.productName} 
-              className="w-full h-full object-contain drop-shadow-2xl mix-blend-normal"
-            />
-          </div>
-          <div className="flex flex-col flex-1 pt-0">
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-[#1A3385] border border-[#2B47A1] rounded-lg mb-2 self-start">
-              <ShieldCheck size={10} className="text-blue-300" />
-              <span className="text-[8px] font-bold tracking-wide text-white uppercase">100% Authentic</span>
-            </div>
-            
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <span className="text-[12px] font-bold tracking-wider text-white flex items-center gap-1.5">
-                {data.companyName && (
-                  <div className="w-4 h-4 bg-white rounded-full flex items-center justify-center shrink-0 overflow-hidden text-[#001466] font-black text-[8px]">
-                    {data.companyName.charAt(0).toUpperCase()}
-                  </div>
-                )}
-                {data.companyName || 'Brand'}
-              </span>
-              <div className="w-3.5 h-3.5 bg-blue-500 rounded-full flex items-center justify-center">
-                <CheckCircle2 size={10} className="text-white" strokeWidth={3} />
-              </div>
-            </div>
-            
-            <h2 className="text-[18px] font-bold leading-[1.1] mb-1 tracking-tight text-white">{data.productName}</h2>
-            <p className="text-blue-100/90 text-[12px] mb-2 font-medium">{data.brand || 'Variant'}</p>
-            
-            <div className="flex flex-wrap gap-2">
-              {data.variants?.slice(0, 3).map((v: any, idx: number) => (
-                <span key={idx} className="px-2 py-0.5 bg-white text-[#001466] text-[9px] font-bold rounded">
-                  {v.value}
-                </span>
-              ))}
-              {!data.variants?.length && data.category && (
-                <span className="px-2 py-0.5 bg-white text-[#001466] text-[9px] font-bold rounded">
-                  {data.category}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
+    <div className="h-screen max-h-[100dvh] bg-white font-sans flex flex-col relative overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between p-3 bg-white shrink-0">
+        <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-slate-800 rounded-full hover:bg-slate-100 transition-colors">
+          <ChevronLeft size={22} strokeWidth={2.5} />
+        </button>
+        <h1 className="text-[16px] font-bold text-[#0B1E36] tracking-tight">Help & Support</h1>
+        <div className="w-8" /> {/* Spacer for centering */}
       </div>
 
-      {/* Main Content Card (Overlapping) */}
-      <div className="px-4 -mt-6 relative z-10 space-y-3">
-        
-        {/* Tracking Grid */}
-        <div className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex justify-between divide-x divide-slate-100">
-          <div className="flex flex-col items-center flex-1 px-1">
-            <ScanLine size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
-            <h4 className="text-[10px] font-bold text-slate-900 mb-1">Scanned On</h4>
-            <p className="text-[9px] text-slate-500 font-medium text-center leading-tight whitespace-pre-line">{scanDateStr}</p>
+      <div className="px-5 pt-2 flex-1 flex flex-col justify-between pb-6">
+        {/* Hero Section */}
+        <div className="flex justify-between items-center mb-4 shrink-0">
+          <div className="flex-1 max-w-[55%]">
+            <h2 className="text-[#0B1E36] text-[18px] font-extrabold leading-[1.2] mb-2">
+              We're here to help you!
+            </h2>
+            <p className="text-slate-500 text-[12px] leading-[1.5] font-medium pr-1">
+              Choose your preferred way to reach out. Our support team will get back to you as soon as possible.
+            </p>
           </div>
-          {mfdDate !== 'N/A' && (
-            <div className="flex flex-col items-center flex-1 px-1">
-              <Calendar size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
-              <h4 className="text-[10px] font-bold text-slate-900 mb-1">Mfd On</h4>
-              <p className="text-[9px] text-slate-500 font-medium text-center leading-tight">{mfdDate}</p>
-            </div>
-          )}
-          {expDate !== 'N/A' && (
-            <div className="flex flex-col items-center flex-1 px-1">
-              <Calendar size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
-              <h4 className="text-[10px] font-bold text-slate-900 mb-1">Expiry On</h4>
-              <p className="text-[9px] text-slate-500 font-medium text-center leading-tight">{expDate}</p>
-            </div>
-          )}
-          {batchNo !== 'N/A' && (
-            <div className="flex flex-col items-center flex-1 px-1">
-              <ShieldCheck size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
-              <h4 className="text-[10px] font-bold text-slate-900 mb-1">Batch No.</h4>
-              <p className="text-[9px] text-slate-500 font-medium text-center leading-tight">{batchNo}</p>
-            </div>
-          )}
+          <HeadsetIcon />
         </div>
 
-        {/* Support Content */}
-        <div className="space-y-4 pt-2">
-          {(() => {
-            const supportEmail = data.supportEmail || data.productId?.supportEmail || data.companyId?.supportEmail || "support@authentiks.com";
-            const supportPhone = data.customerCare || data.productId?.customerCare || data.companyId?.customerCare || "+1 (800) 123-4567";
+        <div className="flex-1 flex flex-col justify-evenly">
+          {/* Contact Us Section */}
+          <div>
+            <h3 className="text-[#0B1E36] text-[15px] font-bold mb-3">Contact Us</h3>
 
-            return (
-              <>
-                <div className="bg-white rounded-[20px] p-5 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex flex-col gap-2">
-                  <h3 className="text-[14px] font-bold text-slate-900 flex items-center gap-2">
-                    <HeadphonesIcon size={18} className="text-[#105DE4]" /> We're Here to Help
-                  </h3>
-                  <p className="text-[12px] text-slate-500 font-medium leading-relaxed mb-2">
-                    If you have any questions, concerns, or feedback about this product, please reach out to our dedicated support team using the details below.
-                  </p>
+            <div className="space-y-3">
+              {/* WhatsApp Card */}
+              <a 
+                href={`https://wa.me/${waNumber}`} 
+                target="_blank" 
+                rel="noreferrer"
+                className="block bg-[#F2FCF5] border border-[#E6F8EB] rounded-[16px] p-4 active:scale-[0.98] transition-transform"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-[42px] h-[42px] bg-[#DFF7E5] text-[#25D366] rounded-full flex items-center justify-center shadow-sm shrink-0">
+                    <WhatsAppIcon />
+                  </div>
+                  <div className="flex-1 pr-2">
+                    <h4 className="text-[#0B1E36] text-[14px] font-bold mb-0.5">WhatsApp</h4>
+                    <p className="text-slate-500 text-[11px] leading-snug font-medium">
+                      Chat with us on WhatsApp for quick support and instant answers.
+                    </p>
+                  </div>
+                  <ChevronRight className="text-[#25D366] shrink-0" size={16} strokeWidth={2.5} />
                 </div>
+              </a>
 
-                <a href={`mailto:${supportEmail}`} className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex gap-4 items-center active:scale-95 transition-transform">
-                  <div className="w-12 h-12 bg-blue-50/80 rounded-[14px] flex items-center justify-center shrink-0 border border-blue-100/50">
-                    <Mail size={24} className="text-[#105DE4]" strokeWidth={1.5} />
+              {/* Email Card */}
+              <a 
+                href={`mailto:${supportEmail}`} 
+                className="block bg-[#F4F7FF] border border-[#EAF0FF] rounded-[16px] p-4 active:scale-[0.98] transition-transform"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-[42px] h-[42px] bg-[#E3E9FF] rounded-full flex items-center justify-center shadow-sm shrink-0">
+                    <Mail className="text-[#105DE4]" size={18} strokeWidth={2.5} />
                   </div>
-                  <div className="flex flex-col flex-1">
-                    <h3 className="text-[11px] font-bold text-slate-500 mb-0.5 uppercase tracking-wide">Email Support</h3>
-                    <p className="text-[14px] font-bold text-slate-900">{supportEmail}</p>
+                  <div className="flex-1 pr-2">
+                    <h4 className="text-[#0B1E36] text-[14px] font-bold mb-0.5">Email Us</h4>
+                    <p className="text-slate-500 text-[11px] leading-snug font-medium">
+                      Send us an email and our team will respond as soon as possible.
+                    </p>
                   </div>
-                  <ChevronRight size={18} className="text-slate-400" />
-                </a>
+                  <ChevronRight className="text-[#105DE4] shrink-0" size={16} strokeWidth={2.5} />
+                </div>
+              </a>
+            </div>
+          </div>
 
-                <a href={`tel:${supportPhone}`} className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex gap-4 items-center active:scale-95 transition-transform">
-                  <div className="w-12 h-12 bg-blue-50/80 rounded-[14px] flex items-center justify-center shrink-0 border border-blue-100/50">
-                    <Phone size={24} className="text-[#105DE4]" strokeWidth={1.5} />
-                  </div>
-                  <div className="flex flex-col flex-1">
-                    <h3 className="text-[11px] font-bold text-slate-500 mb-0.5 uppercase tracking-wide">Phone Support</h3>
-                    <p className="text-[14px] font-bold text-slate-900">{supportPhone}</p>
-                  </div>
-                  <ChevronRight size={18} className="text-slate-400" />
-                </a>
-              </>
-            );
-          })()}
+          {/* Divider with Shield */}
+          <div className="my-4 relative flex items-center justify-center shrink-0">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-100"></div>
+            </div>
+            <div className="relative bg-white px-4">
+              <div className="w-8 h-8 rounded-full bg-[#F4F7FF] flex items-center justify-center">
+                <ShieldCheck className="text-[#105DE4]" size={16} strokeWidth={2.5} />
+              </div>
+            </div>
+          </div>
+
+          {/* Satisfaction Section */}
+          <div className="text-center shrink-0">
+            <h3 className="text-[#0B1E36] text-[15px] font-bold mb-1">Your satisfaction is our priority</h3>
+            <p className="text-slate-500 text-[12px] font-medium leading-relaxed mb-4">
+              We're committed to providing you with the best support experience.
+            </p>
+
+            {/* Support Hours */}
+            <div className="bg-[#F8F9FE] rounded-[12px] p-3 flex items-center gap-3 text-left w-full mx-auto max-w-[340px]">
+              <div className="w-9 h-9 bg-[#EDF1FF] rounded-full flex items-center justify-center shrink-0">
+                <Clock className="text-[#105DE4]" size={16} strokeWidth={2.5} />
+              </div>
+              <div>
+                <h4 className="text-[#0B1E36] text-[12px] font-bold mb-0.5">Support Hours</h4>
+                <p className="text-slate-500 text-[11px] font-medium">Monday - Saturday, 9:00 AM to 6:00 PM IST</p>
+              </div>
+            </div>
+          </div>
         </div>
-
       </div>
     </div>
   );

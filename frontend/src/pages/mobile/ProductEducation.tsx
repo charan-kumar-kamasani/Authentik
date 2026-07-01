@@ -37,8 +37,8 @@ const ProductEducation = () => {
         variants: (product.variants && product.variants.length > 0) ? product.variants : ((order.variants && order.variants.length > 0) ? order.variants : template.variants),
         orderLinks: (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((order.orderLinks && order.orderLinks.length > 0) ? order.orderLinks : template.orderLinks),
         website: product.website || order.website || template.website || d.website,
-        supportEmail: product.supportEmail || order.supportEmail || template.supportEmail || d.supportEmail,
         customerCare: product.customerCare || order.customerCare || template.customerCare || d.customerCare,
+        educationContent: product.educationContent || order.educationContent || template.educationContent || d.educationContent,
       };
     }
     return d;
@@ -71,7 +71,7 @@ const ProductEducation = () => {
     );
   }
 
-  const scanDate = data.scanDate || data.createdAt ? new Date(data.scanDate || data.createdAt) : null;
+  const scanDate = data.scannedAt || data.scanDate || data.createdAt ? new Date(data.scannedAt || data.scanDate || data.createdAt) : null;
   const scanDateStr = scanDate ? `${scanDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}\n${scanDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}` : 'N/A';
   
   const mfdDate = data.manufactureDate || (data.mfdOn?.month ? `${data.mfdOn.month}/${data.mfdOn.year}` : 'N/A');

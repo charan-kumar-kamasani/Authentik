@@ -916,6 +916,25 @@ export const createProductTemplate = async (data) => {
     }
 };
 
+export const reorderProductTemplates = async (items) => {
+    try {
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+        const response = await fetch(`${API_BASE_URL}/product-templates/reorder`, {
+            method: 'PATCH',
+            headers: { 
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}` 
+            },
+            body: JSON.stringify({ items })
+        });
+        if (!response.ok) throw new Error('Failed to reorder products');
+        return await response.json();
+    } catch (error) {
+        console.error("Reorder Products Error:", error);
+        throw error;
+    }
+};
+
 export const deleteProductTemplate = async (templateId) => {
     try {
         const token = localStorage.getItem('adminToken') || localStorage.getItem('token');

@@ -71,6 +71,7 @@ const getNotificationRecipients = async (order) => {
 router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
   try {
     const { 
+      templateId,
       productName, 
       brand, 
       batchNo, 
@@ -164,6 +165,7 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
 
     const order = new Order({
       orderId,
+      templateId: templateId || null,
       productName,
       skuNumber: req.body.skuNumber || null,
       brand: brand || 'Unknown',

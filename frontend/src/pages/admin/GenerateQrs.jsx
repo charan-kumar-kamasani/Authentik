@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import API_BASE_URL, { createOrder, updateOrder, getProductTemplates, createProductTemplate, deleteProductTemplate, getBrands } from '../../config/api';
-import { Calendar, Package, Plus, X, List, LayoutGrid, Trash2, CheckCircle2, Search, ArrowLeft, Gift, Shield, ShieldCheck } from 'lucide-react';
+import { Calendar, Package, Plus, X, List, LayoutGrid, Trash2, CheckCircle2, Search, ArrowLeft, Gift, Shield, ShieldCheck, Info } from 'lucide-react';
 import { useConfirm } from '../../components/ConfirmModal';
 
 export default function GenerateQrs() {
@@ -39,9 +39,9 @@ export default function GenerateQrs() {
   const [dynamicFieldValues, setDynamicFieldValues] = useState({});
   const [formConfig, setFormConfig] = useState({
     customFields: [
-      { fieldName: "sku", fieldLabel: "SKU", fieldType: "text", isMandatory: true, placeholder: "e.g. WH-1000XM4" },
+      { fieldName: "sku", fieldLabel: "SKU", fieldType: "text", isMandatory: false, placeholder: "e.g. WH-1000XM4" },
       { fieldName: "batchNo", fieldLabel: "Batch Number", fieldType: "text", isMandatory: true, isBatchNo: true, placeholder: "e.g. BT-2023-10-X" },
-      { fieldName: "mrp", fieldLabel: "MRP", fieldType: "number", isMandatory: true, placeholder: "e.g. 2999" },
+      { fieldName: "mrp", fieldLabel: "MRP", fieldType: "number", isMandatory: false, placeholder: "e.g. 2999" },
       { fieldName: "manufacturedBy", fieldLabel: "Manufactured by", fieldType: "text", isMandatory: false, placeholder: "e.g. Alpha Industries" },
       { fieldName: "marketedBy", fieldLabel: "Marketed by", fieldType: "text", isMandatory: false, placeholder: "e.g. Beta Retail Pvt. Ltd." },
       { fieldName: "countryOfOrigin", fieldLabel: "Country of Origin", fieldType: "text", isMandatory: false, placeholder: "e.g. India" },
@@ -120,13 +120,18 @@ export default function GenerateQrs() {
     if (order) {
       setEditingOrder(order);
       setNewQr({
+        templateId: order.templateId || '',
         productName: order.productName || '',
         skuNumber: order.skuNumber || '',
         brand: order.brand || '',
         brandId: (order.brandId?._id || order.brandId) || '',
         batchNo: order.batchNo || '',
         productInfo: order.productInfo || '',
-        quantity: order.quantity || ''
+        quantity: order.quantity || '',
+        ingredients: order.ingredients || '',
+        certificates: order.certificates || [],
+        orderLinks: order.orderLinks || [],
+        educationContent: order.educationContent || []
       });
       if (order.mfdOn) setMfdOn(order.mfdOn);
       if (order.bestBefore) setBestBefore(order.bestBefore);
@@ -318,7 +323,7 @@ export default function GenerateQrs() {
         }
       }
     }
-    setCurrentStep(prev => Math.min(prev + 1, 6));
+    setCurrentStep(prev => Math.min(prev + 1, 7));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -479,12 +484,7 @@ export default function GenerateQrs() {
         }
       }
 
-      // Quantity multiple of 250 check
-      if (quantity % 250 !== 0) {
-        await confirm({ title: 'Validation Failed', description: `QR Quantity must be a multiple of 250 (e.g., 250, 500, 750). Current: ${quantity}`, cancelText: null });
-        setSubmitting(false);
-        return;
-      }
+      // Multiple of 250 check removed as requested
 
       // Warranty fields validation
       const hasAnyWarrantyField = !!(
@@ -534,6 +534,7 @@ export default function GenerateQrs() {
       delete cleanedDynamicFields['Product Quantity'];
 
       const orderData = {
+        templateId: newQr.templateId,
         productName,
         skuNumber: newQr.skuNumber,
         brand: newQr.brand,
@@ -825,8 +826,10 @@ export default function GenerateQrs() {
             onChange={(v) => handleDynamicFieldChange(field.fieldName, field.fieldType === 'phone' ? v.replace(/[^0-9]/g, '') : v)}
             type={field.fieldType === 'number' ? 'number' : field.fieldType === 'email' ? 'email' : field.fieldType === 'phone' ? 'tel' : 'text'}
             required={field.isMandatory}
+            min={field.isQuantity ? "250" : undefined}
+            step={field.isQuantity ? "250" : undefined}
             helpText={field.isQuantity 
-              ? (currentUser?.companyId ? `You have ${(currentUser.companyId.qrCredits || 0).toLocaleString()} Physical QRs available.` : "This field determines the number of QRs to be generated.") 
+              ? (currentUser?.companyId ? `You have ${(currentUser.companyId.qrCredits || 0).toLocaleString()} Physical QRs available. Must be in multiples of 250.` : "This field determines the number of QRs to be generated. Must be in multiples of 250.") 
               : null}
           />
         );
@@ -959,7 +962,8 @@ export default function GenerateQrs() {
     { id: 3, title: 'Dates & Expiry', icon: Calendar },
     { id: 4, title: 'Rewards & Offers', icon: Gift },
     { id: 5, title: 'Warranty', icon: Shield },
-    { id: 6, title: 'Review', icon: CheckCircle2 }
+    { id: 6, title: 'QR Quantity', icon: Package },
+    { id: 7, title: 'Review', icon: CheckCircle2 }
   ];
 
   return (
@@ -1072,11 +1076,16 @@ export default function GenerateQrs() {
               if (prod) {
                 setNewQr({
                   ...newQr,
+                  templateId: prod._id,
                   productName: prod.productName,
                   skuNumber: prod.skuNumber || '',
                   productInfo: prod.productInfo || '',
                   brand: (prod.brandId?.brandName || prod.brand) || '',
-                  brandId: (prod.brandId?._id || prod.brandId) || ''
+                  brandId: (prod.brandId?._id || prod.brandId) || '',
+                  ingredients: prod.ingredients || '',
+                  certificates: prod.certificates || [],
+                  orderLinks: prod.orderLinks || [],
+                  educationContent: prod.educationContent || []
                 });
                 setIsCatalogProduct(true);
                 if (prod.productImage) {
@@ -1153,6 +1162,62 @@ export default function GenerateQrs() {
             );
           })()}
         </div>
+
+        {/* Extended Catalog Information Preview */}
+        {isCatalogProduct && (newQr.ingredients || (newQr.certificates?.length > 0) || (newQr.educationContent?.length > 0) || (newQr.orderLinks?.length > 0)) && (
+          <div className="col-span-2 mt-4 p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100 flex flex-col gap-3">
+            <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-widest flex items-center gap-1.5 mb-1">
+              <Info className="w-3.5 h-3.5" /> Additional Catalog Details Included
+            </h4>
+            
+            {newQr.ingredients && (
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ingredients</span>
+                <p className="text-sm text-slate-700 font-medium line-clamp-2">{newQr.ingredients}</p>
+              </div>
+            )}
+            
+            {(newQr.certificates?.length > 0) && (
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Certificates</span>
+                <div className="flex flex-wrap gap-2">
+                  {newQr.certificates.map((cert, i) => (
+                    <span key={i} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-slate-700">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> {cert.name || 'Certificate'}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {(newQr.educationContent?.length > 0) && (
+              <div className="flex flex-col gap-1 mt-2">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Education Resources</span>
+                <div className="flex flex-wrap gap-2">
+                  {newQr.educationContent.map((edu, i) => (
+                    <a key={i} href={edu.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-100/70 text-indigo-700 text-xs font-semibold hover:bg-indigo-200 transition-colors border border-indigo-200/50">
+                      {edu.title || 'Resource'}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {(newQr.orderLinks?.length > 0) && (
+              <div className="flex flex-col gap-1 mt-2">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Purchase Links</span>
+                <div className="flex flex-wrap gap-2">
+                  {newQr.orderLinks.map((link, i) => (
+                    <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-100/70 text-emerald-700 text-xs font-semibold hover:bg-emerald-200 transition-colors border border-emerald-200/50">
+                      {link.title || 'Link'}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         </div> {/* End Step 1 */}
 
         {/* STEP 2: Attributes & Variants */}
@@ -1162,6 +1227,7 @@ export default function GenerateQrs() {
         {formConfig?.customFields && formConfig.customFields.length > 0 && (
           <>
             {formConfig.customFields
+              .filter(field => !field.isQuantity)
               .sort((a, b) => (a.order || 0) - (b.order || 0))
               .map(field => renderDynamicField(field))}
           </>
@@ -1182,7 +1248,7 @@ export default function GenerateQrs() {
               <label className="block text-sm font-medium text-slate-700 mb-2">Available Variant Types</label>
               <div className="flex flex-wrap gap-2">
                 {[
-                  { variantName: 'color', variantLabel: 'Color', inputType: 'color' },
+                  { variantName: 'color', variantLabel: 'Color', inputType: 'text' },
                   { variantName: 'size', variantLabel: 'Size', inputType: 'text' },
                   { variantName: 'model_series', variantLabel: 'Model/Series', inputType: 'text' },
                   { variantName: 'weight', variantLabel: 'Weight', inputType: 'text' },
@@ -1236,21 +1302,13 @@ export default function GenerateQrs() {
                         </label>
                       )}
                       {instance.inputType === 'color' ? (
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="color"
-                            value={instance.value || '#000000'}
-                            onChange={(e) => updateVariantInstance(instance.id, e.target.value)}
-                            className="w-16 h-10 rounded border border-slate-200 cursor-pointer"
-                          />
-                          <input
-                            type="text"
-                            value={instance.value || '#000000'}
-                            onChange={(e) => updateVariantInstance(instance.id, e.target.value)}
-                            className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm font-mono"
-                            placeholder="#000000"
-                          />
-                        </div>
+                        <input
+                          type="text"
+                          value={instance.value}
+                          onChange={(e) => updateVariantInstance(instance.id, e.target.value)}
+                          className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm"
+                          placeholder="e.g. Red, Space Grey"
+                        />
                       ) : instance.inputType === 'dropdown' ? (
                         <select
                           value={instance.value}
@@ -1567,7 +1625,7 @@ export default function GenerateQrs() {
         </div>
 
         {/* Cashback Information Section */}
-        <div className="col-span-2 border-t border-slate-200 pt-4 mt-2">
+        {/* <div className="col-span-2 border-t border-slate-200 pt-4 mt-2">
           <div className="flex items-center gap-2 mb-4">
             <Gift size={18} className="text-pink-600" />
             <h4 className="text-sm font-semibold text-slate-800">Cashback Program (Optional)</h4>
@@ -1622,10 +1680,10 @@ export default function GenerateQrs() {
               />
             </div>
           </>
-        )}
+        )} */}
 
         {/* Loyalty Points Section */}
-        <div className="col-span-2 border-t border-slate-200 pt-4 mt-2">
+        {/* <div className="col-span-2 border-t border-slate-200 pt-4 mt-2">
           <div className="flex items-center gap-2 mb-4">
             <Gift size={18} className="text-amber-600" />
             <h4 className="text-sm font-semibold text-slate-800">Loyalty Points Program (Optional)</h4>
@@ -1668,93 +1726,172 @@ export default function GenerateQrs() {
               />
             </div>
           </>
-        )}
+        )} */}
 
         {/* Order Links Section (Removed, handled via Templates) */}
 
         </div> {/* End Step 5 */}
 
-        {/* STEP 6: Review */}
-        <div id="step-6" className={`col-span-2 flex flex-col gap-6 ${currentStep === 6 ? 'block' : 'hidden'}`}>
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-6">
-            <h4 className="text-sm font-semibold text-slate-800 mb-4 flex items-center gap-2">
-              <CheckCircle2 size={18} className="text-indigo-600" />
-              Review Your Configuration
+        {/* STEP 6: QR Quantity */}
+        <div id="step-6" className={`col-span-2 grid grid-cols-2 gap-6 ${currentStep === 6 ? 'block' : 'hidden'}`}>
+          <div className="col-span-2 border-b border-slate-200 pb-4 mb-4">
+            <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
+              <Package className="w-4 h-4 text-indigo-500" /> Output Quantity
             </h4>
-            <div className="grid grid-cols-2 gap-y-4 gap-x-8 text-sm">
-              <div>
-                <p className="text-slate-500 font-medium mb-1">Product Name</p>
-                <p className="text-slate-900 font-semibold">{newQr.productName || 'Not provided'}</p>
-              </div>
-              <div>
-                <p className="text-slate-500 font-medium mb-1">Brand</p>
-                <p className="text-slate-900 font-semibold">{newQr.brand || 'Not provided'}</p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-slate-500 font-medium mb-1">Product Info</p>
-                <p className="text-slate-900 font-medium whitespace-pre-wrap">{newQr.productInfo || 'Not provided'}</p>
-              </div>
-              <div className="col-span-2 mb-2">
-                <p className="text-slate-500 font-medium mb-1">Product Image</p>
-                {imagePreview ? (
-                  <img src={imagePreview} alt="Preview" className="h-16 w-16 object-cover rounded-lg border border-slate-200" />
-                ) : (
-                  <p className="text-slate-900 font-medium">Not provided</p>
-                )}
-              </div>
-              {/* Render all Custom Fields (Specs) dynamically */}
-              {(formConfig?.customFields || []).map((field, idx) => (
-                <div key={idx} className={field.fieldType === 'textarea' ? 'col-span-2' : ''}>
-                  <p className="text-slate-500 font-medium mb-1">{field.fieldLabel}</p>
-                  <p className="text-slate-900 font-semibold whitespace-pre-wrap">
-                    {dynamicFieldValues[field.fieldName] 
-                      ? (field.isQuantity ? `${dynamicFieldValues[field.fieldName]} QRs` : dynamicFieldValues[field.fieldName]) 
-                      : (field.isQuantity ? '0 QRs' : 'Not provided')}
-                  </p>
-                </div>
-              ))}
-              <div>
-                <p className="text-slate-500 font-medium mb-1">Mfd On</p>
-                <p className="text-slate-900 font-semibold">{mfdOn.month && mfdOn.year ? `${mfdOn.month}/${mfdOn.year}` : 'Not provided'}</p>
-              </div>
-              <div>
-                <p className="text-slate-500 font-medium mb-1">Best Before</p>
-                <p className="text-slate-900 font-semibold">{bestBefore.value ? `${bestBefore.value} ${bestBefore.unit}` : 'Not provided'}</p>
-              </div>
-              
-              {/* Show Variants if any */}
-              {variantInstances.length > 0 && (
-                <div className="col-span-2 pt-4 mt-2 border-t border-slate-200">
-                  <p className="text-slate-500 font-medium mb-3">Variants & Specs</p>
-                  <div className="flex flex-wrap gap-2">
-                    {variantInstances.map((v, i) => (
-                      <span key={i} className="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold border border-indigo-100/50">
-                        <span className="text-indigo-400 font-medium mr-1">{v.variantLabel || v.variantName}:</span> {v.value || 'N/A'}
-                      </span>
-                    ))}
+            <p className="text-xs text-slate-500 mt-1">Specify how many QR codes you want to generate for this product.</p>
+          </div>
+          
+          {formConfig?.customFields && formConfig.customFields
+            .filter(f => f.isQuantity)
+            .map(field => renderDynamicField(field))}
+        </div> {/* End Step 6 */}
+
+        {/* STEP 7: Review */}
+        <div id="step-7" className={`col-span-2 flex flex-col gap-6 ${currentStep === 7 ? 'block' : 'hidden'}`}>
+          <div className="bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-2xl p-8 relative overflow-hidden">
+            {/* Decorative background circle */}
+            <div className="absolute -right-20 -top-20 w-64 h-64 bg-indigo-100/50 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div className="relative z-10">
+              <h4 className="text-lg font-bold text-indigo-900 mb-6 flex items-center gap-2">
+                <CheckCircle2 size={24} className="text-indigo-600" />
+                Final Review
+              </h4>
+
+              <div className="flex flex-col gap-8">
+                
+                {/* 1. Core Product & Output */}
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white shadow-sm">
+                  <h5 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <Package size={14} /> Product Identity & Output
+                  </h5>
+                  <div className="flex flex-col sm:flex-row gap-6 items-start">
+                    {imagePreview ? (
+                      <div className="w-24 h-24 rounded-xl border border-slate-200 overflow-hidden shrink-0 bg-white">
+                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="w-24 h-24 rounded-xl border border-slate-200 bg-slate-50 flex flex-col items-center justify-center shrink-0 text-slate-400">
+                        <Package size={24} />
+                        <span className="text-[10px] font-semibold mt-1">No Image</span>
+                      </div>
+                    )}
+                    <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                      <div>
+                        <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Product Name</p>
+                        <p className="text-sm font-bold text-slate-900">{newQr.productName || 'Not provided'}</p>
+                      </div>
+                      <div>
+                        <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Brand</p>
+                        <p className="text-sm font-bold text-slate-900">{newQr.brand || 'Not provided'}</p>
+                      </div>
+                      <div className="col-span-1 sm:col-span-2">
+                        <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Product Info</p>
+                        <p className="text-sm text-slate-700 font-medium whitespace-pre-wrap">{newQr.productInfo || 'Not provided'}</p>
+                      </div>
+                      
+                      {/* Show QR Quantity here */}
+                      {(formConfig?.customFields || []).filter(f => f.isQuantity).map((field, idx) => (
+                        <div key={idx} className="col-span-1 sm:col-span-2 mt-2 bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 flex items-center justify-between shadow-sm">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-white shadow-sm border border-indigo-100 text-indigo-600 flex items-center justify-center">
+                              <LayoutGrid size={20} />
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-indigo-900 uppercase tracking-widest">{field.fieldLabel}</p>
+                              <p className="text-xs text-indigo-700/80 font-medium">Number of QR Codes to generate</p>
+                            </div>
+                          </div>
+                          <p className="text-2xl font-black text-indigo-600">
+                            {dynamicFieldValues[field.fieldName] ? Number(dynamicFieldValues[field.fieldName]).toLocaleString() : '0'} <span className="text-sm font-bold text-indigo-400">QRs</span>
+                          </p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              )}
 
-              {/* Purchase Links handled via templates */}
+                {/* 2. Specs & Details */}
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white shadow-sm">
+                  <h5 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <List size={14} /> Specifications & Details
+                  </h5>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-5 gap-x-8">
+                    <div>
+                      <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Mfd On</p>
+                      <p className="text-sm font-semibold text-slate-800">{mfdOn.month && mfdOn.year ? `${mfdOn.month}/${mfdOn.year}` : <span className="text-slate-300 italic">Not provided</span>}</p>
+                    </div>
+                    <div>
+                      <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Best Before</p>
+                      <p className="text-sm font-semibold text-slate-800">{bestBefore.value ? `${bestBefore.value} ${bestBefore.unit}` : <span className="text-slate-300 italic">Not provided</span>}</p>
+                    </div>
 
-              <div className="col-span-2 pt-4 mt-2 border-t border-slate-200 flex flex-wrap gap-4">
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${coupon.title ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-500'}`}>
-                  Coupon: {coupon.title ? 'Enabled' : 'None'}
-                </span>
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${cashback.isActive ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}`}>
-                  Cashback: {cashback.isActive ? 'Enabled' : 'Disabled'}
-                </span>
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${loyalty.isActive ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
-                  Loyalty Points: {loyalty.isActive ? 'Enabled' : 'Disabled'}
-                </span>
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${warranty.duration ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
-                  Warranty: {warranty.duration ? `${warranty.duration} ${warranty.durationUnit}` : 'None'}
-                </span>
+                    {(formConfig?.customFields || []).filter(f => !f.isQuantity).map((field, idx) => {
+                      const val = dynamicFieldValues[field.fieldName];
+                      return (
+                        <div key={idx} className={field.fieldType === 'textarea' ? 'col-span-2 sm:col-span-3' : ''}>
+                          <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">{field.fieldLabel}</p>
+                          <p className={`text-sm font-semibold ${val ? 'text-slate-800' : 'text-slate-300 italic'}`}>
+                            {val ? val : 'Not provided'}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 3. Variants */}
+                {variantInstances.length > 0 && (
+                  <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white shadow-sm">
+                    <h5 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                      <LayoutGrid size={14} /> Product Variants
+                    </h5>
+                    <div className="flex flex-wrap gap-3">
+                      {variantInstances.map((v, i) => (
+                        <span key={i} className="px-4 py-2 bg-slate-50 text-slate-800 rounded-xl text-sm font-bold border border-slate-200 shadow-sm flex items-center gap-2">
+                          <span className="text-[10px] uppercase tracking-wider text-slate-400">{v.variantLabel || v.variantName}</span>
+                          <span className="w-px h-3 bg-slate-300"></span>
+                          {v.value || 'N/A'}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. Connected Programs */}
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white shadow-sm">
+                  <h5 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <Gift size={14} /> Connected Programs
+                  </h5>
+                  <div className="flex flex-wrap gap-4">
+                    <div className={`px-4 py-3 rounded-xl border flex items-center gap-3 ${coupon.title ? 'bg-purple-50 border-purple-200' : 'bg-slate-50 border-slate-200 grayscale opacity-60'}`}>
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${coupon.title ? 'bg-purple-200 text-purple-700' : 'bg-slate-200 text-slate-500'}`}>
+                        <Gift size={16} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Coupon</p>
+                        <p className={`text-xs font-bold ${coupon.title ? 'text-purple-900' : 'text-slate-500'}`}>{coupon.title ? 'Active' : 'Disabled'}</p>
+                      </div>
+                    </div>
+                    
+
+
+                    <div className={`px-4 py-3 rounded-xl border flex items-center gap-3 ${warranty.duration ? 'bg-blue-50 border-blue-200' : 'bg-slate-50 border-slate-200 grayscale opacity-60'}`}>
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${warranty.duration ? 'bg-blue-200 text-blue-700' : 'bg-slate-200 text-slate-500'}`}>
+                        <Shield size={16} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Warranty</p>
+                        <p className={`text-xs font-bold ${warranty.duration ? 'text-blue-900' : 'text-slate-500'}`}>{warranty.duration ? `${warranty.duration} ${warranty.durationUnit}` : 'Disabled'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
-          <p className="text-sm text-slate-500 text-center">Please review the details above carefully before generating QRs. Once generated, some details cannot be changed.</p>
+          <p className="text-sm text-slate-500 text-center font-medium mt-2">Please review the details above carefully before generating QRs. Once generated, some details cannot be changed.</p>
         </div>
 
         {/* Form Footer / Stepper Navigation */}
@@ -1773,7 +1910,7 @@ export default function GenerateQrs() {
             Back
           </button>
 
-          {currentStep < 6 ? (
+          {currentStep < 7 ? (
             <button
               type="button"
               onClick={handleNextStep}
@@ -2530,14 +2667,14 @@ export default function GenerateQrs() {
   );
 }
 
-function InputGroup({ label, placeholder, value, onChange, type = 'text', required = true, helpText = null }) {
+function InputGroup({ label, placeholder, value, onChange, type = 'text', required = true, helpText = null, min, step }) {
   return (
     <div className="flex flex-col gap-1.5">
       <label className="text-sm font-medium text-slate-700 ml-1">
         {label} {required && <span className="text-indigo-600">*</span>}
       </label>
       <input
-        type={type === 'number' ? 'text' : type}
+        type={type}
         placeholder={placeholder}
         value={value}
         onChange={(e) => {
@@ -2545,6 +2682,8 @@ function InputGroup({ label, placeholder, value, onChange, type = 'text', requir
           if (type === 'number') val = val.replace(/\D/g, '');
           onChange(val);
         }}
+        min={min}
+        step={step}
         className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-medium"
         required={required}
       />

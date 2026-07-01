@@ -51,10 +51,10 @@ router.get("/profile", protect, async (req, res) => {
 
 router.put("/profile", protect, async (req, res) => {
   try {
-    const { name, ageGroup, dob, gender, country, state, city, profileImage } = req.body;
+    const { name, ageGroup, dob, gender, country, state, city, profileImage, email } = req.body;
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
-      { $set: { name, ageGroup, dob, gender, country, state, city, profileImage } },
+      { $set: { name, ageGroup, dob, gender, country, state, city, profileImage, email } },
       { new: true, runValidators: true }
     ).lean();
 

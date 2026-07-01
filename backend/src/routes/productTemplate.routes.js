@@ -55,7 +55,7 @@ const syncScrapeTemplate = async (templateId) => {
 router.get('/', protect, async (req, res) => {
   try {
     const { brandId, companyId } = req.query;
-    let query = { status: 'active' };
+    let query = { status: { $in: ['active', 'inactive'] } };
 
     // If companyId provided in query, use it
     if (companyId) {
@@ -78,10 +78,32 @@ router.get('/', protect, async (req, res) => {
     const templates = await ProductTemplate.find(query)
       .populate('brandId', 'brandName')
       .populate('authorizedBy', 'name email')
-      .sort({ createdAt: -1 })
+      .sort({ displayOrder: 1, createdAt: -1 })
       .lean();
 
     res.json(templates);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// @desc    Reorder product templates
+// @route   PATCH /api/product-templates/reorder
+// @access  Private
+router.patch('/reorder', protect, async (req, res) => {
+  try {
+    const { items } = req.body;
+    if (!Array.isArray(items)) {
+      return res.status(400).json({ error: 'Items must be an array' });
+    }
+
+    // Bulk update the displayOrder for each item
+    const updatePromises = items.map(item => 
+      ProductTemplate.findByIdAndUpdate(item.id, { displayOrder: item.displayOrder })
+    );
+
+    await Promise.all(updatePromises);
+    res.json({ message: 'Products reordered successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -92,7 +114,7 @@ router.get('/', protect, async (req, res) => {
 // @access  Private (Creator, Authorizer, Company, Admin, SuperAdmin)
 router.post('/', protect, async (req, res) => {
   try {
-    const { productName, productImage, productInfo, description, brandId, companyId, skuNumber, variants, dynamicFields, bestBefore, warranty, orderLinks, educationContent } = req.body;
+    const { productName, productImage, productInfo, description, ingredients, certificates, brandId, companyId, skuNumber, variants, dynamicFields, bestBefore, warranty, orderLinks, educationContent } = req.body;
 
     // Default to user's company/brand if not specified
     const finalBrandId = brandId || req.user.brandId;
@@ -107,6 +129,8 @@ router.post('/', protect, async (req, res) => {
       productImage,
       productInfo,
       description,
+      ingredients: ingredients || '',
+      certificates: certificates || [],
       brandId: finalBrandId,
       companyId: finalCompanyId,
       skuNumber: skuNumber || null,
@@ -184,14 +208,23 @@ router.patch('/:id', protect, async (req, res) => {
     if (updates.orderLinks !== undefined) cascadeUpdates.orderLinks = updates.orderLinks;
     if (updates.productInfo !== undefined) cascadeUpdates.productInfo = updates.productInfo;
     if (updates.description !== undefined) cascadeUpdates.description = updates.description;
+    if (updates.ingredients !== undefined) cascadeUpdates.ingredients = updates.ingredients;
+    if (updates.certificates !== undefined) cascadeUpdates.certificates = updates.certificates;
     if (updates.productImage !== undefined) cascadeUpdates.productImage = updates.productImage;
+    if (updates.productName !== undefined) cascadeUpdates.productName = updates.productName;
+    if (updates.skuNumber !== undefined) cascadeUpdates.skuNumber = updates.skuNumber;
+    if (updates.brandId !== undefined) cascadeUpdates.brandId = updates.brandId;
     
     if (Object.keys(cascadeUpdates).length > 0) {
       await Product.updateMany({ templateId: template._id }, { $set: cascadeUpdates });
     }
 
-    const finalTemplate = await syncScrapeTemplate(updatedTemplate._id);
-    res.json(finalTemplate || updatedTemplate);
+    let finalTemplate = updatedTemplate;
+    // Only scrape if orderLinks were updated
+    if (updates.orderLinks !== undefined) {
+      finalTemplate = await syncScrapeTemplate(updatedTemplate._id) || updatedTemplate;
+    }
+    res.json(finalTemplate);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

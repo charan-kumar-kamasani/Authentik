@@ -212,7 +212,7 @@ const buildQrPdf = async (products, options = {}) => {
         .fillColor("#000")
         .font(BOLD_FONT)
         .fontSize(6.5)
-        .text("Verify & Win", x, y + headerHeight / 2 - 3, {
+        .text("Scratch & Win", x, y + headerHeight / 2 - 3, {
           width: cellWidth,
           align: "center",
           lineBreak: false,

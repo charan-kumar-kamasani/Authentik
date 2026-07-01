@@ -1,4 +1,4 @@
-import { ChevronLeft, Share, FileText, BookOpen, MessageSquare, ShieldCheck, Gift, ChevronRight, XCircle, AlertTriangle, Headset, Flag, X, ShieldAlert, Calendar, Phone, MapPin, RefreshCcw, ScanLine, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, Share, FileText, BookOpen, MessageSquare, ShieldCheck, Gift, ChevronRight, XCircle, AlertTriangle, Headset, Flag, X, ShieldAlert, Calendar, Phone, MapPin, RefreshCcw, ScanLine, CheckCircle2, FlaskConical, Award } from "lucide-react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import API_BASE_URL from "../../config/api";
@@ -92,7 +92,7 @@ function ResultAuthentic({ data }: { data: any }) {
   const orderObj = productObj.orderId || data.orderId || {};
   const templateObj = productObj.templateId || data.templateData || {};
 
-  const scanDate = data.scanDate || data.createdAt ? new Date(data.scanDate || data.createdAt) : null;
+  const scanDate = data.scannedAt || data.scanDate || data.createdAt ? new Date(data.scannedAt || data.scanDate || data.createdAt) : null;
   const scanDateStr = scanDate ? `${scanDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}\n${scanDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}` : 'N/A';
   
   const extractMfd = data.manufactureDate || data.mfdOn || productObj.mfdOn || orderObj.mfdOn;
@@ -141,6 +141,12 @@ function ResultAuthentic({ data }: { data: any }) {
   console.log("[WARRANTY DEBUG FRONTEND] condition check:", !!(data.warranty && (data.warranty.duration || data.warranty.warrantyType)));
 
   const companyName = data.companyName || data.company || data.manufacturer || data.brand || data.productId?.brand || "-";
+
+  const extractedIngredients = data.ingredients || productObj.ingredients || orderObj.ingredients || templateObj.ingredients || null;
+  const extractedCertificates = (productObj.certificates && productObj.certificates.length > 0) ? productObj.certificates : ((orderObj.certificates && orderObj.certificates.length > 0) ? orderObj.certificates : (templateObj.certificates || data.certificates || []));
+  const edu = data.educationContent || productObj.educationContent || orderObj.educationContent || templateObj.educationContent;
+  const hasEducation = Array.isArray(edu) ? edu.length > 0 : !!edu;
+  const hasSupport = !!(data.customerCare || productObj.customerCare || orderObj.customerCare || templateObj.customerCare || data.supportEmail || productObj.supportEmail || orderObj.supportEmail || templateObj.supportEmail || data.website || productObj.website || orderObj.website || templateObj.website);
 
   const technicalFields = [
     { key: "brand", label: "Brand" },
@@ -484,14 +490,18 @@ function ResultAuthentic({ data }: { data: any }) {
              </div>
            </button>
 
-           <button onClick={() => navigate("/product-education", { state: data })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
-             <BookOpen className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
-             <div className="flex items-end justify-between w-full mt-auto">
-               <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Product Education</span>
-               <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
-             </div>
-           </button>
+           {/* Product Education - shown if educationContent exists */}
+           {hasEducation && (
+             <button onClick={() => navigate("/product-education", { state: data })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
+               <BookOpen className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
+               <div className="flex items-end justify-between w-full mt-auto">
+                 <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Product Education</span>
+                 <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
+               </div>
+             </button>
+           )}
 
+           {/* Consumer Support - always shown */}
            <button onClick={() => navigate("/consumer-support", { state: data })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
              <Headset className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
              <div className="flex items-end justify-between w-full mt-auto">
@@ -499,6 +509,28 @@ function ResultAuthentic({ data }: { data: any }) {
                <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
              </div>
            </button>
+
+           {/* Ingredients - shown if ingredients exist */}
+           {extractedIngredients && (
+             <button onClick={() => navigate("/ingredients", { state: { ...data, ingredients: extractedIngredients } })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
+               <FlaskConical className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
+               <div className="flex items-end justify-between w-full mt-auto">
+                 <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Ingredients</span>
+                 <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
+               </div>
+             </button>
+           )}
+
+           {/* Certifications & Lab Tests - shown if certificates exist */}
+           {(extractedCertificates && extractedCertificates.length > 0) && (
+             <button onClick={() => navigate("/certificates", { state: { ...data, certificates: extractedCertificates } })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
+               <Award className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
+               <div className="flex items-end justify-between w-full mt-auto">
+                 <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Certifications & Lab Tests</span>
+                 <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
+               </div>
+             </button>
+           )}
         </div>
 
 

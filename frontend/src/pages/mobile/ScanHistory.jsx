@@ -54,6 +54,7 @@ export default function ScanHistory() {
             let badgeBorder = "border-[#10B981]/30";
             let badgeBg = "bg-[#ECFDF5]";
             let statusIcon = "verified";
+            let ribbonColor = "#10B981";
 
             // Extract brand logo from populated brandId or company
             let brandLogo = item.brandId?.brandLogo || null;
@@ -66,6 +67,7 @@ export default function ScanHistory() {
               badgeBorder = "border-[#EF4444]/30";
               badgeBg = "bg-[#FEF2F2]";
               statusIcon = "counterfeit";
+              ribbonColor = "#EF4444";
             } else if (item.status === "ALREADY_USED" || item.status === "DUPLICATE") {
               type = "Duplicate";
               statusLabel = "Duplicate";
@@ -74,6 +76,7 @@ export default function ScanHistory() {
               badgeBorder = "border-[#F59E0B]/30";
               badgeBg = "bg-[#FFFBEB]";
               statusIcon = "alert";
+              ribbonColor = "#F59E0B";
             }
 
             const prod = item.productId || {};
@@ -101,6 +104,7 @@ export default function ScanHistory() {
               badgeBorder,
               badgeBg,
               statusIcon,
+              ribbonColor,
               fullData: item,
               status: item.status
             };
@@ -168,46 +172,42 @@ export default function ScanHistory() {
             navigate(`/result/${status}`, { state: item.fullData });
           }
         }}
-        className="bg-white rounded-[20px] p-3.5 flex gap-3.5 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#F1F5F9] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300 active:scale-[0.98] mb-3"
+        className="bg-white rounded-[20px] flex overflow-hidden cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#F1F5F9] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300 active:scale-[0.98] mb-3"
       >
-        {/* Brand Logo Container */}
-        <div className="w-[60px] h-[60px] rounded-[14px] border border-[#F1F5F9] flex items-center justify-center flex-shrink-0 overflow-hidden bg-white shadow-sm p-2">
-          {item.brandLogo ? (
-            <img src={item.brandLogo} alt={item.cardTitle} className="w-full h-full object-contain" />
-          ) : (
-            <span className="text-[10px] font-bold text-gray-400">LOGO</span>
-          )}
-        </div>
+        {/* Left Ribbon */}
+        <div 
+          className="w-[5px] flex-shrink-0 rounded-l-[20px]" 
+          style={{ backgroundColor: item.ribbonColor }}
+        />
 
-        {/* Content Container (Flex Column) */}
-        <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-
-          {/* Top Row: Title & Badge */}
-          <div className="flex justify-between items-start gap-2 mb-1">
-            <div className="flex-1 min-w-0">
-              <h4 className="font-extrabold text-[15px] text-[#0F172A] leading-tight truncate">
-                {item.productName}
-              </h4>
-              <p className="text-[12px] text-[#64748B] truncate mt-0.5 font-medium">{item.brandName || "Unknown Brand"}</p>
-            </div>
-
-            {/* Status Badge */}
-            <div className={`flex-shrink-0 inline-flex items-center gap-1 text-[9px] font-bold tracking-wider uppercase ${item.badgeColor} px-2 py-1 rounded-[6px] border ${item.badgeBorder} ${item.badgeBg}`}>
-              {item.statusIcon === 'verified' && <ShieldCheck className="w-2.5 h-2.5" strokeWidth={3} />}
-              {item.statusIcon === 'alert' && <AlertTriangle className="w-2.5 h-2.5" strokeWidth={3} />}
-              {item.statusLabel}
-            </div>
+        <div className="flex items-center gap-3 p-3.5 flex-1 min-w-0">
+          {/* Brand Logo Container */}
+          <div className="w-[52px] h-[52px] rounded-[12px] border border-[#F1F5F9] flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm p-1.5"
+            style={{ backgroundColor: item.brandLogo ? '#FFFFFF' : item.ribbonColor + '15' }}
+          >
+            {item.brandLogo ? (
+              <img src={item.brandLogo} alt={item.cardTitle} className="w-full h-full object-contain" />
+            ) : (
+              <span className="text-[18px] font-black" style={{ color: item.ribbonColor }}>
+                {(item.brandName || item.productName || 'P').charAt(0).toUpperCase()}
+              </span>
+            )}
           </div>
 
-          {/* Bottom Row: Date/Time/Chevron */}
-          <div className="flex justify-between items-center mt-auto pt-2">
-            <div className="flex items-center gap-1.5 text-[#94A3B8] text-[11px] font-semibold">
+          {/* Text Content */}
+          <div className="flex-1 min-w-0">
+            <h4 className="font-extrabold text-[15px] text-[#0F172A] leading-tight truncate">
+              {item.productName}
+            </h4>
+            <p className="text-[12px] text-[#64748B] truncate mt-0.5 font-medium">{item.brandName || "Unknown Brand"}</p>
+            <div className="flex items-center gap-1.5 text-[#94A3B8] text-[11px] font-semibold mt-1.5">
               <Calendar className="w-3.5 h-3.5" strokeWidth={2} />
               <span>{item.scannedDate}, {item.scannedTime}</span>
             </div>
-            <ChevronRight className="w-5 h-5 text-[#CBD5E1]" strokeWidth={2.5} />
           </div>
 
+          {/* Chevron */}
+          <ChevronRight className="w-5 h-5 text-[#CBD5E1] flex-shrink-0" strokeWidth={2.5} />
         </div>
       </div>
     );

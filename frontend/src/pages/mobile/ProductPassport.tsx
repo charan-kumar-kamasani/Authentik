@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Share, ShieldCheck, ScanLine, Calendar, FileText, ChevronDown, Globe, HeadphonesIcon, ShoppingCart, Bell, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, Share, ShieldCheck, ScanLine, Calendar, FileText, ChevronDown, Globe, HeadphonesIcon, ShoppingCart, Bell, CheckCircle2, X, FlaskConical, Award, BookOpen } from 'lucide-react';
 import API_BASE_URL from '../../config/api';
 
 const ProductPassport = () => {
@@ -37,8 +37,11 @@ const ProductPassport = () => {
         variants: (product.variants && product.variants.length > 0) ? product.variants : ((order.variants && order.variants.length > 0) ? order.variants : template.variants),
         orderLinks: (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((order.orderLinks && order.orderLinks.length > 0) ? order.orderLinks : template.orderLinks),
         website: product.website || order.website || template.website || d.website,
-        supportEmail: product.supportEmail || order.supportEmail || template.supportEmail || d.supportEmail,
         customerCare: product.customerCare || order.customerCare || template.customerCare || d.customerCare,
+        supportEmail: product.supportEmail || order.supportEmail || template.supportEmail || d.supportEmail,
+        educationContent: product.educationContent || order.educationContent || template.educationContent || d.educationContent,
+        ingredients: product.ingredients || order.ingredients || template.ingredients || d.ingredients,
+        certificates: (product.certificates && product.certificates.length > 0) ? product.certificates : ((order.certificates && order.certificates.length > 0) ? order.certificates : (template.certificates || d.certificates)),
       };
     }
     return d;
@@ -48,6 +51,8 @@ const ProductPassport = () => {
 
   const [recommendations, setRecommendations] = useState<any[]>(data?.recommendations || []);
   const [detailsOpen, setDetailsOpen] = useState(true);
+  const [showPriceAlert, setShowPriceAlert] = useState(false);
+  const [priceAlertAmount, setPriceAlertAmount] = useState('');
 
   useEffect(() => {
     if ((!data?.recommendations || data.recommendations.length === 0) && (data?.brandId || data?.product?.brandId || data?.productId?.brandId || data?.brandId?._id)) {
@@ -71,7 +76,7 @@ const ProductPassport = () => {
     );
   }
 
-  const scanDate = data.scanDate || data.createdAt ? new Date(data.scanDate || data.createdAt) : null;
+  const scanDate = data.scannedAt || data.scanDate || data.createdAt ? new Date(data.scannedAt || data.scanDate || data.createdAt) : null;
   const scanDateStr = scanDate ? `${scanDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}\n${scanDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}` : 'N/A';
   
   const mfdDate = data.manufactureDate || (data.mfdOn?.month ? `${data.mfdOn.month}/${data.mfdOn.year}` : 'N/A');
@@ -216,112 +221,98 @@ const ProductPassport = () => {
           </div>
         </div>
 
-        {/* Product Details Accordion */}
+        {/* Feature Navigation Cards */}
         <div className="bg-white rounded-[20px] p-5 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100">
-          <div 
-            className="flex items-center justify-between cursor-pointer"
-            onClick={() => setDetailsOpen(!detailsOpen)}
-          >
-            <div className="flex items-center gap-3">
-              <FileText size={18} strokeWidth={2} className="text-[#105DE4]" />
-              <h3 className="text-[15px] font-bold text-slate-900">Product Details</h3>
-            </div>
-            <ChevronDown size={20} className={`text-slate-400 transition-transform ${detailsOpen ? 'rotate-180' : ''}`} />
-          </div>
+          <div className="grid grid-cols-3 gap-3">
+            {/* Product Details - always shown */}
+            <button 
+              onClick={() => navigate('/product-details', { state: data })}
+              className="flex flex-col items-start p-3.5 bg-slate-50 rounded-2xl border border-slate-100 active:bg-slate-100 transition-colors text-left"
+            >
+              <FileText size={22} className="text-[#105DE4] mb-3" strokeWidth={1.8} />
+              <h4 className="text-[12px] font-bold text-slate-900 leading-tight">Product<br/>Details</h4>
+              <ChevronRight size={14} className="text-slate-400 mt-1.5" />
+            </button>
 
-          {detailsOpen && (
-            <div className="mt-5 space-y-4 pt-1">
-              {filteredDetails.map(([key, value], idx) => (
-                <div key={idx} className="flex justify-between items-start text-[12px]">
-                  <span className="text-slate-600 font-medium w-[45%] shrink-0">{key}</span>
-                  <span className="text-slate-900 font-medium text-right leading-relaxed">{String(value)}</span>
-                </div>
-              ))}
-            </div>
-          )}
+            {/* Product Education - shown if educationContent exists */}
+            {(data.educationContent && data.educationContent.length > 0) && (
+              <button 
+                onClick={() => navigate('/product-education', { state: data })}
+                className="flex flex-col items-start p-3.5 bg-slate-50 rounded-2xl border border-slate-100 active:bg-slate-100 transition-colors text-left"
+              >
+                <BookOpen size={22} className="text-[#105DE4] mb-3" strokeWidth={1.8} />
+                <h4 className="text-[12px] font-bold text-slate-900 leading-tight">Product<br/>Education</h4>
+                <ChevronRight size={14} className="text-slate-400 mt-1.5" />
+              </button>
+            )}
+
+            {/* Consumer Support - shown if customerCare or supportEmail exists */}
+            {(data.customerCare || data.supportEmail || data.website) && (
+              <button 
+                onClick={() => navigate('/consumer-support', { state: data })}
+                className="flex flex-col items-start p-3.5 bg-slate-50 rounded-2xl border border-slate-100 active:bg-slate-100 transition-colors text-left"
+              >
+                <HeadphonesIcon size={22} className="text-[#105DE4] mb-3" strokeWidth={1.8} />
+                <h4 className="text-[12px] font-bold text-slate-900 leading-tight">Consumer<br/>Support</h4>
+                <ChevronRight size={14} className="text-slate-400 mt-1.5" />
+              </button>
+            )}
+
+            {/* Ingredients - shown if ingredients exist */}
+            {data.ingredients && (
+              <button 
+                onClick={() => navigate('/ingredients', { state: data })}
+                className="flex flex-col items-start p-3.5 bg-slate-50 rounded-2xl border border-slate-100 active:bg-slate-100 transition-colors text-left"
+              >
+                <FlaskConical size={22} className="text-[#105DE4] mb-3" strokeWidth={1.8} />
+                <h4 className="text-[12px] font-bold text-slate-900 leading-tight">Ingredients</h4>
+                <ChevronRight size={14} className="text-slate-400 mt-1.5" />
+              </button>
+            )}
+
+            {/* Certifications & Lab Tests - shown if certificates exist */}
+            {(data.certificates && data.certificates.length > 0) && (
+              <button 
+                onClick={() => navigate('/certificates', { state: data })}
+                className="flex flex-col items-start p-3.5 bg-slate-50 rounded-2xl border border-slate-100 active:bg-slate-100 transition-colors text-left"
+              >
+                <Award size={22} className="text-[#105DE4] mb-3" strokeWidth={1.8} />
+                <h4 className="text-[12px] font-bold text-slate-900 leading-tight">Certifications<br/>& Lab Tests</h4>
+                <ChevronRight size={14} className="text-slate-400 mt-1.5" />
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Additional Info Block */}
-        {(data.productInfo || data.description) && (
-          <div className="bg-white rounded-[20px] p-5 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100">
-            <h3 className="text-[13px] font-bold text-slate-900 mb-2">Additional Info</h3>
-            <p className="text-[12px] text-slate-600 leading-relaxed whitespace-pre-wrap">{data.productInfo || data.description}</p>
-          </div>
-        )}
-
-        {/* Quick Links */}
-        <div className="bg-white rounded-[20px] shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden divide-y divide-slate-100">
-          {data.website && (
-            <a href={data.website} target="_blank" rel="noreferrer" className="flex items-center p-4 active:bg-slate-50 transition-colors">
-              <div className="w-10 h-10 rounded-full bg-blue-50/50 text-[#105DE4] flex items-center justify-center mr-4 border border-blue-50">
-                <Globe size={20} strokeWidth={1.5} />
-              </div>
-              <div className="flex-1">
-                <h4 className="text-[13px] font-bold text-slate-900 mb-0.5">Visit Website</h4>
-                <p className="text-[11px] text-slate-500 font-medium">Learn more about {data.brand || 'us'}</p>
-              </div>
-              <ChevronRight size={18} className="text-slate-400" />
-            </a>
-          )}
+        {/* Quick Actions (Re Order & Price Alert) */}
+        <div className="flex gap-3">
           <button 
-            onClick={() => navigate('/support')} 
-            className="w-full flex items-center p-4 active:bg-slate-50 transition-colors text-left"
+            onClick={() => navigate('/product-details', { state: data })}
+            className="flex-1 bg-[#105DE4] rounded-[16px] p-3 text-left active:opacity-80 transition-opacity flex items-center shadow-[0_4px_15px_rgba(16,93,228,0.2)]"
           >
-            <div className="w-10 h-10 rounded-full bg-blue-50/50 text-[#105DE4] flex items-center justify-center mr-4 border border-blue-50">
-              <HeadphonesIcon size={20} strokeWidth={1.5} />
-            </div>
             <div className="flex-1">
-              <h4 className="text-[13px] font-bold text-slate-900 mb-0.5">Support</h4>
-              <p className="text-[11px] text-slate-500 font-medium">Get help or raise a query</p>
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <ShoppingCart size={16} className="text-white" strokeWidth={2.5} />
+                <h4 className="text-[13px] font-bold text-white tracking-wide">Re Order</h4>
+              </div>
+              <p className="text-[9px] text-blue-100/90 font-medium leading-[1.2]">Never run out of your essentials</p>
             </div>
-            <ChevronRight size={18} className="text-slate-400" />
-          </button>
-        </div>
-
-        {/* Re Order Block */}
-        <div className="bg-[#001466] rounded-[20px] p-5 text-white flex shadow-[0_8px_30px_rgba(0,20,102,0.2)]">
-          <button 
-            onClick={() => navigate(`/smart-reorder/${data.productId || data.product?._id}`)}
-            className="flex-1 flex flex-col items-start pr-4 border-r border-blue-800/50 active:opacity-70 transition-opacity"
-          >
-            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center mb-4 shadow-sm">
-              <ShoppingCart size={18} className="text-[#105DE4]" strokeWidth={2.5} />
-            </div>
-            <div className="flex items-center gap-1 w-full justify-between mb-1">
-              <h4 className="text-[15px] font-bold tracking-wide">Re Order</h4>
-              <ChevronRight size={16} className="text-white" />
-            </div>
-            <p className="text-[10px] text-blue-200/80 font-medium leading-relaxed pr-2">Never run out of your essentials</p>
+            <ChevronRight size={16} className="text-white shrink-0 opacity-80" />
           </button>
           
-          <div className="flex-1 pl-5 flex flex-col justify-center">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="relative w-11 h-11 flex items-center justify-center shrink-0">
-                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                  <path className="text-[#1A3385]" strokeWidth="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                  <path className="text-[#3B82F6]" strokeWidth="3.5" strokeDasharray={`${percentageLeft}, 100`} strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-[10px] font-bold text-white">{percentageLeft}%</span>
-                </div>
+          <button 
+            onClick={() => setShowPriceAlert(true)}
+            className="flex-1 bg-[#059669] rounded-[16px] p-3 text-left active:opacity-80 transition-opacity flex items-center shadow-[0_4px_15px_rgba(5,150,105,0.2)]"
+          >
+            <div className="flex-1">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <Bell size={16} className="text-white" strokeWidth={2.5} />
+                <h4 className="text-[13px] font-bold text-white tracking-wide">Price Alert</h4>
               </div>
-              <div>
-                <p className="text-[11px] font-bold mb-0.5 tracking-wide">Usage Left</p>
-                <p className="text-[9px] text-blue-300 font-medium">~{daysLeft} servings left</p>
-              </div>
+              <p className="text-[9px] text-emerald-100/90 font-medium leading-[1.2]">Notify me when the price drops</p>
             </div>
-            
-            <button className="flex items-center justify-between text-left group">
-              <div className="flex items-start gap-1.5">
-                <Bell size={12} className="text-blue-300 mt-0.5" />
-                <div>
-                  <p className="text-[11px] font-bold mb-0.5 tracking-wide">Set Reminder</p>
-                  <p className="text-[8px] text-blue-300 font-medium leading-[1.3]">We'll remind you before you run out</p>
-                </div>
-              </div>
-              <ChevronRight size={14} className="text-blue-300 group-active:translate-x-1 transition-transform ml-1" />
-            </button>
-          </div>
+            <ChevronRight size={16} className="text-white shrink-0 opacity-80" />
+          </button>
         </div>
 
         {/* Recommendation For You */}
@@ -369,6 +360,82 @@ const ProductPassport = () => {
         )}
 
       </div>
+
+      {/* Price Alert Modal */}
+      {showPriceAlert && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-[24px] w-full max-w-sm overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-2">
+                <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">
+                  <div className="relative">
+                    <Bell size={24} className="text-[#059669]" />
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#059669] rounded-full flex items-center justify-center text-[8px] font-bold text-white">₹</div>
+                  </div>
+                </div>
+                <button onClick={() => setShowPriceAlert(false)} className="p-2 -mr-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-50 transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <h3 className="text-xl font-bold text-slate-900 text-center mb-1">Price Alert</h3>
+              <p className="text-sm text-slate-500 text-center font-medium mb-6">Get notified when the price drops</p>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-bold text-slate-800 mb-2">Notify me when price is</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <span className="text-xl font-medium text-slate-400">₹</span>
+                  </div>
+                  <input
+                    type="number"
+                    value={priceAlertAmount}
+                    onChange={(e) => setPriceAlertAmount(e.target.value)}
+                    className="block w-full pl-10 pr-10 py-3 text-xl font-bold text-slate-900 bg-white border-2 border-slate-200 rounded-xl focus:ring-0 focus:border-[#105DE4] transition-colors"
+                    placeholder="1,299"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                    <svg className="w-4 h-4 text-[#105DE4]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-500 font-medium mt-2">You will be notified when the price is equal to or less than this price.</p>
+              </div>
+
+              <div className="bg-emerald-50 rounded-xl p-4 flex gap-3 mb-6 border border-emerald-100">
+                <Bell size={20} className="text-[#059669] shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-[13px] font-bold text-[#065F46] mb-0.5">We'll monitor all major platforms for you</h4>
+                  <p className="text-[11px] text-[#065F46]/80 font-medium leading-relaxed">You'll get notified when the price drops on any of the listed platforms.</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <button 
+                  onClick={() => {
+                    if (priceAlertAmount) {
+                      alert('Price Alert Set Successfully!');
+                      setShowPriceAlert(false);
+                      setPriceAlertAmount('');
+                    }
+                  }}
+                  className="w-full bg-[#059669] text-white font-bold py-3.5 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all"
+                >
+                  Set Price Alert
+                </button>
+                <button 
+                  onClick={() => setShowPriceAlert(false)}
+                  className="w-full text-slate-500 font-bold py-2 rounded-xl hover:bg-slate-50 active:bg-slate-100 transition-all text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

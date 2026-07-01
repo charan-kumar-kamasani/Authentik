@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import API_BASE_URL, { getProductTemplates, createProductTemplate, authorizeProductTemplate, deleteProductTemplate, getBrands, updateProductTemplate } from '../../config/api';
+import API_BASE_URL, { getProductTemplates, createProductTemplate, authorizeProductTemplate, deleteProductTemplate, getBrands, updateProductTemplate, reorderProductTemplates } from '../../config/api';
 import { Package, Plus, CheckCircle, Clock, Trash2, Search, Filter, ShieldCheck, Info, Image as ImageIcon, Edit, ShoppingCart, BookOpen } from 'lucide-react';
 import { useConfirm } from '../../components/ConfirmModal';
 
@@ -14,6 +14,13 @@ const ProductManager = () => {
   const [reviews, setReviews] = useState([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
   
+  // Drag and drop state
+  const [draggedProductIdx, setDraggedProductIdx] = useState(null);
+  const [dragOverProductIdx, setDragOverProductIdx] = useState(null);
+
+  const [draggedLinkIdx, setDraggedLinkIdx] = useState(null);
+  const [dragOverLinkIdx, setDragOverLinkIdx] = useState(null);
+  
   const [formData, setFormData] = useState({
     productName: '',
     skuNumber: '',
@@ -21,6 +28,8 @@ const ProductManager = () => {
     productInfo: '',
     productImage: null,
     imagePreview: null,
+    ingredients: '',
+    certificates: [],
     orderLinks: [],
     educationContent: [],
   });
@@ -33,6 +42,8 @@ const ProductManager = () => {
       productInfo: '',
       productImage: null,
       imagePreview: null,
+      ingredients: '',
+      certificates: [],
       orderLinks: [],
       educationContent: [],
     });
@@ -86,6 +97,19 @@ const ProductManager = () => {
         productImage: file,
         imagePreview: URL.createObjectURL(file)
       });
+    }
+  };
+
+  const handleCertificateImageChange = (e, index) => {
+    const file = e.target.files[0];
+    if (file) {
+      const newCertificates = [...formData.certificates];
+      newCertificates[index] = {
+        ...newCertificates[index],
+        imageFile: file,
+        image: URL.createObjectURL(file)
+      };
+      setFormData({ ...formData, certificates: newCertificates });
     }
   };
 
@@ -146,11 +170,33 @@ const ProductManager = () => {
         });
       }
 
+      const finalCertificates = [];
+      for (const cert of formData.certificates || []) {
+        if (!cert.name && !cert.imageFile && !cert.image) continue;
+        let certImageUrl = cert.image || '';
+        if (cert.imageFile) {
+          const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+          const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+          const uploadFormData = new FormData();
+          uploadFormData.append('file', cert.imageFile);
+          uploadFormData.append('upload_preset', uploadPreset);
+          const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: 'POST', body: uploadFormData });
+          const data = await res.json();
+          certImageUrl = data.secure_url;
+        }
+        finalCertificates.push({
+          name: cert.name || '',
+          image: certImageUrl
+        });
+      }
+
       const productPayload = {
         productName: formData.productName,
         skuNumber: formData.skuNumber,
         brandId: formData.brandId,
         productInfo: formData.productInfo,
+        ingredients: formData.ingredients || '',
+        certificates: finalCertificates,
         orderLinks: finalOrderLinks,
         educationContent: formData.educationContent || [],
       };
@@ -210,6 +256,111 @@ const ProductManager = () => {
       fetchInitialData();
     } catch (err) {
       await confirm({ title: 'Error', description: 'Failed to delete product', cancelText: null });
+    }
+  };
+
+  const handleToggleStatus = async (product) => {
+    const newStatus = product.status === 'active' ? 'inactive' : 'active';
+    
+    // Optimistically update UI
+    setProducts(products.map(p => p._id === product._id ? { ...p, status: newStatus } : p));
+    
+    try {
+      await updateProductTemplate(product._id, { status: newStatus });
+    } catch (err) {
+      console.error("Failed to update status", err);
+      // Revert on failure
+      setProducts(products.map(p => p._id === product._id ? { ...p, status: product.status } : p));
+      await confirm({ title: 'Error', description: 'Failed to update product status', cancelText: null });
+    }
+  };
+
+  const handleDragStart = (e, index) => {
+    setDraggedProductIdx(index);
+    e.dataTransfer.effectAllowed = 'move';
+    // Small delay to allow the drag image to be captured before we style the original element
+    setTimeout(() => {
+      e.target.style.opacity = '0.5';
+    }, 0);
+  };
+
+  const handleDragEnter = (e, index) => {
+    e.preventDefault();
+    setDragOverProductIdx(index);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDragEnd = (e) => {
+    e.target.style.opacity = '1';
+    setDraggedProductIdx(null);
+    setDragOverProductIdx(null);
+  };
+
+  const handleLinkDragStart = (e, index) => {
+    setDraggedLinkIdx(index);
+    e.dataTransfer.effectAllowed = 'move';
+    setTimeout(() => {
+      e.target.style.opacity = '0.5';
+    }, 0);
+  };
+
+  const handleLinkDragEnter = (e, index) => {
+    e.preventDefault();
+    setDragOverLinkIdx(index);
+  };
+
+  const handleLinkDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleLinkDragEnd = (e) => {
+    e.target.style.opacity = '1';
+    setDraggedLinkIdx(null);
+    setDragOverLinkIdx(null);
+  };
+
+  const handleLinkDrop = (e, dropIndex) => {
+    e.preventDefault();
+    if (draggedLinkIdx === null || draggedLinkIdx === dropIndex) {
+      handleLinkDragEnd(e);
+      return;
+    }
+    const newLinks = [...formData.orderLinks];
+    const draggedItem = newLinks[draggedLinkIdx];
+    newLinks.splice(draggedLinkIdx, 1);
+    newLinks.splice(dropIndex, 0, draggedItem);
+    setFormData({ ...formData, orderLinks: newLinks });
+    handleLinkDragEnd(e);
+  };
+
+  const handleDrop = async (e, dropIndex) => {
+    e.preventDefault();
+    if (draggedProductIdx === null || draggedProductIdx === dropIndex) {
+      handleDragEnd(e);
+      return;
+    }
+
+    const newProducts = [...products];
+    const draggedItem = newProducts[draggedProductIdx];
+    newProducts.splice(draggedProductIdx, 1);
+    newProducts.splice(dropIndex, 0, draggedItem);
+
+    setProducts(newProducts);
+    handleDragEnd(e);
+
+    // Call API to update the backend
+    try {
+      const itemsToUpdate = newProducts.map((p, idx) => ({ id: p._id, displayOrder: idx }));
+      await reorderProductTemplates(itemsToUpdate);
+    } catch (err) {
+      console.error("Failed to reorder products:", err);
+      // Re-fetch to revert to actual state in case of error
+      fetchInitialData();
     }
   };
 
@@ -294,30 +445,59 @@ const ProductManager = () => {
                     />
                   </div>
 
-                  <div className="flex flex-col gap-2 group">
-                    <label className="text-sm font-bold text-gray-600 ml-1">SKU Number</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. SKU-12345 (Optional)"
-                      value={formData.skuNumber}
-                      onChange={(e) => setFormData({ ...formData, skuNumber: e.target.value })}
-                      className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-semibold shadow-sm"
-                    />
+                  <div className="flex flex-col gap-2">
+                      <label className="text-sm font-bold text-gray-600 ml-1">Product Image</label>
+                      <div className="flex items-center gap-6 p-4 bg-white border border-gray-200 rounded-[1.5rem] shadow-sm">
+                          <label className="flex-shrink-0 cursor-pointer">
+                              <div className="w-24 h-24 rounded-2xl bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-all">
+                                  <ImageIcon size={24} />
+                                  <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Choose</span>
+                              </div>
+                              <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
+                          </label>
+                          {formData.imagePreview ? (
+                              <div className="relative group">
+                                  <img src={formData.imagePreview} alt="Preview" className="w-24 h-24 object-cover rounded-2xl shadow-md" />
+                                  <button 
+                                      type="button" 
+                                      onClick={() => setFormData({ ...formData, productImage: null, imagePreview: null })}
+                                      className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg"
+                                  >
+                                      <Plus className="rotate-45 w-4 h-4" />
+                                  </button>
+                              </div>
+                          ) : (
+                              <p className="text-xs text-gray-400 font-medium">Upload a clear product photo to showcase on scan results.</p>
+                          )}
+                      </div>
                   </div>
 
-                  <div className="flex flex-col gap-2 group">
-                    <label className="text-sm font-bold text-gray-600 ml-1">Brand *</label>
-                    <select
-                      required
-                      value={formData.brandId}
-                      onChange={(e) => setFormData({ ...formData, brandId: e.target.value })}
-                      className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-semibold shadow-sm cursor-pointer"
-                    >
-                      <option value="" disabled>Select a Brand</option>
-                      {brands.map(b => (
-                        <option key={b._id} value={b._id}>{b.brandName}</option>
-                      ))}
-                    </select>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="flex flex-col gap-2 group">
+                      <label className="text-sm font-bold text-gray-600 ml-1">SKU Number</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. SKU-12345 (Optional)"
+                        value={formData.skuNumber}
+                        onChange={(e) => setFormData({ ...formData, skuNumber: e.target.value })}
+                        className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-semibold shadow-sm"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-2 group">
+                      <label className="text-sm font-bold text-gray-600 ml-1">Brand *</label>
+                      <select
+                        required
+                        value={formData.brandId}
+                        onChange={(e) => setFormData({ ...formData, brandId: e.target.value })}
+                        className="w-full px-5 py-3.5 bg-white border border-gray-200 rounded-2xl text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all font-semibold shadow-sm cursor-pointer"
+                      >
+                        <option value="" disabled>Select a Brand</option>
+                        {brands.map(b => (
+                          <option key={b._id} value={b._id}>{b.brandName}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 </div>
                 <div className="p-8 bg-gray-50/50 rounded-[2rem] border border-gray-100">
@@ -330,7 +510,7 @@ const ProductManager = () => {
                   <div className="space-y-6">
                     <div className="flex flex-col gap-2">
                         <div className="flex items-center justify-between ml-1">
-                          <label className="text-sm font-bold text-gray-600">Image Description</label>
+                          <label className="text-sm font-bold text-gray-600">Product Description</label>
                           <span className={`text-[10px] font-black uppercase tracking-widest ${
                             (formData.productInfo.trim().split(/\s+/).filter(Boolean).length > 250) ? 'text-red-500' : 'text-gray-400'
                           }`}>
@@ -361,87 +541,96 @@ const ProductManager = () => {
                           </p>
                         )}
                     </div>
- 
-                    <div className="flex flex-col gap-2">
-                        <label className="text-sm font-bold text-gray-600 ml-1">Product Image</label>
-                        <div className="flex items-center gap-6 p-4 bg-white border border-gray-100 rounded-[1.5rem] shadow-sm">
-                            <label className="flex-shrink-0 cursor-pointer">
-                                <div className="w-24 h-24 rounded-2xl bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-all">
-                                    <ImageIcon size={24} />
-                                    <span className="text-[10px] mt-1 font-bold uppercase tracking-wider">Choose</span>
-                                </div>
-                                <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
-                            </label>
-                            {formData.imagePreview ? (
-                                <div className="relative group">
-                                    <img src={formData.imagePreview} alt="Preview" className="w-24 h-24 object-cover rounded-2xl shadow-md" />
-                                    <button 
-                                        type="button" 
-                                        onClick={() => setFormData({ ...formData, productImage: null, imagePreview: null })}
-                                        className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-lg"
-                                    >
-                                        <Plus className="rotate-45 w-4 h-4" />
-                                    </button>
-                                </div>
-                            ) : (
-                                <p className="text-xs text-gray-400 font-medium">Upload a clear product photo to showcase on scan results.</p>
-                            )}
-                        </div>
-                    </div>
-                  </div>
-                </div>
 
-                <div className="p-8 bg-blue-50/30 rounded-[2rem] border border-blue-100/50">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <ShoppingCart size={18} className="text-blue-600" />
-                      <h4 className="text-lg font-bold text-gray-800">Purchase / Reorder Links</h4>
+                    {/* Ingredients */}
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-bold text-gray-600 ml-1">Ingredients</label>
+                        <textarea
+                          placeholder="List ingredients here..."
+                          value={formData.ingredients}
+                          onChange={(e) => setFormData({ ...formData, ingredients: e.target.value })}
+                          rows={3}
+                          className="w-full px-6 py-4 bg-white border border-gray-100 rounded-[1.5rem] text-gray-900 resize-none focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all font-medium shadow-sm"
+                        />
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, orderLinks: [...(formData.orderLinks || []), { title: '', url: '' }] })}
-                      className="text-blue-600 text-sm font-bold flex items-center gap-1 hover:text-blue-700 bg-blue-100/50 px-3 py-1.5 rounded-lg"
-                    >
-                      <Plus size={16} /> Add Link
-                    </button>
-                  </div>
-                  <p className="text-sm text-gray-500 mb-6">Add links to Amazon, Flipkart, or your own website so customers can reorder.</p>
-                  
-                  <div className="space-y-4">
-                    {!(formData.orderLinks && formData.orderLinks.length > 0) ? (
-                      <div className="text-center py-6 bg-white rounded-2xl border border-gray-100">
-                        <p className="text-gray-400 text-sm font-medium">No purchase links added yet.</p>
+
+                    {/* Certificates and Lab Tests */}
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-bold text-gray-600 ml-1">Certificates and Lab Tests</label>
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, certificates: [...(formData.certificates || []), { name: '', image: '', imageFile: null }] })}
+                          className="text-blue-600 text-sm font-bold flex items-center gap-1 hover:text-blue-700 bg-blue-100/50 px-3 py-1.5 rounded-lg"
+                        >
+                          <Plus size={16} /> Add Certificate
+                        </button>
                       </div>
-                    ) : (
-                      formData.orderLinks.map((link, index) => (
-                        <div key={index} className="flex gap-4 items-start p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
-                          <div className="flex-1 space-y-3">
-                            <input
-                              type="url"
-                              placeholder="https://..."
-                              value={link.url}
-                              onChange={(e) => {
-                                const newLinks = [...formData.orderLinks];
-                                newLinks[index].url = e.target.value;
-                                setFormData({ ...formData, orderLinks: newLinks });
-                              }}
-                              className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-500"
-                            />
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newLinks = [...formData.orderLinks];
-                              newLinks.splice(index, 1);
-                              setFormData({ ...formData, orderLinks: newLinks });
-                            }}
-                            className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors shrink-0 mt-1"
-                          >
-                            <Trash2 size={18} />
-                          </button>
+                      
+                      {formData.certificates?.length > 0 ? (
+                        <div className="space-y-4">
+                          {formData.certificates.map((cert, index) => (
+                            <div key={index} className="flex gap-4 p-4 bg-white border border-gray-100 rounded-2xl items-start shadow-sm relative group">
+                                <div className="flex-1 space-y-3">
+                                  <input
+                                    type="text"
+                                    placeholder="Certificate Name (e.g. GMP Certified)"
+                                    value={cert.name}
+                                    onChange={(e) => {
+                                      const newCerts = [...formData.certificates];
+                                      newCerts[index].name = e.target.value;
+                                      setFormData({ ...formData, certificates: newCerts });
+                                    }}
+                                    className="w-full px-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                                  />
+                                  <div className="flex items-center gap-4">
+                                      <label className="flex-shrink-0 cursor-pointer">
+                                          <div className="w-16 h-16 rounded-xl bg-gray-50 border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-all">
+                                              <ImageIcon size={16} />
+                                              <span className="text-[8px] mt-1 font-bold uppercase tracking-wider">Choose</span>
+                                          </div>
+                                          <input type="file" accept="image/*" onChange={(e) => handleCertificateImageChange(e, index)} className="hidden" />
+                                      </label>
+                                      {cert.image && (
+                                          <div className="relative group/img">
+                                              <img src={cert.image} alt="Preview" className="w-16 h-16 object-cover rounded-xl shadow-sm" />
+                                              <button 
+                                                  type="button" 
+                                                  onClick={() => {
+                                                    const newCerts = [...formData.certificates];
+                                                    newCerts[index].image = '';
+                                                    newCerts[index].imageFile = null;
+                                                    setFormData({ ...formData, certificates: newCerts });
+                                                  }}
+                                                  className="absolute -top-1 -right-1 p-0.5 bg-red-500 text-white rounded-full opacity-0 group-hover/img:opacity-100 transition-all shadow-md"
+                                              >
+                                                  <Plus className="rotate-45 w-3 h-3" />
+                                              </button>
+                                          </div>
+                                      )}
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const newCerts = [...formData.certificates];
+                                    newCerts.splice(index, 1);
+                                    setFormData({ ...formData, certificates: newCerts });
+                                  }}
+                                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                            </div>
+                          ))}
                         </div>
-                      ))
-                    )}
+                      ) : (
+                        <div className="p-6 bg-gray-50/50 border border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center text-center">
+                            <ShieldCheck className="text-gray-300 mb-2" size={24} />
+                            <p className="text-xs font-medium text-gray-500">No certificates or lab tests added yet.</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -520,6 +709,72 @@ const ProductManager = () => {
                   </div>
                 </div>
 
+                <div className="p-8 bg-blue-50/30 rounded-[2rem] border border-blue-100/50 mt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <ShoppingCart size={18} className="text-blue-600" />
+                      <h4 className="text-lg font-bold text-gray-800">Purchase / Reorder Links</h4>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, orderLinks: [...(formData.orderLinks || []), { title: '', url: '' }] })}
+                      className="text-blue-600 text-sm font-bold flex items-center gap-1 hover:text-blue-700 bg-blue-100/50 px-3 py-1.5 rounded-lg"
+                    >
+                      <Plus size={16} /> Add Link
+                    </button>
+                  </div>
+                  <p className="text-sm text-gray-500 mb-6">Add links to Amazon, Flipkart, or your own website so customers can reorder.</p>
+                  
+                  <div className="space-y-4">
+                    {!(formData.orderLinks && formData.orderLinks.length > 0) ? (
+                      <div className="text-center py-6 bg-white rounded-2xl border border-gray-100">
+                        <p className="text-gray-400 text-sm font-medium">No purchase links added yet.</p>
+                      </div>
+                    ) : (
+                      formData.orderLinks.map((link, index) => (
+                        <div 
+                          key={index} 
+                          className="flex gap-4 items-start p-4 bg-white rounded-2xl border border-gray-100 shadow-sm"
+                          draggable
+                          onDragStart={(e) => handleLinkDragStart(e, index)}
+                          onDragEnter={(e) => handleLinkDragEnter(e, index)}
+                          onDragOver={handleLinkDragOver}
+                          onDragEnd={handleLinkDragEnd}
+                          onDrop={(e) => handleLinkDrop(e, index)}
+                        >
+                          <div className="mt-2 text-gray-400 cursor-grab active:cursor-grabbing hover:text-blue-500">
+                            <GripVertical size={20} />
+                          </div>
+                          <div className="flex-1 space-y-3">
+                            <input
+                              type="url"
+                              placeholder="https://..."
+                              value={link.url}
+                              onChange={(e) => {
+                                const newLinks = [...formData.orderLinks];
+                                newLinks[index].url = e.target.value;
+                                setFormData({ ...formData, orderLinks: newLinks });
+                              }}
+                              className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-500"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newLinks = [...formData.orderLinks];
+                              newLinks.splice(index, 1);
+                              setFormData({ ...formData, orderLinks: newLinks });
+                            }}
+                            className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors shrink-0 mt-1"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
                 <div className="pt-4">
                   <button 
                     disabled={submitting || (formData.productInfo.trim().split(/\s+/).filter(Boolean).length > 250)}
@@ -554,8 +809,17 @@ const ProductManager = () => {
 
               {/* Product Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {products.map(product => (
-                  <div key={product._id} className="bg-white rounded-[2.5rem] p-6 shadow-sm border border-gray-100 hover:shadow-xl hover:shadow-gray-200/50 transition-all group animate-in fade-in slide-in-from-bottom-4 duration-500">
+                {products.map((product, index) => (
+                  <div 
+                    key={product._id} 
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragEnter={(e) => handleDragEnter(e, index)}
+                    onDragOver={handleDragOver}
+                    onDragEnd={handleDragEnd}
+                    onDrop={(e) => handleDrop(e, index)}
+                    className={`bg-white rounded-[2.5rem] p-6 shadow-sm border ${dragOverProductIdx === index ? 'border-blue-500 scale-105 shadow-xl ring-4 ring-blue-500/20' : 'border-gray-100'} hover:shadow-xl hover:shadow-gray-200/50 transition-all group animate-in fade-in slide-in-from-bottom-4 duration-500 cursor-move ${product.status === 'inactive' ? 'opacity-60 grayscale-[0.5]' : ''}`}
+                  >
                     <div className="flex gap-5">
                       <div className="w-24 h-24 bg-gray-50 rounded-3xl overflow-hidden border border-gray-100 flex-shrink-0">
                         {product.productImage ? (
@@ -596,6 +860,13 @@ const ProductManager = () => {
                       </div>
 
                       <div className="flex items-center gap-1">
+                        <button 
+                            onClick={() => handleToggleStatus(product)}
+                            className={`px-3 py-1.5 mr-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm flex items-center gap-1 ${product.status === 'inactive' ? 'bg-gray-100 text-gray-500 hover:bg-gray-200' : 'bg-green-50 text-green-600 hover:bg-green-600 hover:text-white'}`}
+                            title={product.status === 'inactive' ? "Set Active" : "Set Inactive"}
+                        >
+                          {product.status === 'inactive' ? 'Inactive' : 'Active'}
+                        </button>
                         <button 
                             onClick={() => handleEditClick(product)}
                             className="p-2.5 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-600 hover:text-white transition-all shadow-sm"
