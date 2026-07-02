@@ -552,13 +552,7 @@ export default function GenerateBlankQrs() {
                           )}
                           {req.status === 'Preparing for Dispatch' && (
                             <button
-                              onClick={() => {
-                                if (qrStats.globalUnassigned < req.quantity) {
-                                  alert(`Not enough Global QRs available. You need ${req.quantity}, but only have ${qrStats.globalUnassigned}. Please generate more QRs first.`);
-                                  return;
-                                }
-                                handleUpdateStatus(req._id, 'Dispatched');
-                              }}
+                              onClick={() => handleUpdateStatus(req._id, 'Dispatched')}
                               className="px-3 py-1.5 bg-purple-600 text-white font-bold text-xs rounded-lg hover:bg-purple-700 transition-colors shadow-sm"
                             >
                               Mark Dispatched

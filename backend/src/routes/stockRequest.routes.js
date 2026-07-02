@@ -163,8 +163,8 @@ router.put('/:id/status', protect, authorize('superadmin'), async (req, res) => 
       return res.status(400).json({ error: 'Cannot dispatch unpaid stock requests. Ensure payment is completed first.' });
     }
 
-    // Ensure we have enough global QRs
-    if (["Preparing for Dispatch", "Dispatched"].includes(status)) {
+    // Ensure we have enough global QRs, only if they haven't been allocated yet
+    if (["Preparing for Dispatch", "Dispatched"].includes(status) && !request.startSerialNumber) {
       const availableQrs = await BlankQr.countDocuments({
         isAssigned: false,
         isBlocked: false,
@@ -176,8 +176,8 @@ router.put('/:id/status', protect, authorize('superadmin'), async (req, res) => 
       }
     }
 
-    // Allocate QRs when preparing for dispatch
-    if (status === "Preparing for Dispatch" && !request.startSerialNumber) {
+    // Allocate QRs when preparing for dispatch or dispatching directly (if not already allocated)
+    if (["Preparing for Dispatch", "Dispatched"].includes(status) && !request.startSerialNumber) {
       const unassignedQrs = await BlankQr.find({
         isAssigned: false,
         isBlocked: false,
