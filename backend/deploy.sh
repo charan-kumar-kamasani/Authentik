@@ -76,7 +76,8 @@ ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP << EOF
   npm ci --only=production
 
   echo "🔄 Restarting PM2..."
-  pm2 restart $APP_NAME || pm2 start index.js --name $APP_NAME
+  pm2 delete $APP_NAME || true
+  pm2 start src/server.js --name $APP_NAME
 
   pm2 save
 

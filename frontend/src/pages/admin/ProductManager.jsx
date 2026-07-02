@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import API_BASE_URL, { getProductTemplates, createProductTemplate, authorizeProductTemplate, deleteProductTemplate, getBrands, updateProductTemplate, reorderProductTemplates } from '../../config/api';
-import { Package, Plus, CheckCircle, Clock, Trash2, Search, Filter, ShieldCheck, Info, Image as ImageIcon, Edit, ShoppingCart, BookOpen } from 'lucide-react';
+import { Package, Plus, CheckCircle, Clock, Trash2, Search, Filter, ShieldCheck, Info, Image as ImageIcon, Edit, ShoppingCart, BookOpen, GripVertical } from 'lucide-react';
 import { useConfirm } from '../../components/ConfirmModal';
 
 const ProductManager = () => {

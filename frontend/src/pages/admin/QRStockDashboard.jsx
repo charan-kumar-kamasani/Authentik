@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Package, CheckCircle2, Clock, XCircle, AlertCircle, Box, Layers, ShieldCheck, Activity, CreditCard } from 'lucide-react';
-import API_BASE_URL, { payStockRequest } from '../../config/api';
+import API_BASE_URL, { payStockRequest, checkPaymentStatus } from '../../config/api';
 import StockRequestModal from '../../components/StockRequestModal';
 import { useConfirm } from '../../components/ConfirmModal';
 
@@ -54,7 +54,28 @@ const QRStockDashboard = () => {
   };
 
   useEffect(() => {
-    fetchDashboardData();
+    const init = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const paymentOrderId = urlParams.get('payment');
+      
+      if (paymentOrderId) {
+        setLoading(true);
+        try {
+          const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+          await checkPaymentStatus(paymentOrderId, token);
+          
+          // Clean up the URL so it doesn't verify again on refresh
+          const newUrl = window.location.pathname;
+          window.history.replaceState({}, document.title, newUrl);
+        } catch (err) {
+          console.error('Failed to verify payment status:', err);
+        }
+      }
+      
+      fetchDashboardData();
+    };
+    
+    init();
   }, []);
 
   const handleReceiveRequest = async (requestId) => {
