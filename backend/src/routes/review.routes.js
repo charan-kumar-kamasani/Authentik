@@ -12,7 +12,7 @@ const { protect, authorize } = require('../middleware/authMiddleware');
 // @access  Private
 router.post('/', protect, async (req, res) => {
   try {
-    const { productId, rating, optIn, couponCode, comment } = req.body;
+    const { productId, rating, optIn, couponCode, comment, purchaseLocation } = req.body;
 
     if (!productId || !rating) {
       return res.status(400).json({ error: 'Product ID and rating are required' });
@@ -32,6 +32,7 @@ router.post('/', protect, async (req, res) => {
         userId: req.user._id,
         rating,
         optIn,
+        purchaseLocation,
         coupon: awardedCoupon 
       });
     }
@@ -48,6 +49,7 @@ router.post('/', protect, async (req, res) => {
       userId: req.user._id,
       rating,
       optIn,
+      purchaseLocation,
       couponCode,
       comment
     });

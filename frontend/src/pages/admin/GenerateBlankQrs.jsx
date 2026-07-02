@@ -139,6 +139,10 @@ export default function GenerateBlankQrs() {
       setError('Please enter a valid quantity greater than 0.');
       return;
     }
+    if (qtyNum % 250 !== 0) {
+      setError('Quantity must be a multiple of 250.');
+      return;
+    }
 
     setSubmitting(true);
 
@@ -149,19 +153,13 @@ export default function GenerateBlankQrs() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ quantity: qtyNum, format }),
+        body: JSON.stringify({ quantity: qtyNum, format: 'none' }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
         setSuccess(`Successfully generated ${data.count} blank QRs!`);
-        if (data.pdfBase64) {
-          const isZip = ['tiff', 'tif', 'cdr'].includes(data.format || format);
-          const ext = isZip ? 'zip' : 'pdf';
-          const formatStr = (data.format || format).toUpperCase();
-          downloadFile(data.pdfBase64, `blank_qrs_${formatStr}_${data.batch?.batchName || Date.now()}.${ext}`);
-        }
         setQuantity('');
         fetchBatches(); // refresh the table
         fetchStats(); // refresh stats
@@ -728,36 +726,17 @@ export default function GenerateBlankQrs() {
                   </label>
                   <input
                     type="number"
-                    min="1"
+                    min="250"
+                    step="250"
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
-                    placeholder="e.g. 255"
+                    placeholder="e.g. 1000"
                     className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
                     required
                   />
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">
-                    Download Format
-                  </label>
-                  <select
-                    value={format}
-                    onChange={(e) => setFormat(e.target.value)}
-                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
-                  >
-                    <option value="pdf">PDF Layout (Recommended)</option>
-                    <option value="tiff">TIFF Layout (ZIP)</option>
-                    <option value="cdr">CDR - CorelDRAW (ZIP)</option>
-                  </select>
-                  <p className="mt-2 text-xs text-slate-500 leading-relaxed">
-                    {format === 'pdf' 
-                      ? 'A3+ sheets will be generated with exactly 240 QRs per page to leave a 15mm margin.' 
-                      : format === 'cdr'
-                      ? 'A ZIP file with vector SVG pages (A3+ layout) will be generated. These open directly in CorelDRAW with perfect quality.'
-                      : `A ZIP file containing exactly formatted A3+ pages in ${format.toUpperCase()} format (with 240 QRs per page) will be generated.`}
-                  </p>
-                </div>
+
 
                 <button
                   type="submit"
@@ -776,7 +755,7 @@ export default function GenerateBlankQrs() {
                   ) : (
                     <span className="flex items-center gap-2">
                       <Printer size={18} />
-                      Generate & Download
+                      Generate QRs
                     </span>
                   )}
                 </button>

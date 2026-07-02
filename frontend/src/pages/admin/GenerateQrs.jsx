@@ -41,7 +41,7 @@ export default function GenerateQrs() {
     customFields: [
       { fieldName: "sku", fieldLabel: "SKU", fieldType: "text", isMandatory: false, placeholder: "e.g. WH-1000XM4" },
       { fieldName: "batchNo", fieldLabel: "Batch Number", fieldType: "text", isMandatory: true, isBatchNo: true, placeholder: "e.g. BT-2023-10-X" },
-      { fieldName: "mrp", fieldLabel: "MRP", fieldType: "number", isMandatory: false, placeholder: "e.g. 2999" },
+      { fieldName: "mrp", fieldLabel: "MRP", fieldType: "text", isMandatory: false, placeholder: "e.g. ₹2,999" },
       { fieldName: "manufacturedBy", fieldLabel: "Manufactured by", fieldType: "text", isMandatory: false, placeholder: "e.g. Alpha Industries" },
       { fieldName: "marketedBy", fieldLabel: "Marketed by", fieldType: "text", isMandatory: false, placeholder: "e.g. Beta Retail Pvt. Ltd." },
       { fieldName: "countryOfOrigin", fieldLabel: "Country of Origin", fieldType: "text", isMandatory: false, placeholder: "e.g. India" },
@@ -239,8 +239,41 @@ export default function GenerateQrs() {
 
   };
 
+  // Format a number in the Indian numbering system (e.g. 12,34,567)
+  const formatIndianRupee = (num) => {
+    if (!num && num !== 0) return '';
+    const str = String(num);
+    // Split integer and decimal parts
+    const [intPart, decPart] = str.split('.');
+    // Indian grouping: last 3 digits, then groups of 2
+    let lastThree = intPart.slice(-3);
+    const rest = intPart.slice(0, -3);
+    if (rest) {
+      lastThree = rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' + lastThree;
+    }
+    return decPart !== undefined ? `${lastThree}.${decPart}` : lastThree;
+  };
+
   const handleDynamicFieldChange = (fieldName, value) => {
     let formattedValue = value;
+
+    // MRP field: format with ₹ prefix and Indian commas
+    if (fieldName === 'mrp' && typeof value === 'string') {
+      // Strip everything except digits and decimal point
+      let raw = value.replace(/[^0-9.]/g, '');
+      // Only allow one decimal point
+      const parts = raw.split('.');
+      if (parts.length > 2) raw = parts[0] + '.' + parts.slice(1).join('');
+      // Limit decimal to 2 digits
+      if (parts.length === 2 && parts[1].length > 2) raw = parts[0] + '.' + parts[1].slice(0, 2);
+      if (raw) {
+        formattedValue = '₹' + formatIndianRupee(raw);
+      } else {
+        formattedValue = '';
+      }
+      setDynamicFieldValues(prev => ({ ...prev, [fieldName]: formattedValue }));
+      return;
+    }
 
     if (fieldName === 'importedOn' && typeof value === 'string') {
       let numericVal = value.replace(/\D/g, '');
@@ -281,7 +314,7 @@ export default function GenerateQrs() {
       variantLabel: resolved.variantLabel || 'New Variant',
       inputType: resolved.inputType || 'text',
       options: resolved.options || [],
-      value: (resolved.inputType === 'color' ? '#000000' : ''),
+      value: '',
       isCustom: !resolved.variantName
     };
     setVariantInstances(prev => [...prev, newInstance]);
@@ -303,11 +336,7 @@ export default function GenerateQrs() {
     setVariantInstances(prev => prev.map(inst => {
       const resolved = formConfig.variants.find(v => v.variantName === inst.variantName);
       if (!resolved) return inst;
-      // If input type changed to color and current value is not a color, reset to a default
       let newValue = inst.value;
-      if (resolved.inputType === 'color' && !(typeof newValue === 'string' && newValue.startsWith('#'))) {
-        newValue = '#000000';
-      }
       return { ...inst, inputType: resolved.inputType, options: resolved.options || [], value: newValue, variantLabel: resolved.variantLabel };
     }));
   }, [formConfig?.variants]);
@@ -385,7 +414,7 @@ export default function GenerateQrs() {
       formData.append('upload_preset', uploadPreset);
 
       try {
-        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, {
           method: 'POST',
           body: formData,
         });

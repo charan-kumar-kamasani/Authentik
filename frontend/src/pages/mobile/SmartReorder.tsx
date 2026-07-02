@@ -1,22 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Info, Calendar, Box, Tag, ArrowRight, ShieldCheck, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { ChevronLeft, Share, ShieldCheck, Star, ChevronRight, Check, Tag, Bell, X } from 'lucide-react';
 import API_BASE_URL from '../../config/api';
 
 const SmartReorder = () => {
   const { productId } = useParams();
   const navigate = useNavigate();
-  const [data, setData] = useState<any>(null);
+  const [rawData, setRawData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [showAllLinks, setShowAllLinks] = useState(false);
+  const [showPriceAlert, setShowPriceAlert] = useState(false);
+  const [priceAlertAmount, setPriceAlertAmount] = useState('');
+  const [isPriceAlertSet, setIsPriceAlertSet] = useState(false);
+
+  // Allow passing state directly via location, otherwise fetch
+  const location = useLocation();
+  const stateData = location.state as any;
 
   useEffect(() => {
+    if (stateData) {
+      setRawData(stateData);
+      setLoading(false);
+      return;
+    }
+
     const fetchData = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/scan/smart-reorder/${productId}`);
         const result = await response.json();
         if (response.ok) {
-          setData(result);
+          setRawData(result);
         }
       } catch (err) {
         console.error("Failed to fetch smart reorder data:", err);
@@ -25,11 +37,37 @@ const SmartReorder = () => {
       }
     };
     if (productId) fetchData();
-  }, [productId]);
+  }, [productId, stateData]);
+
+  const normalizeData = React.useCallback((d: any) => {
+    if (!d) return null;
+    
+    const product = (d.productId && typeof d.productId === 'object') ? d.productId : d;
+    const order = product.orderId || {};
+    const template = d.templateData || {};
+    const orderLinks = (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((order.orderLinks && order.orderLinks.length > 0) ? order.orderLinks : template.orderLinks);
+    const topLinkWithRating = (orderLinks || []).find((l: any) => l.rating);
+
+    return {
+      ...d,
+      productName: product.productName || order.productName || template.productName || d.productName,
+      brand: d.brand || product.brand || order.brand,
+      brandId: d.brandId || product.brandId,
+      companyName: d.companyName || product.companyName || order.companyName,
+      category: product.category || order.category || template.category || d.category,
+      productImage: product.productImage || order.productImage || template.productImage || d.productImage,
+      variants: (product.variants && product.variants.length > 0) ? product.variants : ((order.variants && order.variants.length > 0) ? order.variants : template.variants),
+      orderLinks,
+      rating: product.rating || order.rating || template.rating || d.rating || topLinkWithRating?.rating,
+      reviewsCount: product.reviewsCount || order.reviewsCount || template.reviewsCount || d.reviewsCount || topLinkWithRating?.reviewsCount,
+    };
+  }, []);
+
+  const data = React.useMemo(() => normalizeData(rawData), [rawData, normalizeData]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#001b79] flex items-center justify-center">
+      <div className="min-h-screen bg-[#001466] flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
@@ -37,278 +75,301 @@ const SmartReorder = () => {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-[#001b79] flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-screen bg-[#001466] flex flex-col items-center justify-center p-6 text-center">
         <h2 className="text-white text-xl font-bold mb-4">Product Not Found</h2>
-        <button onClick={() => navigate(-1)} className="px-6 py-2 bg-white text-[#001b79] rounded-xl font-bold">Go Back</button>
+        <button onClick={() => navigate(-1)} className="px-6 py-2 bg-white text-[#001466] rounded-xl font-bold">Go Back</button>
       </div>
     );
   }
 
-  // Parse Usage Data dynamically from dynamicFields
-  const dyn = data.dynamicFields || {};
-  
-  // Try to find fields like Total Servings, Quantity, Capacity
-  const getDynamicValue = (keywords: string[]) => {
-    const key = Object.keys(dyn).find(k => keywords.some(kw => k.toLowerCase().includes(kw)));
-    return key ? dyn[key] : null;
-  };
-
-  const totalCapacity = getDynamicValue(['serving', 'quantity', 'capacity', 'weight']) || '1 Unit';
-  
-  // Calculate a generic usage if we don't have real usage data
-  // (In a real app, this would come from a backend usage tracker)
-  const scanDate = new Date(data.createdAt);
-  const now = new Date();
-  const daysSinceScan = Math.floor((now.getTime() - scanDate.getTime()) / (1000 * 3600 * 24));
-  
-  // Mocking usage left based on days since scan (just for visual representation of dynamic data)
-  const estimatedDaysTotal = 30; // Assume 1 month life
-  const daysLeft = Math.max(0, estimatedDaysTotal - daysSinceScan);
-  const percentageLeft = Math.round((daysLeft / estimatedDaysTotal) * 100);
-
-  const nextReorderDate = new Date(now.getTime() + daysLeft * 24 * 60 * 60 * 1000);
-
-  const displayedLinks = showAllLinks ? data.orderLinks : data.orderLinks?.slice(0, 3);
-
-  const calculateDiscount = (mrp: any, price: any) => {
-    if (!mrp || !price || mrp <= price) return null;
-    return Math.round(((mrp - price) / mrp) * 100);
-  };
+  const variantName = data.variants?.[0]?.value || data.category || 'Standard';
+  const category = data.category;
+  const rating = data.rating;
+  const reviews = data.reviewsCount;
+  const orderLinks = data.orderLinks && data.orderLinks.length > 0 ? data.orderLinks : [];
+  const defaultPrice = orderLinks.find((l: any) => l.price)?.price;
+  const defaultMrp = orderLinks.find((l: any) => l.mrp)?.mrp;
+  const defaultDiscount = orderLinks.find((l: any) => l.discount)?.discount;
 
   return (
-    <div className="min-h-screen bg-slate-50 relative pb-24 overflow-x-hidden">
-      {/* Dark Blue Header Section */}
-      <div className="bg-[#001b79] text-white pt-12 pb-32 px-5 relative rounded-b-[2.5rem]">
-        {/* Top Nav */}
-        <div className="flex items-center justify-between mb-8">
-          <button onClick={() => navigate(-1)} className="p-2 -ml-2 rounded-full hover:bg-white/10 transition-colors">
-            <ChevronLeft size={28} />
-          </button>
-          <h1 className="text-lg font-semibold tracking-wide">Smart Reorder</h1>
-          <button className="p-2 -mr-2 rounded-full hover:bg-white/10 transition-colors">
-            <Info size={24} />
-          </button>
-        </div>
-
-        {/* Product Header Content */}
-        <div className="flex gap-5 items-start">
-          <div className="w-28 h-36 flex-shrink-0 bg-white/10 rounded-2xl p-2 relative">
-            <img 
-              src={data.productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"} 
-              alt={data.productName} 
-              className="w-full h-full object-contain rounded-xl drop-shadow-2xl"
-            />
-          </div>
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2 mb-1.5 text-blue-200">
-              {data.companyName && <span className="text-sm font-semibold tracking-wider">{data.companyName}</span>}
-              <CheckCircle2 size={14} className="text-blue-400" />
-            </div>
-            <h2 className="text-2xl font-bold leading-tight mb-1">{data.productName}</h2>
-            <p className="text-blue-200 text-sm mb-4">{data.brand || data.category}</p>
-            
-            <div className="flex flex-wrap gap-2">
-              {data.variants?.slice(0, 3).map((v: any, idx: number) => (
-                <span key={idx} className="px-2.5 py-1 bg-white text-[#001b79] text-[10px] font-black uppercase tracking-wider rounded-md">
-                  {v.value}
-                </span>
-              ))}
-              {!data.variants?.length && (
-                <span className="px-2.5 py-1 bg-white text-[#001b79] text-[10px] font-black uppercase tracking-wider rounded-md">
-                  {totalCapacity}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content Card (Overlapping) */}
-      <div className="px-4 -mt-24 relative z-10">
-        
-        {/* Usage Stats Card */}
-        <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 flex divide-x divide-slate-100 mb-4">
-          <div className="flex-1 pr-4 flex flex-col items-center text-center">
-            <h3 className="text-xs font-semibold text-slate-500 mb-3 uppercase tracking-wider">Usage Left</h3>
-            <div className="flex items-center gap-3">
-              <div className="relative w-14 h-14 flex items-center justify-center shrink-0">
-                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                  <path className="text-slate-100" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                  <path className="text-blue-600 transition-all duration-1000 ease-out" strokeWidth="3" strokeDasharray={`${percentageLeft}, 100`} strokeLinecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-sm font-bold text-slate-800">{percentageLeft}%</span>
-                </div>
-              </div>
-              <div className="text-left">
-                <p className="text-sm font-bold text-slate-900 leading-tight">~{daysLeft} Days Left</p>
-                <p className="text-[11px] text-slate-500 font-medium mt-0.5">(Based on avg usage)</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex-1 pl-4 flex flex-col items-center justify-center text-center">
-            <h3 className="text-xs font-semibold text-slate-500 mb-2 uppercase tracking-wider">Next Reorder Suggested</h3>
-            <div className="flex items-center gap-2 text-blue-600 mb-1">
-              <Calendar size={18} />
-              <span className="text-sm font-bold">
-                {nextReorderDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 font-medium">In {daysLeft} days</p>
-          </div>
-        </div>
-
-        {/* Coupons Banner */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
-              <Tag size={20} />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-slate-900">Coupons & Offers</h4>
-              <p className="text-xs text-slate-500 font-medium">Auto-applied at checkout</p>
-            </div>
-          </div>
-          <button className="flex items-center gap-1 text-sm font-semibold text-blue-600">
-            View <ChevronRight size={16} />
-          </button>
-        </div>
-
-        {/* Where to Buy Section */}
-        {data.orderLinks && data.orderLinks.length > 0 && (
-          <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 mb-4">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-slate-900">Where to Buy</h3>
-                <span className="px-2 py-0.5 bg-green-50 text-green-700 text-[10px] font-black uppercase tracking-wider rounded-md flex items-center gap-1">
-                  <ShieldCheck size={12} /> Authentic Sellers
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {displayedLinks.map((link: any, idx: number) => {
-                const discount = calculateDiscount(data.mrp, data.price);
-                const isBrandStore = link.title.toLowerCase().includes(data.brand?.toLowerCase() || 'official');
-                
-                return (
-                  <div key={idx} className="flex items-center justify-between p-3 border border-slate-100 rounded-2xl hover:border-blue-100 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden shrink-0">
-                        {/* Mock logo based on name */}
-                        {link.title.toLowerCase().includes('amazon') ? (
-                          <img src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" alt="Amazon" className="w-8 object-contain" />
-                        ) : link.title.toLowerCase().includes('flipkart') ? (
-                          <img src="https://upload.wikimedia.org/wikipedia/en/7/7a/Flipkart_logo.svg" alt="Flipkart" className="w-6 object-contain" />
-                        ) : (
-                          <Box size={20} className="text-slate-400" />
-                        )}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-sm font-bold text-slate-900">{link.title}</h4>
-                          {isBrandStore && (
-                            <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[9px] font-bold uppercase rounded">Official</span>
-                          )}
-                        </div>
-                        <p className="text-[11px] text-slate-500 font-medium">Delivered in 2-4 days</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                      <div className="text-right">
-                        {discount && (
-                          <div className="flex items-center gap-1.5 justify-end mb-0.5">
-                            <span className="text-[10px] text-green-600 font-bold bg-green-50 px-1 rounded">{discount}% OFF</span>
-                            <span className="text-[11px] text-slate-400 line-through font-medium">₹{data.mrp}</span>
-                          </div>
-                        )}
-                        <p className="text-sm font-black text-slate-900">₹{data.price || data.mrp || 'Check'}</p>
-                      </div>
-                      <a 
-                        href={link.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 active:scale-95 transition-all shadow-sm shadow-blue-200"
-                      >
-                        Buy Now
-                      </a>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            
-            {data.orderLinks.length > 3 && (
-              <button 
-                onClick={() => setShowAllLinks(!showAllLinks)}
-                className="w-full mt-4 py-2 flex items-center justify-center gap-1 text-sm font-bold text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
-              >
-                {showAllLinks ? 'View Less' : 'View More Platforms'}
-                <ChevronDown size={16} className={`transform transition-transform ${showAllLinks ? 'rotate-180' : ''}`} />
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Usage Summary */}
-        <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 mb-6">
-          <h3 className="text-sm font-bold text-slate-900 mb-4">Your Usage Summary</h3>
-          <div className="flex items-center justify-between text-center divide-x divide-slate-100">
-            <div className="flex-1 px-2 flex flex-col items-center">
-              <Calendar size={18} className="text-blue-500 mb-2" />
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Last Purchased</p>
-              <p className="text-xs font-bold text-slate-800">{scanDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
-            </div>
-            <div className="flex-1 px-2 flex flex-col items-center">
-              <Box size={18} className="text-blue-500 mb-2" />
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Last Quantity</p>
-              <p className="text-xs font-bold text-slate-800">1 x {totalCapacity}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Authentic Guarantee */}
-        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex items-start gap-3 mb-6">
-          <ShieldCheck size={24} className="text-blue-600 shrink-0" />
-          <div>
-            <h4 className="text-sm font-bold text-blue-900 mb-0.5">100% Authentic Guarantee</h4>
-            <p className="text-xs text-blue-700/80 font-medium">Every reorder from our authorized sellers is verified and protected by {data.companyName || 'Authentiks'}.</p>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Sticky Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-slate-100 z-50 pb-safe">
-        <button className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-sm transition-all shadow-lg shadow-blue-200 active:scale-[0.98]">
-          Update & Save Reorder Settings
+    <div className="min-h-screen bg-[#001466] font-sans overflow-x-hidden pb-20">
+      {/* Header */}
+      <div className="px-5 pt-6 pb-2 flex items-center justify-between text-white">
+        <button onClick={() => navigate(-1)} className="p-1 -ml-1 active:bg-white/10 rounded-full transition-colors">
+          <ChevronLeft size={26} strokeWidth={2.5} />
+        </button>
+        <h1 className="text-[17px] font-bold tracking-wide">Smart Re Order</h1>
+        <button className="p-1 -mr-1 active:bg-white/10 rounded-full transition-colors">
+          <Share size={22} strokeWidth={2.5} />
         </button>
       </div>
 
+      {/* Hero Section */}
+      <div className="px-5 pt-4 pb-8 flex gap-4 items-center">
+        <div className="w-[140px] h-[160px] shrink-0 relative flex items-center justify-center -ml-2">
+          {data.productImage ? (
+            <img 
+              src={data.productImage} 
+              alt={data.productName} 
+              className="w-full h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.3)]"
+            />
+          ) : (
+            <div className="w-full h-full bg-white/10 rounded-xl flex items-center justify-center text-white/50 text-[10px]">No Image</div>
+          )}
+        </div>
+        <div className="flex flex-col flex-1">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <span className="text-white text-[13px] font-bold flex items-center gap-1.5">
+              {data.companyName && (
+                <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center shrink-0 overflow-hidden text-[#001466] font-black text-[10px]">
+                  {data.companyName.charAt(0).toUpperCase()}
+                </div>
+              )}
+              {data.brand || data.companyName || 'Product'}
+            </span>
+            <div className="w-4 h-4 bg-[#105DE4] rounded-full flex items-center justify-center">
+              <Check size={10} className="text-white" strokeWidth={3} />
+            </div>
+          </div>
+          
+          <h2 className="text-white text-[22px] font-bold leading-[1.1] mb-1 tracking-tight">{data.productName}</h2>
+          {variantName && <p className="text-blue-100 text-[13px] font-medium mb-3">{variantName}</p>}
+          
+          {category && (
+            <div className="flex items-center gap-3 mb-3">
+              <span className="px-2.5 py-1 bg-[#FFE8D6] text-[#E07A25] text-[10px] font-extrabold rounded uppercase tracking-wide">
+                {category}
+              </span>
+            </div>
+          )}
+          
+          {rating && (
+            <div className="flex items-center gap-1.5">
+              <Star size={14} className="text-[#FFC107] fill-[#FFC107]" />
+              <span className="text-white text-[14px] font-bold">{rating}</span>
+              {reviews && <span className="text-blue-200 text-[11px]">({reviews} Reviews)</span>}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Main White Card */}
+      <div className="bg-[#F8F9FA] rounded-t-[24px] px-5 pt-8 pb-8 min-h-screen flex flex-col gap-5">
+        
+        {/* Coupons Banner */}
+        {(() => {
+          const couponCode = data.couponCode || data.coupon?.code || data.coupon?.couponCode || data.coupons?.[0]?.code || data.coupons?.[0]?.couponCode || (typeof data.coupon === 'string' ? data.coupon : null);
+          if (!couponCode) return null;
+
+          return (
+            <div className="bg-white rounded-2xl p-4 shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-[#F0F5FF] flex items-center justify-center text-[#105DE4] shrink-0 border border-[#E0EBFF]">
+                  <Tag size={20} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <h4 className="text-[#0B1E36] text-[15px] font-bold">Coupons & Offers</h4>
+                  <p className="text-[#105DE4] text-[13px] font-bold mt-0.5 tracking-wide bg-blue-50 inline-block px-1.5 py-0.5 rounded">{couponCode}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => {
+                  navigator.clipboard.writeText(couponCode);
+                  alert('Coupon code copied!');
+                }}
+                className="flex items-center gap-1 text-[#105DE4] text-[13px] font-bold active:opacity-70 transition-opacity bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100"
+              >
+                Copy
+              </button>
+            </div>
+          );
+        })()}
+
+        {/* Price Alert */}
+        <div className="bg-white rounded-2xl p-4 shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-[#FFF4E5] flex items-center justify-center text-[#FF9800] shrink-0 border border-[#FFE8CC]">
+              <Bell size={20} strokeWidth={2.5} />
+            </div>
+            <div>
+              <h4 className="text-[#0B1E36] text-[15px] font-bold">Price Alert</h4>
+              <p className="text-slate-500 text-[12px] font-medium mt-0.5">Notify me when price drops</p>
+            </div>
+          </div>
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input 
+              type="checkbox" 
+              className="sr-only peer" 
+              checked={isPriceAlertSet}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  setShowPriceAlert(true);
+                } else {
+                  setIsPriceAlertSet(false);
+                }
+              }}
+            />
+            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#105DE4]"></div>
+          </label>
+        </div>
+
+        {/* Where to Buy */}
+        {orderLinks.length > 0 && (
+          <div className="mt-2">
+            <h3 className="text-[#0B1E36] font-bold text-[16px] mb-4">All Prices</h3>
+            <div className="flex flex-col gap-3">
+              {orderLinks.map((link: any, idx: number) => {
+                const displayPrice = link.price || defaultPrice;
+                const displayMrp = link.price ? link.mrp : defaultMrp;
+                const displayDiscount = link.price ? link.discount : defaultDiscount;
+                
+                return (
+                <div key={idx} className="bg-white p-3.5 rounded-2xl flex items-center justify-between shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 shrink-0 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100/50 p-1.5">
+                      {link.siteImage ? (
+                        <img src={link.siteImage} alt={link.title} className="w-full h-full object-contain mix-blend-multiply" />
+                      ) : (
+                        <div className="w-full h-full rounded-lg flex items-center justify-center text-slate-400 font-black text-[14px]">
+                          {link.title?.charAt(0) || 'S'}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="text-[#0B1E36] font-bold text-[14px] leading-none">{link.title}</span>
+                      </div>
+                      <span className="text-slate-400 text-[11px] font-medium leading-none">Standard Delivery</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <div className="flex flex-col items-end justify-center">
+                      {displayPrice && <span className="text-[#0B1E36] font-black text-[16px] leading-none tracking-tight">₹{displayPrice}</span>}
+                      
+                      {/* Show MRP and Discount together below the price */}
+                      {(displayMrp || displayDiscount) && (
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                          {displayMrp && <span className="text-slate-400 text-[11px] font-medium line-through leading-none">₹{displayMrp}</span>}
+                          {displayDiscount && <span className="text-[#16A34A] text-[10px] font-bold leading-none">{displayDiscount}</span>}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <a href={link.url || '#'} target="_blank" rel="noreferrer" className="bg-[#105DE4] text-white px-4 py-2 rounded-xl text-[13px] font-bold active:scale-95 transition-transform whitespace-nowrap shadow-[0_4px_12px_rgba(16,93,228,0.25)]">
+                      Buy
+                    </a>
+                  </div>
+                </div>
+              )})}
+            </div>
+          </div>
+        )}
+
+        {/* 100% Authentic Guarantee Banner */}
+        <div className="bg-[#F0F5FF] border border-[#D5E3FF] rounded-2xl p-4 flex items-center justify-between mt-2 active:opacity-70 transition-opacity cursor-pointer">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 bg-[#105DE4] rounded-xl flex items-center justify-center shrink-0 shadow-[0_4px_10px_rgba(16,93,228,0.2)]">
+              <ShieldCheck size={24} className="text-white" strokeWidth={2} />
+            </div>
+            <div className="flex flex-col">
+              <h4 className="text-[#0B1E36] font-bold text-[14px] leading-tight mb-1">100% Authentic Guarantee</h4>
+              <p className="text-slate-500 text-[12px] font-medium leading-tight">This product is verified and protected.</p>
+            </div>
+          </div>
+          <ChevronRight size={18} className="text-slate-400" />
+        </div>
+
+      </div>
+
+      {/* Price Alert Modal */}
+      {showPriceAlert && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <div className="bg-white rounded-[24px] w-full max-w-sm overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-2">
+                <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">
+                  <div className="relative">
+                    <Bell size={24} className="text-[#059669]" />
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#059669] rounded-full flex items-center justify-center text-[8px] font-bold text-white">₹</div>
+                  </div>
+                </div>
+                <button onClick={() => { setShowPriceAlert(false); setIsPriceAlertSet(false); }} className="p-2 -mr-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-50 transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <h3 className="text-xl font-bold text-slate-900 text-center mb-1">Price Alert</h3>
+              <p className="text-sm text-slate-500 text-center font-medium mb-6">Get notified when the price drops</p>
+
+              <div className="mb-4">
+                <label className="block text-sm font-bold text-slate-800 mb-2">Notify me when price is</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <span className="text-xl font-medium text-slate-400">₹</span>
+                  </div>
+                  <input
+                    type="number"
+                    value={priceAlertAmount}
+                    onChange={(e) => setPriceAlertAmount(e.target.value)}
+                    className="block w-full pl-10 pr-10 py-3 text-xl font-bold text-slate-900 bg-white border-2 border-slate-200 rounded-xl focus:ring-0 focus:border-[#105DE4] transition-colors"
+                    placeholder="1,299"
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                    <svg className="w-4 h-4 text-[#105DE4]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-500 font-medium mt-2">You will be notified when the price is equal to or less than this price.</p>
+              </div>
+
+              <div className="bg-emerald-50 rounded-xl p-4 flex gap-3 mb-6 border border-emerald-100">
+                <Bell size={20} className="text-[#059669] shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-[13px] font-bold text-[#065F46] mb-0.5">We'll monitor all major platforms for you</h4>
+                  <p className="text-[11px] text-[#065F46]/80 font-medium leading-relaxed">You'll get notified when the price drops on any of the listed platforms.</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={async () => {
+                    if (priceAlertAmount) {
+                      try {
+                        await fetch(`${API_BASE_URL}/api/price-alert`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            productId: data?.productId?._id || data?._id || productId,
+                            targetPrice: priceAlertAmount
+                          })
+                        });
+                      } catch (e) {
+                        console.error('Failed to save price alert:', e);
+                      }
+                      setIsPriceAlertSet(true);
+                      setShowPriceAlert(false);
+                      alert('Price Alert Set Successfully!');
+                    }
+                  }}
+                  className="w-full bg-[#059669] text-white font-bold py-3.5 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all"
+                >
+                  Set Price Alert
+                </button>
+                <button
+                  onClick={() => { setShowPriceAlert(false); setIsPriceAlertSet(false); }}
+                  className="w-full text-slate-500 font-bold py-2 rounded-xl hover:bg-slate-50 active:bg-slate-100 transition-all text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default SmartReorder;
-
-// ChevronRight Component (Inline since lucide-react might not have it imported above)
-function ChevronRight(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m9 18 6-6-6-6" />
-    </svg>
-  );
-}

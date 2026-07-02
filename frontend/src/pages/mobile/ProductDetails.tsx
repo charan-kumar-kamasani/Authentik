@@ -184,38 +184,42 @@ const ProductDetails = () => {
             <h3 className="text-[#0B1E36] font-bold text-[15px] mb-4">Where to Buy</h3>
             <div className="flex flex-col gap-3 mb-3">
               {orderLinks.slice(0, 4).map((link: any, idx: number) => (
-                <div key={idx} className="bg-white p-3 rounded-2xl flex items-center shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-50">
-                  <div className="w-9 h-9 shrink-0 flex items-center justify-center mr-3">
-                    {link.siteImage ? (
-                      <img src={link.siteImage} alt={link.title} className="w-full h-full object-contain" />
-                    ) : (
-                      <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 font-bold text-[10px]">
-                        {link.title?.charAt(0) || 'S'}
+                <div key={idx} className="bg-white p-3 rounded-2xl flex items-center justify-between shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-50">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100/50 p-1">
+                      {link.siteImage ? (
+                        <img src={link.siteImage} alt={link.title} className="w-full h-full object-contain mix-blend-multiply" />
+                      ) : (
+                        <div className="w-full h-full rounded-lg flex items-center justify-center text-slate-400 font-black text-[12px]">
+                          {link.title?.charAt(0) || 'S'}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="text-[#0B1E36] font-bold text-[13px] leading-none">{link.title}</span>
                       </div>
-                    )}
-                  </div>
-                  <div className="flex flex-col flex-1">
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      <span className="text-[#0B1E36] font-bold text-[12px] leading-none">{link.title}</span>
-                      {idx === 0 && <span className="text-[#105DE4] bg-blue-50 px-1.5 py-0.5 rounded text-[8px] font-bold">Best Price</span>}
+                      <span className="text-slate-400 text-[10px] font-medium leading-none">Standard Delivery</span>
                     </div>
-                    <span className="text-slate-400 text-[10px] font-medium leading-none">Standard Delivery</span>
                   </div>
                   
-                  {link.discount && (
-                    <div className="px-2 py-0.5 bg-green-50 rounded text-[#16A34A] text-[9px] font-bold mr-3 h-fit">
-                      {link.discount}
+                  <div className="flex items-center gap-3">
+                    <div className="flex flex-col items-end justify-center">
+                      {link.price && <span className="text-[#0B1E36] font-black text-[15px] leading-none tracking-tight">₹{link.price}</span>}
+                      
+                      {/* Show MRP and Discount together below the price */}
+                      {(link.mrp || link.discount) && (
+                        <div className="flex items-center gap-1 mt-1">
+                          {link.mrp && <span className="text-slate-400 text-[10px] font-medium line-through leading-none">₹{link.mrp}</span>}
+                          {link.discount && <span className="text-[#16A34A] text-[9px] font-bold leading-none">{link.discount}</span>}
+                        </div>
+                      )}
                     </div>
-                  )}
-                  
-                  <div className="flex flex-col items-end mr-3">
-                    {link.mrp && <span className="text-slate-400 text-[10px] font-medium line-through leading-none mb-0.5">₹{link.mrp}</span>}
-                    {link.price && <span className="text-[#0B1E36] font-black text-[14px] leading-none">₹{link.price}</span>}
+                    
+                    <a href={link.url || '#'} target="_blank" rel="noreferrer" className="bg-[#105DE4] text-white px-4 py-2 rounded-xl text-[12px] font-bold active:scale-95 transition-transform whitespace-nowrap shadow-[0_4px_12px_rgba(16,93,228,0.25)]">
+                      Buy
+                    </a>
                   </div>
-                  
-                  <a href={link.url || '#'} target="_blank" rel="noreferrer" className="bg-[#105DE4] text-white px-3 py-1.5 rounded-lg text-[11px] font-bold active:bg-blue-700 transition-colors">
-                    Buy Now
-                  </a>
                 </div>
               ))}
             </div>

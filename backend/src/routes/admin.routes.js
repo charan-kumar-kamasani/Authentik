@@ -424,6 +424,9 @@ router.post(
   async (req, res) => {
     let { quantity, format } = req.body;
     const qty = parseInt(quantity) > 0 ? parseInt(quantity) : 1;
+    if (qty % 250 !== 0) {
+        return res.status(400).json({ error: "Quantity must be a multiple of 250." });
+    }
     const BlankQr = require("../models/BlankQr");
     const BlankQrBatch = require("../models/BlankQrBatch");
     const mongoose = require("mongoose");
@@ -433,39 +436,52 @@ router.post(
         // Find the max sequence for BlankQr outside transaction to avoid locks
         const lastBlankQr = await BlankQr.findOne({}).sort({ serialNumber: -1 });
         let currentSeq = lastBlankQr && lastBlankQr.serialNumber ? lastBlankQr.serialNumber : 0;
-        const startSerialNumber = currentSeq + 1;
-
-        const newQrs = [];
-        for (let i = 0; i < qty; i++) {
-            currentSeq++;
-            const seqString = currentSeq.toString().padStart(13, '0');
-            const uniqueSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
-            
-            const qrCode = `SA-${seqString}-${uniqueSuffix}`;
-
-            newQrs.push({
-              qrCode,
-              serialNumber: currentSeq,
-              createdBy: req.user._id,
-              isAssigned: false,
-            });
-        }
-
-        const endSerialNumber = currentSeq;
+        const BATCH_SIZE = 1000;
+        const totalBatches = Math.ceil(qty / BATCH_SIZE);
+        const timestamp = Date.now();
+        let createdQrsCount = 0;
+        let createdBlankQrs = [];
+        let batchArr = [];
 
         // Start transaction for atomic inserts
         session = await mongoose.startSession();
         session.startTransaction();
 
-        const createdBlankQrs = await BlankQr.insertMany(newQrs, { session });
-        
-        const batchArr = await BlankQrBatch.create([{
-            batchName: `Batch-${Date.now()}`,
-            quantity: qty,
-            startSerialNumber,
-            endSerialNumber,
-            createdBy: req.user._id
-        }], { session });
+        for (let b = 0; b < totalBatches; b++) {
+            const currentBatchSize = Math.min(BATCH_SIZE, qty - (b * BATCH_SIZE));
+            const startSerialNumber = currentSeq + 1;
+            const newQrs = [];
+
+            for (let i = 0; i < currentBatchSize; i++) {
+                currentSeq++;
+                const seqString = currentSeq.toString().padStart(13, '0');
+                const uniqueSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+                
+                newQrs.push({
+                  qrCode: `SA-${seqString}-${uniqueSuffix}`,
+                  serialNumber: currentSeq,
+                  createdBy: req.user._id,
+                  isAssigned: false,
+                });
+            }
+            const endSerialNumber = currentSeq;
+
+            const insertedQrs = await BlankQr.insertMany(newQrs, { session });
+            if (format !== 'none') {
+                createdBlankQrs = createdBlankQrs.concat(insertedQrs);
+            }
+            createdQrsCount += insertedQrs.length;
+
+            const createdBatch = await BlankQrBatch.create([{
+                batchName: `Batch-${timestamp}-${b + 1}`,
+                quantity: currentBatchSize,
+                startSerialNumber,
+                endSerialNumber,
+                createdBy: req.user._id
+            }], { session });
+
+            batchArr.push(createdBatch[0]);
+        }
 
         await session.commitTransaction();
         session.endSession();
@@ -482,7 +498,9 @@ router.post(
         
         let fileBase64 = null;
         try {
-            if (format === 'tiff' || format === 'tif') {
+            if (format === 'none') {
+                // Skip file generation
+            } else if (format === 'tiff' || format === 'tif') {
                 fileBase64 = await generateLayoutZip(createdBlankQrs, pdfOptions, format);
             } else if (format === 'cdr') {
                 // CDR is proprietary; generate SVG which CorelDRAW opens natively as vectors
@@ -494,7 +512,7 @@ router.post(
             console.error("File generation failed, but QRs were created:", pdfErr);
         }
         
-        res.status(201).json({ count: createdBlankQrs.length, batch, pdfBase64: fileBase64, format: format || 'pdf' });
+        res.status(201).json({ count: createdQrsCount, batch, pdfBase64: fileBase64, format: format || 'pdf' });
     } catch (e) {
         if (session) {
             await session.abortTransaction();
@@ -669,6 +687,43 @@ router.get(
   }
 );
 
+const formatSN = (num) => {
+  const q = Math.floor(num / 50000) + 26;
+  const r = num % 50000;
+  let prefix = "";
+  let temp = q;
+  do {
+    prefix = String.fromCharCode((temp % 26) + 65) + prefix;
+    temp = Math.floor(temp / 26) - 1;
+  } while (temp >= 0);
+  return `${prefix}-${r.toString().padStart(5, '0')}`;
+};
+
+const parseSNBackend = (str, batch) => {
+  if (!str || typeof str !== 'string') return null;
+  const parts = str.toUpperCase().split('-');
+  
+  let prefix, numPart;
+  if (parts.length === 1) {
+    prefix = formatSN(batch.startSerialNumber).split('-')[0];
+    numPart = parseInt(parts[0], 10);
+  } else if (parts.length === 2) {
+    prefix = parts[0];
+    numPart = parseInt(parts[1], 10);
+  } else {
+    return null;
+  }
+  
+  if (isNaN(numPart)) return null;
+
+  let q = 0;
+  for (let i = 0; i < prefix.length; i++) {
+    q = q * 26 + (prefix.charCodeAt(i) - 64);
+  }
+  q = q - 1;
+  return q * 10000000 + numPart;
+};
+
 router.get(
   "/blank-qr-batches/:id",
   protect,
@@ -689,42 +744,7 @@ router.get(
         serialNumber: { $gte: batch.startSerialNumber, $lte: batch.endSerialNumber } 
       };
 
-      const formatSN = (num) => {
-        const q = Math.floor(num / 50000) + 26;
-        const r = num % 50000;
-        let prefix = "";
-        let temp = q;
-        do {
-          prefix = String.fromCharCode((temp % 26) + 65) + prefix;
-          temp = Math.floor(temp / 26) - 1;
-        } while (temp >= 0);
-        return `${prefix}-${r.toString().padStart(5, '0')}`;
-      };
 
-      const parseSNBackend = (str, batch) => {
-        if (!str || typeof str !== 'string') return null;
-        const parts = str.toUpperCase().split('-');
-        
-        let prefix, numPart;
-        if (parts.length === 1) {
-          prefix = formatSN(batch.startSerialNumber).split('-')[0];
-          numPart = parseInt(parts[0], 10);
-        } else if (parts.length === 2) {
-          prefix = parts[0];
-          numPart = parseInt(parts[1], 10);
-        } else {
-          return null;
-        }
-        
-        if (isNaN(numPart)) return null;
-
-        let q = 0;
-        for (let i = 0; i < prefix.length; i++) {
-          q = q * 26 + (prefix.charCodeAt(i) - 64);
-        }
-        q = q - 1;
-        return q * 10000000 + numPart;
-      };
 
       if (req.query.startRange || req.query.endRange) {
         const start = parseSNBackend(req.query.startRange, batch);
@@ -793,9 +813,46 @@ router.get(
       const batch = await BlankQrBatch.findById(req.params.id);
       if (!batch) return res.status(404).json({ error: "Batch not found" });
 
-      const qrs = await BlankQr.find({ 
+      const query = { 
         serialNumber: { $gte: batch.startSerialNumber, $lte: batch.endSerialNumber } 
-      }).sort({ serialNumber: 1 });
+      };
+
+      if (req.query.selectedIds) {
+        const ids = req.query.selectedIds.split(',');
+        query._id = { $in: ids };
+      } else {
+
+      if (req.query.startRange || req.query.endRange) {
+        const start = parseSNBackend(req.query.startRange, batch);
+        const end = parseSNBackend(req.query.endRange, batch);
+        
+        if (start !== null) query.serialNumber.$gte = Math.max(batch.startSerialNumber, start);
+        if (end !== null) query.serialNumber.$lte = Math.min(batch.endSerialNumber, end);
+      }
+
+      if (req.query.status) {
+        if (req.query.status === 'blank') {
+          query.isAssigned = false;
+          query.isBlocked = false;
+        } else if (req.query.status === 'assigned') {
+          query.isAssigned = true;
+        } else if (req.query.status === 'blocked') {
+          query.isBlocked = true;
+        }
+      }
+
+      if (req.query.search) {
+        const searchVal = req.query.search.trim();
+        const numSearch = parseInt(searchVal, 10);
+        if (!isNaN(numSearch)) {
+           query.$or = [{ qrCode: searchVal }, { serialNumber: numSearch }];
+        } else {
+           query.qrCode = searchVal;
+        }
+      }
+      } // end else for selectedIds
+
+      const qrs = await BlankQr.find(query).sort({ serialNumber: 1 });
 
       const pdfOptions = {
         brand: 'Blank QRs',

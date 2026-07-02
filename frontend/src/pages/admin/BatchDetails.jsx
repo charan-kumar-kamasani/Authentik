@@ -90,7 +90,17 @@ export default function BatchDetails() {
     try {
       setDownloading(true);
       setError('');
-      const res = await fetch(`${API_BASE_URL}/admin/blank-qr-batches/${id}/download?format=${downloadFormat}`, {
+      const queryParams = new URLSearchParams({ format: downloadFormat });
+      if (selectedQrs && selectedQrs.length > 0) {
+        queryParams.append('selectedIds', selectedQrs.join(','));
+      } else {
+        if (appliedStartSN) queryParams.append('startRange', appliedStartSN);
+        if (appliedEndSN) queryParams.append('endRange', appliedEndSN);
+        if (appliedSearch) queryParams.append('search', appliedSearch);
+        if (statusFilter && statusFilter !== 'all') queryParams.append('status', statusFilter);
+      }
+
+      const res = await fetch(`${API_BASE_URL}/admin/blank-qr-batches/${id}/download?${queryParams.toString()}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         }
@@ -415,6 +425,7 @@ export default function BatchDetails() {
                 <th className="p-4 border-b border-slate-200 whitespace-nowrap">Serial Number</th>
                 <th className="p-4 border-b border-slate-200 whitespace-nowrap">Internal ID</th>
                 <th className="p-4 border-b border-slate-200 whitespace-nowrap">Status</th>
+                <th className="p-4 border-b border-slate-200 whitespace-nowrap">Assigned To / Brand</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -469,10 +480,22 @@ export default function BatchDetails() {
                       )}
                     </div>
                   </td>
+                  <td className="p-4 text-sm">
+                    {qr.isAssigned ? (
+                      <div className="flex flex-col">
+                        <span className="font-semibold text-slate-800">{qr.assignedToCompany?.companyName || 'Unknown Company'}</span>
+                        {qr.assignedToProduct?.brand && (
+                           <span className="text-xs text-slate-500">{qr.assignedToProduct.brand}</span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-slate-400">-</span>
+                    )}
+                  </td>
                 </tr>
                 {isExpanded && qr.isAssigned && (
                   <tr className="bg-slate-50 border-b border-slate-200">
-                    <td colSpan="4" className="p-6">
+                    <td colSpan="5" className="p-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div>
                           <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Assigned Company</div>

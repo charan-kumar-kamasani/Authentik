@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Share, ShieldCheck, ScanLine, Calendar, FileText, ChevronDown, Globe, HeadphonesIcon, ShoppingCart, Bell, CheckCircle2, X, FlaskConical, Award, BookOpen } from 'lucide-react';
+import { ChevronLeft, Share, ShieldCheck, ScanLine, Calendar, FileText, ChevronDown, Globe, HeadphonesIcon, ShoppingCart, Bell, CheckCircle2, X, FlaskConical, Award, BookOpen, AlignLeft } from 'lucide-react';
 import API_BASE_URL from '../../config/api';
 
 const ProductPassport = () => {
@@ -14,7 +14,7 @@ const ProductPassport = () => {
       const product = d.productId;
       const order = product.orderId || {};
       const template = d.templateData || {};
-      
+
       return {
         ...d,
         productName: product.productName || order.productName || template.productName || d.productName,
@@ -32,13 +32,16 @@ const ProductPassport = () => {
         marketedBy: product.marketedBy || order.marketedBy || template.marketedBy || d.marketedBy,
         countryOfOrigin: product.countryOfOrigin || order.countryOfOrigin || template.countryOfOrigin || d.countryOfOrigin,
         productInfo: product.productInfo || order.productInfo || template.productInfo || d.productInfo,
+        skuNumber: product.skuNumber || order.skuNumber || template.skuNumber || d.skuNumber,
+        mrp: product.mrp || order.mrp || template.mrp || d.mrp,
+        servingSize: product.servingSize || order.servingSize || template.servingSize || d.servingSize,
         description: product.description || order.description || template.description || d.description,
         dynamicFields: (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : ((order.dynamicFields && Object.keys(order.dynamicFields).length > 0) ? order.dynamicFields : template.dynamicFields),
         variants: (product.variants && product.variants.length > 0) ? product.variants : ((order.variants && order.variants.length > 0) ? order.variants : template.variants),
         orderLinks: (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((order.orderLinks && order.orderLinks.length > 0) ? order.orderLinks : template.orderLinks),
-        website: product.website || order.website || template.website || d.website,
-        customerCare: product.customerCare || order.customerCare || template.customerCare || d.customerCare,
-        supportEmail: product.supportEmail || order.supportEmail || template.supportEmail || d.supportEmail,
+        website: product.website || order.website || template.website || d.website || product.dynamicFields?.website || order.dynamicFields?.website,
+        customerCare: product.customerCare || order.customerCare || template.customerCare || d.customerCare || product.dynamicFields?.customerCare || order.dynamicFields?.customerCare || product.warranty?.customerCare || order.warranty?.customerCare,
+        supportEmail: product.supportEmail || order.supportEmail || template.supportEmail || d.supportEmail || product.dynamicFields?.supportEmail || order.dynamicFields?.supportEmail || product.warranty?.supportEmail || order.warranty?.supportEmail,
         educationContent: product.educationContent || order.educationContent || template.educationContent || d.educationContent,
         ingredients: product.ingredients || order.ingredients || template.ingredients || d.ingredients,
         certificates: (product.certificates && product.certificates.length > 0) ? product.certificates : ((order.certificates && order.certificates.length > 0) ? order.certificates : (template.certificates || d.certificates)),
@@ -50,7 +53,7 @@ const ProductPassport = () => {
   const data = React.useMemo(() => normalizeData(rawData), [rawData, normalizeData]);
 
   const [recommendations, setRecommendations] = useState<any[]>(data?.recommendations || []);
-  const [detailsOpen, setDetailsOpen] = useState(true);
+  const [openSection, setOpenSection] = useState<string>('details');
   const [showPriceAlert, setShowPriceAlert] = useState(false);
   const [priceAlertAmount, setPriceAlertAmount] = useState('');
 
@@ -78,7 +81,7 @@ const ProductPassport = () => {
 
   const scanDate = data.scannedAt || data.scanDate || data.createdAt ? new Date(data.scannedAt || data.scanDate || data.createdAt) : null;
   const scanDateStr = scanDate ? `${scanDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}\n${scanDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}` : 'N/A';
-  
+
   const mfdDate = data.manufactureDate || (data.mfdOn?.month ? `${data.mfdOn.month}/${data.mfdOn.year}` : 'N/A');
   const expDate = data.expiryDate || data.calculatedExpiryDate || 'N/A';
   const batchNo = data.batchNo || 'N/A';
@@ -93,8 +96,8 @@ const ProductPassport = () => {
     }, {});
   };
 
-  const dynFields = (data.dynamicFields && typeof data.dynamicFields === 'object' && !(data.dynamicFields instanceof Map)) 
-    ? data.dynamicFields 
+  const dynFields = (data.dynamicFields && typeof data.dynamicFields === 'object' && !(data.dynamicFields instanceof Map))
+    ? data.dynamicFields
     : ((data.dynamicFields && data.dynamicFields.size > 0) ? Object.fromEntries(data.dynamicFields) : {});
 
   const mappedDynFields: any = {};
@@ -109,17 +112,23 @@ const ProductPassport = () => {
     Brand: data.brand || data.companyName,
     'Product Name': data.productName,
     ...extractVariants(),
+    'Net Weight': data.dynamicFields?.netWeight || data.dynamicFields?.['Net Weight'] || null,
     Category: data.category || null,
     ...mappedDynFields,
+    'SKU Number': data.skuNumber || null,
+    'MRP': data.mrp || data.dynamicFields?.mrp || null,
+    'Serving Size': data.servingSize || data.dynamicFields?.servingSize || data.dynamicFields?.['Serving Size'] || null,
     'Country of Origin': data.countryOfOrigin || null,
     'Manufactured By': data.manufacturedBy || null,
     'Marketed By': data.marketedBy || null,
     'Shelf Life': data.bestBefore?.value ? `${data.bestBefore.value} ${data.bestBefore.unit}` : null,
+    'Warranty': data.warranty && (data.warranty.duration || data.warranty.warrantyType) ? `${data.warranty.duration || ''} ${data.warranty.durationUnit || ''} ${data.warranty.warrantyType || ''}`.trim() : null,
+    'Storage Instructions': data.dynamicFields?.storageInstructions || data.dynamicFields?.['Storage Instructions'] || null,
   };
   const filteredDetails = Object.entries(rawDetails).filter(([_, v]) => v !== undefined && v !== null && v !== '');
 
   // Mocking usage left for the Reorder widget
-  const estimatedDaysTotal = 30; 
+  const estimatedDaysTotal = 30;
   const scanTime = new Date(data.createdAt || Date.now());
   const daysSinceScan = Math.floor((new Date().getTime() - scanTime.getTime()) / (1000 * 3600 * 24));
   const daysLeft = Math.max(0, estimatedDaysTotal - daysSinceScan);
@@ -143,9 +152,9 @@ const ProductPassport = () => {
         {/* Product Header Content */}
         <div className="flex gap-4 items-center mb-4">
           <div className="w-[120px] h-[140px] flex-shrink-0 relative flex items-center justify-center bg-transparent -ml-2">
-            <img 
-              src={data.productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"} 
-              alt={data.productName} 
+            <img
+              src={data.productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"}
+              alt={data.productName}
               className="w-full h-full object-contain drop-shadow-2xl mix-blend-normal"
             />
           </div>
@@ -154,8 +163,8 @@ const ProductPassport = () => {
               <ShieldCheck size={10} className="text-blue-300" />
               <span className="text-[8px] font-bold tracking-wide text-white uppercase">100% Authentic</span>
             </div>
-            
-            <div 
+
+            <div
               className="flex items-center gap-1.5 mb-1.5 cursor-pointer active:opacity-70 transition-opacity"
               onClick={() => {
                 const bId = data.brandId?._id || data.brandId || data.product?.brandId || data.productId?.brandId;
@@ -174,10 +183,10 @@ const ProductPassport = () => {
                 <CheckCircle2 size={10} className="text-white" strokeWidth={3} />
               </div>
             </div>
-            
+
             <h2 className="text-[18px] font-bold leading-[1.1] mb-1 tracking-tight text-white">{data.productName}</h2>
             <p className="text-blue-100/90 text-[12px] mb-2 font-medium">{data.brand || 'Variant'}</p>
-            
+
             <div className="flex flex-wrap gap-2">
               {data.variants?.slice(0, 3).map((v: any, idx: number) => (
                 <span key={idx} className="px-2 py-0.5 bg-white text-[#001466] text-[9px] font-bold rounded">
@@ -196,7 +205,7 @@ const ProductPassport = () => {
 
       {/* Main Content Card (Overlapping) */}
       <div className="px-4 -mt-6 relative z-10 space-y-3">
-        
+
         {/* Tracking Grid */}
         <div className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex justify-between divide-x divide-slate-100">
           <div className="flex flex-col items-center flex-1 px-1">
@@ -221,73 +230,156 @@ const ProductPassport = () => {
           </div>
         </div>
 
-        {/* Feature Navigation Cards */}
-        <div className="bg-white rounded-[20px] p-5 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100">
-          <div className="grid grid-cols-3 gap-3">
-            {/* Product Details - always shown */}
-            <button 
-              onClick={() => navigate('/product-details', { state: data })}
-              className="flex flex-col items-start p-3.5 bg-slate-50 rounded-2xl border border-slate-100 active:bg-slate-100 transition-colors text-left"
+        {/* Product Details Accordion */}
+        <div className="bg-white rounded-[20px] shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden mb-3 mt-3">
+          <button
+            onClick={() => setOpenSection(openSection === 'details' ? '' : 'details')}
+            className="w-full flex items-center justify-between p-4 bg-white active:bg-slate-50 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <FileText size={20} className="text-[#105DE4]" strokeWidth={2} />
+              <div className="flex flex-col">
+                <h3 className="text-[14px] font-bold text-slate-900 text-left">Product Details</h3>
+                <p className="text-[11px] text-slate-500 font-medium">View specifications and details</p>
+              </div>
+            </div>
+            <ChevronRight size={18} className={`text-slate-400 transition-transform duration-300 ${openSection === 'details' ? 'rotate-90' : ''}`} />
+          </button>
+
+          {openSection === 'details' && (
+            <div className="px-4 pb-4 animate-in slide-in-from-top-2 duration-200">
+              <div className="pt-2 border-t border-slate-50 flex flex-col gap-3.5">
+                {filteredDetails.map(([key, value], idx) => (
+                  <div key={idx} className="flex justify-between items-start gap-4">
+                    <span className="text-[12px] text-slate-500 font-medium whitespace-nowrap">{key}</span>
+                    <span className="text-[12px] font-bold text-slate-900 text-right leading-snug">{String(value)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Action Links */}
+        <div className="flex flex-col gap-3 mb-3">
+
+
+          {/* Ingredients */}
+          {data.ingredients && (
+            <button
+              onClick={() => navigate('/ingredients', { state: data })}
+              className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between active:scale-[0.98] transition-transform text-left"
             >
-              <FileText size={22} className="text-[#105DE4] mb-3" strokeWidth={1.8} />
-              <h4 className="text-[12px] font-bold text-slate-900 leading-tight">Product<br/>Details</h4>
-              <ChevronRight size={14} className="text-slate-400 mt-1.5" />
+              <div className="flex items-center gap-3">
+                <FlaskConical size={20} className="text-[#105DE4]" strokeWidth={2} />
+                <div className="flex flex-col">
+                  <h3 className="text-[14px] font-bold text-slate-900">Ingredients</h3>
+                  <p className="text-[11px] text-slate-500 font-medium">What goes into this product</p>
+                </div>
+              </div>
+              <ChevronRight size={18} className="text-slate-400" />
             </button>
+          )}
 
-            {/* Product Education - shown if educationContent exists */}
-            {(data.educationContent && data.educationContent.length > 0) && (
-              <button 
-                onClick={() => navigate('/product-education', { state: data })}
-                className="flex flex-col items-start p-3.5 bg-slate-50 rounded-2xl border border-slate-100 active:bg-slate-100 transition-colors text-left"
-              >
-                <BookOpen size={22} className="text-[#105DE4] mb-3" strokeWidth={1.8} />
-                <h4 className="text-[12px] font-bold text-slate-900 leading-tight">Product<br/>Education</h4>
-                <ChevronRight size={14} className="text-slate-400 mt-1.5" />
-              </button>
-            )}
+          {/* Certifications & Lab Tests */}
+          {(data.certificates && data.certificates.length > 0) && (
+            <button
+              onClick={() => navigate('/certificates', { state: data })}
+              className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between active:scale-[0.98] transition-transform text-left"
+            >
+              <div className="flex items-center gap-3">
+                <Award size={20} className="text-[#105DE4]" strokeWidth={2} />
+                <div className="flex flex-col">
+                  <h3 className="text-[14px] font-bold text-slate-900">Certifications & Lab Tests</h3>
+                  <p className="text-[11px] text-slate-500 font-medium">View quality reports</p>
+                </div>
+              </div>
+              <ChevronRight size={18} className="text-slate-400" />
+            </button>
+          )}
 
-            {/* Consumer Support - shown if customerCare or supportEmail exists */}
-            {(data.customerCare || data.supportEmail || data.website) && (
-              <button 
-                onClick={() => navigate('/consumer-support', { state: data })}
-                className="flex flex-col items-start p-3.5 bg-slate-50 rounded-2xl border border-slate-100 active:bg-slate-100 transition-colors text-left"
-              >
-                <HeadphonesIcon size={22} className="text-[#105DE4] mb-3" strokeWidth={1.8} />
-                <h4 className="text-[12px] font-bold text-slate-900 leading-tight">Consumer<br/>Support</h4>
-                <ChevronRight size={14} className="text-slate-400 mt-1.5" />
-              </button>
-            )}
+          {/* Product Education */}
+          {(data.educationContent && data.educationContent.length > 0) && (
+            <button
+              onClick={() => navigate('/product-education', { state: data })}
+              className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between active:scale-[0.98] transition-transform text-left"
+            >
+              <div className="flex items-center gap-3">
+                <BookOpen size={20} className="text-[#105DE4]" strokeWidth={2} />
+                <div className="flex flex-col">
+                  <h3 className="text-[14px] font-bold text-slate-900">Product Education</h3>
+                  <p className="text-[11px] text-slate-500 font-medium">Discover how to use this product</p>
+                </div>
+              </div>
+              <ChevronRight size={18} className="text-slate-400" />
+            </button>
+          )}
 
-            {/* Ingredients - shown if ingredients exist */}
-            {data.ingredients && (
-              <button 
-                onClick={() => navigate('/ingredients', { state: data })}
-                className="flex flex-col items-start p-3.5 bg-slate-50 rounded-2xl border border-slate-100 active:bg-slate-100 transition-colors text-left"
-              >
-                <FlaskConical size={22} className="text-[#105DE4] mb-3" strokeWidth={1.8} />
-                <h4 className="text-[12px] font-bold text-slate-900 leading-tight">Ingredients</h4>
-                <ChevronRight size={14} className="text-slate-400 mt-1.5" />
-              </button>
-            )}
+          {/* Visit Website */}
+          {data.website && (
+            <button
+              onClick={() => window.open(data.website.startsWith('http') ? data.website : `https://${data.website}`, '_blank')}
+              className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between active:scale-[0.98] transition-transform text-left"
+            >
+              <div className="flex items-center gap-3">
+                <Globe size={20} className="text-[#105DE4]" strokeWidth={2} />
+                <div className="flex flex-col">
+                  <h3 className="text-[14px] font-bold text-slate-900">Visit Website</h3>
+                  <p className="text-[11px] text-slate-500 font-medium">Learn more about {data.brand || 'the brand'}</p>
+                </div>
+              </div>
+              <ChevronRight size={18} className="text-slate-400" />
+            </button>
+          )}
 
-            {/* Certifications & Lab Tests - shown if certificates exist */}
-            {(data.certificates && data.certificates.length > 0) && (
-              <button 
-                onClick={() => navigate('/certificates', { state: data })}
-                className="flex flex-col items-start p-3.5 bg-slate-50 rounded-2xl border border-slate-100 active:bg-slate-100 transition-colors text-left"
+          {/* Description */}
+          {(data.productInfo || data.description) && (
+            <div className="bg-white rounded-[20px] shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden">
+              <button
+                onClick={() => setOpenSection(openSection === 'description' ? '' : 'description')}
+                className="w-full flex items-center justify-between p-4 bg-white active:bg-slate-50 transition-colors"
               >
-                <Award size={22} className="text-[#105DE4] mb-3" strokeWidth={1.8} />
-                <h4 className="text-[12px] font-bold text-slate-900 leading-tight">Certifications<br/>& Lab Tests</h4>
-                <ChevronRight size={14} className="text-slate-400 mt-1.5" />
+                <div className="flex items-center gap-3">
+                  <AlignLeft size={20} className="text-[#105DE4]" strokeWidth={2} />
+                  <div className="flex flex-col">
+                    <h3 className="text-[14px] font-bold text-slate-900 text-left">Description</h3>
+                    <p className="text-[11px] text-slate-500 font-medium">Read more about this product</p>
+                  </div>
+                </div>
+                <ChevronRight size={18} className={`text-slate-400 transition-transform duration-300 ${openSection === 'description' ? 'rotate-90' : ''}`} />
               </button>
-            )}
-          </div>
+              {openSection === 'description' && (
+                <div className="px-4 pb-4 animate-in slide-in-from-top-2 duration-200">
+                  <div className="pt-2 border-t border-slate-50">
+                    <p className="text-[13px] text-slate-700 font-medium leading-relaxed whitespace-pre-wrap">{data.productInfo || data.description}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Customer Support */}
+          {(data.customerCare || data.supportEmail) && (
+            <button
+              onClick={() => navigate('/consumer-support', { state: data })}
+              className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between active:scale-[0.98] transition-transform text-left"
+            >
+              <div className="flex items-center gap-3">
+                <HeadphonesIcon size={20} className="text-[#105DE4]" strokeWidth={2} />
+                <div className="flex flex-col">
+                  <h3 className="text-[14px] font-bold text-slate-900">Customer Support</h3>
+                  <p className="text-[11px] text-slate-500 font-medium">Get help or raise a query</p>
+                </div>
+              </div>
+              <ChevronRight size={18} className="text-slate-400" />
+            </button>
+          )}
         </div>
 
         {/* Quick Actions (Re Order & Price Alert) */}
         <div className="flex gap-3">
-          <button 
-            onClick={() => navigate('/product-details', { state: data })}
+          <button
+            onClick={() => navigate(`/smart-reorder/${data?.productId?._id || data?.productId || data?.product?._id || data?._id || 'unknown'}`, { state: data })}
             className="flex-1 bg-[#105DE4] rounded-[16px] p-3 text-left active:opacity-80 transition-opacity flex items-center shadow-[0_4px_15px_rgba(16,93,228,0.2)]"
           >
             <div className="flex-1">
@@ -299,8 +391,8 @@ const ProductPassport = () => {
             </div>
             <ChevronRight size={16} className="text-white shrink-0 opacity-80" />
           </button>
-          
-          <button 
+
+          <button
             onClick={() => setShowPriceAlert(true)}
             className="flex-1 bg-[#059669] rounded-[16px] p-3 text-left active:opacity-80 transition-opacity flex items-center shadow-[0_4px_15px_rgba(5,150,105,0.2)]"
           >
@@ -320,31 +412,31 @@ const ProductPassport = () => {
           <div className="pt-2">
             <div className="flex items-center justify-between mb-4 px-1">
               <h3 className="text-[15px] font-bold text-slate-900">Recommendation for You</h3>
-              <button 
+              <button
                 onClick={() => navigate(`/brand-portfolio/${data.brandId?._id || data.brandId}`)}
                 className="text-[12px] font-bold text-[#105DE4] flex items-center gap-0.5"
               >
                 View All <ChevronRight size={14} strokeWidth={2.5} />
               </button>
             </div>
-            
+
             <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide snap-x px-1">
               {recommendations.map((rec: any, idx: number) => (
-                <div 
-                  key={idx} 
-                  onClick={() => navigate("/product-details", { 
-                    state: { 
-                      ...rec, 
-                      productName: rec.title || rec.productName, 
-                      productImage: rec.image || rec.productImage 
-                    } 
+                <div
+                  key={idx}
+                  onClick={() => navigate("/product-details", {
+                    state: {
+                      ...rec,
+                      productName: rec.title || rec.productName,
+                      productImage: rec.image || rec.productImage
+                    }
                   })}
                   className="snap-start flex-shrink-0 w-[140px] bg-white rounded-[20px] p-3 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex flex-col cursor-pointer active:scale-95 transition-transform"
                 >
                   <div className="w-full h-[110px] bg-slate-50/80 rounded-[12px] mb-3 relative flex items-center justify-center p-2">
                     <img src={rec.productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"} className="w-full h-full object-contain mix-blend-multiply" alt={rec.productName} />
                     {rec.mrp && rec.price && (
-                      <span className="absolute bottom-2 left-2 px-1.5 py-0.5 bg-green-100 text-green-700 text-[8px] font-black rounded border border-green-200">{Math.round(((rec.mrp - rec.price)/rec.mrp)*100)}% OFF</span>
+                      <span className="absolute bottom-2 left-2 px-1.5 py-0.5 bg-green-100 text-green-700 text-[8px] font-black rounded border border-green-200">{Math.round(((rec.mrp - rec.price) / rec.mrp) * 100)}% OFF</span>
                     )}
                   </div>
                   <h4 className="text-[11px] font-bold text-slate-900 leading-[1.3] mb-1 line-clamp-2">{rec.productName}</h4>
@@ -377,10 +469,10 @@ const ProductPassport = () => {
                   <X size={20} />
                 </button>
               </div>
-              
+
               <h3 className="text-xl font-bold text-slate-900 text-center mb-1">Price Alert</h3>
               <p className="text-sm text-slate-500 text-center font-medium mb-6">Get notified when the price drops</p>
-              
+
               <div className="mb-4">
                 <label className="block text-sm font-bold text-slate-800 mb-2">Notify me when price is</label>
                 <div className="relative">
@@ -412,7 +504,7 @@ const ProductPassport = () => {
               </div>
 
               <div className="flex flex-col gap-2">
-                <button 
+                <button
                   onClick={() => {
                     if (priceAlertAmount) {
                       alert('Price Alert Set Successfully!');
@@ -424,7 +516,7 @@ const ProductPassport = () => {
                 >
                   Set Price Alert
                 </button>
-                <button 
+                <button
                   onClick={() => setShowPriceAlert(false)}
                   className="w-full text-slate-500 font-bold py-2 rounded-xl hover:bg-slate-50 active:bg-slate-100 transition-all text-sm"
                 >

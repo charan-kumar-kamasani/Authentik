@@ -21,6 +21,10 @@ const reviewSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  purchaseLocation: {
+    type: String,
+    trim: true
+  },
   couponCode: {
     type: String,
     trim: true

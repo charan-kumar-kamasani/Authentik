@@ -180,7 +180,7 @@ const ProductManager = () => {
           const uploadFormData = new FormData();
           uploadFormData.append('file', cert.imageFile);
           uploadFormData.append('upload_preset', uploadPreset);
-          const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, { method: 'POST', body: uploadFormData });
+          const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, { method: 'POST', body: uploadFormData });
           const data = await res.json();
           certImageUrl = data.secure_url;
         }
@@ -236,6 +236,8 @@ const ProductManager = () => {
       imagePreview: product.productImage || null,
       orderLinks: product.orderLinks || [],
       educationContent: product.educationContent || [],
+      certificates: product.certificates || [],
+      ingredients: product.ingredients || '',
     });
     setEditProductId(product._id);
     setActiveTab('create');
@@ -589,11 +591,17 @@ const ProductManager = () => {
                                               <ImageIcon size={16} />
                                               <span className="text-[8px] mt-1 font-bold uppercase tracking-wider">Choose</span>
                                           </div>
-                                          <input type="file" accept="image/*" onChange={(e) => handleCertificateImageChange(e, index)} className="hidden" />
+                                          <input type="file" accept="image/*,application/pdf" onChange={(e) => handleCertificateImageChange(e, index)} className="hidden" />
                                       </label>
                                       {cert.image && (
                                           <div className="relative group/img">
-                                              <img src={cert.image} alt="Preview" className="w-16 h-16 object-cover rounded-xl shadow-sm" />
+                                              {cert.image.toLowerCase().endsWith('.pdf') || (cert.imageFile && cert.imageFile.type === 'application/pdf') ? (
+                                                  <div className="w-16 h-16 rounded-xl bg-red-50 border border-red-100 flex flex-col items-center justify-center text-red-500 shadow-sm">
+                                                      <span className="text-xs font-bold">PDF</span>
+                                                  </div>
+                                              ) : (
+                                                  <img src={cert.image} alt="Preview" className="w-16 h-16 object-cover rounded-xl shadow-sm" />
+                                              )}
                                               <button 
                                                   type="button" 
                                                   onClick={() => {

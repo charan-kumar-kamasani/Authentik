@@ -106,6 +106,8 @@ function ResultAuthentic({ data }: { data: any }) {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [rating, setRating] = useState(0);
   const [optIn, setOptIn] = useState(false);
+  const [purchaseLocation, setPurchaseLocation] = useState("");
+  const [customPurchaseLocation, setCustomPurchaseLocation] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [isReviewed, setIsReviewed] = useState(data.alreadyReviewed || false);
   const [awardedCoupon, setAwardedCoupon] = useState<any>(null);
@@ -482,7 +484,7 @@ function ResultAuthentic({ data }: { data: any }) {
 
         {/* Action Menu Cards */}
         <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x pt-1">
-           <button onClick={() => navigate("/product-details", { state: data })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
+           <button onClick={() => navigate("/product-passport", { state: data })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
              <FileText className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
              <div className="flex items-end justify-between w-full mt-auto">
                <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Product Details</span>
@@ -724,6 +726,41 @@ function ResultAuthentic({ data }: { data: any }) {
 
 
 
+              {/* Purchase Location Dropdown */}
+              <div className="px-6 pb-2">
+                <label className="block text-sm font-bold text-[#1F2642] mb-2">Where did you buy this product?</label>
+                <select
+                  value={purchaseLocation}
+                  onChange={(e) => setPurchaseLocation(e.target.value)}
+                  className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-[14px] px-4 py-3 text-[#1F2642] font-semibold text-[14px] focus:outline-none focus:border-[#0D4E96] focus:ring-1 focus:ring-[#0D4E96] transition-all appearance-none"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 16px center'
+                  }}
+                >
+                  <option value="" disabled>Select marketplace</option>
+                  <option value="Amazon">Amazon</option>
+                  <option value="Flipkart">Flipkart</option>
+                  <option value="Blinkit">Blinkit</option>
+                  <option value="Myntra">Myntra</option>
+                  <option value="Nykaa">Nykaa</option>
+                  <option value="Company Website">Company Website</option>
+                  <option value="Retail Store">Retail Store</option>
+                  <option value="Other">Other (Please specify)</option>
+                </select>
+
+                {purchaseLocation === "Other" && (
+                  <input
+                    type="text"
+                    value={customPurchaseLocation}
+                    onChange={(e) => setCustomPurchaseLocation(e.target.value)}
+                    placeholder="Enter store or website name"
+                    className="w-full mt-3 bg-[#F8FAFC] border border-[#CBD5E1] rounded-[14px] px-4 py-3 text-[#1F2642] font-semibold text-[14px] focus:outline-none focus:border-[#0D4E96] focus:ring-1 focus:ring-[#0D4E96] transition-all"
+                  />
+                )}
+              </div>
+
               {/* Opt-in & Submit */}
               <div className="px-6 pb-8">
                 <label className="flex items-start gap-3 cursor-pointer mb-6 group">
@@ -742,6 +779,17 @@ function ResultAuthentic({ data }: { data: any }) {
                       await confirmModal({ title: 'Required', description: "Please select a rating", cancelText: null });
                       return;
                     }
+                    if (!purchaseLocation) {
+                      await confirmModal({ title: 'Required', description: "Please select where you bought this product", cancelText: null });
+                      return;
+                    }
+                    if (purchaseLocation === "Other" && !customPurchaseLocation.trim()) {
+                      await confirmModal({ title: 'Required', description: "Please enter where you bought this product", cancelText: null });
+                      return;
+                    }
+                    
+                    const finalPurchaseLocation = purchaseLocation === "Other" ? customPurchaseLocation.trim() : purchaseLocation;
+
                     setSubmitting(true);
                     try {
                       const { submitReview } = await import("../../config/api");
@@ -749,7 +797,8 @@ function ResultAuthentic({ data }: { data: any }) {
                       const result = await submitReview({
                         productId: data.productId?._id || data.productId,
                         rating,
-                        optIn
+                        optIn,
+                        purchaseLocation: finalPurchaseLocation
                       }, token);
                       setIsReviewed(true);
                       setShowReviewModal(false);
