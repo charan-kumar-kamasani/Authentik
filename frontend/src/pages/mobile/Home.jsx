@@ -184,11 +184,11 @@ export default function Home() {
 
   const handleRecentScanClick = (scan) => {
     let status = scan.fullData.status || "ORIGINAL";
-    // if (status === "ORIGINAL") {
-    //   navigate('/product-passport', { state: scan.fullData });
-    // } else {
+    if (status === "ORIGINAL") {
+      navigate('/product-passport', { state: scan.fullData });
+    } else {
       navigate(`/result/${status}`, { state: scan.fullData });
-    // }
+    }
   };
 
   const handleScanClick = () => {

@@ -539,14 +539,26 @@ router.post(
         { $set: { assignedToCompany: companyId } }
       );
 
-      // Sync company qrCredits cache
+      // Add the assigned physical QRs to the company's credit balance
       const Company = require("../models/Company");
-      const unassignedForCompanyCount = await BlankQr.countDocuments({
-         assignedToCompany: companyId,
-         isAssigned: false,
-         isBlocked: false
-      });
-      await Company.findByIdAndUpdate(companyId, { qrCredits: unassignedForCompanyCount });
+      await Company.findByIdAndUpdate(companyId, { $inc: { qrCredits: qty } });
+      
+      try {
+        const company = await Company.findById(companyId);
+        const CreditTransaction = require('../models/CreditTransaction');
+        if (CreditTransaction) {
+            await CreditTransaction.create({
+              companyId: company._id,
+              type: 'admin_grant',
+              amount: qty,
+              balanceAfter: company.qrCredits,
+              performedBy: req.user._id,
+              note: `Superadmin manually assigned ${qty} physical QRs`
+            });
+        }
+      } catch (err) {
+        console.error('Failed to create credit transaction:', err);
+      }
 
       res.status(200).json({ message: `${qty} QRs successfully assigned to the company.` });
     } catch (e) {

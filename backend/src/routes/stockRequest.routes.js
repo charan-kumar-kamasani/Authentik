@@ -186,9 +186,10 @@ router.put('/:id/status', protect, authorize('superadmin'), async (req, res) => 
       
       if (unassignedQrs.length === request.quantity) {
         const qrIds = unassignedQrs.map(qr => qr._id);
+        // Assign to company AND block them during transit so they can't be used for orders yet
         await BlankQr.updateMany(
           { _id: { $in: qrIds } },
-          { $set: { assignedToCompany: request.companyId } }
+          { $set: { assignedToCompany: request.companyId, isBlocked: true } }
         );
         request.startSerialNumber = unassignedQrs[0].serialNumber;
         request.endSerialNumber = unassignedQrs[unassignedQrs.length - 1].serialNumber;
@@ -281,13 +282,37 @@ router.put('/:id/receive', protect, async (req, res) => {
       return res.status(400).json({ error: `Cannot receive a request that is currently ${request.status}. It must be Dispatched first.` });
     }
 
-    // Sync company qrCredits cache
-    const unassignedForCompanyCount = await BlankQr.countDocuments({
-      assignedToCompany: companyId,
-      isAssigned: false,
-      isBlocked: false
-    });
-    await Company.findByIdAndUpdate(companyId, { qrCredits: unassignedForCompanyCount });
+    // Unblock the QRs that were locked during dispatch transit — they are now physically received
+    if (request.startSerialNumber && request.endSerialNumber) {
+      await BlankQr.updateMany(
+        {
+          assignedToCompany: companyId,
+          serialNumber: { $gte: request.startSerialNumber, $lte: request.endSerialNumber },
+          isBlocked: true
+        },
+        { $set: { isBlocked: false } }
+      );
+    }
+
+    // Add the newly received physical QRs to the company's credit balance
+    await Company.findByIdAndUpdate(companyId, { $inc: { qrCredits: request.quantity } });
+    
+    try {
+      const company = await Company.findById(companyId);
+      const CreditTransaction = require('../models/CreditTransaction');
+      if (CreditTransaction) {
+          await CreditTransaction.create({
+            companyId: company._id,
+            type: 'receive_stock',
+            amount: request.quantity,
+            balanceAfter: company.qrCredits,
+            performedBy: req.user._id,
+            note: `Received physical stock request ${request._id}`
+          });
+      }
+    } catch (err) {
+      console.error('Failed to create credit transaction:', err);
+    }
 
     // Update request status
     request.status = 'Received';
