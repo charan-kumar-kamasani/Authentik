@@ -1220,9 +1220,9 @@ router.get("/user-stats/:brandId", protect, async (req, res) => {
 
     // Calculate usage data
     const { lastPurchasedDate, quantity, servingsRemaining } = purchase;
-    const totalServings = featuredProduct.totalServings || 15;
-    const averageUsagePerWeek = featuredProduct.averageUsagePerWeek || 3;
-    const servingSize = featuredProduct.servingSize || "500g";
+    const totalServings = featuredProduct.totalServings ;
+    const averageUsagePerWeek = featuredProduct.averageUsagePerWeek ;
+    const servingSize = featuredProduct.servingSize ;
     
     // Calculate percentage left
     const usagePercent = Math.round((servingsRemaining / totalServings) * 100);

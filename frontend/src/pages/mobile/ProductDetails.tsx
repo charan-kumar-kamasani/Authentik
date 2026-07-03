@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Share, ShieldCheck, Star, ChevronDown, CheckCircle2, ChevronRight, Check } from 'lucide-react';
+import { ChevronLeft, Share, ShieldCheck, Star, ChevronDown, CheckCircle2, ChevronRight, Check, FileText, Info, FlaskConical, Award, BookOpen } from 'lucide-react';
 import API_BASE_URL from '../../config/api';
+import ProductHeroHeader from '../../components/ProductHeroHeader';
+import { AccordionItem, KeyValueRow, CertificateViewer } from '../../components/AccordionComponents';
 
 const ProductDetails = () => {
   const navigate = useNavigate();
@@ -37,6 +39,7 @@ const ProductDetails = () => {
 
   const data = React.useMemo(() => normalizeData(rawData), [rawData, normalizeData]);
   const [showMoreDesc, setShowMoreDesc] = useState(false);
+  const [openSection, setOpenSection] = useState<string>('Product Details');
 
   if (!data) {
     return (
@@ -56,67 +59,13 @@ const ProductDetails = () => {
   const orderLinks = data.orderLinks && data.orderLinks.length > 0 ? data.orderLinks : [];
   const benefitsList = data.keyBenefits ? data.keyBenefits.split(/[\n,]+/).map((b: string) => b.trim()).filter(Boolean) : [];
 
+  const defaultPrice = orderLinks.find((l: any) => l.price)?.price;
+  const defaultMrp = orderLinks.find((l: any) => l.mrp)?.mrp;
+  const defaultDiscount = orderLinks.find((l: any) => l.discount)?.discount;
+
   return (
     <div className="min-h-screen bg-[#001466] font-sans overflow-x-hidden pb-20">
-      {/* Header */}
-      <div className="px-5 pt-6 pb-2 flex items-center justify-between text-white">
-        <button onClick={() => navigate(-1)} className="p-1 -ml-1 active:bg-white/10 rounded-full transition-colors">
-          <ChevronLeft size={26} strokeWidth={2.5} />
-        </button>
-        <h1 className="text-[17px] font-bold tracking-wide">Product Details</h1>
-        <button className="p-1 -mr-1 active:bg-white/10 rounded-full transition-colors">
-          <Share size={22} strokeWidth={2.5} />
-        </button>
-      </div>
-
-      {/* Hero Section */}
-      <div className="px-5 pt-4 pb-8 flex gap-4 items-center">
-        <div className="w-[140px] h-[160px] shrink-0 relative flex items-center justify-center -ml-2">
-          {data.productImage ? (
-            <img 
-              src={data.productImage} 
-              alt={data.productName} 
-              className="w-full h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.3)]"
-            />
-          ) : (
-            <div className="w-full h-full bg-white/10 rounded-xl flex items-center justify-center text-white/50 text-[10px]">No Image</div>
-          )}
-        </div>
-        <div className="flex flex-col flex-1">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <span className="text-white text-[13px] font-bold flex items-center gap-1.5">
-              {data.companyName && (
-                <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center shrink-0 overflow-hidden text-[#001466] font-black text-[10px]">
-                  {data.companyName.charAt(0).toUpperCase()}
-                </div>
-              )}
-              {data.brand || data.companyName || 'Product'}
-            </span>
-            <div className="w-4 h-4 bg-[#105DE4] rounded-full flex items-center justify-center">
-              <Check size={10} className="text-white" strokeWidth={3} />
-            </div>
-          </div>
-          
-          <h2 className="text-white text-[22px] font-bold leading-[1.1] mb-1 tracking-tight">{data.productName}</h2>
-          {variantName && <p className="text-blue-100 text-[13px] font-medium mb-3">{variantName}</p>}
-          
-          {category && (
-            <div className="flex items-center gap-3 mb-3">
-              <span className="px-2.5 py-1 bg-[#FFE8D6] text-[#E07A25] text-[10px] font-extrabold rounded uppercase tracking-wide">
-                {category}
-              </span>
-            </div>
-          )}
-          
-          {rating && (
-            <div className="flex items-center gap-1.5">
-              <Star size={14} className="text-[#FFC107] fill-[#FFC107]" />
-              <span className="text-white text-[14px] font-bold">{rating}</span>
-              {reviews && <span className="text-blue-200 text-[11px]">({reviews} Reviews)</span>}
-            </div>
-          )}
-        </div>
-      </div>
+      <ProductHeroHeader title="Product Details" data={data} />
 
       {/* Main White Card */}
       <div className="bg-[#F8F9FA] rounded-t-[24px] px-5 pt-6 pb-8 min-h-screen">
@@ -139,32 +88,67 @@ const ProductDetails = () => {
           </div>
         </div>
 
-        {/* About Section */}
-        {desc && (
-          <div className="flex justify-between items-start gap-4 mb-6">
-            <div className="flex-1">
-              <h3 className="text-[#0B1E36] font-bold text-[15px] mb-2.5">About this Product</h3>
-              <p className="text-slate-700 text-[13px] leading-[1.6] whitespace-pre-wrap">
-                {showMoreDesc ? desc : (desc.length > 100 ? `${desc.slice(0, 100)}...` : desc)}
-              </p>
-              {desc.length > 100 && (
-                <button 
-                  onClick={() => setShowMoreDesc(!showMoreDesc)}
-                  className="text-[#105DE4] text-[12px] font-bold mt-1 flex items-center gap-0.5"
-                >
-                  Read {showMoreDesc ? 'Less' : 'More'} <ChevronDown size={14} className={showMoreDesc ? 'rotate-180' : ''} />
-                </button>
-              )}
-            </div>
-            {data.servingSize && (
-              <div className="w-[100px] shrink-0 bg-blue-50/50 rounded-2xl p-3 flex flex-col items-center justify-center border border-blue-100/50">
-                <span className="text-[#0B1E36] text-[16px] font-black leading-none mb-1 text-center">{data.servingSize}</span>
-                {category && <span className="text-[#0B1E36] text-[11px] font-bold mb-1 text-center">{category}</span>}
-                <span className="text-slate-500 text-[9px] font-medium text-center">Per Serving</span>
+        {/* Accordions */}
+        <div className="mb-6">
+          {/* 1. Product Details */}
+          <AccordionItem title="Product Details" subtitle="View specifications and details" icon={FileText} isOpen={openSection === 'Product Details'} onToggle={() => setOpenSection(openSection === 'Product Details' ? '' : 'Product Details')}>
+            <KeyValueRow label="Brand" value={data.brand || data.companyName} />
+            <KeyValueRow label="Product Name" value={data.productName} />
+            <KeyValueRow label="Category" value={data.category} />
+            {data.variants?.map((v: any, i: number) => (
+               <KeyValueRow key={i} label={v.variantName || v.variantLabel || 'Variant'} value={v.value} />
+            ))}
+            <KeyValueRow label="Batch No" value={data.batchNo} />
+            <KeyValueRow label="MRP" value={data.mrp || data.dynamicFields?.mrp} />
+            
+            <KeyValueRow label="Country of Origin" value={data.countryOfOrigin} />
+            <KeyValueRow label="Manufactured By" value={data.manufacturedBy} />
+            <KeyValueRow label="Marketed By" value={data.marketedBy} />
+            <KeyValueRow label="Serving Size" value={data.servingSize || data.dynamicFields?.servingSize || data.dynamicFields?.['Serving Size']} />
+            <KeyValueRow label="Shelf Life" value={data.bestBefore?.value ? `${data.bestBefore.value} ${data.bestBefore.unit}` : null} />
+            <KeyValueRow label="Warranty" value={data.warranty && (data.warranty.duration || data.warranty.warrantyType) ? `${data.warranty.duration || ''} ${data.warranty.durationUnit || ''} ${data.warranty.warrantyType || ''}`.trim() : null} />
+            <KeyValueRow label="Storage Instructions" value={data.dynamicFields?.storageInstructions || data.dynamicFields?.['Storage Instructions']} />
+          </AccordionItem>
+
+          {/* 2. Description */}
+          {desc && (
+            <AccordionItem title="Description" subtitle="About this product" icon={Info} isOpen={openSection === 'Description'} onToggle={() => setOpenSection(openSection === 'Description' ? '' : 'Description')}>
+              <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">{desc}</p>
+            </AccordionItem>
+          )}
+
+          {/* 3. Ingredients */}
+          {data.ingredients && (
+            <AccordionItem title="Ingredients" subtitle="What goes into this product" icon={FlaskConical} isOpen={openSection === 'Ingredients'} onToggle={() => setOpenSection(openSection === 'Ingredients' ? '' : 'Ingredients')}>
+              <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">{data.ingredients}</p>
+            </AccordionItem>
+          )}
+
+          {/* 4. Certifications and Lab Tests */}
+          {(data.certificates && data.certificates.length > 0) && (
+            <AccordionItem title="Certifications and Lab" subtitle="Verified certificates and lab tests" icon={Award} isOpen={openSection === 'Certifications and Lab'} onToggle={() => setOpenSection(openSection === 'Certifications and Lab' ? '' : 'Certifications and Lab')}>
+               <div className="flex flex-col gap-3">
+                 {data.certificates.map((cert: any, idx: number) => (
+                    <CertificateViewer key={idx} cert={cert} />
+                 ))}
+               </div>
+            </AccordionItem>
+          )}
+
+          {/* 5. Product Education */}
+          {(data.educationContent && data.educationContent.length > 0) && (
+            <AccordionItem title="Product Education" subtitle="Discover how to use this product" icon={BookOpen} isOpen={openSection === 'Product Education'} onToggle={() => setOpenSection(openSection === 'Product Education' ? '' : 'Product Education')}>
+              <div className="flex flex-col gap-3">
+                {data.educationContent.map((edu: any, idx: number) => (
+                  <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-100 bg-slate-50">
+                     <h4 className="text-[13px] font-bold text-[#0B1E36]">{edu.title || 'Guide'}</h4>
+                     <p className="text-[12px] text-slate-600 leading-relaxed">{edu.description}</p>
+                  </div>
+                ))}
               </div>
-            )}
-          </div>
-        )}
+            </AccordionItem>
+          )}
+        </div>
 
         {/* Key Benefits */}
         {benefitsList.length > 0 && (
@@ -183,7 +167,12 @@ const ProductDetails = () => {
           <div className="mb-6">
             <h3 className="text-[#0B1E36] font-bold text-[15px] mb-4">Where to Buy</h3>
             <div className="flex flex-col gap-3 mb-3">
-              {orderLinks.map((link: any, idx: number) => (
+              {orderLinks.map((link: any, idx: number) => {
+                const displayPrice = link.price || defaultPrice;
+                const displayMrp = link.price ? link.mrp : defaultMrp;
+                const displayDiscount = link.price ? link.discount : defaultDiscount;
+                
+                return (
                 <div key={idx} className="bg-white p-3 rounded-2xl flex items-center justify-between shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-50">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100/50 p-1">
@@ -205,13 +194,13 @@ const ProductDetails = () => {
                   
                   <div className="flex items-center gap-3">
                     <div className="flex flex-col items-end justify-center">
-                      {link.price && <span className="text-[#0B1E36] font-black text-[15px] leading-none tracking-tight">₹{link.price}</span>}
+                      {displayPrice && <span className="text-[#0B1E36] font-black text-[15px] leading-none tracking-tight">₹{displayPrice}</span>}
                       
                       {/* Show MRP and Discount together below the price */}
-                      {(link.mrp || link.discount) && (
+                      {(displayMrp || displayDiscount) && (
                         <div className="flex items-center gap-1 mt-1">
-                          {link.mrp && <span className="text-slate-400 text-[10px] font-medium line-through leading-none">₹{link.mrp}</span>}
-                          {link.discount && <span className="text-[#16A34A] text-[9px] font-bold leading-none">{link.discount}</span>}
+                          {displayMrp && <span className="text-slate-400 text-[10px] font-medium line-through leading-none">₹{displayMrp}</span>}
+                          {displayDiscount && <span className="text-[#16A34A] text-[9px] font-bold leading-none">{displayDiscount}</span>}
                         </div>
                       )}
                     </div>
@@ -221,7 +210,7 @@ const ProductDetails = () => {
                     </a>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           </div>
         )}

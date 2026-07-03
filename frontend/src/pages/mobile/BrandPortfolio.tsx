@@ -204,7 +204,13 @@ export default function BrandPortfolio() {
                 return (
                   <div 
                     key={product._id || idx} 
-                    onClick={() => navigate('/product-details', { state: { productId: product } })}
+                    onClick={() => navigate('/product-details', { 
+                      state: { 
+                        ...product,
+                        brand: brandData?.brandName,
+                        companyName: brandData?.brandName
+                      } 
+                    })}
                     className="cursor-pointer rounded-[20px] border border-slate-100 p-2.5 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.02)] bg-white relative active:opacity-70 transition-opacity"
                   >
                     {/* Image Section */}

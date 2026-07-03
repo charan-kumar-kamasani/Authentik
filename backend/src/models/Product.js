@@ -70,9 +70,9 @@ const productSchema = new mongoose.Schema(
     calculatedExpiryDate: String, // MM/YYYY format
     
     // Usage stats for Smart Reorder
-    totalServings: { type: Number, default: 15 },
-    servingSize: { type: String, default: "500g" },
-    averageUsagePerWeek: { type: Number, default: 3 },
+    totalServings: { type: Number, default: 0 },
+    servingSize: { type: String, default: "" },
+    averageUsagePerWeek: { type: Number, default: 0 },
     
     // Store variants (repeatable fields like Color, Size, Model)
     variants: [{

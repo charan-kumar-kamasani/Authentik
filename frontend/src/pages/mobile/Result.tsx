@@ -128,11 +128,6 @@ function ResultAuthentic({ data }: { data: any }) {
   const [invoiceImages, setInvoiceImages] = useState<{ file: File; preview: string }[]>([]);
   const warrantyFileRef = useRef<HTMLInputElement>(null);
 
-  const handleSkipProfile = () => {
-    setShowProfilePrompt(false);
-    setShowReviewModal(true); // Continue to review if they skip
-  };
-
   // Determine colors
   const productName = data.productName || data.productId?.productName || "Product Info";
 
@@ -743,8 +738,7 @@ function ResultAuthentic({ data }: { data: any }) {
                   <option value="Amazon">Amazon</option>
                   <option value="Flipkart">Flipkart</option>
                   <option value="Blinkit">Blinkit</option>
-                  <option value="Myntra">Myntra</option>
-                  <option value="Nykaa">Nykaa</option>
+                  <option value="Zepto">Zepto</option>
                   <option value="Company Website">Company Website</option>
                   <option value="Retail Store">Retail Store</option>
                   <option value="Other">Other (Please specify)</option>
@@ -1010,7 +1004,7 @@ function ResultAuthentic({ data }: { data: any }) {
             {/* Backdrop */}
             <div
               className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-              onClick={handleSkipProfile}
+              onClick={() => setShowProfilePrompt(false)}
             />
 
             {/* Bottom Sheet */}

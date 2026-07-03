@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ChevronLeft, Share, ShieldCheck, Star, ChevronRight, Check, Tag, Bell, X } from 'lucide-react';
+import ProductHeroHeader from '../../components/ProductHeroHeader';
+
 import API_BASE_URL from '../../config/api';
 
 const SmartReorder = () => {
@@ -57,7 +59,13 @@ const SmartReorder = () => {
       category: product.category || order.category || template.category || d.category,
       productImage: product.productImage || order.productImage || template.productImage || d.productImage,
       variants: (product.variants && product.variants.length > 0) ? product.variants : ((order.variants && order.variants.length > 0) ? order.variants : template.variants),
-      orderLinks,
+      orderLinks: orderLinks.map((link: any) => {
+        if (!link.siteImage && template.orderLinks) {
+          const tLink = template.orderLinks.find((t: any) => t.title === link.title);
+          if (tLink && tLink.siteImage) return { ...link, siteImage: tLink.siteImage };
+        }
+        return link;
+      }),
       rating: product.rating || order.rating || template.rating || d.rating || topLinkWithRating?.rating,
       reviewsCount: product.reviewsCount || order.reviewsCount || template.reviewsCount || d.reviewsCount || topLinkWithRating?.reviewsCount,
     };
@@ -93,67 +101,9 @@ const SmartReorder = () => {
 
   return (
     <div className="min-h-screen bg-[#001466] font-sans overflow-x-hidden pb-20">
-      {/* Header */}
-      <div className="px-5 pt-6 pb-2 flex items-center justify-between text-white">
-        <button onClick={() => navigate(-1)} className="p-1 -ml-1 active:bg-white/10 rounded-full transition-colors">
-          <ChevronLeft size={26} strokeWidth={2.5} />
-        </button>
-        <h1 className="text-[17px] font-bold tracking-wide">Smart Re Order</h1>
-        <button className="p-1 -mr-1 active:bg-white/10 rounded-full transition-colors">
-          <Share size={22} strokeWidth={2.5} />
-        </button>
-      </div>
+            <ProductHeroHeader title="Smart Re Order" data={data} />
 
-      {/* Hero Section */}
-      <div className="px-5 pt-4 pb-8 flex gap-4 items-center">
-        <div className="w-[140px] h-[160px] shrink-0 relative flex items-center justify-center -ml-2">
-          {data.productImage ? (
-            <img 
-              src={data.productImage} 
-              alt={data.productName} 
-              className="w-full h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.3)]"
-            />
-          ) : (
-            <div className="w-full h-full bg-white/10 rounded-xl flex items-center justify-center text-white/50 text-[10px]">No Image</div>
-          )}
-        </div>
-        <div className="flex flex-col flex-1">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <span className="text-white text-[13px] font-bold flex items-center gap-1.5">
-              {data.companyName && (
-                <div className="w-5 h-5 bg-white rounded-full flex items-center justify-center shrink-0 overflow-hidden text-[#001466] font-black text-[10px]">
-                  {data.companyName.charAt(0).toUpperCase()}
-                </div>
-              )}
-              {data.brand || data.companyName || 'Product'}
-            </span>
-            <div className="w-4 h-4 bg-[#105DE4] rounded-full flex items-center justify-center">
-              <Check size={10} className="text-white" strokeWidth={3} />
-            </div>
-          </div>
-          
-          <h2 className="text-white text-[22px] font-bold leading-[1.1] mb-1 tracking-tight">{data.productName}</h2>
-          {variantName && <p className="text-blue-100 text-[13px] font-medium mb-3">{variantName}</p>}
-          
-          {category && (
-            <div className="flex items-center gap-3 mb-3">
-              <span className="px-2.5 py-1 bg-[#FFE8D6] text-[#E07A25] text-[10px] font-extrabold rounded uppercase tracking-wide">
-                {category}
-              </span>
-            </div>
-          )}
-          
-          {rating && (
-            <div className="flex items-center gap-1.5">
-              <Star size={14} className="text-[#FFC107] fill-[#FFC107]" />
-              <span className="text-white text-[14px] font-bold">{rating}</span>
-              {reviews && <span className="text-blue-200 text-[11px]">({reviews} Reviews)</span>}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Main White Card */}
+{/* Main White Card */}
       <div className="bg-[#F8F9FA] rounded-t-[24px] px-5 pt-8 pb-8 min-h-screen flex flex-col gap-5">
         
         {/* Coupons Banner */}

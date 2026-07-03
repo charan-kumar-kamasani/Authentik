@@ -1,7 +1,81 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Share, ShieldCheck, ScanLine, Calendar, FileText, ChevronDown, Globe, HeadphonesIcon, ShoppingCart, Bell, CheckCircle2, X, FlaskConical, Award, BookOpen, AlignLeft } from 'lucide-react';
+import { ChevronLeft, Share, ShieldCheck, ScanLine, Calendar, FileText, ChevronDown, Globe, HeadphonesIcon, ShoppingCart, Bell, CheckCircle2, X, FlaskConical, Award, BookOpen, AlignLeft, Info, ExternalLink, Phone, Mail } from 'lucide-react';
 import API_BASE_URL from '../../config/api';
+import ProductHeroHeader from '../../components/ProductHeroHeader';
+
+
+
+const AccordionItem = ({ title, subtitle, icon: Icon, children, isOpen, onToggle }) => {
+  return (
+    <div className="bg-white rounded-[16px] mb-3 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden">
+      <button 
+        onClick={onToggle} 
+        className="w-full flex items-center justify-between p-4 bg-white active:bg-slate-50 transition-colors"
+      >
+        <div className="flex items-center gap-4">
+          <div className="text-[#105DE4] flex items-center justify-center shrink-0">
+             <Icon size={24} strokeWidth={1.5} />
+          </div>
+          <div className="text-left">
+             <h3 className="text-[15px] font-bold text-[#0B1E36] leading-tight">{title}</h3>
+             {subtitle && <p className="text-[12px] font-medium text-slate-500 mt-0.5">{subtitle}</p>}
+          </div>
+        </div>
+        <ChevronDown size={20} className={`text-slate-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      {isOpen && (
+        <div className="px-5 pb-5 pt-2 animate-in slide-in-from-top-2 duration-200">
+          <div className="pt-2 border-t border-slate-50">
+             {children}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const KeyValueRow = ({ label, value }) => {
+  if (!value) return null;
+  return (
+    <div className="flex justify-between py-2.5 border-b border-slate-50 last:border-0">
+      <span className="text-[13px] font-medium text-slate-500">{label}</span>
+      <span className="text-[13px] font-bold text-[#0B1E36] text-right max-w-[60%]">{value}</span>
+    </div>
+  );
+};
+
+
+const CertificateViewer = ({ cert }) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const fileUrl = cert.image || cert.file || cert.url;
+  
+  return (
+    <div className="flex flex-col rounded-xl border border-slate-100 bg-slate-50/50 overflow-hidden transition-colors">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-4 p-4 active:bg-slate-100 w-full text-left"
+      >
+        <div className="w-10 h-10 rounded-full bg-blue-100 text-[#105DE4] flex items-center justify-center shrink-0">
+          {cert.isLabTest ? <FlaskConical size={20} strokeWidth={2} /> : <Award size={20} strokeWidth={2} />}
+        </div>
+        <div className="flex-1">
+          <h4 className="text-[14px] font-bold text-[#0B1E36] leading-tight mb-1">{cert.name}</h4>
+          {/* <p className="text-[11px] text-slate-500 font-medium">Issued by {cert.issuer || 'N/A'}</p> */}
+        </div>
+        <ChevronDown size={18} className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      
+      {isOpen && fileUrl && (
+        <div className="p-4 pt-0 border-t border-slate-100 animate-in slide-in-from-top-2">
+          <a href={fileUrl} target="_blank" rel="noreferrer" className="block w-full rounded-lg overflow-hidden border border-slate-200">
+             <img src={fileUrl} alt={cert.name} className="w-full h-auto object-contain bg-white max-h-[300px]" />
+          </a>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const ProductPassport = () => {
   const navigate = useNavigate();
@@ -42,6 +116,7 @@ const ProductPassport = () => {
         website: product.website || order.website || template.website || d.website || product.dynamicFields?.website || order.dynamicFields?.website,
         customerCare: product.customerCare || order.customerCare || template.customerCare || d.customerCare || product.dynamicFields?.customerCare || order.dynamicFields?.customerCare || product.warranty?.customerCare || order.warranty?.customerCare,
         supportEmail: product.supportEmail || order.supportEmail || template.supportEmail || d.supportEmail || product.dynamicFields?.supportEmail || order.dynamicFields?.supportEmail || product.warranty?.supportEmail || order.warranty?.supportEmail,
+        additionalInfo: product.additionalInfo || order.additionalInfo || template.additionalInfo || d.additionalInfo || product.dynamicFields?.additionalInfo || order.dynamicFields?.additionalInfo,
         educationContent: product.educationContent || order.educationContent || template.educationContent || d.educationContent,
         ingredients: product.ingredients || order.ingredients || template.ingredients || d.ingredients,
         certificates: (product.certificates && product.certificates.length > 0) ? product.certificates : ((order.certificates && order.certificates.length > 0) ? order.certificates : (template.certificates || d.certificates)),
@@ -53,7 +128,7 @@ const ProductPassport = () => {
   const data = React.useMemo(() => normalizeData(rawData), [rawData, normalizeData]);
 
   const [recommendations, setRecommendations] = useState<any[]>(data?.recommendations || []);
-  const [openSection, setOpenSection] = useState<string>('details');
+  const [openSection, setOpenSection] = useState<string>('Product Details');
   const [showPriceAlert, setShowPriceAlert] = useState(false);
   const [priceAlertAmount, setPriceAlertAmount] = useState('');
 
@@ -136,72 +211,7 @@ const ProductPassport = () => {
 
   return (
     <div className="min-h-screen bg-[#F5F7FA] relative pb-24 overflow-x-hidden font-sans">
-      {/* Dark Blue Header Section */}
-      <div className="bg-[#001466] text-white pt-8 pb-12 px-5 relative">
-        {/* Top Nav */}
-        <div className="flex items-center justify-between mb-4">
-          <button onClick={() => navigate(-1)} className="p-1 -ml-1 rounded-full hover:bg-white/10 transition-colors">
-            <ChevronLeft size={24} strokeWidth={2.5} />
-          </button>
-          <h1 className="text-[15px] font-bold tracking-wide">Product Passport</h1>
-          <button className="p-1 -mr-1 rounded-full hover:bg-white/10 transition-colors">
-            <Share size={20} strokeWidth={2.5} />
-          </button>
-        </div>
-
-        {/* Product Header Content */}
-        <div className="flex gap-4 items-center mb-4">
-          <div className="w-[120px] h-[140px] flex-shrink-0 relative flex items-center justify-center bg-transparent -ml-2">
-            <img
-              src={data.productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"}
-              alt={data.productName}
-              className="w-full h-full object-contain drop-shadow-2xl mix-blend-normal"
-            />
-          </div>
-          <div className="flex flex-col flex-1 pt-0">
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-[#1A3385] border border-[#2B47A1] rounded-lg mb-2 self-start">
-              <ShieldCheck size={10} className="text-blue-300" />
-              <span className="text-[8px] font-bold tracking-wide text-white uppercase">100% Authentic</span>
-            </div>
-
-            <div
-              className="flex items-center gap-1.5 mb-1.5 cursor-pointer active:opacity-70 transition-opacity"
-              onClick={() => {
-                const bId = data.brandId?._id || data.brandId || data.product?.brandId || data.productId?.brandId;
-                if (bId) navigate(`/brand-portfolio/${bId}`);
-              }}
-            >
-              <span className="text-[12px] font-bold tracking-wider text-white flex items-center gap-1.5">
-                {data.companyName && (
-                  <div className="w-4 h-4 bg-white rounded-full flex items-center justify-center shrink-0 overflow-hidden text-[#001466] font-black text-[8px]">
-                    {data.companyName.charAt(0).toUpperCase()}
-                  </div>
-                )}
-                {data.companyName || 'Brand'}
-              </span>
-              <div className="w-3.5 h-3.5 bg-blue-500 rounded-full flex items-center justify-center">
-                <CheckCircle2 size={10} className="text-white" strokeWidth={3} />
-              </div>
-            </div>
-
-            <h2 className="text-[18px] font-bold leading-[1.1] mb-1 tracking-tight text-white">{data.productName}</h2>
-            <p className="text-blue-100/90 text-[12px] mb-2 font-medium">{data.brand || 'Variant'}</p>
-
-            <div className="flex flex-wrap gap-2">
-              {data.variants?.slice(0, 3).map((v: any, idx: number) => (
-                <span key={idx} className="px-2 py-0.5 bg-white text-[#001466] text-[9px] font-bold rounded">
-                  {v.value}
-                </span>
-              ))}
-              {!data.variants?.length && data.category && (
-                <span className="px-2 py-0.5 bg-white text-[#001466] text-[9px] font-bold rounded">
-                  {data.category}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+      <ProductHeroHeader title="Product Passport" data={data} />
 
       {/* Main Content Card (Overlapping) */}
       <div className="px-4 -mt-6 relative z-10 space-y-3">
@@ -230,152 +240,132 @@ const ProductPassport = () => {
           </div>
         </div>
 
-        {/* Product Details Accordion */}
-        <div className="bg-white rounded-[20px] shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden mb-3 mt-3">
-          <button
-            onClick={() => setOpenSection(openSection === 'details' ? '' : 'details')}
-            className="w-full flex items-center justify-between p-4 bg-white active:bg-slate-50 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <FileText size={20} className="text-[#105DE4]" strokeWidth={2} />
-              <div className="flex flex-col">
-                <h3 className="text-[14px] font-bold text-slate-900 text-left">Product Details</h3>
-                <p className="text-[11px] text-slate-500 font-medium">View specifications and details</p>
-              </div>
-            </div>
-            <ChevronRight size={18} className={`text-slate-400 transition-transform duration-300 ${openSection === 'details' ? 'rotate-90' : ''}`} />
-          </button>
+        {/* Accordions */}
+        <div className="flex flex-col gap-3 mb-3 mt-3">
+          {/* 1. Product Details */}
+          <AccordionItem title="Product Details" subtitle="View specifications and details" icon={FileText} isOpen={openSection === 'Product Details'} onToggle={() => setOpenSection(openSection === 'Product Details' ? '' : 'Product Details')}>
+            <KeyValueRow label="Brand" value={data.brand || data.companyName} />
+            <KeyValueRow label="Product Name" value={data.productName} />
+            <KeyValueRow label="Category" value={data.category} />
+            {data.variants?.map((v: any, i: number) => (
+               <KeyValueRow key={i} label={v.variantName || v.variantLabel || 'Variant'} value={v.value} />
+            ))}
+            <KeyValueRow label="Batch No" value={data.batchNo} />
+            <KeyValueRow label="MRP" value={data.mrp || data.dynamicFields?.mrp} />
+            
+            <KeyValueRow label="Country of Origin" value={data.countryOfOrigin} />
+            <KeyValueRow label="Manufactured By" value={data.manufacturedBy} />
+            <KeyValueRow label="Marketed By" value={data.marketedBy} />
+            <KeyValueRow label="Serving Size" value={data.servingSize || data.dynamicFields?.servingSize || data.dynamicFields?.['Serving Size']} />
+            <KeyValueRow label="Shelf Life" value={data.bestBefore?.value ? `${data.bestBefore.value} ${data.bestBefore.unit}` : null} />
+            <KeyValueRow label="Warranty" value={data.warranty && (data.warranty.duration || data.warranty.warrantyType) ? `${data.warranty.duration || ''} ${data.warranty.durationUnit || ''} ${data.warranty.warrantyType || ''}`.trim() : null} />
+            <KeyValueRow label="Storage Instructions" value={data.dynamicFields?.storageInstructions || data.dynamicFields?.['Storage Instructions']} />
+          </AccordionItem>
 
-          {openSection === 'details' && (
-            <div className="px-4 pb-4 animate-in slide-in-from-top-2 duration-200">
-              <div className="pt-2 border-t border-slate-50 flex flex-col gap-3.5">
-                {filteredDetails.map(([key, value], idx) => (
-                  <div key={idx} className="flex justify-between items-start gap-4">
-                    <span className="text-[12px] text-slate-500 font-medium whitespace-nowrap">{key}</span>
-                    <span className="text-[12px] font-bold text-slate-900 text-right leading-snug">{String(value)}</span>
+          {/* 2. Description */}
+          {(data.productInfo || data.description) && (
+            <AccordionItem title="Description" subtitle="About this product" icon={Info} isOpen={openSection === 'Description'} onToggle={() => setOpenSection(openSection === 'Description' ? '' : 'Description')}>
+              <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">{data.productInfo || data.description}</p>
+              {data.keyBenefits && (
+                <>
+                  <h4 className="text-[13px] font-bold text-[#0B1E36] mt-4 mb-2">Key Benefits</h4>
+                  <div className="flex flex-col gap-2">
+                     {data.keyBenefits.split('\n').map((benefit, idx) => (
+                       <div key={idx} className="flex items-start gap-2">
+                         <CheckCircle2 size={16} className="text-[#105DE4] shrink-0 mt-0.5" />
+                         <span className="text-[13px] font-medium text-slate-700">{benefit}</span>
+                       </div>
+                     ))}
+                  </div>
+                </>
+              )}
+            </AccordionItem>
+          )}
+
+          {/* 3. Ingredients */}
+          {data.ingredients && (
+            <AccordionItem title="Ingredients" subtitle="What goes into this product" icon={FlaskConical} isOpen={openSection === 'Ingredients'} onToggle={() => setOpenSection(openSection === 'Ingredients' ? '' : 'Ingredients')}>
+              <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">{data.ingredients}</p>
+            </AccordionItem>
+          )}
+
+          {/* 4. Certifications and Lab Tests */}
+          {(data.certificates && data.certificates.length > 0) && (
+            <AccordionItem title="Certifications and Lab" subtitle="Verified certificates and lab tests" icon={Award} isOpen={openSection === 'Certifications and Lab'} onToggle={() => setOpenSection(openSection === 'Certifications and Lab' ? '' : 'Certifications and Lab')}>
+               <div className="flex flex-col gap-3">
+                 {data.certificates.map((cert: any, idx: number) => (
+                    <CertificateViewer key={idx} cert={cert} />
+                 ))}
+               </div>
+            </AccordionItem>
+          )}
+
+          {/* 5. Product Education */}
+          {(data.educationContent && data.educationContent.length > 0) && (
+            <AccordionItem title="Product Education" subtitle="Discover how to use this product" icon={BookOpen} isOpen={openSection === 'Product Education'} onToggle={() => setOpenSection(openSection === 'Product Education' ? '' : 'Product Education')}>
+              <div className="flex flex-col gap-3">
+                {data.educationContent.map((edu, idx) => (
+                  <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-100 bg-slate-50">
+                     <h4 className="text-[13px] font-bold text-[#0B1E36]">{edu.title || 'Guide'}</h4>
+                     <p className="text-[12px] text-slate-600 leading-relaxed">{edu.description}</p>
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-        </div>
-
-        {/* Action Links */}
-        <div className="flex flex-col gap-3 mb-3">
-
-
-          {/* Ingredients */}
-          {data.ingredients && (
-            <button
-              onClick={() => navigate('/ingredients', { state: data })}
-              className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between active:scale-[0.98] transition-transform text-left"
-            >
-              <div className="flex items-center gap-3">
-                <FlaskConical size={20} className="text-[#105DE4]" strokeWidth={2} />
-                <div className="flex flex-col">
-                  <h3 className="text-[14px] font-bold text-slate-900">Ingredients</h3>
-                  <p className="text-[11px] text-slate-500 font-medium">What goes into this product</p>
-                </div>
-              </div>
-              <ChevronRight size={18} className="text-slate-400" />
-            </button>
+            </AccordionItem>
           )}
 
-          {/* Certifications & Lab Tests */}
-          {(data.certificates && data.certificates.length > 0) && (
-            <button
-              onClick={() => navigate('/certificates', { state: data })}
-              className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between active:scale-[0.98] transition-transform text-left"
-            >
-              <div className="flex items-center gap-3">
-                <Award size={20} className="text-[#105DE4]" strokeWidth={2} />
-                <div className="flex flex-col">
-                  <h3 className="text-[14px] font-bold text-slate-900">Certifications & Lab Tests</h3>
-                  <p className="text-[11px] text-slate-500 font-medium">View quality reports</p>
-                </div>
-              </div>
-              <ChevronRight size={18} className="text-slate-400" />
-            </button>
-          )}
-
-          {/* Product Education */}
-          {(data.educationContent && data.educationContent.length > 0) && (
-            <button
-              onClick={() => navigate('/product-education', { state: data })}
-              className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between active:scale-[0.98] transition-transform text-left"
-            >
-              <div className="flex items-center gap-3">
-                <BookOpen size={20} className="text-[#105DE4]" strokeWidth={2} />
-                <div className="flex flex-col">
-                  <h3 className="text-[14px] font-bold text-slate-900">Product Education</h3>
-                  <p className="text-[11px] text-slate-500 font-medium">Discover how to use this product</p>
-                </div>
-              </div>
-              <ChevronRight size={18} className="text-slate-400" />
-            </button>
-          )}
-
-          {/* Visit Website */}
+          {/* 6. Website */}
           {data.website && (
-            <button
-              onClick={() => window.open(data.website.startsWith('http') ? data.website : `https://${data.website}`, '_blank')}
-              className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between active:scale-[0.98] transition-transform text-left"
-            >
-              <div className="flex items-center gap-3">
-                <Globe size={20} className="text-[#105DE4]" strokeWidth={2} />
-                <div className="flex flex-col">
-                  <h3 className="text-[14px] font-bold text-slate-900">Visit Website</h3>
-                  <p className="text-[11px] text-slate-500 font-medium">Learn more about {data.brand || 'the brand'}</p>
-                </div>
+            <AccordionItem title="Website" subtitle="Visit our official store" icon={Globe} isOpen={openSection === 'Website'} onToggle={() => setOpenSection(openSection === 'Website' ? '' : 'Website')}>
+              <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100">
+                <span className="text-[13px] font-medium text-slate-700">{data.website}</span>
+                <a href={data.website.startsWith('http') ? data.website : `https://${data.website}`} target="_blank" rel="noreferrer" className="text-[#105DE4]">
+                  <ExternalLink size={18} />
+                </a>
               </div>
-              <ChevronRight size={18} className="text-slate-400" />
-            </button>
+            </AccordionItem>
           )}
 
-          {/* Description */}
-          {(data.productInfo || data.description) && (
-            <div className="bg-white rounded-[20px] shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 overflow-hidden">
-              <button
-                onClick={() => setOpenSection(openSection === 'description' ? '' : 'description')}
-                className="w-full flex items-center justify-between p-4 bg-white active:bg-slate-50 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <AlignLeft size={20} className="text-[#105DE4]" strokeWidth={2} />
-                  <div className="flex flex-col">
-                    <h3 className="text-[14px] font-bold text-slate-900 text-left">Description</h3>
-                    <p className="text-[11px] text-slate-500 font-medium">Read more about this product</p>
-                  </div>
-                </div>
-                <ChevronRight size={18} className={`text-slate-400 transition-transform duration-300 ${openSection === 'description' ? 'rotate-90' : ''}`} />
-              </button>
-              {openSection === 'description' && (
-                <div className="px-4 pb-4 animate-in slide-in-from-top-2 duration-200">
-                  <div className="pt-2 border-t border-slate-50">
-                    <p className="text-[13px] text-slate-700 font-medium leading-relaxed whitespace-pre-wrap">{data.productInfo || data.description}</p>
-                  </div>
-                </div>
-              )}
-            </div>
+          {/* 7. Additional Details */}
+          {data.additionalInfo && (
+            <AccordionItem title="Additional Details" subtitle="Manufacturing and other info" icon={FileText} isOpen={openSection === 'Additional Details'} onToggle={() => setOpenSection(openSection === 'Additional Details' ? '' : 'Additional Details')}>
+              <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">
+                {data.additionalInfo}
+              </p>
+            </AccordionItem>
           )}
 
-          {/* Customer Support */}
+          {/* 8. Customer Support */}
           {(data.customerCare || data.supportEmail) && (
-            <button
-              onClick={() => navigate('/consumer-support', { state: data })}
-              className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between active:scale-[0.98] transition-transform text-left"
-            >
-              <div className="flex items-center gap-3">
-                <HeadphonesIcon size={20} className="text-[#105DE4]" strokeWidth={2} />
-                <div className="flex flex-col">
-                  <h3 className="text-[14px] font-bold text-slate-900">Customer Support</h3>
-                  <p className="text-[11px] text-slate-500 font-medium">Get help or raise a query</p>
-                </div>
+            <AccordionItem title="Customer Support" subtitle="Get in touch with us" icon={HeadphonesIcon} isOpen={openSection === 'Customer Support'} onToggle={() => setOpenSection(openSection === 'Customer Support' ? '' : 'Customer Support')}>
+              <div className="flex flex-col gap-3">
+                {data.customerCare && (
+                  <a href={`tel:${data.customerCare.replace(/[^0-9]/g, '')}`} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-[#F8FAFC]">
+                     <div className="w-10 h-10 rounded-full bg-blue-100 text-[#105DE4] flex items-center justify-center shrink-0">
+                       <Phone size={18} />
+                     </div>
+                     <div>
+                       <h4 className="text-[13px] font-bold text-[#0B1E36]">Call Us</h4>
+                       <p className="text-[12px] text-slate-500 font-medium">{data.customerCare}</p>
+                     </div>
+                  </a>
+                )}
+                {data.supportEmail && (
+                  <a href={`mailto:${data.supportEmail}`} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-[#F8FAFC]">
+                     <div className="w-10 h-10 rounded-full bg-red-100 text-red-500 flex items-center justify-center shrink-0">
+                       <Mail size={18} />
+                     </div>
+                     <div>
+                       <h4 className="text-[13px] font-bold text-[#0B1E36]">Email Support</h4>
+                       <p className="text-[12px] text-slate-500 font-medium">{data.supportEmail}</p>
+                     </div>
+                  </a>
+                )}
               </div>
-              <ChevronRight size={18} className="text-slate-400" />
-            </button>
+            </AccordionItem>
           )}
         </div>
-
+        
         {/* Quick Actions (Re Order & Price Alert) */}
         <div className="flex gap-3">
           <button
@@ -428,7 +418,9 @@ const ProductPassport = () => {
                     state: {
                       ...rec,
                       productName: rec.title || rec.productName,
-                      productImage: rec.image || rec.productImage
+                      productImage: rec.image || rec.productImage,
+                      brand: data.brand || data.companyName,
+                      companyName: data.companyName || data.brand
                     }
                   })}
                   className="snap-start flex-shrink-0 w-[140px] bg-white rounded-[20px] p-3 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex flex-col cursor-pointer active:scale-95 transition-transform"

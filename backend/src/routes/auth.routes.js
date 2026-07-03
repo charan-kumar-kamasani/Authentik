@@ -52,14 +52,30 @@ router.get("/profile", protect, async (req, res) => {
 router.put("/profile", protect, async (req, res) => {
   try {
     const { name, ageGroup, dob, gender, country, state, city, profileImage, email } = req.body;
+    
+    let setFields = { name, ageGroup, dob, gender, country, state, city, profileImage };
+    let unsetFields = {};
+    
+    if (email && email.trim() !== "") {
+      setFields.email = email.trim();
+    } else if (email === "") {
+      unsetFields.email = 1;
+    }
+    
+    const updateQuery = { $set: setFields };
+    if (Object.keys(unsetFields).length > 0) {
+      updateQuery.$unset = unsetFields;
+    }
+
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
-      { $set: { name, ageGroup, dob, gender, country, state, city, profileImage, email } },
+      updateQuery,
       { new: true, runValidators: true }
     ).lean();
 
     res.json(updatedUser);
   } catch (error) {
+    console.error("Profile update error:", error);
     res.status(500).json({ error: "Failed to update profile" });
   }
 });

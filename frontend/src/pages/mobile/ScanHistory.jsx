@@ -106,7 +106,8 @@ export default function ScanHistory() {
               statusIcon,
               ribbonColor,
               fullData: item,
-              status: item.status
+              status: item.status,
+              alreadyReviewed: item.alreadyReviewed
             };
           });
           cachedHistory = mappedData;
@@ -167,12 +168,16 @@ export default function ScanHistory() {
         onClick={() => {
           const status = item.status || 'ORIGINAL';
           if (status === 'ORIGINAL') {
-            navigate('/product-passport', { state: item.fullData });
+            if (item.alreadyReviewed) {
+              navigate('/product-passport', { state: item.fullData });
+            } else {
+              navigate(`/result/${status}`, { state: item.fullData });
+            }
           } else {
             navigate(`/result/${status}`, { state: item.fullData });
           }
         }}
-        className="bg-white rounded-[20px] flex overflow-hidden cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#F1F5F9] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300 active:scale-[0.98] mb-3"
+        className="bg-white rounded-[20px] flex overflow-hidden cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-[#F1F5F9] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-all duration-300 active:scale-[0.98] mb-3 relative"
       >
         {/* Left Ribbon */}
         <div 
@@ -196,8 +201,8 @@ export default function ScanHistory() {
 
           {/* Text Content */}
           <div className="flex-1 min-w-0">
-            <h4 className="font-extrabold text-[15px] text-[#0F172A] leading-tight truncate">
-              {item.productName}
+            <h4 className="font-extrabold text-[15px] text-[#0F172A] leading-tight flex items-center gap-1.5 min-w-0">
+              <span className="truncate">{item.productName}</span>
             </h4>
             <p className="text-[12px] text-[#64748B] truncate mt-0.5 font-medium">{item.brandName || "Unknown Brand"}</p>
             <div className="flex items-center gap-1.5 text-[#94A3B8] text-[11px] font-semibold mt-1.5">
@@ -209,6 +214,10 @@ export default function ScanHistory() {
           {/* Chevron */}
           <ChevronRight className="w-5 h-5 text-[#CBD5E1] flex-shrink-0" strokeWidth={2.5} />
         </div>
+        {/* Pending Review Indicator */}
+        {item.status === "ORIGINAL" && !item.alreadyReviewed && (
+          <span className="absolute bottom-3 right-3 w-2.5 h-2.5 rounded-full bg-[#105DE4]" title="Review pending"></span>
+        )}
       </div>
     );
   }
