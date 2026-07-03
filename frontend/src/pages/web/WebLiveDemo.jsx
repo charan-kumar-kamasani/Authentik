@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import WebHeader from "../../components/WebHeader";
@@ -7,8 +7,9 @@ import ContactFormModal from "../../components/ContactFormModal";
 import {
     CheckCircle2, AlertTriangle, ShieldAlert, ArrowRight,
     ScanLine, Smartphone, Link, TrendingUp, Users, RefreshCw,
-    ChevronLeft, MapPin, Activity, ShieldCheck, Lock, Globe2, Database, Sparkles
+    ChevronLeft, MapPin, Activity
 } from 'lucide-react';
+
 import AnimatedCTA from '../../components/AnimatedCTA';
 
 // Demo QR Images
@@ -19,20 +20,19 @@ import liveDemoBanner from '../../assets/banners/live_emo.jpg';
 import mobileLiveDemoBanner from '../../assets/banners/Mobile banner authentiks/Live Demo.jpg';
 
 const Glow = ({ color, className }) => (
-    <div className={`absolute blur-[120px] pointer-events-none rounded-full ${color} ${className}`} />
+    <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
 );
 
-const FeatureTag = ({ children, className = '' }) => (
-    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full border border-white/10 text-[10px] font-black uppercase tracking-[0.25em] backdrop-blur-md ${className}`}>
+const SectionTag = ({ children, className = '' }) => (
+    <div className={`inline-flex items-center gap-2 px-5 py-2 rounded-full border text-[11px] font-black uppercase tracking-[0.25em] mb-6 ${className}`}>
         {children}
     </div>
 );
 
+// Map Focus Component
 function MapFocus({ center, zoom }) {
     const map = useMap();
-    useEffect(() => {
-        map.setView(center, zoom);
-    }, [center, zoom, map]);
+    map.setView(center, zoom);
     return null;
 }
 
@@ -60,59 +60,41 @@ export default function WebLiveDemo() {
     }, [selectedMapFilter]);
 
     return (
-        <div className="min-h-screen bg-[#030712] text-slate-200 selection:bg-indigo-500/30 overflow-x-hidden flex flex-col font-sans">
+        <div className="min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden flex flex-col">
             <WebHeader />
 
             {/* ═══════════════ HERO SECTION ═══════════════ */}
-            <section className="relative pt-28 pb-20 md:pt-40 md:pb-32 px-4 md:px-6 flex items-center justify-center overflow-hidden border-b border-white/5">
-                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 mix-blend-overlay"></div>
-                <div className="absolute inset-0 bg-gradient-to-b from-[#030712] via-transparent to-[#030712] z-0"></div>
-                <Glow color="bg-indigo-600/30 w-[600px] h-[600px]" className="-top-40 -left-40" />
-                <Glow color="bg-cyan-600/20 w-[500px] h-[500px]" className="bottom-0 right-0" />
-                
-                <div className="container mx-auto max-w-7xl relative z-10 flex flex-col items-center">
-                    <FeatureTag className="bg-white/5 text-white/90 border-white/10 cursor-default shadow-xl mb-8">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_10px_rgba(52,211,153,0.8)]" />
-                        Live Interactive Demo
-                    </FeatureTag>
+            <section className="relative pt-8 md:pt-12 px-4 md:px-6 md:min-h-[85vh] flex items-center overflow-hidden">
+                <Glow color="bg-indigo-600" className="-top-32 -left-32 opacity-20" />
+                <Glow color="bg-cyan-600" className="top-1/2 -right-32 opacity-15" />
 
-                    <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-black text-white text-center mb-6 tracking-tighter leading-[1.05]">
-                        Experience <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-cyan-400 to-emerald-400">Intelligent</span> <br className="hidden md:block" /> Authentication.
-                    </h1>
-                    
-                    <p className="text-lg md:text-xl text-slate-400 max-w-2xl text-center mb-12 font-medium leading-relaxed">
-                        Scan the QR codes below to witness our platform instantly differentiate between genuine products, duplicates, and counterfeits in real-time.
-                    </p>
-
-                    {/* Desktop Banner inside a sleek frame */}
+                <div className="container mx-auto text-center relative z-10 ">
+                    {/* Desktop Banner */}
                     <div
                         onClick={() => setContactOpen(true)}
-                        className="hidden md:flex relative w-full max-w-5xl mx-auto rounded-[2.5rem] p-3 bg-white/[0.02] border border-white/10 shadow-[0_0_50px_rgba(99,102,241,0.1)] group cursor-pointer hover:bg-white/[0.04] transition-all duration-500 hover:shadow-[0_0_80px_rgba(99,102,241,0.2)] hover:-translate-y-2"
+                        className="hidden md:block hero-slide-enter relative w-[88%] mx-auto mb-10 rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
                     >
-                        <div className="relative rounded-[2rem] overflow-hidden bg-slate-900 w-full shadow-2xl border border-white/5">
+                        <div className="relative w-full" style={{ aspectRatio: '1672/800' }}>
                             <img
                                 src={liveDemoBanner}
                                 alt="Live Demo banner"
-                                className="w-full h-auto object-cover transform group-hover:scale-[1.03] transition-transform duration-700 ease-out"
+                                className="absolute inset-0 w-full h-full object-contain transition-all duration-1000 ease-in-out group-hover:scale-[1.01]"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end justify-center pb-12 opacity-0 group-hover:opacity-100 transition-all duration-500">
-                                <span className="bg-white text-black px-8 py-4 rounded-full font-black tracking-widest uppercase text-xs flex items-center gap-3 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
-                                    Request Custom Demo <ArrowRight size={16} />
-                                </span>
-                            </div>
                         </div>
+                        <div className="absolute inset-0 pointer-events-none rounded-[2rem] ring-1 ring-inset ring-white/10 z-20" />
+                        <div className="absolute inset-0 bg-white/0 group-hover:bg-white-[0.02] transition-colors z-20 pointer-events-none" />
                     </div>
 
                     {/* Mobile Banner & CTA */}
-                    <div className="flex flex-col md:hidden relative w-full max-w-md mx-auto">
-                        <div className="relative rounded-[2rem] overflow-hidden p-1.5 bg-white/[0.03] border border-white/10 shadow-2xl mb-8">
-                            <img 
-                                src={mobileLiveDemoBanner} 
-                                alt="Live Demo Page banner" 
-                                className="w-full h-auto rounded-[1.5rem]"
+                    <div className="block md:hidden hero-slide-enter relative w-[94%] mx-auto mb-8">
+                        <div className="relative w-full rounded-2xl overflow-hidden shadow-xl border border-white/10 mb-5">
+                            <img
+                                src={mobileLiveDemoBanner}
+                                alt="Live Demo Page banner"
+                                className="w-full h-auto object-contain"
                             />
                         </div>
-                        <AnimatedCTA 
+                        <AnimatedCTA
                             onClick={() => setContactOpen(true)}
                             className="w-full mx-auto"
                         />
@@ -121,112 +103,95 @@ export default function WebLiveDemo() {
             </section>
 
             {/* ═══════════════ QR INTERACTIVE SHOWCASE ═══════════════ */}
-            <section className="py-24 px-6 relative z-10 border-b border-white/5 bg-[#050B1A]">
+            <section className="py-12 px-6 relative z-10">
                 <div className="container mx-auto max-w-7xl">
-                    <div className="text-center mb-16">
-                        <FeatureTag className="mb-4 bg-indigo-500/10 text-indigo-400 border-indigo-500/20">The Showcase</FeatureTag>
-                        <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter mb-4">Try It Yourself</h2>
-                        <p className="text-slate-400 max-w-2xl mx-auto">Use your smartphone camera to scan these codes. Experience the exact journey your customers will have.</p>
-                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6 lg:gap-10 items-stretch">
                         {/* 1. GENUINE PRODUCT */}
-                        <div className="rounded-[2.5rem] overflow-hidden bg-white/[0.02] border border-emerald-500/20 relative flex flex-col group hover:-translate-y-2 transition-all duration-500 hover:shadow-[0_20px_60px_rgba(16,185,129,0.15)] hover:bg-white/[0.04]">
-                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                            
-                            <div className="h-80 overflow-hidden bg-[#020617] flex items-center justify-center relative p-6">
-                                <div className="absolute inset-0 bg-emerald-500/5 group-hover:bg-emerald-500/10 transition-colors duration-500" />
-                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.15)_0%,transparent_70%)]" />
-                                
+                        <div className="glass-effect rounded-[2.5rem] overflow-hidden border border-emerald-500/30 relative flex flex-col group hover:-translate-y-2 transition-all duration-300 bg-white/5 ring-1 ring-emerald-500/10 hover:ring-emerald-500/40">
+                            <div className="h-72 overflow-hidden bg-slate-950 flex items-center justify-center relative p-2">
+                                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-50" />
                                 <img
                                     src={authenticImg}
                                     alt="Genuine QR"
-                                    className="max-w-full max-h-full object-contain rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-emerald-500/20 group-hover:scale-105 transition-transform duration-700 relative z-10"
+                                    className="max-w-[90%] max-h-[90%] object-contain rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 group-hover:scale-110 transition-transform duration-700"
                                 />
-                                <div className="absolute top-6 left-6 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 backdrop-blur-xl z-20 flex items-center gap-1.5">
-                                    <ShieldCheck size={12} /> Genuine
+                                <div className="absolute top-6 left-6 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-2xl bg-emerald-500/10 text-emerald-400 border border-white/10 backdrop-blur-xl z-20">
+                                    Genuine
                                 </div>
                             </div>
 
-                            <div className="p-8 flex flex-col flex-grow relative z-10 border-t border-white/5">
-                                <h3 className="text-2xl font-black text-white mb-3 tracking-tight group-hover:text-emerald-400 transition-colors">Genuine Product</h3>
-                                <p className="text-slate-400 font-medium text-sm leading-relaxed mb-8 flex-grow">
-                                    Experience seamless verification. See product specs, manufacturing details, and the customer reward capture flow.
+                            <div className="p-10 flex flex-col flex-grow">
+                                <h3 className="text-xl font-black text-white mb-4 leading-tight">Genuine Product</h3>
+                                <p className="text-gray-400 font-bold text-sm leading-relaxed mb-6 flex-grow">
+                                    Experience the seamless verification, detailed product specs, and customer reward capture flow.
                                 </p>
-                                
-                                <div className="space-y-2 pt-6 border-t border-white/5">
-                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Expected Outcome</p>
-                                    <div className="flex items-center gap-2 text-sm font-bold text-slate-200">
-                                        <CheckCircle2 size={16} className="text-emerald-400" />
-                                        Verified Authentic
+
+                                <div className="space-y-3 pt-6 border-t border-white/5">
+                                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Status:</p>
+                                    <div className="flex items-center gap-2 text-xs font-bold text-gray-300">
+                                        <CheckCircle2 size={14} className="text-emerald-400" />
+                                        First-time Scan
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* 2. DUPLICATE PRODUCT */}
-                        <div className="rounded-[2.5rem] overflow-hidden bg-white/[0.02] border border-amber-500/20 relative flex flex-col group hover:-translate-y-2 transition-all duration-500 hover:shadow-[0_20px_60px_rgba(245,158,11,0.15)] hover:bg-white/[0.04]">
-                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-amber-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                            
-                            <div className="h-80 overflow-hidden bg-[#020617] flex items-center justify-center relative p-6">
-                                <div className="absolute inset-0 bg-amber-500/5 group-hover:bg-amber-500/10 transition-colors duration-500" />
-                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(245,158,11,0.15)_0%,transparent_70%)]" />
-                                
+                        <div className="glass-effect rounded-[2.5rem] overflow-hidden border border-amber-500/30 relative flex flex-col group hover:-translate-y-2 transition-all duration-300 bg-white/5 ring-1 ring-amber-500/10 hover:ring-amber-500/40">
+                            <div className="h-72 overflow-hidden bg-slate-950 flex items-center justify-center relative p-2">
+                                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-50" />
                                 <img
                                     src={alertImg}
                                     alt="Duplicate QR"
-                                    className="max-w-full max-h-full object-contain rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-amber-500/20 group-hover:scale-105 transition-transform duration-700 relative z-10"
+                                    className="max-w-[90%] max-h-[90%] object-contain rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 group-hover:scale-110 transition-transform duration-700"
                                 />
-                                <div className="absolute top-6 left-6 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl bg-amber-500/20 text-amber-300 border border-amber-500/30 backdrop-blur-xl z-20 flex items-center gap-1.5">
-                                    <AlertTriangle size={12} /> Duplicate
+                                <div className="absolute top-6 left-6 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-2xl bg-amber-500/10 text-amber-400 border border-white/10 backdrop-blur-xl z-20">
+                                    Duplicate
                                 </div>
                             </div>
 
-                            <div className="p-8 flex flex-col flex-grow relative z-10 border-t border-white/5">
-                                <h3 className="text-2xl font-black text-white mb-3 tracking-tight group-hover:text-amber-400 transition-colors">Duplicate Scan</h3>
-                                <p className="text-slate-400 font-medium text-sm leading-relaxed mb-8 flex-grow">
-                                    Watch how our system instantly alerts the consumer if a QR code has been scanned previously by someone else.
+                            <div className="p-10 flex flex-col flex-grow">
+                                <h3 className="text-xl font-black text-white mb-4 leading-tight">Duplicate Scan</h3>
+                                <p className="text-gray-400 font-bold text-sm leading-relaxed mb-6 flex-grow">
+                                    See how we instantly warn consumers if a QR code has already been scanned previously.
                                 </p>
-                                
-                                <div className="space-y-2 pt-6 border-t border-white/5">
-                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Expected Outcome</p>
-                                    <div className="flex items-center gap-2 text-sm font-bold text-slate-200">
-                                        <AlertTriangle size={16} className="text-amber-400" />
-                                        Warning: Already Scanned
+
+                                <div className="space-y-3 pt-6 border-t border-white/5">
+                                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Status:</p>
+                                    <div className="flex items-center gap-2 text-xs font-bold text-gray-300">
+                                        <AlertTriangle size={14} className="text-amber-400" />
+                                        Already Verified
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* 3. FAKE PRODUCT */}
-                        <div className="rounded-[2.5rem] overflow-hidden bg-white/[0.02] border border-rose-500/20 relative flex flex-col group hover:-translate-y-2 transition-all duration-500 hover:shadow-[0_20px_60px_rgba(244,63,94,0.15)] hover:bg-white/[0.04]">
-                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-rose-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                            
-                            <div className="h-80 overflow-hidden bg-[#020617] flex items-center justify-center relative p-6">
-                                <div className="absolute inset-0 bg-rose-500/5 group-hover:bg-rose-500/10 transition-colors duration-500" />
-                                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(244,63,94,0.15)_0%,transparent_70%)]" />
-                                
+                        <div className="glass-effect rounded-[2.5rem] overflow-hidden border border-red-500/30 relative flex flex-col group hover:-translate-y-2 transition-all duration-300 bg-white/5 ring-1 ring-red-500/10 hover:ring-red-500/40">
+                            <div className="h-72 overflow-hidden bg-slate-950 flex items-center justify-center relative p-2">
+                                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-50" />
                                 <img
                                     src={fraudImg}
                                     alt="Fake QR"
-                                    className="max-w-full max-h-full object-contain rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-rose-500/20 group-hover:scale-105 transition-transform duration-700 relative z-10"
+                                    className="max-w-[90%] max-h-[90%] object-contain rounded-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 group-hover:scale-110 transition-transform duration-700"
                                 />
-                                <div className="absolute top-6 left-6 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl bg-rose-500/20 text-rose-300 border border-rose-500/30 backdrop-blur-xl z-20 flex items-center gap-1.5">
-                                    <ShieldAlert size={12} /> Counterfeit
+                                <div className="absolute top-6 left-6 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-2xl bg-red-500/10 text-red-400 border border-white/10 backdrop-blur-xl z-20">
+                                    Fake
                                 </div>
                             </div>
 
-                            <div className="p-8 flex flex-col flex-grow relative z-10 border-t border-white/5">
-                                <h3 className="text-2xl font-black text-white mb-3 tracking-tight group-hover:text-rose-400 transition-colors">Fake Product</h3>
-                                <p className="text-slate-400 font-medium text-sm leading-relaxed mb-8 flex-grow">
-                                    Scan this unauthorized code to see how we block access and flag the attempt as a potential counterfeit operation.
+                            <div className="p-10 flex flex-col flex-grow">
+                                <h3 className="text-xl font-black text-white mb-4 leading-tight">Fake Product</h3>
+                                <p className="text-gray-400 font-bold text-sm leading-relaxed mb-6 flex-grow">
+                                    Instruction: Scan this QR code, then use the Web Scanner on the homepage to detect that it's unrecognized.
                                 </p>
-                                
-                                <div className="space-y-2 pt-6 border-t border-white/5">
-                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Expected Outcome</p>
-                                    <div className="flex items-center gap-2 text-sm font-bold text-slate-200">
-                                        <ShieldAlert size={16} className="text-rose-400" />
-                                        Unrecognized QR
+
+                                <div className="space-y-3 pt-6 border-t border-white/5">
+                                    <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-1">Status:</p>
+                                    <div className="flex items-center gap-2 text-xs font-bold text-gray-300">
+                                        <ShieldAlert size={14} className="text-red-400" />
+                                        Non-Authentiks QR
                                     </div>
                                 </div>
                             </div>
@@ -236,69 +201,59 @@ export default function WebLiveDemo() {
             </section>
 
             {/* ═══════════════ LIVE GLOBAL PULSE (MAP SECTION) ═══════════════ */}
-            <section className="py-24 px-6 relative overflow-hidden bg-[#030712]">
-                <Glow color="bg-cyan-600/10 w-[800px] h-[800px]" className="top-1/4 -right-64" />
-                <Glow color="bg-indigo-600/10 w-[800px] h-[800px]" className="bottom-1/4 -left-64" />
+            <section className="py-24 px-6 bg-slate-950/50 border-y border-white/5 relative overflow-hidden">
+                <Glow color="bg-blue-600" className="top-1/4 -right-32 opacity-10" />
+                <Glow color="bg-indigo-600" className="bottom-1/4 -left-32 opacity-10" />
 
-                <div className="container mx-auto max-w-7xl relative z-10">
-                    <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
-                        <div>
-                            <FeatureTag className="bg-cyan-500/10 text-cyan-400 border-cyan-500/20 mb-4">
-                                <Globe2 size={12} /> Live Pulse
-                            </FeatureTag>
-                            <h2 className="text-4xl md:text-5xl font-black text-white tracking-tighter leading-[1.05]">
-                                Real-Time Intelligence
-                            </h2>
-                        </div>
-                        <p className="text-slate-400 font-medium max-w-md text-sm md:text-base md:text-right">
-                            Monitor global scanning activity as it happens. Our telemetry instantly flags anomalies, pinpointing potential supply chain risks.
+                <div className="container mx-auto max-w-7xl">
+                    <div className="text-center mb-16">
+                        <SectionTag className="bg-blue-500/10 border-blue-500/20 text-blue-400">Live Global Pulse</SectionTag>
+                        <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tighter leading-[1.05]">
+                            Real-Time Scan Intelligence
+                        </h2>
+                        <p className="text-gray-400 font-bold max-w-2xl mx-auto text-lg">
+                            Track every interaction across the globe. See how Authentiks detects and flags activity instantly.
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-[700px]">
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                         {/* Map Area */}
-                        <div className="lg:col-span-9 bg-white/[0.02] rounded-[2.5rem] border border-white/10 relative overflow-hidden flex flex-col group shadow-2xl">
-                            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500/50 via-indigo-500/50 to-purple-500/50"></div>
-                            
+                        <div className="lg:col-span-3 glass-effect rounded-[3rem] p-4 border border-white/10 relative min-h-[550px] overflow-hidden flex flex-col">
                             {/* Map Container */}
-                            <div className="flex-1 relative bg-slate-900/50 z-0">
-                                <MapContainer 
-                                    center={[20.5937, 78.9629]} 
-                                    zoom={5} 
-                                    style={{ height: '100%', width: '100%', background: '#030712' }} 
+                            <div className="flex-1 relative rounded-[2.5rem] overflow-hidden border border-white/5 bg-slate-900/50">
+                                <MapContainer
+                                    center={[20.5937, 78.9629]}
+                                    zoom={5}
+                                    style={{ height: '100%', width: '100%', background: '#020617' }}
                                     scrollWheelZoom={false}
                                     zoomControl={false}
                                 >
                                     <TileLayer
                                         url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                                        attribution='&copy; CARTO'
+                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
                                     />
                                     <MapFocus center={[20.5937, 78.9629]} zoom={5} />
-                                    
+
                                     {filteredMarkers.map((marker, i) => (
                                         <CircleMarker
                                             key={i}
                                             center={marker.coords}
                                             radius={marker.radius}
-                                            pathOptions={{ 
-                                                fillColor: marker.color, 
-                                                color: marker.color, 
-                                                weight: 2, 
-                                                fillOpacity: 0.4,
-                                                opacity: 0.8
+                                            pathOptions={{
+                                                fillColor: marker.color,
+                                                color: 'white',
+                                                weight: 2,
+                                                fillOpacity: 0.8
                                             }}
                                         >
-                                            <Popup className="custom-popup border-0">
-                                                <div className="bg-[#0f172a] border border-white/10 rounded-xl p-3 min-w-[160px] shadow-2xl backdrop-blur-xl">
-                                                    <div className="flex items-center gap-2 mb-2 pb-2 border-b border-white/10">
-                                                        <div className="w-2 h-2 rounded-full shadow-[0_0_8px_currentColor]" style={{ backgroundColor: marker.color, color: marker.color }} />
-                                                        <span className="text-[10px] font-black uppercase text-white tracking-widest">{marker.type}</span>
+                                            <Popup className="custom-popup">
+                                                <div className="p-2 min-w-[150px]">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: marker.color }} />
+                                                        <span className="text-[10px] font-black uppercase text-slate-500">{marker.type}</span>
                                                     </div>
-                                                    <h4 className="text-sm font-bold text-white mb-1">{marker.location}</h4>
-                                                    <p className="text-[11px] text-slate-400 font-medium flex items-center gap-1">
-                                                        <Smartphone size={10} /> {marker.device}
-                                                    </p>
-                                                    <p className="text-[10px] text-slate-500 mt-2">{marker.time}</p>
+                                                    <h4 className="text-sm font-black text-slate-800">{marker.location}</h4>
+                                                    <p className="text-[10px] text-slate-500 font-bold mt-1">{marker.time} • {marker.device}</p>
                                                 </div>
                                             </Popup>
                                         </CircleMarker>
@@ -306,89 +261,75 @@ export default function WebLiveDemo() {
                                 </MapContainer>
 
                                 {/* Legend Overlay */}
-                                <div className="absolute bottom-6 left-6 right-6 md:right-auto z-[1000] flex flex-wrap items-center gap-3 md:gap-6 bg-slate-950/80 backdrop-blur-xl px-6 py-4 rounded-2xl border border-white/10 shadow-2xl">
+                                <div className="absolute bottom-6 left-6 z-[1000] flex items-center gap-6 bg-slate-950/80 backdrop-blur-xl px-6 py-4 rounded-2xl border border-white/10 shadow-2xl">
                                     {[
                                         { id: 'AUTHENTIC', label: 'Authentic', color: 'bg-emerald-500' },
-                                        { id: 'SUSPICIOUS', label: 'Suspicious', color: 'bg-rose-500' },
+                                        { id: 'SUSPICIOUS', label: 'Suspicious', color: 'bg-red-500' },
                                         { id: 'DUPLICATE', label: 'Duplicate', color: 'bg-amber-500' }
                                     ].map(item => (
-                                        <button 
+                                        <button
                                             key={item.id}
                                             onClick={() => setSelectedMapFilter(prev => prev === item.id ? 'ALL' : item.id)}
                                             className={`flex items-center gap-2 transition-all hover:scale-105 active:scale-95 ${selectedMapFilter !== 'ALL' && selectedMapFilter !== item.id ? 'opacity-30' : 'opacity-100'}`}
                                         >
-                                            <div className={`w-2.5 h-2.5 rounded-full ${item.color} shadow-[0_0_10px_currentColor]`} style={{ color: item.color === 'bg-emerald-500' ? '#10b981' : item.color === 'bg-rose-500' ? '#f43f5e' : '#f59e0b' }} />
-                                            <span className={`text-[10px] md:text-[11px] font-black uppercase tracking-widest ${selectedMapFilter === item.id ? 'text-white' : 'text-slate-300'}`}>
+                                            <div className={`w-3 h-3 rounded-full ${item.color} shadow-[0_0_8px_rgba(255,255,255,0.2)]`} />
+                                            <span className={`text-[11px] font-black uppercase tracking-wider ${selectedMapFilter === item.id ? 'text-white' : 'text-white/80'}`}>
                                                 {item.label}
                                             </span>
                                         </button>
                                     ))}
-                                    <div className="hidden md:block border-l border-white/10 h-4 mx-2" />
-                                    <button 
+                                    <div className="hidden sm:block border-l border-white/10 h-4 mx-2" />
+                                    <button
                                         onClick={() => setSelectedMapFilter('ALL')}
-                                        className={`text-[10px] font-bold uppercase tracking-widest transition-colors ml-auto md:ml-0 ${selectedMapFilter === 'ALL' ? 'text-cyan-400' : 'text-slate-500 hover:text-slate-300'}`}
+                                        className={`text-[10px] font-bold uppercase transition-colors ${selectedMapFilter === 'ALL' ? 'text-blue-400' : 'text-white/40 hover:text-white/60'}`}
                                     >
-                                        Reset
+                                        Show All
                                     </button>
                                 </div>
                             </div>
                         </div>
 
                         {/* Sidebar */}
-                        <div className="lg:col-span-3 bg-white/[0.02] rounded-[2.5rem] border border-white/10 p-6 flex flex-col gap-6 h-full overflow-hidden relative">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-[50px] rounded-full"></div>
-                            
+                        <div className="glass-effect rounded-[3rem] p-8 border border-white/10 flex flex-col gap-8 h-full">
                             <div>
-                                <div className="flex items-center justify-between mb-6">
-                                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                                        <Activity size={14} className="text-cyan-400" /> Live Feed
-                                    </h3>
-                                    <span className="flex h-2 w-2 relative">
-                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                                    </span>
-                                </div>
-
-                                <div className="space-y-4 overflow-y-auto pr-2 custom-scrollbar max-h-[300px]">
+                                <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                                    <Activity size={14} className="text-blue-400" /> Distributor Analytics
+                                </h3>
+                                <div className="space-y-6">
                                     {[
-                                        { l: 'Mumbai', s: 'Verified', d: 'iPhone 15', t: 'Just now', type: 'success' },
-                                        { l: 'Delhi', s: 'Risk Flagged', d: 'Android', t: '5m ago', type: 'danger' },
-                                        { l: 'Bangalore', s: 'Duplicate', d: 'iPhone 13', t: '12m ago', type: 'warning' },
-                                        { l: 'Hyderabad', s: 'Verified', d: 'Pixel 8', t: '15m ago', type: 'success' },
-                                        { l: 'Kolkata', s: 'Verified', d: 'Samsung', t: '20m ago', type: 'success' }
-                                    ].map((event, i) => (
-                                        <div key={i} className="flex flex-col gap-1 p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] transition-colors">
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-xs font-bold text-white flex items-center gap-2">
-                                                    <div className={`w-1.5 h-1.5 rounded-full ${event.type === 'danger' ? 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.8)]' : event.type === 'warning' ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                                                    {event.l}
-                                                </span>
-                                                <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">{event.t}</span>
+                                        { l: 'Mumbai', s: 'Healthy', r: 'low' },
+                                        { l: 'Delhi', s: 'Risk Detected', r: 'high' },
+                                        { l: 'Bangalore', s: 'Warning', r: 'medium' },
+                                        { l: 'Hyderabad', s: 'Healthy', r: 'low' }
+                                    ].map((loc, i) => (
+                                        <div key={i} className="flex items-center justify-between group cursor-default">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-white/20 group-hover:bg-blue-400 transition-colors" />
+                                                <span className="text-sm font-black text-white/90">{loc.l}</span>
                                             </div>
-                                            <div className="flex items-center justify-between pl-3.5">
-                                                <span className={`text-[10px] font-medium ${event.type === 'danger' ? 'text-rose-400' : event.type === 'warning' ? 'text-amber-400' : 'text-emerald-400'}`}>{event.s}</span>
-                                                <span className="text-[10px] text-slate-500">{event.d}</span>
-                                            </div>
+                                            <div className={`w-2 h-2 rounded-full ${loc.r === 'high' ? 'bg-red-500 animate-pulse shadow-[0_0_10px_rgba(239,68,68,0.5)]' : loc.r === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'}`} />
                                         </div>
                                     ))}
                                 </div>
                             </div>
 
-                            <div className="mt-auto pt-6 border-t border-white/5">
-                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Network Status</h3>
-                                <div className="bg-slate-900/50 rounded-xl p-4 border border-white/5">
-                                    <div className="flex justify-between items-center mb-2">
-                                        <span className="text-xs text-slate-400 font-medium">System Health</span>
-                                        <span className="text-xs text-emerald-400 font-bold">99.9%</span>
-                                    </div>
-                                    <div className="w-full bg-slate-800 rounded-full h-1.5 mb-4">
-                                        <div className="bg-emerald-500 h-1.5 rounded-full" style={{ width: '99%' }}></div>
-                                    </div>
-                                    
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-xs text-slate-400 font-medium">Global Scans (24h)</span>
-                                        <span className="text-xs text-white font-bold tabular-nums">14,293</span>
-                                    </div>
+                            <div className="mt-auto pt-8 border-t border-white/5">
+                                <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mb-4">Quick Filters</h3>
+                                <div className="grid grid-cols-1 gap-2">
+                                    {[
+                                        { id: 'ALL', label: 'All Activity', color: 'bg-white/5' },
+                                        { id: 'AUTHENTIC', label: 'Only Authentic', color: 'bg-emerald-500/10 text-emerald-400' },
+                                        { id: 'SUSPICIOUS', label: 'Only Suspicious', color: 'bg-red-500/10 text-red-400' },
+                                        { id: 'DUPLICATE', label: 'Only Duplicate', color: 'bg-amber-500/10 text-amber-400' }
+                                    ].map(f => (
+                                        <button
+                                            key={f.id}
+                                            onClick={() => setSelectedMapFilter(f.id)}
+                                            className={`px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest text-left transition-all border ${selectedMapFilter === f.id ? 'border-white/20 bg-white/10 text-white' : `border-transparent ${f.color} opacity-60 hover:opacity-100`}`}
+                                        >
+                                            {f.label}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
                         </div>
@@ -397,40 +338,32 @@ export default function WebLiveDemo() {
             </section>
 
             {/* ═══════════════ EXPERIENCE BREAKDOWN ═══════════════ */}
-            <section className="py-24 px-6 border-y border-white/5 bg-[#050B1A] relative overflow-hidden">
-                <Glow color="bg-purple-600/10 w-[800px] h-[800px]" className="top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-                
-                <div className="container mx-auto max-w-7xl relative z-10">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-                        
-                        {/* Text Content */}
+            <section className="py-24 px-6 border-y border-white/5 bg-[#04081c]">
+                <div className="container mx-auto max-w-6xl">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                         <div>
-                            <FeatureTag className="bg-purple-500/10 text-purple-400 border-purple-500/20 mb-6">
-                                <Sparkles size={12} /> The Anatomy
-                            </FeatureTag>
-                            
-                            <h2 className="text-4xl md:text-5xl font-black text-white tracking-tighter leading-[1.05] mb-6">
-                                The Post-Scan <br /> <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">Experience</span>
+                            <SectionTag className="bg-indigo-500/10 border-indigo-500/20 text-indigo-400">The Anatomy</SectionTag>
+                            <h2 className="text-3xl md:text-5xl font-black text-white tracking-tighter leading-[1.05] mb-6">
+                                What Happens Post-Scan?
                             </h2>
-                            
-                            <p className="text-slate-400 font-medium text-lg mb-10 leading-relaxed">
-                                We don't just verify products; we transform a simple scan into a comprehensive, brand-building interaction that captures valuable consumer data.
+                            <p className="text-gray-400 font-bold mb-10 text-lg">
+                                We transform a simple verification moment into a comprehensive brand interaction.
                             </p>
 
-                            <div className="space-y-4">
+                            <div className="space-y-6">
                                 {[
-                                    { icon: ShieldCheck, title: "Definitive Proof", desc: "Consumers see instant, cryptographically backed proof of authenticity with dynamic visuals that cannot be mocked.", color: "text-emerald-400", bg: "bg-emerald-500/10" },
-                                    { icon: Database, title: "Rich Data Fetching", desc: "Securely retrieve batch details, manufacturing dates, and specific attributes directly from your ERP via our ledger.", color: "text-blue-400", bg: "bg-blue-500/10" },
-                                    { icon: Users, title: "Loyalty Integration", desc: "Present warranty registration or exclusive loyalty coupons post-verification to capture valuable zero-party data.", color: "text-purple-400", bg: "bg-purple-500/10" },
-                                    { icon: Activity, title: "Instant Telemetry", desc: "Every scan beams location, device type, and timestamp back to your dashboard for supply chain visibility.", color: "text-amber-400", bg: "bg-amber-500/10" }
+                                    { icon: CheckCircle2, title: "Instant Trust", desc: "Customer sees definitive proof of authenticity with dynamic visual cues that cannot be screen-recorded or mocked.", color: "text-emerald-400", bg: "bg-emerald-500/10" },
+                                    { icon: Link, title: "Rich Data Extraction", desc: "We securely fetch batch details, manufacturing dates, and pricing directly from your ERP via our secure ledger.", color: "text-blue-400", bg: "bg-blue-500/10" },
+                                    { icon: Users, title: "Consumer Bonding", desc: "Post-verification, the user is presented with warranty registration or loyalty coupons, capturing their PII data for you.", color: "text-purple-400", bg: "bg-purple-500/10" },
+                                    { icon: TrendingUp, title: "Real-time Telemetry", desc: "The scan location, device type, and timestamp are instantly beamed to your Admin Dashboard heatmaps.", color: "text-orange-400", bg: "bg-orange-500/10" }
                                 ].map((feature, i) => (
-                                    <div key={i} className="flex gap-5 p-5 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.06] transition-all duration-300 hover:scale-[1.02] group">
-                                        <div className={`shrink-0 w-12 h-12 rounded-2xl flex items-center justify-center ${feature.bg} ${feature.color} group-hover:scale-110 transition-transform duration-300`}>
-                                            <feature.icon size={22} strokeWidth={2.5} />
+                                    <div key={i} className="flex gap-4 p-5 rounded-2xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors">
+                                        <div className={`mt-1 shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ${feature.bg} ${feature.color}`}>
+                                            <feature.icon size={20} />
                                         </div>
                                         <div>
-                                            <h4 className="text-white font-bold text-base mb-1">{feature.title}</h4>
-                                            <p className="text-slate-400 font-medium text-sm leading-relaxed">{feature.desc}</p>
+                                            <h4 className="text-white font-black text-lg mb-1">{feature.title}</h4>
+                                            <p className="text-gray-400 font-medium text-sm leading-relaxed">{feature.desc}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -438,87 +371,125 @@ export default function WebLiveDemo() {
                         </div>
 
                         {/* MOCKUP UI */}
-                        <div className="relative mx-auto w-full max-w-sm perspective-1000">
-                            {/* Decorative background blur */}
-                            <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/40 to-purple-500/40 blur-[80px] rounded-[3rem] transform scale-90" />
-                            
-                            {/* Device Frame */}
-                            <div className="bg-[#0f172a] rounded-[3rem] border-[8px] border-[#1e293b] overflow-hidden relative shadow-[0_20px_80px_rgba(0,0,0,0.8)] z-10 h-[700px] flex flex-col transform md:rotate-y-[-10deg] md:rotate-x-[5deg] transition-transform duration-700 hover:rotate-0">
-                                
+                        <div className="relative mx-auto w-full max-w-md">
+                            <div className="absolute inset-0 bg-blue-500/20 blur-[100px] rounded-full" />
+                            <div className="bg-[#0f172a] rounded-[2.5rem] border-[6px] border-[#1e293b] overflow-hidden relative shadow-2xl z-10 h-[600px] flex flex-col">
                                 {/* Status bar */}
-                                <div className="h-7 w-full bg-white px-6 flex justify-between items-center z-30 absolute top-0 left-0 right-0">
-                                    <span className="text-[11px] text-black font-semibold tracking-wider">9:41</span>
-                                    <div className="flex gap-1.5 items-center">
-                                        <div className="w-3.5 h-3.5 rounded-full border border-black/80 flex items-center justify-center"><div className="w-1.5 h-1.5 bg-black/80 rounded-full" /></div>
-                                        <div className="w-3.5 h-3.5 rounded-full border border-black/80 flex items-center justify-center"><div className="w-1.5 h-1.5 bg-black/80 rounded-full" /></div>
+                                <div className="h-6 w-full bg-black/40 px-6 flex justify-between items-center z-20 absolute top-0 left-0 right-0 backdrop-blur-md">
+                                    <span className="text-[10px] text-white font-medium">9:41</span>
+                                    <div className="flex gap-1">
+                                        <div className="w-3 h-3 rounded-full bg-white/20"></div>
+                                        <div className="w-3 h-3 rounded-full bg-white/20"></div>
                                     </div>
                                 </div>
 
                                 {/* App content */}
-                                <div className="flex-1 overflow-y-auto custom-scrollbar pt-7 pb-10 bg-[#F8FAFC]">
-                                    
+                                <div className="flex-1 overflow-y-auto custom-scrollbar pt-0 pb-10 bg-[#F5F5F5]">
                                     {/* App Header */}
-                                    <div className="bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 py-3 flex justify-between items-center sticky top-0 z-20">
-                                        <div className="text-slate-800 bg-slate-100 p-1.5 rounded-full"><ChevronLeft size={16} /></div>
-                                        <h4 className="text-slate-800 font-black text-xs uppercase tracking-widest">Verification Result</h4>
-                                        <div className="w-8"></div>
+                                    <div className="bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center sticky top-0 z-30">
+                                        <div className="text-[#0D4E96]"><ChevronLeft size={20} /></div>
+                                        <h4 className="text-[#0D4E96] font-bold text-sm">Scan Result</h4>
+                                        <div className="w-5"></div>
                                     </div>
 
-                                    {/* Success Banner */}
-                                    <div className="m-4 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-4 text-center text-white shadow-lg shadow-emerald-500/20 relative overflow-hidden">
-                                        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
-                                        <div className="flex items-center gap-3 relative z-10">
-                                            <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
-                                                <ShieldCheck size={24} className="text-white" />
+                                    <div className="mt-4 mx-4 bg-[#2CA4D6] rounded-t-[16px] p-4 text-center text-white relative shadow-md z-10">
+                                        <div className="flex flex-row justify-center items-center gap-2">
+                                            <div className="bg-white rounded-full">
+                                                <img src="/logo-shield.png" alt="Auth" className="w-10 h-10 object-contain m-1" />
                                             </div>
                                             <div className="text-left">
-                                                <h2 className="text-[15px] font-black leading-tight tracking-tight">Authentic Product</h2>
-                                                <p className="text-[11px] text-emerald-50 font-medium">Cryptographically verified</p>
+                                                <h2 className="text-[16px] font-bold leading-tight">Authentic Product</h2>
+                                                <p className="text-[11px] opacity-90 font-medium">This product has been verified as genuine</p>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Product Image & Title */}
-                                    <div className="mx-4 bg-white rounded-3xl shadow-sm border border-slate-100 p-1 mb-4">
-                                        <div className="bg-slate-50 rounded-[1.5rem] p-4 flex flex-col items-center">
-                                            <h3 className="text-slate-800 font-black text-lg mb-4 text-center leading-tight">ALPHALITE <br/><span className="text-slate-500">Panther Series</span></h3>
-                                            <div className="relative w-40 h-40">
-                                                <div className="absolute inset-0 bg-blue-500/10 blur-xl rounded-full"></div>
-                                                <img src="https://res.cloudinary.com/dx4i1w3uf/image/upload/v1776596909/alphali_nig1vq.jpg" alt="product" className="w-full h-full object-contain relative z-10 drop-shadow-xl" />
+                                    <div className="mx-4 bg-white shadow-sm rounded-b-[16px] pb-4">
+                                        <div className="bg-white pb-6 flex flex-col items-center relative gap-3">
+                                            <div className="w-full bg-[#1F2642] py-2 text-center h-[36px]">
+                                                <h3 className="text-white font-bold text-[16px] leading-[20px]">ALPHALITE Panther</h3>
+                                            </div>
+                                            <div className="relative group">
+                                                <div className="relative h-[200px] w-full max-w-[200px] rounded-[1.5rem] overflow-hidden bg-white shadow-2xl border-4 border-white shadow-indigo-200/50">
+                                                    <img src="https://res.cloudinary.com/dx4i1w3uf/image/upload/v1776596909/alphali_nig1vq.jpg" alt="product" className="w-full h-full object-contain" />
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    {/* Data Grid */}
-                                    <div className="px-4 space-y-4">
-                                        <div>
-                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-2">Product Specifications</h4>
+                                        <div className="px-3 space-y-3">
                                             <div className="grid grid-cols-2 gap-2">
                                                 {[
                                                     { l: "Brand", v: "Alphalite" },
+                                                    { l: "Category", v: "Sporting Goods" },
                                                     { l: "Batch #", v: "ALPHA-2478" },
                                                     { l: "Mfd on", v: "Feb 2026" },
-                                                    { l: "Color", v: "Carbon Black" },
+                                                    { l: "Color", v: "Black" },
                                                     { l: "Size", v: "10 UK" },
-                                                    { l: "MRP", v: "₹36,999.00" }
+                                                    { l: "MRP", v: "₹36,999.00" },
+                                                    { l: "Model / Series", v: "Panther" },
+                                                    { l: "SKU/Model Number", v: "AL2468" },
+                                                    { l: "Material", v: "High-density mesh" }
                                                 ].map((item, i) => (
-                                                    <div key={i} className="bg-white border border-slate-200 rounded-xl p-3 shadow-sm">
-                                                        <p className="text-slate-400 text-[8px] font-black uppercase tracking-wider mb-0.5">{item.l}</p>
-                                                        <p className="text-slate-800 text-[11px] font-bold">{item.v}</p>
+                                                    <div key={i} className="bg-[#259DCF] rounded-[16px] p-3 shadow-lg text-left">
+                                                        <p className="text-white/80 text-[8px] font-black uppercase tracking-wider mb-0.5">{item.l}</p>
+                                                        <p className="text-white text-[11px] font-black leading-tight">{item.v}</p>
                                                     </div>
                                                 ))}
                                             </div>
-                                        </div>
 
-                                        <div className="bg-slate-900 rounded-2xl p-5 text-white shadow-xl relative overflow-hidden">
-                                            <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/20 blur-xl rounded-full"></div>
-                                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 relative z-10">Loyalty Reward</h4>
-                                            <p className="text-lg font-black mb-1 relative z-10">Unlock 20% Off</p>
-                                            <p className="text-[10px] text-slate-300 mb-4 relative z-10">Register this product to claim your warranty and next purchase discount.</p>
-                                            <button className="w-full bg-white text-slate-900 rounded-xl py-2.5 text-xs font-black uppercase tracking-widest relative z-10 hover:bg-slate-100 transition-colors">
-                                                Claim Reward
-                                            </button>
+                                            <div className="mt-8 border-t border-gray-100 pt-5 text-left pb-10">
+                                                <h4 className="text-[#333] font-black text-[14px] mb-3 ml-1 uppercase tracking-tight">Additional Info:</h4>
+                                                <div className="bg-[#F2F2F2] p-5 rounded-[20px] shadow-sm space-y-6 border border-gray-200/50">
+                                                    <div>
+                                                        <p className="text-[#444] text-[13px] font-bold leading-[1.6]">
+                                                            ALPHALITE Performance Series: Panther - Neon Blue
+                                                        </p>
+                                                        <p className="text-[#666] text-[12px] font-medium leading-[1.6] mt-1">
+                                                            Experience the intersection of high-performance athletics and cutting-edge digital security. The ALPHALITE Performance Series isn't just a sneaker; it's a verified piece of technology designed for those who demand intelligence as much as they demand speed.
+                                                        </p>
+                                                    </div>
+
+                                                    <div>
+                                                        <p className="text-[#333] text-[10px] font-black uppercase tracking-wider opacity-60 mb-2">Key Benefits</p>
+                                                        <div className="space-y-3">
+                                                            <div>
+                                                                <p className="text-[#444] text-[12px] font-bold">Design & Aesthetics</p>
+                                                                <p className="text-[#666] text-[11px] font-medium leading-relaxed">A sleek, low-top aerodynamic profile finished in a deep carbon black.</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-[#444] text-[12px] font-bold">Smart Midsole</p>
+                                                                <p className="text-[#666] text-[11px] font-medium leading-relaxed">Features integrated neon-blue electroluminescent piping along the midsole, providing a signature "glow".</p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-[#444] text-[12px] font-bold">Breathable Mesh</p>
+                                                                <p className="text-[#666] text-[11px] font-medium leading-relaxed">Constructed with a high-density engineered mesh upper for maximum breathability.</p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="space-y-5 pt-3">
+                                                        {[
+                                                            { label: "Manufactured by", val: "ALPHALITE SPORTS" },
+                                                            { label: "Country of Origin", val: "Made in India" },
+                                                            { label: "Website", val: "www.alphalite.com" },
+                                                            { label: "Customer Care", val: "1600800800" },
+                                                            { label: "Support Email", val: "care@alphalite.com" }
+                                                        ].map((f, idx) => (
+                                                            <div key={idx} className="border-b border-gray-300/30 pb-4 last:border-0 last:pb-0">
+                                                                <p className="text-[#333] text-[10px] font-black uppercase tracking-wider opacity-60 mb-1">{f.label}</p>
+                                                                <p className="text-[#0D4E96] text-[14px] font-black">{f.val}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
+                                    </div>
+
+                                    <div className="px-4 mt-2">
+                                        <button className="w-full bg-gradient-to-r from-[#0E5CAB] to-[#1F2642] text-white rounded-[30px] font-bold text-[15px] uppercase tracking-widest text-center py-4 shadow-[0_10px_25px_rgba(14,92,171,0.3)] transform transition-transform active:scale-95">
+                                            Review Product
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -528,20 +499,20 @@ export default function WebLiveDemo() {
             </section>
 
             {/* ═══════════════ FINAL CTA ═══════════════ */}
-            <section className="py-24 px-6 relative overflow-hidden bg-[#030712] border-t border-white/5">
-                <Glow color="bg-indigo-600/20 w-[1000px] h-[1000px]" className="top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+            <section className="py-24 px-6 relative overflow-hidden">
+                <Glow color="bg-indigo-600" className="top-0 left-1/2 -translate-x-1/2 opacity-20" />
                 <div className="container mx-auto max-w-4xl text-center relative z-10">
-                    <h2 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tighter leading-[1.05]">
-                        The Technology <br className="md:hidden"/> Speaks for Itself.
+                    <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tighter leading-[1.05]">
+                        The Technology Speaks for Itself.
                     </h2>
-                    <p className="text-slate-400 font-medium mb-10 text-lg max-w-2xl mx-auto">
-                        Ready to integrate Authentiks into your packaging lines? Empower your brand with real-time intelligence and unbreakable security.
+                    <p className="text-gray-400 font-bold mb-10 text-lg">
+                        Ready to integrate Authentiks into your packaging lines?
                     </p>
                     <button
                         onClick={() => setContactOpen(true)}
-                        className="px-10 py-5 bg-white text-slate-950 rounded-full font-black uppercase tracking-widest hover:bg-slate-200 transition-all shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:shadow-[0_0_60px_rgba(255,255,255,0.3)] hover:-translate-y-1 active:translate-y-0 text-sm inline-flex items-center gap-3"
+                        className="px-12 py-6 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-[0_0_80px_rgba(255,255,255,0.15)] hover:scale-105 active:scale-95 text-sm inline-flex items-center gap-3"
                     >
-                        Schedule a Demo
+                        Contact Our Team
                         <ArrowRight size={18} />
                     </button>
                 </div>
@@ -552,3 +523,10 @@ export default function WebLiveDemo() {
         </div>
     );
 }
+
+// Helper icon component
+const ChevronRight = ({ size, className }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <path d="m9 18 6-6-6-6" />
+    </svg>
+);
