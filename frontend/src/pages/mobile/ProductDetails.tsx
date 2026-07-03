@@ -183,7 +183,7 @@ const ProductDetails = () => {
           <div className="mb-6">
             <h3 className="text-[#0B1E36] font-bold text-[15px] mb-4">Where to Buy</h3>
             <div className="flex flex-col gap-3 mb-3">
-              {orderLinks.slice(0, 4).map((link: any, idx: number) => (
+              {orderLinks.map((link: any, idx: number) => (
                 <div key={idx} className="bg-white p-3 rounded-2xl flex items-center justify-between shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-50">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100/50 p-1">
@@ -223,11 +223,6 @@ const ProductDetails = () => {
                 </div>
               ))}
             </div>
-            {orderLinks.length > 4 && (
-              <button className="flex items-center gap-1 text-[#105DE4] text-[12px] font-bold">
-                View More Platforms <ChevronDown size={14} />
-              </button>
-            )}
           </div>
         )}
 
