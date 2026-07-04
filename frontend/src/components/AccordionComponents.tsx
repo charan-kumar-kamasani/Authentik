@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, FlaskConical, Award } from 'lucide-react';
+import { ChevronDown, FlaskConical, Award, FileText } from 'lucide-react';
 
 export const AccordionItem = ({ title, subtitle, icon: Icon, children, isOpen, onToggle }: any) => {
   return (
@@ -43,7 +43,8 @@ export const KeyValueRow = ({ label, value }: any) => {
 export const CertificateViewer = ({ cert }: any) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const fileUrl = cert.image || cert.file || cert.url;
-  console.log("_____fileUrl",fileUrl)
+  const isPdf = fileUrl && fileUrl.toLowerCase().includes('.pdf');
+  
   return (
     <div className="flex flex-col rounded-xl border border-slate-100 bg-slate-50/50 overflow-hidden transition-colors">
       <button 
@@ -62,7 +63,15 @@ export const CertificateViewer = ({ cert }: any) => {
       {isOpen && fileUrl && (
         <div className="p-4 pt-0 border-t border-slate-100 animate-in slide-in-from-top-2">
           <a href={fileUrl} target="_blank" rel="noreferrer" className="block w-full rounded-lg overflow-hidden border border-slate-200">
-             <img src={fileUrl} alt={cert.name} className="w-full h-auto object-contain bg-white max-h-[300px]" />
+             {isPdf ? (
+               <div className="flex flex-col items-center justify-center p-8 bg-white hover:bg-slate-50 transition-colors">
+                  <FileText size={48} className="text-[#105DE4] mb-3 opacity-80" />
+                  <span className="text-sm font-bold text-slate-700 mb-1">PDF Document</span>
+                  <span className="text-[11px] font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full">Tap to view</span>
+               </div>
+             ) : (
+               <img src={fileUrl} alt={cert.name} className="w-full h-auto object-contain bg-white max-h-[300px]" />
+             )}
           </a>
         </div>
       )}
