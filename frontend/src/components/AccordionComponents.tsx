@@ -60,6 +60,7 @@ export const CertificateViewer = ({ cert }: any) => {
         <ChevronDown size={18} className={`text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       
+      
       {isOpen && fileUrl && (
         <div className="p-4 pt-0 border-t border-slate-100 animate-in slide-in-from-top-2">
           <a href={fileUrl} target="_blank" rel="noreferrer" className="block w-full rounded-lg overflow-hidden border border-slate-200">
