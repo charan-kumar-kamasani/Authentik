@@ -289,7 +289,16 @@ const ProductPassport = () => {
             </AccordionItem>
           )}
 
-          {/* 4. Certifications and Lab Tests */}
+          {/* 4. Additional Details */}
+          {data.additionalInfo && (
+            <AccordionItem title="Additional Details" subtitle="Manufacturing and other info" icon={FileText} isOpen={openSection === 'Additional Details'} onToggle={() => setOpenSection(openSection === 'Additional Details' ? '' : 'Additional Details')}>
+              <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">
+                {data.additionalInfo}
+              </p>
+            </AccordionItem>
+          )}
+
+          {/* 5. Certifications and Lab Tests */}
           {(data.certificates && data.certificates.length > 0) && (
             <AccordionItem title="Certifications and Lab" subtitle="Verified certificates and lab tests" icon={Award} isOpen={openSection === 'Certifications and Lab'} onToggle={() => setOpenSection(openSection === 'Certifications and Lab' ? '' : 'Certifications and Lab')}>
                <div className="flex flex-col gap-3">
@@ -300,7 +309,7 @@ const ProductPassport = () => {
             </AccordionItem>
           )}
 
-          {/* 5. Product Education */}
+          {/* 6. Product Education */}
           {(data.educationContent && data.educationContent.length > 0) && (
             <AccordionItem title="Product Education" subtitle="Discover how to use this product" icon={BookOpen} isOpen={openSection === 'Product Education'} onToggle={() => setOpenSection(openSection === 'Product Education' ? '' : 'Product Education')}>
               <div className="flex flex-col gap-3">
@@ -330,7 +339,7 @@ const ProductPassport = () => {
             </AccordionItem>
           )}
 
-          {/* 6. Website */}
+          {/* 7. Website */}
           {data.website && (
             <AccordionItem title="Website" subtitle="Visit our official store" icon={Globe} isOpen={openSection === 'Website'} onToggle={() => setOpenSection(openSection === 'Website' ? '' : 'Website')}>
               <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100">
@@ -339,15 +348,6 @@ const ProductPassport = () => {
                   <ExternalLink size={18} />
                 </a>
               </div>
-            </AccordionItem>
-          )}
-
-          {/* 7. Additional Details */}
-          {data.additionalInfo && (
-            <AccordionItem title="Additional Details" subtitle="Manufacturing and other info" icon={FileText} isOpen={openSection === 'Additional Details'} onToggle={() => setOpenSection(openSection === 'Additional Details' ? '' : 'Additional Details')}>
-              <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">
-                {data.additionalInfo}
-              </p>
             </AccordionItem>
           )}
 

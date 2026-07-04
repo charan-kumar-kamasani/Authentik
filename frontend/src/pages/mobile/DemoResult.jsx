@@ -322,7 +322,18 @@ function ResultAuthentic({ data }) {
             <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">{data.recommendedUse}</p>
           </AccordionItem>
 
-          {/* 4. Certifications and Lab */}
+          {/* 4. Additional Details */}
+          <AccordionItem title="Additional Details" subtitle="Manufacturing and other info" icon={FileText}>
+            <KeyValueRow label="Manufactured By" value={data.dynamicFields.manufacturedBy} />
+            <KeyValueRow label="MRP" value={data.dynamicFields.mrp} />
+            <KeyValueRow label="Warranty" value={`${data.warranty.duration} ${data.warranty.durationUnit} ${data.warranty.warrantyType}`} />
+            <div className="mt-3">
+              <h4 className="text-[13px] font-bold text-[#0B1E36] mb-1">Quality Assurance</h4>
+              <p className="text-[12px] text-slate-600 leading-relaxed">{data.warranty.description}</p>
+            </div>
+          </AccordionItem>
+
+          {/* 5. Certifications and Lab */}
           <AccordionItem title="Certifications and Lab" subtitle="Verified certificates and lab tests" icon={Award}>
              <div className="flex flex-col gap-3">
                {data.certificates.map((cert, idx) => (
@@ -339,7 +350,7 @@ function ResultAuthentic({ data }) {
              </div>
           </AccordionItem>
 
-          {/* 5. Product Education */}
+          {/* 6. Product Education */}
           <AccordionItem title="Product Education" subtitle="Learn more about usage" icon={BookOpen}>
             <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
                <h4 className="text-[13px] font-bold text-[#105DE4] mb-1">How to verify?</h4>
@@ -347,24 +358,13 @@ function ResultAuthentic({ data }) {
             </div>
           </AccordionItem>
 
-          {/* 6. Website */}
+          {/* 7. Website */}
           <AccordionItem title="Website" subtitle="Visit our official store" icon={Globe}>
             <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100">
               <span className="text-[13px] font-medium text-slate-700">{data.dynamicFields.website}</span>
               <a href={`https://${data.dynamicFields.website}`} target="_blank" rel="noreferrer" className="text-[#105DE4]">
                 <ExternalLink size={18} />
               </a>
-            </div>
-          </AccordionItem>
-
-          {/* 7. Additional Details */}
-          <AccordionItem title="Additional Details" subtitle="Manufacturing and other info" icon={FileText}>
-            <KeyValueRow label="Manufactured By" value={data.dynamicFields.manufacturedBy} />
-            <KeyValueRow label="MRP" value={data.dynamicFields.mrp} />
-            <KeyValueRow label="Warranty" value={`${data.warranty.duration} ${data.warranty.durationUnit} ${data.warranty.warrantyType}`} />
-            <div className="mt-3">
-              <h4 className="text-[13px] font-bold text-[#0B1E36] mb-1">Quality Assurance</h4>
-              <p className="text-[12px] text-slate-600 leading-relaxed">{data.warranty.description}</p>
             </div>
           </AccordionItem>
 

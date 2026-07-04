@@ -34,6 +34,7 @@ const ProductDetails = () => {
       reviewsCount: product.reviewsCount || order.reviewsCount || template.reviewsCount || d.reviewsCount || topLinkWithRating?.reviewsCount,
       servingSize: product.servingSize || order.servingSize || template.servingSize || d.servingSize || (product.dynamicFields?.['Serving Size']) || (product.dynamicFields?.['servingSize']),
       keyBenefits: product.keyBenefits || order.keyBenefits || template.keyBenefits || d.keyBenefits,
+      additionalInfo: product.additionalInfo || order.additionalInfo || template.additionalInfo || d.additionalInfo || product.dynamicFields?.additionalInfo || order.dynamicFields?.additionalInfo,
     };
   }, []);
 
@@ -124,7 +125,16 @@ const ProductDetails = () => {
             </AccordionItem>
           )}
 
-          {/* 4. Certifications and Lab Tests */}
+          {/* 4. Additional Details */}
+          {data.additionalInfo && (
+            <AccordionItem title="Additional Details" subtitle="Manufacturing and other info" icon={FileText} isOpen={openSection === 'Additional Details'} onToggle={() => setOpenSection(openSection === 'Additional Details' ? '' : 'Additional Details')}>
+              <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">
+                {data.additionalInfo}
+              </p>
+            </AccordionItem>
+          )}
+
+          {/* 5. Certifications and Lab Tests */}
           {(data.certificates && data.certificates.length > 0) && (
             <AccordionItem title="Certifications and Lab" subtitle="Verified certificates and lab tests" icon={Award} isOpen={openSection === 'Certifications and Lab'} onToggle={() => setOpenSection(openSection === 'Certifications and Lab' ? '' : 'Certifications and Lab')}>
                <div className="flex flex-col gap-3">
