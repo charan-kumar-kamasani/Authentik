@@ -43,7 +43,7 @@ export const KeyValueRow = ({ label, value }: any) => {
 export const CertificateViewer = ({ cert }: any) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const fileUrl = cert.image || cert.file || cert.url;
-  
+  console.log("_____fileUrl",fileUrl)
   return (
     <div className="flex flex-col rounded-xl border border-slate-100 bg-slate-50/50 overflow-hidden transition-colors">
       <button 
