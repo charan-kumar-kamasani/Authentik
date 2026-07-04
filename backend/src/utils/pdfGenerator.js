@@ -380,6 +380,8 @@ const buildQrPdf = async (products, options = {}) => {
   return doc;
 };
 
+const { uploadToSupabaseStorage } = require("./supabaseStorage");
+
 /**
  * Legacy: returns Base64 string.
  * Warning: may fail with ERR_STRING_TOO_LONG for many pages.
@@ -393,6 +395,15 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
       doc.on("end", () => {
         try {
           const finalBuffer = Buffer.concat(buffers);
+          
+          // Background upload to Supabase Storage
+          const fileName = `qr_pdf_${options.orderId || Date.now()}_${Math.random().toString(36).substring(7)}.pdf`;
+          uploadToSupabaseStorage(finalBuffer, fileName).then(url => {
+             console.log("📄 QR PDF uploaded to Supabase:", url);
+          }).catch(err => {
+             console.error("📄 Supabase Upload Error for QR PDF:", err.message);
+          });
+
           // Node.js string length limit is usually ~512MB (0x1fffffe8 chars in Base64 is even less)
           // To be safe, we check if the buffer is too large for toString('base64')
           if (finalBuffer.length > 0x1fffffe8 * 0.75) {
@@ -402,6 +413,26 @@ const generateQrPdf = async (products, creatorEmail, options = {}) => {
         } catch (base64Err) {
           reject(new Error("PDF too large for Base64 conversion (ERR_STRING_TOO_LONG). Please use streaming download from the Order Management page."));
         }
+      });
+      doc.on("error", (err) => reject(err));
+      doc.end();
+    } catch (err) {
+      reject(err);
+    }
+  });
+};
+
+/**
+ * New: Returns the PDF as a Buffer (useful for uploading to Supabase or other storage).
+ */
+const generateQrPdfBuffer = async (products, options = {}) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const doc = await buildQrPdf(products, options);
+      const buffers = [];
+      doc.on("data", (chunk) => buffers.push(chunk));
+      doc.on("end", () => {
+        resolve(Buffer.concat(buffers));
       });
       doc.on("error", (err) => reject(err));
       doc.end();
@@ -425,4 +456,4 @@ const generateQrPdfStream = async (products, writableStream, options = {}) => {
   }
 };
 
-module.exports = { generateQrPdf, generateQrPdfStream };
+module.exports = { generateQrPdf, generateQrPdfBuffer, generateQrPdfStream };

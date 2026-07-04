@@ -1,4 +1,5 @@
 const PDFDocument = require("pdfkit");
+const { uploadToSupabaseStorage } = require("./supabaseStorage");
 
 /**
  * Generate invoice PDF for a credit transaction
@@ -16,7 +17,19 @@ const generateInvoicePdf = async (transaction, payment = null) => {
 
       const buffers = [];
       doc.on('data', buffers.push.bind(buffers));
-      doc.on('end', () => resolve(Buffer.concat(buffers)));
+      doc.on('end', () => {
+        const finalBuffer = Buffer.concat(buffers);
+        
+        // Background upload to Supabase Storage
+        const fileName = `invoice_${transaction._id || Date.now()}.pdf`;
+        uploadToSupabaseStorage(finalBuffer, fileName).then(url => {
+           console.log("📄 Invoice PDF uploaded to Supabase:", url);
+        }).catch(err => {
+           console.error("📄 Supabase Upload Error for Invoice PDF:", err.message);
+        });
+
+        resolve(finalBuffer);
+      });
       doc.on('error', reject);
 
       // Colors

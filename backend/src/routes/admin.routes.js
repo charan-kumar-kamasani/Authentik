@@ -15,6 +15,27 @@ const { generateLayoutZip } = require("../utils/layoutCanvasGenerator");
 
 const router = express.Router();
 
+const multer = require("multer");
+const upload = multer({ storage: multer.memoryStorage() });
+const { uploadToSupabaseStorage } = require("../utils/supabaseStorage");
+
+// ── File Upload Route for Supabase ──
+router.post("/upload-file", protect, authorize("superadmin", "admin", "brand_admin", "manufacturer", "distributor", "authorizer"), upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    const bucket = req.body.bucket || 'certificates_and_labtests';
+    const fileName = `${Date.now()}_${req.file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+    
+    const fileUrl = await uploadToSupabaseStorage(req.file.buffer, fileName, bucket, req.file.mimetype);
+    res.json({ secure_url: fileUrl });
+  } catch (error) {
+    console.error("Supabase File Upload Error:", error);
+    res.status(500).json({ message: "Failed to upload file", error: error.message });
+  }
+});
+
 // ── In-memory Email OTP store (prod: use Redis) ──
 const emailOtpStore = new Map(); // key: email, value: { otp, expiresAt }
 

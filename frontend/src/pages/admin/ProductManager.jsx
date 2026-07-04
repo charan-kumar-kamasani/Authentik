@@ -175,14 +175,37 @@ const ProductManager = () => {
         if (!cert.name && !cert.imageFile && !cert.image) continue;
         let certImageUrl = cert.image || '';
         if (cert.imageFile) {
-          const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-          const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
-          const uploadFormData = new FormData();
-          uploadFormData.append('file', cert.imageFile);
-          uploadFormData.append('upload_preset', uploadPreset);
-          const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, { method: 'POST', body: uploadFormData });
-          const data = await res.json();
-          certImageUrl = data.secure_url;
+          const isPdf = cert.imageFile.type === 'application/pdf' || cert.imageFile.name.toLowerCase().endsWith('.pdf');
+          
+          if (isPdf) {
+            const uploadFormData = new FormData();
+            uploadFormData.append('file', cert.imageFile);
+            uploadFormData.append('bucket', 'certificates_and_labtests');
+            
+            const res = await fetch(`${API_BASE_URL}/admin/upload-file`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`
+              },
+              body: uploadFormData
+            });
+            
+            if (res.ok) {
+              const data = await res.json();
+              certImageUrl = data.secure_url;
+            } else {
+              console.error("Backend PDF upload failed:", await res.text());
+            }
+          } else {
+            const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+            const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+            const uploadFormData = new FormData();
+            uploadFormData.append('file', cert.imageFile);
+            uploadFormData.append('upload_preset', uploadPreset);
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`, { method: 'POST', body: uploadFormData });
+            const data = await res.json();
+            certImageUrl = data.secure_url;
+          }
         }
         finalCertificates.push({
           name: cert.name || '',
