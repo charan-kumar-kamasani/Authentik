@@ -304,12 +304,28 @@ const ProductPassport = () => {
           {(data.educationContent && data.educationContent.length > 0) && (
             <AccordionItem title="Product Education" subtitle="Discover how to use this product" icon={BookOpen} isOpen={openSection === 'Product Education'} onToggle={() => setOpenSection(openSection === 'Product Education' ? '' : 'Product Education')}>
               <div className="flex flex-col gap-3">
-                {data.educationContent.map((edu, idx) => (
-                  <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-100 bg-slate-50">
-                     <h4 className="text-[13px] font-bold text-[#0B1E36]">{edu.title || 'Guide'}</h4>
-                     <p className="text-[12px] text-slate-600 leading-relaxed">{edu.description}</p>
-                  </div>
-                ))}
+                {data.educationContent.map((edu: any, idx: number) => {
+                  const isVideo = edu.url?.includes('youtube.com') || edu.url?.includes('youtu.be') || edu.url?.endsWith('.mp4');
+                  const isImage = edu.url?.match(/\.(jpeg|jpg|gif|png)$/i);
+                  
+                  return (
+                    <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-100 bg-slate-50">
+                       <h4 className="text-[13px] font-bold text-[#0B1E36]">{edu.title || 'Guide'}</h4>
+                       {edu.description && <p className="text-[12px] text-slate-600 leading-relaxed mb-1">{edu.description}</p>}
+                       {edu.url && (
+                         <a 
+                           href={edu.url} 
+                           target="_blank" 
+                           rel="noreferrer"
+                           className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#105DE4] bg-blue-100/50 px-3 py-1.5 rounded-lg w-max"
+                         >
+                           {isVideo ? 'Watch Video' : isImage ? 'View Image' : 'Open Link'}
+                           <ChevronRight size={14} />
+                         </a>
+                       )}
+                    </div>
+                  );
+                })}
               </div>
             </AccordionItem>
           )}

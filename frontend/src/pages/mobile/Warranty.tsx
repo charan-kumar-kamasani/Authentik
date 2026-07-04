@@ -198,11 +198,11 @@ function WarrantyCard({ item, activeTab }: { item: any, activeTab: string }) {
         <div className="p-4 flex gap-3">
           {/* Product Image */}
           <div className="w-[56px] h-[56px] bg-slate-50 rounded-[10px] flex items-center justify-center shrink-0 border border-slate-100 overflow-hidden">
-            {item.productId?.productImage ? (
-              <img src={item.productId.productImage} alt={item.productName} className="w-full h-full object-cover" />
-            ) : (
-              <Shield className="text-slate-300" size={24} />
-            )}
+            <img 
+              src={item.productId?.productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"} 
+              alt={item.productName} 
+              className="w-full h-full object-cover mix-blend-multiply" 
+            />
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="text-[#0B1E36] text-[14px] font-bold leading-tight truncate mb-0.5">{item.productName}</h3>
@@ -257,11 +257,11 @@ function WarrantyCard({ item, activeTab }: { item: any, activeTab: string }) {
     <div className="bg-white rounded-[16px] border border-slate-100 shadow-[0_2px_12px_rgba(0,0,0,0.03)] p-4 flex gap-3">
       {/* Product Image */}
       <div className="w-[64px] h-[64px] bg-slate-50 rounded-[10px] flex items-center justify-center shrink-0 border border-slate-100 overflow-hidden">
-        {item.productId?.productImage ? (
-          <img src={item.productId.productImage} alt={item.productName} className="w-full h-full object-cover" />
-        ) : (
-          <Shield className="text-slate-300" size={28} />
-        )}
+        <img 
+          src={item.productId?.productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"} 
+          alt={item.productName} 
+          className="w-full h-full object-cover mix-blend-multiply" 
+        />
       </div>
 
       <div className="flex-1 min-w-0">

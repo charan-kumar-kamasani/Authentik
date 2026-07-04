@@ -215,11 +215,11 @@ export default function BrandPortfolio() {
                   >
                     {/* Image Section */}
                     <div className="bg-[#F8F9FA] rounded-[16px] h-[150px] flex items-center justify-center relative p-4 mb-3">
-                      {product.productImage ? (
-                        <img src={product.productImage} alt={product.productName} className="w-full h-full object-contain mix-blend-multiply drop-shadow-sm" />
-                      ) : (
-                        <div className="text-slate-300 text-xs text-center font-medium">No Image</div>
-                      )}
+                      <img 
+                        src={product.productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"} 
+                        alt={product.productName} 
+                        className="w-full h-full object-contain mix-blend-multiply drop-shadow-sm" 
+                      />
                       {/* Floating Badge (Only show if discount or price is available) */}
                       {product.discount && (
                         <div className="absolute -right-2 -bottom-2 w-[48px] h-[48px] rounded-full bg-blue-50 border-[3.5px] border-white flex flex-col items-center justify-center shadow-sm z-10">

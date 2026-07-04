@@ -82,12 +82,16 @@ const ProductHeroHeader: React.FC<ProductHeroHeaderProps> = ({ title, data, onBa
           {/* <p className="text-blue-100/90 text-[12px] mb-2 font-medium">{data.brand || 'Variant'}</p> */}
 
           <div className="flex flex-wrap gap-2">
-            {data.variants?.slice(0, 3).map((v: any, idx: number) => (
-              <span key={idx} className="px-2 py-0.5 bg-white text-[#001466] text-[9px] font-bold rounded">
-                {v.value}
-              </span>
+            {data.variants
+              ?.map((v: any) => v.value || (v.options && v.options.length > 0 ? v.options[0] : null) || v.variantName)
+              .filter(Boolean)
+              .slice(0, 3)
+              .map((val: string, idx: number) => (
+                <span key={idx} className="px-2 py-0.5 bg-white text-[#001466] text-[9px] font-bold rounded">
+                  {val}
+                </span>
             ))}
-            {!data.variants?.length && data.category && (
+            {(!data.variants?.length || !data.variants.some((v: any) => v.value || (v.options && v.options.length > 0) || v.variantName)) && data.category && (
               <span className="px-2 py-0.5 bg-white text-[#001466] text-[9px] font-bold rounded">
                 {data.category}
               </span>

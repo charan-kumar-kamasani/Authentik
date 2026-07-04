@@ -137,7 +137,7 @@ function ResultAuthentic({ data }: { data: any }) {
   console.log("[WARRANTY DEBUG FRONTEND] data.warranty:", JSON.stringify(data.warranty));
   console.log("[WARRANTY DEBUG FRONTEND] condition check:", !!(data.warranty && (data.warranty.duration || data.warranty.warrantyType)));
 
-  const companyName = data.companyName || data.company || data.manufacturer || data.brand || data.productId?.brand || "-";
+  const companyName =  data.brand  ||data.companyName || data.company || data.manufacturer || data.productId?.brand || "-";
 
   const extractedIngredients = data.ingredients || productObj.ingredients || orderObj.ingredients || templateObj.ingredients || null;
   const extractedCertificates = (productObj.certificates && productObj.certificates.length > 0) ? productObj.certificates : ((orderObj.certificates && orderObj.certificates.length > 0) ? orderObj.certificates : (templateObj.certificates || data.certificates || []));
@@ -410,11 +410,11 @@ function ResultAuthentic({ data }: { data: any }) {
         {/* Product Info Card */}
         <div className="bg-white rounded-[24px] p-5 shadow-[0_4px_25px_rgba(0,0,0,0.06)] flex gap-4">
           <div className="w-[100px] h-[120px] flex-shrink-0 flex items-center justify-center">
-             {productImage ? (
-                <img src={productImage} alt={productName} className="w-full h-full object-contain drop-shadow-md" />
-              ) : (
-                <div className="w-full h-full bg-gray-50 rounded-lg flex items-center justify-center text-gray-300 text-xs">No Image</div>
-              )}
+            <img 
+              src={productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"} 
+              alt={productName} 
+              className="w-full h-full object-contain drop-shadow-md mix-blend-multiply" 
+            />
           </div>
           <div className="flex flex-col flex-1 py-1 justify-center">
             <div className="flex items-center gap-1.5 mb-1.5">
@@ -614,13 +614,19 @@ function ResultAuthentic({ data }: { data: any }) {
                      state: { 
                        ...item, 
                        productName: item.title || item.productName, 
-                       productImage: item.image || item.productImage 
+                       productImage: item.image || item.productImage,
+                       brand: data.brand || data.companyName,
+                       companyName: data.companyName || data.brand
                      } 
                    })}
                    className="snap-start flex-shrink-0 w-[170px] bg-white rounded-[20px] p-4 flex flex-col shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-gray-100 relative cursor-pointer active:scale-95 transition-transform"
                  >
                    <div className="w-full h-[150px] bg-[#F8F9FA] rounded-[14px] p-2 flex items-center justify-center mb-4 relative">
-                     <img src={item.image || item.productImage || 'https://via.placeholder.com/150'} alt={item.title || item.productName} className="w-full h-full object-contain mix-blend-multiply" />
+                     <img 
+                       src={item.image || item.productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"} 
+                       alt={item.title || item.productName} 
+                       className="w-full h-full object-contain mix-blend-multiply" 
+                     />
                      {/* Rating/Feature Badge overlapping bottom right */}
                      {item.ratingBadge && (
                        <div className="absolute -bottom-3 -right-3 bg-[#F3F6E8] text-[#4F5927] border-2 border-white text-[9.5px] font-extrabold px-1.5 py-1 rounded-full text-center leading-[1.1] shadow-sm flex items-center justify-center w-[46px] h-[46px] whitespace-pre-wrap break-words">
@@ -675,15 +681,13 @@ function ResultAuthentic({ data }: { data: any }) {
 
               {/* Product Hero */}
               <div className="px-6 pt-8 pb-5 text-center">
-                {productImage ? (
-                  <div className="w-[80px] h-[80px] rounded-[24px] overflow-hidden mx-auto mb-5 shadow-[0_8px_24px_rgba(13,78,150,0.15)] bg-white p-1">
-                    <img src={productImage} alt="" className="w-full h-full object-cover rounded-[20px]" />
-                  </div>
-                ) : (
-                  <div className="w-[80px] h-[80px] rounded-[24px] bg-gradient-to-br from-[#F0F7FF] to-[#E8F4F9] mx-auto mb-5 flex items-center justify-center shadow-[0_8px_24px_rgba(13,78,150,0.15)] bg-white p-1">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2CA4D6" strokeWidth="1.5"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
-                  </div>
-                )}
+                <div className="w-[85px] h-[85px] rounded-[20px] shadow-sm flex-shrink-0 bg-white p-2 mx-auto mb-5">
+                  <img 
+                    src={productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"} 
+                    alt="" 
+                    className="w-full h-full object-contain mix-blend-multiply" 
+                  />
+                </div>
                 <h2 className="text-[22px] font-black text-[#0D4E96] tracking-tight leading-tight mb-1.5">{productName}</h2>
                 <p className="text-[13px] font-bold text-[#8ba2be] uppercase tracking-[0.1em]">{companyName}</p>
               </div>
