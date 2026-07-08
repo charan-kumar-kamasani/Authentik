@@ -1,559 +1,423 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-  ShieldCheck, ScanLine, CheckCircle2, AlertTriangle, BarChart3,
-  QrCode, Truck, Package, Smartphone, Users, Globe2, Repeat,
-  Lock, Brain, Sparkles, ArrowRight, ChevronLeft, ChevronRight,
-  Quote, Star, Mail, MapPin, Phone, ExternalLink
-} from 'lucide-react';
-import WebHeader from '../../components/WebHeader';
-import WebFooter from '../../components/WebFooter';
-import ContactFormModal from '../../components/ContactFormModal';
-import heroImage from '../../assets/web/image 1.png';
-import banner1 from '../../assets/banners/banner_1.jpg';
-import banner2 from '../../assets/banners/banner_2.jpg';
-import banner3 from '../../assets/banners/banner_3.jpg';
-import mobileBanner1 from '../../assets/banners/Mobile banner authentiks/H1.jpg';
-import mobileBanner2 from '../../assets/banners/Mobile banner authentiks/H2.jpg';
-import mobileBanner3 from '../../assets/banners/Mobile banner authentiks/H3.jpg';
-import WebHeroSlider from '../../components/WebHeroSlider';
-import AnimatedCTA from '../../components/AnimatedCTA';
-import WebSecurityInfrastructure from '../../components/WebSecurityInfrastructure';
-import PricingCards from '../../components/PricingCards';
-import SEO from '../../components/SEO';
-
-/* ═══════════════════════ HERO SLIDES ═══════════════════════ */
-const heroSlides = [
-  {
-    tag: 'BANNER 1',
-    tagColor: 'from-emerald-500 to-emerald-400',
-    tagBg: 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400',
-    glowColor: 'bg-emerald-500',
-    title: <>Start Protecting Your Products <span className="gradient-text-green">From Day One</span></>,
-    subtitle: 'Give every product a unique, secure identity with ready-to-use QR labels — no tech, no complexity.',
-    cta: 'Start Your 90-Day Free Trial',
-    banner: banner1,
-    mobileBanner: mobileBanner1,
-  },
-  {
-    tag: 'BANNER 2',
-    tagColor: 'from-blue-500 to-cyan-400',
-    tagBg: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
-    glowColor: 'bg-blue-500',
-    title: <>Turn Every Product Into a <span className="gradient-text-blue">Customer Acquisition</span> Channel</>,
-    subtitle: 'Engage customers, offer rewards, and bring them back to your website — directly from your product.',
-    highlight: 'Your product is now your marketing channel',
-    cta: 'Start Your 90-Day Free Trial',
-    banner: banner2,
-    mobileBanner: mobileBanner2,
-  },
-  {
-    tag: 'BANNER 3',
-    tagColor: 'from-red-500 to-orange-400',
-    tagBg: 'bg-red-500/10 border-red-500/20 text-red-400',
-    glowColor: 'bg-red-500',
-    title: <>Track Every Product. Detect Every Fake. <span className="gradient-text-red">Act in Real Time.</span></>,
-    subtitle: 'Gain full visibility across your supply chain with real-time scan data, alerts, and analytics.',
-    highlight: 'Know where your products go — and where they leak',
-    cta: 'Start Your 90-Day Free Trial',
-    banner: banner3,
-    mobileBanner: mobileBanner3,
-  },
-];
-
-/* ═══════════════════════ REUSABLE COMPONENTS ═══════════════════════ */
-
-const Glow = ({ color, className }) => (
-  <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
-);
-
-const SectionTag = ({ children, className = '' }) => (
-  <div className={`inline-flex items-center gap-2 px-5 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[11px] font-black uppercase tracking-[0.25em] mb-6 ${className}`}>
-    {children}
-  </div>
-);
-
-const SectionTitle = ({ children, className = '' }) => (
-  <h2 className={`text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tighter leading-[1.05] mb-6 ${className}`}>
-    {children}
-  </h2>
-);
-
-/* ═══════════════════════ MAIN COMPONENT ═══════════════════════ */
+import React from "react";
+import { Link } from "react-router-dom";
+import { Play, CheckCircle2, ChevronRight, Shield, ShieldCheck, Mail, Phone, MessageCircle, QrCode, Factory, Smartphone, Package, Gift, BarChart3, Users, Globe, Settings, Store, Pill, Sparkles, ShoppingBag, HeartPulse, Monitor, ShoppingBasket, Gem, ShieldPlus, Cloud, Lock, Network, Database, Activity, Target } from "lucide-react";
+import WebHeader from "../../components/WebHeader";
+import WebFooter from "../../components/WebFooter";
+import heroImage from "../../assets/web/hero_image.png";
+import logoShield from "../../assets/logo-shield.png";
 
 export default function LandingPage() {
-  const [showContactForm, setShowContactForm] = useState(false);
-  const [activeSlide, setActiveSlide] = useState(0);
-  const [billingCycle, setBillingCycle] = useState('yearly'); // 'half-yearly' or 'yearly'
-
-  const slide = heroSlides[activeSlide];
-
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden">
-      <SEO 
-        title="Anti Counterfeit Solutions & Product Authentication"
-        description="Authentik offers the best anti counterfeit solutions in India, including smart packaging and qr code authentication for complete product traceability."
-        keywords="anti counterfeit solutions, product authentication, smart packaging, qr code authentication, product traceability, brand protection solutions, product verification system, anti counterfeit technology"
-      />
+    <div className="min-h-screen bg-white font-sans text-slate-800">
       <WebHeader />
 
-      {/* ═══════════════ HERO SECTION (Dynamic Slider) ═══════════════ */}
-      <section className="relative pt-8 md:pt-16 px-4 md:px-6 md:min-h-[85vh] flex items-center overflow-hidden">
-        {/* Animated glows */}
-        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] ${slide.glowColor} rounded-full blur-[180px] opacity-15 transition-all duration-1000`} />
-        <div className="absolute top-20 right-[10%] w-64 h-64 bg-purple-600 rounded-full blur-[140px] opacity-10 animate-pulse-slow" />
-        <div className="absolute bottom-20 left-[10%] w-48 h-48 bg-indigo-600 rounded-full blur-[120px] opacity-10 animate-pulse-slow" />
+      {/* Hero Section */}
+      <section className="relative pt-20 pb-32 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 grid lg:grid-cols-2 gap-12 items-center">
+          <div className="z-10">
+            <h1 className="text-[44px] md:text-[56px] font-bold leading-[1.1] text-slate-900 mb-6 tracking-tight">
+              Consumer Intelligence <br/>
+              Platform for <span className="text-blue-600">Modern Brands</span>
+            </h1>
+            <p className="text-lg md:text-xl text-slate-600 mb-8 max-w-[540px] leading-relaxed">
+              Transform every physical product into a connected digital asset that authenticates products, identifies consumers, captures first-party data, and builds lifelong customer relationships.
+            </p>
+            
+            <div className="flex flex-wrap gap-4 mb-10">
+              <Link to="/contact-us">
+                <button className="bg-blue-600 text-white px-8 py-3.5 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl flex items-center gap-2">
+                  Book a Demo
+                </button>
+              </Link>
+              <Link to="/platform">
+                <button className="bg-white text-blue-600 border border-blue-600 px-8 py-3.5 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2">
+                  <Play size={18} /> Explore Platform
+                </button>
+              </Link>
+            </div>
 
-        {/* Hero background image */}
-        <div className="absolute top-0 left-0 w-full h-full -z-10 opacity-10 pointer-events-none">
-          <img src={heroImage} alt="Authentik - Leading Anti Counterfeit Solutions and Product Authentication Platform" className="w-full h-full object-cover blur-2xl" />
-        </div>
-
-        {/* Grid pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
-          backgroundSize: '60px 60px'
-        }} />
-
-        <WebHeroSlider
-          slides={heroSlides}
-          onCTA={() => setShowContactForm(true)}
-          onSlideChange={(index) => setActiveSlide(index)}
-        />
-      </section>
-
-      {/* ═══════════════ TRUST SECTION ═══════════════ */}
-      <section className="py-12 md:py-12 px-6 relative">
-        <Glow color="bg-indigo-600" className="top-0 left-1/2 -translate-x-1/2 opacity-10" />
-        <div className="container mx-auto max-w-5xl text-center">
-          <SectionTag><ShieldCheck size={14} /> Trusted Platform</SectionTag>
-          <SectionTitle>Trusted by Growing Brands</SectionTitle>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mt-12 mb-12">
-            {[
-              { value: '100+', label: 'Brands Onboarded', icon: Users, color: 'from-emerald-500/20 to-emerald-500/5', border: 'border-emerald-500/20', iconColor: 'text-emerald-400' },
-              { value: '50,000+', label: 'QR Codes Generated', icon: QrCode, color: 'from-blue-500/20 to-blue-500/5', border: 'border-blue-500/20', iconColor: 'text-blue-400' },
-              { value: 'Real-Time', label: 'Product Tracking Across India', icon: Globe2, color: 'from-purple-500/20 to-purple-500/5', border: 'border-purple-500/20', iconColor: 'text-purple-400' },
-            ].map((stat, i) => (
-              <div
-                key={i}
-                className={`group p-8 rounded-[2rem] bg-gradient-to-b ${stat.color} border ${stat.border} hover:scale-[1.03] transition-all duration-500 cursor-default`}
-              >
-                <div className={`mb-4 inline-flex p-3 rounded-2xl bg-white/5 ${stat.iconColor} group-hover:scale-110 transition-transform`}>
-                  <stat.icon size={28} />
-                </div>
-                <h3 className="text-3xl md:text-4xl font-black text-white tracking-tighter mb-2">{stat.value}</h3>
-                <p className="text-sm font-bold text-gray-400 uppercase tracking-wider">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-
-          <p className="text-gray-400 font-bold flex items-center justify-center gap-2 text-base">
-            <ArrowRight size={16} className="text-indigo-400" />
-            Start small. Scale with confidence.
-          </p>
-        </div>
-      </section>
-
-      {/* ═══════════════ SECURITY & AUTHENTICITY ═══════════════ */}
-      <section className="py-12 md:py-12 px-6 bg-gradient-to-b from-black/40 to-transparent relative overflow-hidden">
-        <Glow color="bg-purple-600" className="-right-32 top-1/3 opacity-15" />
-        <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-16">
-            <SectionTag><Lock size={14} /> Security & Authenticity</SectionTag>
-            <SectionTitle>Comprehensive Anti Counterfeit Solutions for Brands</SectionTitle>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { icon: QrCode, title: 'Secure QR Code Authentication', desc: 'Unique QR code for every unit produced — no two are alike', color: 'text-emerald-400', glow: 'group-hover:shadow-emerald-500/20' },
-              { icon: ScanLine, title: 'Instant Product Authentication', desc: 'First-scan validation ensures authenticity at the point of purchase', color: 'text-blue-400', glow: 'group-hover:shadow-blue-500/20' },
-              { icon: AlertTriangle, title: 'Smart Product Traceability', desc: 'Duplicate scans instantly detected and flagged in real-time across the supply chain', color: 'text-amber-400', glow: 'group-hover:shadow-amber-500/20' },
-              { icon: Brain, title: 'Anti Counterfeit Technology', desc: 'Intelligent backend prevents misuse and unauthorized access to your products', color: 'text-purple-400', glow: 'group-hover:shadow-purple-500/20' },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className={`group glass-effect p-8 rounded-[2rem] text-center hover:-translate-y-2 transition-all duration-500 hover:shadow-2xl ${item.glow} cursor-default`}
-              >
-                <div className={`mb-6 p-4 rounded-2xl bg-white/5 ${item.color} inline-flex group-hover:scale-110 transition-transform duration-500`}>
-                  <item.icon size={28} />
-                </div>
-                <h3 className="text-lg font-black text-white mb-3 tracking-tight">{item.title}</h3>
-                <p className="text-sm text-gray-400 font-medium leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-
-          <p className="text-center mt-12 text-gray-400 font-bold flex items-center justify-center gap-2">
-            <ArrowRight size={16} className="text-indigo-400" />
-            Every product carries a secure identity that cannot be reused without detection.
-          </p>
-        </div>
-      </section>
-
-      <WebSecurityInfrastructure />
-
-      {/* ═══════════════ HOW IT WORKS ═══════════════ */}
-      <section className="py-12 md:py-12 px-6 relative overflow-hidden">
-        <Glow color="bg-cyan-600" className="-left-40 top-1/2 opacity-10" />
-        <div className="container mx-auto max-w-6xl relative z-10">
-          <div className="text-center mb-20">
-            <SectionTag><Sparkles size={14} /> How It Works</SectionTag>
-            <SectionTitle>From Factory to Customer — In 4 Simple Steps</SectionTitle>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
-            {/* Connecting line (desktop) */}
-            <div className="hidden md:block absolute top-[72px] left-[12.5%] right-[12.5%] h-[2px] bg-gradient-to-r from-emerald-500/30 via-blue-500/30 to-purple-500/30" />
-
-            {[
-              {
-                step: '01',
-                icon: QrCode,
-                title: 'Order QR Code Authentication',
-                desc: 'Share your Product Details, SKU & quantity for serialized qr codes',
-                color: 'text-emerald-400',
-                stepBg: 'bg-emerald-500/20 border-emerald-500/30',
-                ring: 'ring-emerald-500/20'
-              },
-              {
-                step: '02',
-                icon: Package,
-                title: 'Smart Packaging Delivery',
-                desc: 'Serialized, tamper-proof scratch off labels and smart packaging solutions shipped to your doorstep',
-                color: 'text-blue-400',
-                stepBg: 'bg-blue-500/20 border-blue-500/30',
-                ring: 'ring-blue-500/20'
-              },
-              {
-                step: '03',
-                icon: Truck,
-                title: 'Apply to Products',
-                desc: 'No integration required — peel, stick, done',
-                color: 'text-amber-400',
-                stepBg: 'bg-amber-500/20 border-amber-500/30',
-                ring: 'ring-amber-500/20'
-              },
-              {
-                step: '04',
-                icon: Smartphone,
-                title: 'Customers Scan & Engage',
-                desc: 'Authenticate, interact and connect with your brand',
-                color: 'text-purple-400',
-                stepBg: 'bg-purple-500/20 border-purple-500/30',
-                ring: 'ring-purple-500/20'
-              },
-            ].map((item, i) => (
-              <div key={i} className="group flex flex-col items-center text-center relative">
-                {/* Step number bubble */}
-                <div className={`relative z-10 w-16 h-16 rounded-full ${item.stepBg} border flex items-center justify-center mb-6 group-hover:scale-110 transition-all duration-500 ring-4 ${item.ring}`}>
-                  <item.icon size={24} className={item.color} />
-                </div>
-                {/* Step label */}
-                <div className={`text-[10px] font-black uppercase tracking-[0.3em] ${item.color} mb-3`}>Step {item.step}</div>
-                <h3 className="text-lg font-black text-white mb-3 tracking-tight">{item.title}</h3>
-                <p className="text-sm text-gray-400 font-medium leading-relaxed max-w-[200px]">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════ ROI / VALUE SECTION ═══════════════ */}
-      <section className="py-12 md:py-12 px-6 bg-gradient-to-b from-black/40 to-transparent relative overflow-hidden">
-        <Glow color="bg-emerald-600" className="-right-32 top-1/4 opacity-10" />
-        <div className="container mx-auto max-w-6xl">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            {/* Left — Text */}
-            <div>
-              <SectionTag><BarChart3 size={14} /> ROI Calculator</SectionTag>
-              <SectionTitle>Turn Product Scans Into Revenue</SectionTitle>
-              <p className="text-gray-400 font-medium text-lg leading-relaxed mb-8">
-                If <span className="text-white font-black">1,000 products</span> are scanned:
-              </p>
-
-              <div className="space-y-5">
+            <div className="mb-4">
+              <div className="font-bold text-slate-800">Trusted Consumer Intelligence</div>
+              <div className="text-sm text-slate-500 mb-3">Every scan creates value.</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-2 text-[14px] text-slate-700 font-medium">
                 {[
-                  { icon: Users, value: '400+', label: 'customers engage with your brand', color: 'text-blue-400', bg: 'bg-blue-500/10' },
-                  { icon: Globe2, value: '100–200', label: 'users visit your website', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-                  { icon: Repeat, value: '50–100', label: 'potential repeat customers', color: 'text-purple-400', bg: 'bg-purple-500/10' },
-                  { icon: AlertTriangle, value: 'Instant', label: 'alerts if duplicate/fake scans detected', color: 'text-amber-400', bg: 'bg-amber-500/10' },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] hover:border-white/10 transition-all group cursor-default">
-                    <div className={`p-3 rounded-xl ${item.bg} ${item.color} group-hover:scale-110 transition-transform`}>
-                      <item.icon size={20} />
-                    </div>
-                    <div>
-                      <span className="text-white font-black text-lg">{item.value}</span>
-                      <span className="text-gray-400 font-medium ml-2">{item.label}</span>
-                    </div>
+                  "Product Authentication", "Consumer Intelligence", "Digital Product Passport", 
+                  "Consumer Engagement", "Smart Reorder", "Warranty & Ownership", "Counterfeit Detection"
+                ].map((feature, idx) => (
+                  <div key={idx} className="flex items-center gap-2">
+                    <CheckCircle2 size={16} className="text-blue-500 shrink-0" />
+                    <span>{feature}</span>
                   </div>
                 ))}
               </div>
             </div>
-
-            {/* Right — Revenue card */}
-            <div className="glass-effect rounded-[2.5rem] p-10 md:p-12 relative overflow-hidden">
-              <div className="absolute -top-20 -right-20 w-48 h-48 bg-emerald-500 rounded-full blur-[100px] opacity-20" />
-              <div className="relative z-10">
-                <div className="text-[11px] font-black uppercase tracking-[0.25em] text-emerald-400 mb-6">Monthly Investment</div>
-                {/* <div className="flex items-baseline gap-1 mb-2">
-                  <span className="text-5xl md:text-6xl font-black text-white tracking-tighter">₹10K</span>
-                  <span className="text-gray-500 font-bold">/month</span>
-                </div> */}
-                <p className="text-gray-400 font-medium mb-8">Can generate far more in repeat revenue</p>
-
-                <div className="space-y-4 mb-10">
-                  {['Direct customer acquisition', 'Website traffic from products', 'Repeat purchase potential', 'Anti-counterfeit protection'].map((item, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
-                      <span className="text-gray-300 font-medium text-sm">{item}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <AnimatedCTA 
-                  onClick={() => setShowContactForm(true)}
-                  className="w-full"
-                />
-              </div>
+          </div>
+          
+          <div className="relative z-10 hidden lg:block">
+            <div className="relative w-full h-full flex items-center justify-end">
+               <img src={heroImage} alt="Authentiks Platform" className="w-[120%] max-w-none h-auto -translate-y-4 translate-x-8 mix-blend-multiply" />
             </div>
+          </div>
+        </div>
+        
+        {/* Background Decorative Blob */}
+        <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-[800px] h-[800px] bg-blue-50/50 rounded-full blur-3xl pointer-events-none -z-10"></div>
+      </section>
+
+      {/* Trusted By */}
+      <section className="py-12 border-y border-slate-100 bg-slate-50/50">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
+          <p className="text-center text-[12px] font-bold uppercase tracking-widest text-slate-400 mb-8">Trusted by Innovative Brands</p>
+          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12 opacity-60 hover:opacity-100 transition-opacity duration-500 grayscale">
+             <div className="text-xl font-black tracking-tighter">ORIGIN <span className="text-sm font-bold block -mt-1 tracking-widest text-center">NUTRITION</span></div>
+             <div className="text-xl font-serif italic flex items-center gap-2"><div className="w-6 h-6 rounded-full border-2 border-current"></div> CAPLIN POINT</div>
+             <div className="text-2xl font-bold tracking-widest">INLIFE</div>
+             <div className="text-2xl font-black lowercase">mars <span className="text-sm font-normal block -mt-2 text-right">by GHC</span></div>
+             <div className="text-3xl font-black">WOW <span className="text-[10px] font-bold block -mt-2 tracking-widest text-center">SKIN SCIENCE</span></div>
+             <div className="text-xl font-bold font-serif flex items-center gap-2"><div className="w-4 h-4 bg-current transform rotate-45"></div> DR. VAIDYA'S</div>
+             <div className="text-xl font-bold">TrueBasics</div>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════ PRICING PLANS ═══════════════ */}
-      <section className="py-24 px-6 relative overflow-hidden">
-        <Glow color="bg-indigo-600" className="-left-40 top-1/2 opacity-10" />
-        <div className="container mx-auto max-w-7xl relative z-10">
+      {/* The Challenge */}
+      <section className="py-24 bg-slate-900 text-white text-center">
+        <div className="max-w-4xl mx-auto px-6 md:px-12">
+          <h3 className="text-blue-400 font-bold text-sm uppercase tracking-wider mb-4">The Challenge</h3>
+          <h2 className="text-3xl md:text-5xl font-bold mb-8 leading-tight">Your products reach consumers.<br/>Your data doesn't.</h2>
+          <p className="text-lg md:text-xl text-slate-300 mb-10 leading-relaxed">
+            Most brands lose visibility the moment a product is sold. Marketplaces own customer relationships, distributors own the channel, and valuable consumer insights remain inaccessible.
+          </p>
+          <div className="bg-blue-600/20 border border-blue-500/30 rounded-2xl p-6 md:p-8">
+            <p className="text-xl md:text-2xl font-bold text-white">
+              Authentiks helps brands reconnect with consumers through every product they sell.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Platform Section */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
           <div className="text-center mb-16">
-            <SectionTag><Sparkles size={14} /> Pricing Plans</SectionTag>
-            <SectionTitle>Scale Your Protection & Engagement</SectionTitle>
-            
-            {/* 🔁 TOGGLE */}
-            {/* <div className="flex items-center justify-center gap-4 mt-8">
-              <span className={`text-sm font-black uppercase tracking-widest transition-colors duration-300 ${billingCycle === 'half-yearly' ? 'text-white' : 'text-gray-500'}`}>Half-Yearly</span>
-              <button 
-                onClick={() => setBillingCycle(billingCycle === 'yearly' ? 'half-yearly' : 'yearly')}
-                className="w-16 h-8 bg-white/10 rounded-full relative p-1 transition-all border border-white/10"
-              >
-                <div className={`w-6 h-6 bg-white rounded-full transition-all duration-300 shadow-lg ${billingCycle === 'yearly' ? 'translate-x-8' : 'translate-x-0'}`} />
+            <h3 className="text-blue-600 font-bold text-sm uppercase tracking-wider mb-3">One Platform. Complete Consumer Intelligence.</h3>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 max-w-2xl mx-auto leading-tight">
+              Everything You Need to Build Stronger Relationships with Your Consumers
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {[
+              {
+                title: "Product Authentication",
+                desc: "Protect your brand with secure, unique digital identities for every product.",
+                icon: "shield"
+              },
+              {
+                title: "Consumer Registration",
+                desc: "Convert anonymous buyers into verified first-party consumers.",
+                icon: "user"
+              },
+              {
+                title: "Digital Product Passport",
+                desc: "Provide instant access to product information, certifications, manuals, lab reports, and more.",
+                icon: "file"
+              },
+              {
+                title: "Consumer Engagement",
+                desc: "Deliver rewards, offers, campaigns, and personalized experiences.",
+                icon: "gift"
+              },
+              {
+                title: "Smart Reorder",
+                desc: "Drive repeat purchases through preferred online marketplaces.",
+                icon: "shopping-cart"
+              },
+              {
+                title: "Consumer Intelligence",
+                desc: "Understand consumer behavior with real-time insights and analytics.",
+                icon: "bar-chart"
+              }
+            ].map((item, idx) => (
+              <div key={idx} className="bg-white border border-slate-100 rounded-2xl p-8 hover:shadow-xl transition-all hover:-translate-y-1 flex flex-col items-center text-center group cursor-pointer">
+                <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                  <Shield size={28} strokeWidth={1.5} />
+                </div>
+                <h4 className="font-bold text-[18px] text-slate-900 mb-3">{item.title}</h4>
+                <p className="text-slate-600 text-sm leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+          
+          <div className="text-center">
+            <Link to="/platform">
+              <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg">
+                Explore Platform
               </button>
-              <div className="flex flex-col items-start">
-                <span className={`text-sm font-black uppercase tracking-widest transition-colors duration-300 ${billingCycle === 'yearly' ? 'text-white' : 'text-gray-500'}`}>Yearly</span>
-                <span className="text-[10px] font-black text-emerald-400 uppercase tracking-tighter">Save 20%</span>
-              </div>
-            </div> */}
-          </div>
-
-          <PricingCards onCTA={() => setShowContactForm(true)} />
-
-          {/* ⚡ TRUST LINE */}
-          <div className="mt-20 text-center">
-            <div className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
-              <ShieldCheck size={24} className="text-blue-400" />
-              <p className="text-gray-300 font-black italic tracking-tight text-sm md:text-base">
-                “Customer data is shared only with user consent to ensure privacy and compliance.”
-              </p>
-            </div>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════ PRODUCT ADVANTAGE ═══════════════ */}
-      <section className="py-12 md:py-12 px-6 bg-gradient-to-b from-black/40 to-transparent relative overflow-hidden">
-        <Glow color="bg-indigo-600" className="-left-32 top-1/3 opacity-10" />
-        <div className="container mx-auto max-w-5xl">
-          <div className="text-center mb-16">
-            <SectionTag><Package size={14} /> Product Advantage</SectionTag>
-            <SectionTitle>More Than Software — A Complete Solution</SectionTitle>
-          </div>
-
-          <div className="glass-effect rounded-[2.5rem] p-8 md:p-14 relative overflow-hidden">
-            <div className="absolute -top-24 -left-24 w-64 h-64 bg-indigo-600 rounded-full blur-[120px] opacity-15 pointer-events-none" />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
+      {/* How It Works Section */}
+      <section className="py-24 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 grid lg:grid-cols-2 gap-16 items-center">
+          <div>
+            <h3 className="text-blue-600 font-bold text-sm uppercase tracking-wider mb-3">How It Works</h3>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-10 leading-tight">
+              Simple for Consumers.<br/>Powerful for Brands.
+            </h2>
+            
+            <div className="space-y-6">
               {[
-                { icon: QrCode, label: 'QR Generation', desc: 'Unique serialized codes for every product unit' },
-                { icon: Package, label: 'Printing & Scratch Labels', desc: 'Premium tamper-proof labels, printed and ready' },
-                { icon: Truck, label: 'Doorstep Delivery', desc: 'Labels shipped directly to your warehouse' },
-                { icon: Users, label: 'Customer Engagement Tools', desc: 'Rewards, coupons, and direct interaction' },
-                { icon: BarChart3, label: 'Real-Time Analytics', desc: 'Live scan data, geo-tracking, and insights' },
-                { icon: ShieldCheck, label: 'One Platform', desc: 'No multiple vendors — everything in one place' },
-              ].map((item, i) => (
-                <div key={i} className="flex items-start gap-4 p-4 rounded-2xl hover:bg-white/[0.03] transition-all group cursor-default">
-                  <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-400 group-hover:scale-110 group-hover:bg-indigo-500/20 transition-all shrink-0">
-                    <item.icon size={22} />
+                "Generate Secure QR Identity",
+                "Apply During Manufacturing",
+                "Consumer Scans Product",
+                "Instant Authentication",
+                "Consumer Registration",
+                "Real-Time Intelligence",
+                "Engagement & Repeat Purchases"
+              ].map((step, idx) => (
+                <div key={idx} className="flex items-center gap-4">
+                  <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shrink-0">
+                    {idx + 1}
                   </div>
-                  <div>
-                    <h4 className="font-black text-white text-base mb-1 tracking-tight">{item.label}</h4>
-                    <p className="text-sm text-gray-500 font-medium leading-relaxed">{item.desc}</p>
-                  </div>
+                  <p className="text-slate-700 font-medium text-lg">{step}</p>
                 </div>
               ))}
             </div>
+          </div>
+          <div className="relative flex justify-center items-center py-10">
+             {/* Coded Circular Diagram */}
+             <div className="relative w-full max-w-[400px] aspect-square mx-auto">
+               {/* Center Shield (Using Logo Shield) */}
+               <div className="absolute inset-0 m-auto w-28 h-28 md:w-32 md:h-32 rounded-full flex items-center justify-center shadow-2xl shadow-blue-500/20 z-10 bg-white">
+                 <div className="absolute inset-2 bg-blue-50 rounded-full blur-md"></div>
+                 <img src={logoShield} alt="Authentiks Shield" className="w-[80%] h-[80%] object-contain relative z-10" />
+               </div>
+               
+               {/* Dashed Circle */}
+               <div className="absolute inset-8 rounded-full border-[1.5px] border-dashed border-blue-200 animate-[spin_60s_linear_infinite]"></div>
 
-            <div className="mt-10 pt-8 border-t border-white/5 text-center">
-              <p className="text-gray-400 font-bold flex items-center justify-center gap-2">
-                <ArrowRight size={16} className="text-indigo-400" />
-                No multiple vendors. One platform.
-              </p>
-            </div>
+               {/* Orbiting Icons */}
+               {[
+                 { Icon: QrCode },
+                 { Icon: Factory },
+                 { Icon: Smartphone },
+                 { Icon: Store },
+                 { Icon: Gift },
+               ].map((item, i) => {
+                 // Arrange exactly like design: Top, Right, Bottom-Right, Bottom-Left, Left
+                 // 0 = Top, 1 = Right, 2 = Bottom-Right, 3 = Bottom-Left, 4 = Left
+                 const rad = (i * 72 - 90) * (Math.PI / 180);
+                 const radius = 45; // 45% distance from center
+                 const top = `calc(50% + ${Math.sin(rad) * radius}%)`;
+                 const left = `calc(50% + ${Math.cos(rad) * radius}%)`;
+                 
+                 return (
+                   <div key={i} className="absolute w-12 h-12 md:w-14 md:h-14 bg-white rounded-full shadow-[0_4px_20px_-4px_rgba(59,130,246,0.15)] border border-blue-50 flex items-center justify-center -translate-x-1/2 -translate-y-1/2 z-20" style={{ top, left }}>
+                     <item.Icon size={20} className="text-blue-600" strokeWidth={2} />
+                   </div>
+                 );
+               })}
+             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════ TESTIMONIALS ═══════════════ */}
-      <section className="py-12 md:py-12 px-6 overflow-hidden">
-        <div className="container mx-auto max-w-7xl">
-          <div className="text-center mb-16">
-            <SectionTag><Quote size={14} /> Testimonials</SectionTag>
-            <SectionTitle>What Our Clients Say</SectionTitle>
+      {/* Actionable Intelligence Section */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 grid lg:grid-cols-2 gap-16 items-center">
+          <div>
+            <h3 className="text-blue-600 font-bold text-sm uppercase tracking-wider mb-3">Actionable Consumer Intelligence</h3>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-10 leading-tight">
+              Real-time Insights.<br/>Smarter Decisions.
+            </h2>
+            
+            <div className="space-y-5">
+              {[
+                "Consumer Profiles",
+                "Geographic Insights",
+                "Product Performance",
+                "Repeat Purchases",
+                "Campaign Analytics",
+                "Counterfeit Alerts",
+                "Market Intelligence",
+                "Scan Analytics"
+              ].map((item, idx) => (
+                <div key={idx} className="flex items-center gap-3">
+                  <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                    <CheckCircle2 size={14} strokeWidth={3} />
+                  </div>
+                  <span className="text-slate-700 text-lg font-medium">{item}</span>
+                </div>
+              ))}
+            </div>
           </div>
-
-          {/* Infinite scrolling marquee */}
-          <div className="relative">
-            {/* Gradient fade edges */}
-            <div className="testimonial-marquee-track">
-              {[...Array(2)].map((_, setIdx) => (
-                <div key={setIdx} className="testimonial-marquee-set">
+          <div className="flex justify-center lg:justify-end w-full">
+            {/* Coded Dashboard Mockup */}
+            <div className="w-full max-w-2xl bg-white rounded-xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-slate-100/50 overflow-hidden flex flex-col md:flex-row h-[350px] lg:h-[400px] transform lg:translate-x-8">
+              {/* Sidebar */}
+              <div className="hidden md:flex flex-col w-[180px] bg-[#f8fafc] border-r border-slate-100 p-5 shrink-0">
+                <div className="flex items-center gap-2 mb-8 text-blue-600 font-bold text-[15px]">
+                  <img src={logoShield} className="w-6 h-6 object-contain" alt="Logo" /> Authentiks
+                </div>
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-3 text-xs font-bold text-blue-700 bg-blue-100/80 px-3 py-2.5 rounded-lg"><BarChart3 size={16} strokeWidth={2.5}/> Dashboard</div>
+                  <div className="flex items-center gap-3 text-xs font-semibold text-slate-500 px-3 py-2.5 hover:bg-slate-100 rounded-lg"><Package size={16}/> Products</div>
+                  <div className="flex items-center gap-3 text-xs font-semibold text-slate-500 px-3 py-2.5 hover:bg-slate-100 rounded-lg"><Users size={16}/> Consumers</div>
+                  <div className="flex items-center gap-3 text-xs font-semibold text-slate-500 px-3 py-2.5 hover:bg-slate-100 rounded-lg"><QrCode size={16}/> Scans</div>
+                  <div className="flex items-center gap-3 text-xs font-semibold text-slate-500 px-3 py-2.5 hover:bg-slate-100 rounded-lg"><Settings size={16}/> Settings</div>
+                </div>
+              </div>
+              
+              {/* Main Content */}
+              <div className="flex-1 p-6 md:p-8 flex flex-col gap-6 bg-white overflow-hidden">
+                <h4 className="font-bold text-slate-800 text-[15px]">Dashboard Overview</h4>
+                
+                {/* Stats */}
+                <div className="grid grid-cols-2 gap-4 lg:gap-5">
                   {[
-                    {
-                      name: 'Rahul Mehta',
-                      title: 'Head of Operations',
-                      company: 'Leading FMCG Brand',
-                      initial: 'R',
-                      color: 'from-emerald-500 to-teal-500',
-                      quote: 'We were facing increasing issues with duplicate products in key markets. After implementing Authentiks, we started receiving real-time alerts on suspicious scans. Within the first month itself, we identified multiple counterfeit sources and were able to act quickly. It has significantly strengthened our brand protection.'
-                    },
-                    {
-                      name: 'Ankit Sharma',
-                      title: 'Supply Chain Manager',
-                      company: 'Consumer Electronics Company',
-                      initial: 'A',
-                      color: 'from-blue-500 to-cyan-500',
-                      quote: 'Authentiks gave us visibility we never had before. Today, we can clearly see where our products are being scanned and identify unusual patterns across regions. This has helped us reduce distributor-level leakage and improve our overall supply chain control.'
-                    },
-                    {
-                      name: 'Priya Nair',
-                      title: 'Founder',
-                      company: 'D2C Skincare Brand',
-                      initial: 'P',
-                      color: 'from-purple-500 to-pink-500',
-                      quote: 'We initially started using Authentiks for product authentication, but the real value came from customer engagement. Every scan is now an opportunity for us to connect with our customers and build loyalty. We\'ve already started seeing better engagement and repeat interactions.'
-                    },
-                    {
-                      name: 'Karthik Reddy',
-                      title: 'Brand Manager',
-                      company: 'Apparel & Fashion Brand',
-                      initial: 'K',
-                      color: 'from-amber-500 to-orange-500',
-                      quote: 'Counterfeit products were impacting our brand trust. With Authentiks, customers can instantly verify authenticity before purchase. This has improved customer confidence and helped us reinforce our premium positioning in the market.'
-                    },
-                    {
-                      name: 'Dr. Amit Verma',
-                      title: 'Director',
-                      company: 'Pharmaceutical Distribution Company',
-                      initial: 'A',
-                      color: 'from-red-500 to-rose-500',
-                      quote: 'In our industry, authenticity is critical. Authentiks has added an extra layer of security by enabling product verification at multiple levels. The ability to track and validate products gives us much better control and peace of mind.'
-                    },
-                    {
-                      name: 'Neha Kapoor',
-                      title: 'Co-Founder',
-                      company: 'Emerging D2C Brand',
-                      initial: 'N',
-                      color: 'from-indigo-500 to-violet-500',
-                      quote: 'As a growing brand, we needed something simple yet scalable. Authentiks was easy to implement and started delivering insights almost immediately. It feels like having an enterprise-level system without heavy investment.'
-                    },
-                  ].map((t, i) => (
-                    <div key={i} className="testimonial-card glass-effect rounded-[2rem] p-8 border border-white/5 hover:border-indigo-500/20 transition-all flex flex-col min-w-[380px] max-w-[400px] mx-3 shrink-0">
-                      <div className="flex justify-center gap-1 mb-4">
-                        {Array.from({ length: 5 }).map((_, j) => (
-                          <Star key={j} size={14} className="text-amber-400 fill-amber-400" />
-                        ))}
-                      </div>
-
-                      <Quote size={24} className="text-indigo-500/30 mb-3 shrink-0" />
-
-                      <blockquote className="text-sm font-medium text-gray-300 leading-relaxed mb-6 italic flex-grow">
-                        "{t.quote}"
-                      </blockquote>
-
-                      <div className="flex items-center gap-3 mt-auto pt-4 border-t border-white/5">
-                        <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${t.color} flex items-center justify-center text-white font-black text-sm shrink-0`}>
-                          {t.initial}
-                        </div>
-                        <div>
-                          <div className="font-black text-white text-sm">{t.name}</div>
-                          <div className="text-xs text-gray-500 font-bold">{t.title}, {t.company}</div>
-                        </div>
-                      </div>
+                    { title: "Total Scans", value: "1,25,430", trend: "+18.6%" },
+                    { title: "Registered Consumers", value: "87,420", trend: "+22.4%" },
+                    { title: "Repeat Consumers", value: "32,410", trend: "+16.2%" },
+                    { title: "Countries", value: "12", trend: "+2" },
+                  ].map((stat, i) => (
+                    <div key={i} className="bg-white border border-slate-100/60 rounded-xl p-4 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex flex-col justify-between">
+                      <div className="text-[9px] uppercase tracking-wider text-slate-400 font-bold mb-1.5 line-clamp-1">{stat.title}</div>
+                      <div className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">{stat.value}</div>
+                      <div className="text-[10px] md:text-xs text-emerald-500 font-bold mt-1.5">{stat.trend}</div>
                     </div>
                   ))}
                 </div>
+                
+                {/* Charts Area */}
+                <div className="flex-1 grid grid-cols-2 gap-5 mt-2">
+                  <div className="border border-slate-100/60 rounded-xl p-4 flex flex-col shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
+                     <div className="text-[10px] font-bold text-slate-400 mb-3">Scan Trend</div>
+                     <div className="flex-1 relative w-full h-full overflow-hidden">
+                        <svg viewBox="0 0 100 50" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+                          <path d="M0,50 L0,35 Q15,20 30,30 T60,20 T80,25 T100,10 L100,50 Z" fill="#eff6ff" />
+                          <path d="M0,35 Q15,20 30,30 T60,20 T80,25 T100,10" fill="none" stroke="#3b82f6" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+                        </svg>
+                     </div>
+                  </div>
+                  <div className="border border-slate-100/60 rounded-xl flex items-center justify-center bg-[#f8fafc] overflow-hidden relative shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
+                     <Globe size={160} className="text-blue-100 absolute -right-8 -bottom-8 opacity-70" strokeWidth={1} />
+                     <div className="absolute inset-0 flex items-center justify-center">
+                       <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm text-[10px] font-bold text-blue-600 tracking-wider">Global Reach</div>
+                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Enterprise Security Section */}
+      <section className="bg-blue-700 py-16">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 flex flex-col lg:flex-row items-center gap-12 text-white">
+          <div className="shrink-0 w-32 h-32 lg:w-48 lg:h-48 flex items-center justify-center relative">
+             {/* Glow behind the shield */}
+             <div className="absolute inset-0 bg-white/10 blur-2xl rounded-full"></div>
+             <img src={logoShield} alt="Authentiks Security" className="w-full h-full object-contain relative z-10 drop-shadow-2xl" />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-2xl md:text-3xl font-bold mb-3">Enterprise-Grade Security with Cloudflare</h2>
+            <p className="text-blue-100 text-lg mb-8 max-w-2xl">
+              We protect your data and your consumers with industry-leading security standards.
+            </p>
+            
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-x-4 gap-y-10 text-center">
+              {[
+                { title: "Global Edge Protection", icon: Cloud },
+                { title: "SSL/TLS Encryption", icon: Lock },
+                { title: "Secure APIs", icon: Network },
+                { title: "Encrypted Data Storage", icon: Database },
+                { title: "Continuous Monitoring", icon: Activity },
+                { title: "High Platform Availability", icon: Target }
+              ].map((feature, i) => (
+                <div key={i} className="flex flex-col items-center">
+                  <feature.icon className="text-white mb-4 opacity-90" size={28} strokeWidth={1.5} />
+                  <h4 className="font-semibold text-[13px] leading-snug">{feature.title}</h4>
+                </div>
               ))}
             </div>
           </div>
         </div>
-
-        {/* Marquee animation CSS */}
-        <style dangerouslySetInnerHTML={{
-          __html: `
-          .testimonial-marquee-track {
-            display: flex;
-            width: max-content;
-            animation: testimonialScroll 40s linear infinite;
-          }
-          .testimonial-marquee-track:hover {
-            animation-play-state: paused;
-          }
-          .testimonial-marquee-set {
-            display: flex;
-            flex-shrink: 0;
-          }
-          @keyframes testimonialScroll {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-          }
-        `}} />
       </section>
 
-      {/* ═══════════════ FINAL CTA ═══════════════ */}
-      <section className="py-20 md:py-32 px-6">
-        <div className="container mx-auto max-w-5xl">
-          <div className="relative rounded-[3rem] overflow-hidden">
-            {/* Background gradient */}
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 via-purple-600/10 to-transparent" />
-            <div className="absolute -top-32 -left-32 w-96 h-96 bg-indigo-600 rounded-full blur-[160px] opacity-25" />
-            <div className="absolute -bottom-32 -right-32 w-72 h-72 bg-purple-600 rounded-full blur-[120px] opacity-20" />
+      {/* Industries */}
+      <section className="py-20 bg-white border-t border-slate-100">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
+          <h3 className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-blue-600 mb-16">Trusted Across Industries</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-x-4 gap-y-10">
+            {[
+              { name: "Pharmaceuticals", Icon: Pill },
+              { name: "Nutraceuticals", Icon: ShieldPlus },
+              { name: "FMCG", Icon: ShoppingBag },
+              { name: "Cosmetics", Icon: Sparkles },
+              { name: "Healthcare", Icon: HeartPulse },
+              { name: "Electronics", Icon: Monitor },
+              { name: "Luxury", Icon: Gem },
+              { name: "Food & Beverage", Icon: ShoppingBasket }
+            ].map((industry, i) => (
+              <div key={i} className="flex flex-col items-center text-center group cursor-pointer">
+                <div className="w-[72px] h-[72px] rounded-full border border-blue-100 bg-white shadow-[0_4px_20px_-4px_rgba(59,130,246,0.1)] flex items-center justify-center mb-5 group-hover:-translate-y-1 transition-transform duration-300">
+                  <industry.Icon className="text-blue-500" size={28} strokeWidth={1.5} />
+                </div>
+                <span className="font-bold text-[13px] text-slate-600">{industry.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-            <div className="glass-effect rounded-[3rem] p-12 md:p-20 text-center relative z-10">
-              <SectionTag>
-                <Sparkles size={14} /> Ready to Start?
-              </SectionTag>
-
-              <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 tracking-tighter leading-[1.05]">
-                Ready to Protect<br />Your Heritage?
-              </h2>
-
-              <p className="text-gray-400 font-medium mb-4 max-w-lg mx-auto leading-relaxed text-lg">
-                Stop losing customers to marketplaces.
-              </p>
-              <p className="text-gray-300 font-bold mb-10 max-w-lg mx-auto text-lg">
-                Start building your own customer channel.
-              </p>
-
-              <AnimatedCTA 
-                onClick={() => setShowContactForm(true)}
-                className="w-full max-w-md mx-auto"
-              />
+      {/* Bottom CTA */}
+      <section className="bg-[#0b1b36] py-16">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 flex flex-col lg:flex-row items-center justify-between gap-12">
+          <div className="text-white">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 leading-tight max-w-xl">
+              Build Stronger Consumer Relationships
+            </h2>
+            <p className="text-gray-400 text-lg mb-8">
+              Transform every product into a trusted digital touchpoint.
+            </p>
+            <Link to="/contact-us">
+              <button className="bg-white text-[#0b1b36] px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors flex items-center gap-2">
+                Book a Demo <ChevronRight size={18} />
+              </button>
+            </Link>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-8 lg:gap-12">
+            <div className="flex items-center gap-4 text-white">
+              <div className="w-12 h-12 border border-white/20 rounded-full flex items-center justify-center"><Mail size={20}/></div>
+              <div>
+                <div className="text-xs text-gray-400 font-medium">Email</div>
+                <div className="font-semibold">hello@authentiks.in</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 text-white">
+              <div className="w-12 h-12 border border-white/20 rounded-full flex items-center justify-center"><Phone size={20}/></div>
+              <div>
+                <div className="text-xs text-gray-400 font-medium">Phone</div>
+                <div className="font-semibold">+91 93425 01819</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 text-white">
+              <div className="w-12 h-12 border border-white/20 rounded-full flex items-center justify-center"><MessageCircle size={20}/></div>
+              <div>
+                <div className="text-xs text-gray-400 font-medium">WhatsApp</div>
+                <div className="font-semibold">Chat with us</div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       <WebFooter />
-      <ContactFormModal isOpen={showContactForm} onClose={() => setShowContactForm(false)} />
     </div>
   );
 }

@@ -1,128 +1,76 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Mail, MapPin, Phone, ShieldCheck, ExternalLink, MessageCircle } from 'lucide-react';
+import React from "react";
+import { Link } from "react-router-dom";
+import { Linkedin, X, Youtube } from "lucide-react";
+import logo from "../assets/logo.svg";
 
 export default function WebFooter() {
   return (
-    <footer className="bg-[#020617] text-gray-400 border-t border-white/5 relative">
-      {/* Main Footer */}
-      <div className="container mx-auto px-6 md:px-12 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-          {/* Brand */}
-          <div className="lg:col-span-1">
-            <div className="text-white font-black text-2xl tracking-tighter mb-4">
-              Authen<span className="text-indigo-400">tiks</span>
-            </div>
-            <p className="text-sm text-gray-500 font-medium leading-relaxed mb-6">
-              Secure product authentication, anti-counterfeit protection, and customer engagement — all in one platform.
-            </p>
-            <div className="flex items-center gap-2 text-xs text-emerald-400 font-bold">
-              <ShieldCheck size={14} />
-              <span>Trusted by 100+ Brands</span>
-            </div>
-          </div>
-
-          {/* Quick Links */}
-          <div className="lg:col-span-1">
-            <h4 className="text-white font-black text-sm uppercase tracking-wider mb-6">Quick Links</h4>
-            <ul className="grid grid-cols-2 gap-y-3 gap-x-4">
-              {[
-                { name: 'Home', path: '/' },
-                { name: 'Problem', path: '/problem' },
-                { name: 'Product', path: '/product' },
-                { name: 'AI Pulse', path: '/ai-pulse' },
-                { name: 'How It Works', path: '/how-it-works' },
-                { name: 'Verified', path: '/verified' },
-                { name: 'Industries', path: '/industries' },
-                { name: 'Pricing', path: '/pricing' },
-                { name: 'About Us', path: '/about-us' },
-                { name: 'FAQs', path: '/faqs' },
-                { name: 'Contact Us', path: '/contact-us' },
-              ].map((link) => (
-                <li key={link.path}>
-                  <Link
-                    to={link.path}
-                    className="text-sm font-medium hover:text-white transition-colors flex items-center gap-1.5 group"
-                  >
-                    <span className="w-0 group-hover:w-2 h-px bg-indigo-500 transition-all duration-300" />
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Legal */}
-          <div>
-            <h4 className="text-white font-black text-sm uppercase tracking-wider mb-6">Legal</h4>
-            <ul className="space-y-3">
-              {[
-                { name: 'Privacy Policy', path: '/privacy-policy' },
-                { name: 'Terms & Conditions', path: '/terms-conditions' },
-                { name: 'Security Policy', path: '/security-policy' },
-              ].map((link) => (
-                <li key={link.path}>
-                  <Link
-                    to={link.path}
-                    className="text-sm font-medium hover:text-white transition-colors flex items-center gap-1.5 group"
-                  >
-                    <span className="w-0 group-hover:w-2 h-px bg-indigo-500 transition-all duration-300" />
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div>
-            <h4 className="text-white font-black text-sm uppercase tracking-wider mb-6">Contact</h4>
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <Mail size={16} className="text-indigo-400 mt-0.5 shrink-0" />
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-1">Support Email</div>
-                  <a href="mailto:support@authentiks.in" className="text-sm font-medium hover:text-white transition-colors">
-                    support@authentiks.in
-                  </a>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <Phone size={16} className="text-indigo-400 mt-0.5 shrink-0" />
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-1">Phone</div>
-                  <a href="tel:+919342501819" className="text-sm font-medium hover:text-white transition-colors">
-                    +91 93425 01819
-                  </a>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <MapPin size={16} className="text-indigo-400 mt-0.5 shrink-0" />
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-1">Office</div>
-                  <span className="text-sm font-medium">Chennai, Tamil Nadu, India</span>
-                </div>
-              </li>
-            </ul>
+    <footer className="bg-[#0b1b36] text-white py-16 px-6 md:px-12">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
+        
+        {/* Brand Section */}
+        <div className="lg:col-span-2 flex flex-col gap-6">
+          <Link to="/" className="flex items-center gap-2">
+            <img src={logo} alt="Authentiks Logo" className="h-[36px] object-contain brightness-0 invert" />
+          </Link>
+          <p className="text-gray-300 text-[15px] leading-relaxed max-w-sm">
+            Consumer Intelligence Platform that authenticates products, captures consumer data, and builds lifelong brand relationships.
+          </p>
+          <div className="flex items-center gap-4 text-gray-300">
+            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors"><Linkedin size={20} /></a>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors"><X size={20} /></a>
+            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors"><Youtube size={20} /></a>
           </div>
         </div>
+
+        {/* Platform Column */}
+        <div className="flex flex-col gap-4">
+          <h4 className="font-bold text-[16px]">Platform</h4>
+          <Link to="/platform" className="text-gray-400 hover:text-white transition-colors text-[14px]">Product Authentication</Link>
+          <Link to="/platform" className="text-gray-400 hover:text-white transition-colors text-[14px]">Digital Product Passport</Link>
+          <Link to="/platform" className="text-gray-400 hover:text-white transition-colors text-[14px]">Consumer Intelligence</Link>
+          <Link to="/platform" className="text-gray-400 hover:text-white transition-colors text-[14px]">Security</Link>
+        </div>
+
+        {/* Solutions Column */}
+        <div className="flex flex-col gap-4">
+          <h4 className="font-bold text-[16px]">Solutions</h4>
+          <Link to="/solutions" className="text-gray-400 hover:text-white transition-colors text-[14px]">For Marketing</Link>
+          <Link to="/solutions" className="text-gray-400 hover:text-white transition-colors text-[14px]">For Sales</Link>
+          <Link to="/solutions" className="text-gray-400 hover:text-white transition-colors text-[14px]">For Operations</Link>
+          <Link to="/solutions" className="text-gray-400 hover:text-white transition-colors text-[14px]">For Brand Protection</Link>
+          <Link to="/solutions" className="text-gray-400 hover:text-white transition-colors text-[14px]">For Customer Experience</Link>
+        </div>
+
+        {/* Company & Legal Columns */}
+        <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-4">
+            <h4 className="font-bold text-[16px]">Company</h4>
+            <Link to="/about-us" className="text-gray-400 hover:text-white transition-colors text-[14px]">About Us</Link>
+            <Link to="/contact-us" className="text-gray-400 hover:text-white transition-colors text-[14px]">Careers</Link>
+            <Link to="/contact-us" className="text-gray-400 hover:text-white transition-colors text-[14px]">Resources</Link>
+            <Link to="/contact-us" className="text-gray-400 hover:text-white transition-colors text-[14px]">Contact Us</Link>
+          </div>
+          
+          <div className="flex flex-col gap-4">
+            <h4 className="font-bold text-[16px]">Legal</h4>
+            <Link to="/privacy-policy" className="text-gray-400 hover:text-white transition-colors text-[14px]">Privacy Policy</Link>
+            <Link to="/terms-conditions" className="text-gray-400 hover:text-white transition-colors text-[14px]">Terms of Service</Link>
+          </div>
+        </div>
+
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-white/5">
-        <div className="container mx-auto px-6 md:px-12 py-6 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="text-[11px] uppercase tracking-[0.2em] font-bold opacity-50">
-            &copy; {new Date().getFullYear()} Authentiks. Precision Authentication.
-          </div>
-          <div className="flex items-center gap-6 text-[11px] font-bold uppercase tracking-widest">
-            <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy</Link>
-            <Link to="/terms-conditions" className="hover:text-white transition-colors">Terms</Link>
-            <Link to="/security-policy" className="hover:text-white transition-colors">Security</Link>
-            <Link to="/contact-us" className="hover:text-white transition-colors">Contact</Link>
-          </div>
+      <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-[13px] text-gray-400">
+        <p>© {new Date().getFullYear()} Authentiks. All rights reserved.</p>
+        <div className="flex items-center gap-2">
+          <span>Secured by</span>
+          <span className="font-bold text-white text-[15px] flex items-center gap-1">
+             <span className="text-orange-500">cloudflare</span>
+          </span>
         </div>
       </div>
-
     </footer>
   );
 }

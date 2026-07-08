@@ -1,297 +1,255 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { getPlans, getBillingConfig } from '../../config/api';
-import {
-    Check, Shield, Zap, TrendingUp, Globe, Star, X,
-    Users, BarChart3, Repeat, AlertTriangle, QrCode, Lock, ArrowRight,
-    Package, Truck, Smartphone, Gift, Crown, Sparkles
-} from "lucide-react";
+import { CheckCircle2, Check, ArrowRight, ShieldCheck, Lock, Activity, Cloud, TrendingUp, RefreshCw, BarChart3, Star, Rocket, Building2, Calendar, MessageSquare, Network } from "lucide-react";
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
-import ContactFormModal from "../../components/ContactFormModal";
-import AnimatedCTA from "../../components/AnimatedCTA";
-import pricingBanner from "../../assets/banners/Pricing.jpg";
-import mobilePricingBanner from '../../assets/banners/Mobile banner authentiks/Pricing.jpg';
-import SEO from "../../components/SEO";
-import { unifiedPricingData } from "../../data/pricingData";
-import PricingCards from "../../components/PricingCards";
-
-/* ═══════════════════════ REUSABLE COMPONENTS ═══════════════════════ */
-
-const Glow = ({ color, className }) => (
-    <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
-);
-
-const SectionTag = ({ children, className = '' }) => (
-    <div className={`inline-flex items-center gap-2 px-5 py-2 rounded-full border text-[11px] font-black uppercase tracking-[0.25em] mb-6 ${className}`}>
-        {children}
-    </div>
-);
-
-const SectionTitle = ({ children, className = '' }) => (
-    <h2 className={`text-3xl md:text-5xl lg:text-6xl font-black text-white tracking-tighter leading-[1.05] mb-6 ${className}`}>
-        {children}
-    </h2>
-);
-
-/* ═══════════════════════ MAIN COMPONENT ═══════════════════════ */
+import plansHeroImage from "../../assets/web/plans_hero.png";
 
 export default function WebPricing() {
-    const [contactOpen, setContactOpen] = useState(false);
-    const [selectedPlanName, setSelectedPlanName] = useState('');
-    const [billingCycle, setBillingCycle] = useState('yearly'); // 'halfYearly' | 'yearly'
+  
+  // Using generic images for the placeholders since the user will add them later
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
+      <WebHeader />
 
-    // Map unified pricing data for comparison table
-    const comparisonFeatures = [];
-    unifiedPricingData.categories.forEach(cat => {
-        comparisonFeatures.push({ isHeader: true, name: cat.labelInTable || cat.name });
-        cat.features.filter(f => f.inTable !== false).forEach(f => {
-            comparisonFeatures.push({
-                isHeader: false,
-                name: f.labelInTable || f.name,
-                starter: f.starter ? '✓' : '-',
-                growth: f.growth ? '✓' : '-',
-                enterprise: f.enterprise ? '✓' : '-'
-            });
-        });
-    });
+      {/* Hero Section */}
+      <section className="pt-20 pb-24 overflow-hidden relative">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 grid lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <h3 className="text-blue-600 font-bold text-[11px] uppercase tracking-[0.2em] mb-4">Plans</h3>
+            <h1 className="text-4xl md:text-[52px] font-bold text-slate-900 leading-[1.1] mb-6 tracking-tight">
+              Flexible Plans for Every Stage of Growth
+            </h1>
+            <p className="text-lg text-slate-600 leading-relaxed mb-10 max-w-xl">
+              Whether you're launching your first connected product or scaling across millions of units, Authentiks grows with your business.
+            </p>
 
+            <div className="flex flex-col sm:flex-row gap-8">
+               <div className="flex gap-4 items-center">
+                  <ShieldCheck className="text-blue-600" size={32} strokeWidth={1.5} />
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-sm">Enterprise Security</h4>
+                    <p className="text-slate-500 text-xs">Powered by Cloudflare</p>
+                  </div>
+               </div>
+               <div className="flex gap-4 items-center">
+                  <Lock className="text-blue-600" size={32} strokeWidth={1.5} />
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-sm">Your Data. Always Secure.</h4>
+                    <p className="text-slate-500 text-xs">Built with privacy by design.</p>
+                  </div>
+               </div>
+            </div>
+          </div>
+          
+          <div className="relative z-10 hidden lg:block">
+             <div className="relative w-full h-full flex items-center justify-end">
+               <img src={plansHeroImage} alt="Authentiks Plans" className="w-[120%] max-w-none h-auto -translate-y-4 translate-x-8" />
+             </div>
+          </div>
+        </div>
+      </section>
 
-
-    return (
-        <div className="min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden flex flex-col">
-            <SEO 
-                title="Pricing | Anti Counterfeit & Product Traceability Software Plans"
-                description="Explore affordable pricing for anti counterfeit solutions in India. Get smart packaging and product authentication platform plans tailored for Indian brands."
-                keywords="anti counterfeit solutions india, smart packaging india, product authentication platform india, qr traceability solution india, fake product detection india, brand protection software india, qr based authentication india, product verification india"
-            />
-            <WebHeader />
-
-            {/* ═══════════════ HERO SECTION ═══════════════ */}
-            <section className="relative pt-8 md:pt-12 px-4 md:px-6 md:min-h-[85vh] flex items-center overflow-hidden">
-                <Glow color="bg-indigo-600" className="-top-32 -left-32 opacity-20" />
-                <Glow color="bg-cyan-600" className="top-1/2 -right-32 opacity-15" />
-
-                <div className="container mx-auto text-center relative z-10 ">
-                    {/* Desktop Banner */}
-                    <div
-                        onClick={() => setContactOpen(true)}
-                        className="hidden md:block hero-slide-enter relative w-[88%] mx-auto mb-10 rounded-[2rem] overflow-hidden shadow-2xl shadow-indigo-500/20 border border-white/5 cursor-pointer group"
-                    >
-                        <div className="relative w-full" style={{ aspectRatio: '1672/800' }}>
-                            <img
-                                src={pricingBanner}
-                                alt="Pricing banner"
-                                className="absolute inset-0 w-full h-full object-contain transition-all duration-1000 ease-in-out group-hover:scale-[1.01]"
-                            />
-                        </div>
-                        <div className="absolute inset-0 pointer-events-none rounded-[2rem] ring-1 ring-inset ring-white/10 z-20" />
-                        <div className="absolute inset-0 bg-white/0 group-hover:bg-white-[0.02] transition-colors z-20 pointer-events-none" />
-                    </div>
-
-                    {/* Mobile Banner & CTA */}
-                    <div className="block md:hidden hero-slide-enter relative w-[94%] mx-auto mb-8">
-                        <div className="relative w-full rounded-2xl overflow-hidden shadow-xl border border-white/10 mb-5">
-                            <img 
-                                src={mobilePricingBanner} 
-                                alt="Pricing Page banner" 
-                                className="w-full h-auto object-contain"
-                            />
-                        </div>
-                        <AnimatedCTA 
-                            onClick={() => setContactOpen(true)}
-                            className="w-full mx-auto"
-                        />
-                    </div>
-                </div>
-            </section>
-
-            {/* ═══════════════ CHOOSE YOUR PLAN ═══════════════ */}
-            <section className="py-12 px-6 relative" id="pricing-plans">
-                <Glow color="bg-indigo-600" className="-top-32 left-1/2 -translate-x-1/2 opacity-15" />
-                <div className="container mx-auto max-w-7xl relative z-10">
-                    <div className="text-center mb-16">
-                        <SectionTitle>Anti Counterfeit Solutions India: Choose Your Plan</SectionTitle>
-
-                        {/* Billing Toggle: Half-Yearly | Yearly */}
-                        {/* <div className="inline-flex items-center p-1.5 bg-white/5 rounded-full border border-white/10 relative mt-4">
-                            <div
-                                className={`absolute inset-y-1.5 w-[calc(50%-6px)] rounded-full transition-all duration-300 shadow-md bg-white ${billingCycle === 'halfYearly' ? 'left-1.5' : 'left-[calc(50%+4.5px)]'}`}
-                            />
-                            <button
-                                onClick={() => setBillingCycle('halfYearly')}
-                                className={`relative z-10 px-8 py-3 rounded-full font-black uppercase tracking-widest text-xs transition-colors ${billingCycle === 'halfYearly' ? 'text-black' : 'text-gray-400 hover:text-white'}`}
-                            >
-                                Half-Yearly
-                            </button>
-                            <button
-                                onClick={() => setBillingCycle('yearly')}
-                                className={`relative z-10 px-8 py-3 rounded-full font-black uppercase tracking-widest text-xs transition-colors flex items-center gap-2 ${billingCycle === 'yearly' ? 'text-black' : 'text-gray-400 hover:text-white'}`}
-                            >
-                                Yearly (Save 20%)
-                            </button>
-                        </div> */}
-                    </div>
-
-                    <div className="mt-12">
-                        <PricingCards onCTA={() => setContactOpen(true)} />
-                    </div>
-
-                    {/* ⚡ TRUST LINE */}
-                    <div className="mt-20 text-center max-w-3xl mx-auto">
-                        <div className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl bg-white/[0.03] border border-white/5 text-sm font-bold text-gray-400">
-                            <span className="text-xl">⚡</span>
-                            “Customer data is shared only with user consent to ensure privacy and compliance.”
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* ═══════════════ COMPARISON TABLE ═══════════════ */}
-            <section className="py-24 px-6 overflow-x-hidden border-y border-white/5">
-                <div className="container mx-auto max-w-5xl">
-                    <div className="text-center mb-16">
-                        <SectionTag><BarChart3 size={14} /> Full Comparison</SectionTag>
-                        <SectionTitle>Compare Plan Features</SectionTitle>
-                    </div>
-
-                    <div className="w-full overflow-x-auto pb-4">
-                        <table className="w-full text-left border-collapse min-w-[700px]">
-                            <thead>
-                                <tr className="border-b border-white/10">
-                                    <th className="p-6 text-sm font-black text-white uppercase tracking-widest w-1/3">Features</th>
-                                    <th className="p-6 text-sm font-black text-green-400 uppercase tracking-widest w-[22%] text-center">🟢 Starter</th>
-                                    <th className="p-6 text-sm font-black text-blue-400 uppercase tracking-widest w-[22%] text-center">🔵 Growth ⭐</th>
-                                    <th className="p-6 text-sm font-black text-purple-400 uppercase tracking-widest w-[22%] text-center">🟣 Enterprise</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-white/5 font-bold">
-                                {comparisonFeatures.map((f, i) => (
-                                    f.isHeader ? (
-                                        <tr key={i} className="bg-white/[0.03]">
-                                            <td colSpan="4" className="p-4 text-sm font-black text-white">{f.name}</td>
-                                        </tr>
-                                    ) : (
-                                        <tr key={i} className="hover:bg-white/[0.02] transition-colors">
-                                            <td className="p-6 text-gray-300 text-sm tracking-tight">{f.name}</td>
-                                            <td className={`p-6 text-center text-sm ${f.starter === '✓' ? 'text-green-400' : 'text-gray-600 font-normal'}`}>{f.starter}</td>
-                                            <td className={`p-6 text-center text-sm ${f.growth === '✓' ? 'text-blue-400' : 'text-gray-600 font-normal'}`}>{f.growth}</td>
-                                            <td className={`p-6 text-center text-sm ${f.enterprise === '✓' ? 'text-purple-400' : 'text-gray-600 font-normal'}`}>{f.enterprise}</td>
-                                        </tr>
-                                    )
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            {/* ═══════════════ ROI SECTION ═══════════════ */}
-            <section className="py-20 px-6 bg-gradient-to-b from-black/40 to-transparent relative">
-                <div className="container mx-auto max-w-6xl">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-                        <div>
-                            <SectionTag className="bg-emerald-500/10 border-emerald-500/20 text-emerald-400"><BarChart3 size={14} /> ROI Calculator</SectionTag>
-                            <SectionTitle>What Happens When Customers Scan Your Product?</SectionTitle>
-                            <p className="text-gray-400 font-medium text-lg leading-relaxed mb-8 border-l-2 border-emerald-500/30 pl-4 py-1">
-                                If <span className="text-white font-black">1,000 products</span> are scanned:
-                            </p>
-
-                            <div className="space-y-4 font-bold text-sm md:text-base">
-                                {[
-                                    { icon: Users, value: '400+', label: 'customers engage with your brand', color: 'text-blue-400', bg: 'bg-blue-500/10' },
-                                    { icon: Globe, value: '100–200', label: 'users visit your website', color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-                                    { icon: Repeat, value: '50–100', label: 'potential repeat customers', color: 'text-purple-400', bg: 'bg-purple-500/10' },
-                                    { icon: AlertTriangle, value: 'Instant', label: 'alerts if duplicate/fake scans detected', color: 'text-red-400', bg: 'bg-red-500/10' },
-                                ].map((item, i) => (
-                                    <div key={i} className="flex items-center gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.06] transition-all group">
-                                        <div className={`p-3 rounded-xl ${item.bg} ${item.color} group-hover:scale-110 transition-transform`}>
-                                            <item.icon size={20} />
-                                        </div>
-                                        <div>
-                                            <span className="text-white font-black text-lg">{item.value}</span>
-                                            <span className="text-gray-400 font-medium ml-2">{item.label}</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="glass-effect rounded-[2.5rem] p-10 md:p-14 relative overflow-hidden flex flex-col items-center text-center justify-center h-full min-h-[300px]">
-                            <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-emerald-500 rounded-full blur-[100px] opacity-20" />
-                            <div className="relative z-10 w-full">
-                                <h3 className="text-xl md:text-2xl font-black text-white mb-6 tracking-tight">The Authentiks Advantage</h3>
-                                <div className="text-7xl font-black text-white tracking-tighter mb-4">10x</div>
-                                <p className="text-gray-400 font-bold mb-6 text-lg flex flex-col gap-2">
-                                    <span className="text-emerald-400">far more in repeat revenue.</span>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* ═══════════════ HOW IT WORKS ═══════════════ */}
-            <section className="py-24 px-6 overflow-hidden">
-                <div className="container mx-auto max-w-6xl relative z-10">
-                    <div className="text-center mb-16">
-                        <SectionTag>How It Works</SectionTag>
-                        <SectionTitle>From Product to Customer in 4 Steps</SectionTitle>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
-                        {/* Connecting line (desktop) */}
-                        <div className="hidden md:block absolute top-[72px] left-[12.5%] right-[12.5%] h-[2px] bg-gradient-to-r from-emerald-500/30 via-blue-500/30 to-purple-500/30" />
-
-                        {[
-                            { step: '01', icon: QrCode, title: 'Place your order', color: 'text-emerald-400', stepBg: 'bg-emerald-500/20 border-emerald-500/30', ring: 'ring-emerald-500/20' },
-                            { step: '02', icon: Package, title: 'We generate & deliver', color: 'text-blue-400', stepBg: 'bg-blue-500/20 border-blue-500/30', ring: 'ring-blue-500/20' },
-                            { step: '03', icon: Truck, title: 'Apply to products', color: 'text-amber-400', stepBg: 'bg-amber-500/20 border-amber-500/30', ring: 'ring-amber-500/20' },
-                            { step: '04', icon: Smartphone, title: 'Customers scan & engage', color: 'text-purple-400', stepBg: 'bg-purple-500/20 border-purple-500/30', ring: 'ring-purple-500/20' },
-                        ].map((item, i) => (
-                            <div key={i} className="group flex flex-col items-center text-center relative">
-                                <div className={`relative z-10 w-16 h-16 rounded-full ${item.stepBg} border flex items-center justify-center mb-6 ring-4 ${item.ring}`}>
-                                    <item.icon size={24} className={item.color} />
-                                </div>
-                                <h3 className="text-sm font-black text-white mb-2 uppercase tracking-widest">{item.title}</h3>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* ═══════════════ FINAL CTA ═══════════════ */}
-            <section className="py-24 px-6">
-                <div className="container mx-auto max-w-5xl">
-                    <div className="relative rounded-[3rem] overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 via-blue-600/10 to-transparent" />
-                        <div className="glass-effect rounded-[3rem] p-12 md:p-20 text-center relative z-10">
-                            <h2 className="text-3xl md:text-5xl lg:text-6xl font-black text-white mb-6 tracking-tighter leading-[1.05]">
-                                Ready to Turn Every Product<br />Into a Sales Channel?
-                            </h2>
-                            <p className="text-gray-400 font-bold mb-2">Stop losing customers to marketplaces.</p>
-                            <p className="text-white font-black mb-10 text-lg">Start owning your customer journey.</p>
-                            <button
-                                onClick={() => setContactOpen(true)}
-                                className="px-12 py-6 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-[0_0_80px_rgba(255,255,255,0.15)] hover:scale-105 active:scale-95 text-sm inline-flex items-center gap-3"
-                            >
-                                Start Your 90-Day Experience
-                                <ArrowRight size={18} />
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* FOOTNOTE */}
-            <div className="container mx-auto px-6 py-8 text-center border-t border-white/5">
-                <p className="text-xs text-gray-600 font-bold max-w-3xl mx-auto leading-relaxed">
-                    90-day access includes limited-time premium features. QR credits applicable only on annual plans and valid for 12 months. Label printing and delivery charged separately. Terms apply.
-                </p>
+      {/* Pricing Cards */}
+      <section className="py-12 -mt-12 relative z-20">
+         <div className="max-w-7xl mx-auto px-6 md:px-12 grid lg:grid-cols-3 gap-8">
+            
+            {/* Starter */}
+            <div className="bg-white rounded-[32px] border border-green-100 shadow-sm p-8 flex flex-col h-full hover:shadow-xl transition-shadow relative overflow-hidden">
+               <div className="absolute top-0 left-0 w-full h-2 bg-green-500"></div>
+               <div className="flex flex-col items-center text-center mb-8">
+                  <div className="w-16 h-16 bg-green-500 rounded-2xl flex items-center justify-center text-white mb-4 rotate-3 shadow-lg shadow-green-500/20">
+                     <Rocket size={32} />
+                  </div>
+                  <h3 className="text-2xl font-black text-green-600 tracking-wider">STARTER</h3>
+                  <p className="text-slate-500 text-sm mt-2 font-medium">For brands beginning their digital product journey.</p>
+               </div>
+               
+               <div className="bg-green-50/50 rounded-2xl p-6 mb-8 border border-green-100">
+                  <h4 className="font-bold text-green-700 text-sm mb-4">Ideal for</h4>
+                  <ul className="space-y-3">
+                     <li className="flex gap-2 text-sm text-slate-700 font-medium"><div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 shrink-0"></div> Emerging Brands</li>
+                     <li className="flex gap-2 text-sm text-slate-700 font-medium"><div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 shrink-0"></div> Pilot Projects</li>
+                     <li className="flex gap-2 text-sm text-slate-700 font-medium"><div className="w-1.5 h-1.5 rounded-full bg-green-500 mt-2 shrink-0"></div> Authentication</li>
+                  </ul>
+               </div>
+               
+               <div className="flex-1">
+                  <h4 className="font-bold text-green-700 text-sm mb-4">Includes</h4>
+                  <ul className="space-y-4">
+                     <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-green-500 shrink-0" size={18}/> Product Authentication</li>
+                     <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-green-500 shrink-0" size={18}/> Secure QR Identity</li>
+                     <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-green-500 shrink-0" size={18}/> Duplicate Detection</li>
+                     <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-green-500 shrink-0" size={18}/> Verification Dashboard</li>
+                     <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-green-500 shrink-0" size={18}/> Basic Analytics</li>
+                  </ul>
+               </div>
+               
+               <div className="mt-8">
+                  <button className="w-full py-4 rounded-xl border-2 border-green-500 text-green-600 font-bold hover:bg-green-50 transition-colors flex items-center justify-center gap-2">
+                     <MessageSquare size={18} /> Contact Sales
+                  </button>
+               </div>
+            </div>
+            
+            {/* Growth - Recommended */}
+            <div className="bg-white rounded-[32px] border-2 border-blue-600 shadow-2xl p-8 flex flex-col h-full relative transform lg:-translate-y-4">
+               <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600 text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">
+                  Recommended
+               </div>
+               
+               <div className="flex flex-col items-center text-center mb-8">
+                  <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white mb-4 -rotate-3 shadow-xl shadow-blue-600/30">
+                     <Star size={32} />
+                  </div>
+                  <h3 className="text-2xl font-black text-blue-600 tracking-wider">GROWTH</h3>
+                  <p className="text-slate-500 text-sm mt-2 font-medium">Ideal for brands focused on building direct consumer relationships.</p>
+               </div>
+               
+               <div className="flex-1">
+                  <h4 className="font-bold text-blue-700 text-sm mb-4">Everything in Starter, plus</h4>
+                  <ul className="space-y-4">
+                     <li className="flex gap-3 text-sm text-slate-700 font-bold"><CheckCircle2 className="text-blue-600 shrink-0 fill-blue-100" size={18}/> Consumer Registration</li>
+                     <li className="flex gap-3 text-sm text-slate-700 font-bold"><CheckCircle2 className="text-blue-600 shrink-0 fill-blue-100" size={18}/> Product Passport</li>
+                     <li className="flex gap-3 text-sm text-slate-700 font-bold"><CheckCircle2 className="text-blue-600 shrink-0 fill-blue-100" size={18}/> Consumer Intelligence</li>
+                     <li className="flex gap-3 text-sm text-slate-700 font-bold"><CheckCircle2 className="text-blue-600 shrink-0 fill-blue-100" size={18}/> Warranty Management</li>
+                     <li className="flex gap-3 text-sm text-slate-700 font-bold"><CheckCircle2 className="text-blue-600 shrink-0 fill-blue-100" size={18}/> Consumer Engagement</li>
+                     <li className="flex gap-3 text-sm text-slate-700 font-bold"><CheckCircle2 className="text-blue-600 shrink-0 fill-blue-100" size={18}/> Smart Reorder</li>
+                     <li className="flex gap-3 text-sm text-slate-700 font-bold"><CheckCircle2 className="text-blue-600 shrink-0 fill-blue-100" size={18}/> Campaign Management</li>
+                     <li className="flex gap-3 text-sm text-slate-700 font-bold"><CheckCircle2 className="text-blue-600 shrink-0 fill-blue-100" size={18}/> Location Analytics</li>
+                  </ul>
+               </div>
+               
+               <div className="mt-8">
+                  <button className="w-full py-4 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20">
+                     <MessageSquare size={18} /> Contact Sales
+                  </button>
+               </div>
+            </div>
+            
+            {/* Enterprise */}
+            <div className="bg-white rounded-[32px] border border-purple-100 shadow-sm p-8 flex flex-col h-full hover:shadow-xl transition-shadow relative overflow-hidden">
+               <div className="absolute top-0 left-0 w-full h-2 bg-purple-600"></div>
+               <div className="flex flex-col items-center text-center mb-8">
+                  <div className="w-16 h-16 bg-purple-600 rounded-2xl flex items-center justify-center text-white mb-4 rotate-3 shadow-lg shadow-purple-600/20">
+                     <Building2 size={32} />
+                  </div>
+                  <h3 className="text-2xl font-black text-purple-600 tracking-wider">ENTERPRISE</h3>
+                  <p className="text-slate-500 text-sm mt-2 font-medium">Built for enterprise-scale deployments.</p>
+               </div>
+               
+               <div className="flex-1">
+                  <h4 className="font-bold text-purple-800 text-sm mb-4">Everything in Growth, plus</h4>
+                  <ul className="space-y-4">
+                     <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-purple-600 shrink-0" size={18}/> Advanced Analytics</li>
+                     <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-purple-600 shrink-0" size={18}/> AI Insights</li>
+                     <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-purple-600 shrink-0" size={18}/> API Access</li>
+                     <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-purple-600 shrink-0" size={18}/> ERP Integration</li>
+                     <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-purple-600 shrink-0" size={18}/> CRM Integration</li>
+                     <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-purple-600 shrink-0" size={18}/> Custom Dashboards</li>
+                     <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-purple-600 shrink-0" size={18}/> Dedicated Success Manager</li>
+                     <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-purple-600 shrink-0" size={18}/> Priority Support</li>
+                  </ul>
+               </div>
+               
+               <div className="mt-8">
+                  <button className="w-full py-4 rounded-xl border-2 border-purple-600 text-purple-700 font-bold hover:bg-purple-50 transition-colors flex items-center justify-center gap-2">
+                     <MessageSquare size={18} /> Contact Sales
+                  </button>
+               </div>
             </div>
 
-            <WebFooter />
-            <ContactFormModal isOpen={contactOpen} onClose={() => setContactOpen(false)} planName={selectedPlanName} />
-        </div>
-    );
+         </div>
+      </section>
+
+      {/* Compare Plans Table */}
+      <section className="py-24 bg-white relative">
+         <div className="max-w-6xl mx-auto px-6 md:px-12">
+            <h2 className="text-3xl font-bold text-center text-slate-900 mb-12">Compare Plans</h2>
+            
+            <div className="overflow-x-auto">
+               <table className="w-full text-left border-collapse min-w-[800px]">
+                  <thead>
+                     <tr>
+                        <th className="w-1/3 py-6 px-4 border-b-2 border-slate-100 text-sm font-bold text-slate-500 uppercase tracking-wider">Features</th>
+                        <th className="w-1/5 py-6 px-4 border-b-2 border-slate-100 text-center text-sm font-black text-green-600 uppercase tracking-wider">Starter</th>
+                        <th className="w-1/5 py-6 px-4 border-b-2 border-slate-100 text-center text-sm font-black text-blue-600 uppercase tracking-wider bg-blue-50/50 rounded-t-xl">Growth</th>
+                        <th className="w-1/5 py-6 px-4 border-b-2 border-slate-100 text-center text-sm font-black text-purple-600 uppercase tracking-wider">Enterprise</th>
+                     </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                     {[
+                        { name: "Product Authentication", icon: <ShieldCheck size={16}/>, s: true, g: true, e: true },
+                        { name: "Unique QR Identity", icon: <Activity size={16}/>, s: true, g: true, e: true },
+                        { name: "Duplicate Scan Detection", icon: <Activity size={16}/>, s: true, g: true, e: true },
+                        { name: "Consumer Registration", icon: <ShieldCheck size={16}/>, s: false, g: true, e: true },
+                        { name: "Digital Product Passport", icon: <ShieldCheck size={16}/>, s: false, g: true, e: true },
+                        { name: "Warranty Management", icon: <ShieldCheck size={16}/>, s: false, g: true, e: true },
+                        { name: "Rewards & Engagement", icon: <Star size={16}/>, s: false, g: true, e: true },
+                        { name: "Smart Reorder", icon: <Activity size={16}/>, s: false, g: true, e: true },
+                        { name: "Consumer Intelligence Dashboard", icon: <BarChart3 size={16}/>, s: false, g: true, e: true },
+                        { name: "API Access & Integrations", icon: <Network size={16}/>, s: false, g: false, e: true },
+                        { name: "Advanced Analytics & AI", icon: <BarChart3 size={16}/>, s: false, g: false, e: true },
+                        { name: "Dedicated Support & SLAs", icon: <ShieldCheck size={16}/>, s: false, g: false, e: true },
+                     ].map((row, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                           <td className="py-4 px-4 flex items-center gap-3 text-sm font-medium text-slate-700">
+                              <span className="text-slate-400">{row.icon}</span> {row.name}
+                           </td>
+                           <td className="py-4 px-4 text-center">
+                              {row.s ? <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center mx-auto shadow-sm"><Check size={14} strokeWidth={3}/></div> : <span className="text-slate-300">—</span>}
+                           </td>
+                           <td className="py-4 px-4 text-center bg-blue-50/50">
+                              {row.g ? <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center mx-auto shadow-sm"><Check size={14} strokeWidth={3}/></div> : <span className="text-slate-300">—</span>}
+                           </td>
+                           <td className="py-4 px-4 text-center">
+                              {row.e ? <div className="w-6 h-6 rounded-full bg-purple-600 text-white flex items-center justify-center mx-auto shadow-sm"><Check size={14} strokeWidth={3}/></div> : <span className="text-slate-300">—</span>}
+                           </td>
+                        </tr>
+                     ))}
+                  </tbody>
+               </table>
+            </div>
+         </div>
+      </section>
+
+      {/* Flat Pricing Strip */}
+      <section className="py-16 bg-white border-y border-slate-100">
+         <div className="max-w-4xl mx-auto px-6 md:px-12 text-center">
+            <h2 className="text-2xl font-bold text-slate-900 mb-4">Flat QR Pricing</h2>
+            <p className="text-lg text-slate-600 leading-relaxed">
+              Every plan includes secure QR labels at a flat rate of ₹1 per QR label, ensuring predictable costs as you scale.
+            </p>
+         </div>
+      </section>
+
+
+      {/* CTA Bottom */}
+      <section className="py-24 px-6 md:px-12 bg-slate-50">
+         <div className="max-w-6xl mx-auto bg-[#0d47a1] rounded-[32px] p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-10 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/20 blur-[80px] rounded-full -translate-y-1/2 translate-x-1/3"></div>
+            
+            <div className="relative z-10 text-white max-w-xl">
+               <h2 className="text-[28px] font-bold mb-6 leading-tight">Why Contact Sales?</h2>
+               <p className="text-blue-100 mb-4">Every deployment is tailored based on:</p>
+               <ul className="space-y-2 mb-8">
+                 <li className="flex items-center gap-2 text-blue-50"><div className="w-1.5 h-1.5 rounded-full bg-white"></div> Number of Products</li>
+                 <li className="flex items-center gap-2 text-blue-50"><div className="w-1.5 h-1.5 rounded-full bg-white"></div> Annual Production Volume</li>
+                 <li className="flex items-center gap-2 text-blue-50"><div className="w-1.5 h-1.5 rounded-full bg-white"></div> Platform Modules</li>
+                 <li className="flex items-center gap-2 text-blue-50"><div className="w-1.5 h-1.5 rounded-full bg-white"></div> Integration Requirements</li>
+                 <li className="flex items-center gap-2 text-blue-50"><div className="w-1.5 h-1.5 rounded-full bg-white"></div> Business Objectives</li>
+               </ul>
+            </div>
+            
+            <div className="relative z-10 shrink-0 flex flex-col gap-4 w-full md:w-auto min-w-[200px]">
+               <button className="w-full bg-white text-blue-900 px-8 py-4 rounded-xl font-bold hover:bg-slate-50 transition-colors shadow-lg flex items-center justify-center gap-2">
+                 <MessageSquare size={20}/> Contact Sales
+               </button>
+            </div>
+         </div>
+      </section>
+
+      <WebFooter />
+    </div>
+  );
 }

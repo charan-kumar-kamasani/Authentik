@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
-import logo from "../assets/logo-text.png";
+import logo from "../assets/logo.svg"; // Changed to use standard logo
 
 export default function WebHeader() {
   const location = useLocation();
@@ -20,38 +20,24 @@ export default function WebHeader() {
     navigate("/admin/dashboard");
   };
 
-  const isActive = (path) => {
-    return location.pathname === path ? "text-[#214B80]" : "text-[#3DA8E4]";
-  };
-
   const navItems = [
     { name: "Home", path: "/" },
-    { name: "Problem", path: "/problem" },
-    { name: "Product", path: "/product" },
-    { name: "How it works", path: "/how-it-works" },
-    { name: "AI Pulse", path: "/ai-pulse", isButton: true },
-    { name: "Verified", path: "/verified" },
-    { name: "Industries", path: "/industries" },
-    { name: "Pricing", path: "/pricing" },
+    { name: "About Us", path: "/about-us" },
+    { name: "Platform", path: "/platform" },
+    { name: "Solutions", path: "/solutions" },
+    { name: "Plans", path: "/pricing" },
+    { name: "Contact Us", path: "/contact-us" },
   ];
 
-
   return (
-    <header className="flex items-center justify-between px-6 md:px-12 py-4 bg-[#020617]/80 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50">
+    <header className="flex items-center justify-between px-6 md:px-12 py-4 bg-white sticky top-0 z-50 border-b border-gray-100 shadow-sm">
       <div className="flex items-center">
-        <Link to="/" className="flex items-center gap-2 group">
-          <div className="p-1 rounded-lg bg-white/5 border border-white/10 group-hover:bg-white/10 transition-colors">
-            <img
-              src={logo}
-              alt="Authentiks Logo"
-              className="h-[28px] md:h-[32px] object-contain"
-            />
-          </div>
-          <h1
-            className="text-[20px] md:text-[24px] font-black tracking-tighter text-white"
-          >
-            Authen<span className="text-indigo-400">tiks</span>
-          </h1>
+        <Link to="/" className="flex items-center gap-2">
+          <img
+            src={logo}
+            alt="Authentiks Logo"
+            className="h-[32px] md:h-[40px] object-contain"
+          />
         </Link>
       </div>
 
@@ -60,44 +46,24 @@ export default function WebHeader() {
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
 
-            if (item.isButton) {
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  className={`relative text-[14px] md:text-[15px] font-bold transition-all duration-300 flex items-center gap-2 px-4 py-1.5 rounded-full border shadow-sm
-          ${isActive
-                      ? "bg-cyan-500/20 border-cyan-500/50 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
-                      : "bg-white/5 border-white/10 text-cyan-400 hover:bg-cyan-500/10 hover:border-cyan-500/30 hover:text-cyan-300 hover:shadow-[0_0_15px_rgba(6,182,212,0.2)]"
-                    }`}
-                >
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
-                  </span>
-                  {item.name}
-                </Link>
-              );
-            }
-
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`relative text-base md:text-[17px] font-semibold transition-all duration-300 
-        ${isActive
-                    ? "text-white"
-                    : "text-gray-400 hover:text-white"
+                className={`relative text-[15px] font-medium transition-all duration-300 
+                ${isActive
+                    ? "text-blue-600 font-semibold"
+                    : "text-gray-600 hover:text-blue-600"
                   }`}
               >
                 {item.name}
-
+                
                 {/* Underline effect */}
                 <span
-                  className={`absolute left-0 -bottom-1 h-[2px] w-full bg-indigo-500 transition-all duration-300 
-          ${isActive
+                  className={`absolute left-0 -bottom-1 h-[2px] w-full bg-blue-600 transition-all duration-300 
+                  ${isActive
                       ? "opacity-100 scale-x-100"
-                      : "opacity-0 scale-x-0 transition-opacity hover:opacity-100"
+                      : "opacity-0 scale-x-0 transition-opacity group-hover:opacity-100"
                     }`}
                 ></span>
               </Link>
@@ -105,33 +71,32 @@ export default function WebHeader() {
           })}
         </nav>
 
-        <div className="hidden md:flex items-center gap-4">
-          <Link to="/live-demo">
-            <button className="bg-indigo-600/20 text-indigo-400 px-6 py-2 rounded-full font-bold text-sm md:text-base hover:bg-indigo-600 hover:text-white border border-indigo-500/30 transition-all shadow-[0_0_20px_rgba(99,102,241,0.2)]">
-              Live Demo
+        <div className="hidden md:flex items-center gap-6">
+          {!token && !adminToken && (
+            <Link to="/login" className="text-gray-700 hover:text-blue-600 font-medium text-[15px] transition-colors">
+              Login
+            </Link>
+          )}
+
+          <Link to="/contact-us">
+            <button className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold text-[15px] hover:bg-blue-700 transition-all shadow-md hover:shadow-lg">
+              Book a Demo
             </button>
           </Link>
 
-          {adminToken && !token ? (
-            <button 
-              onClick={handleGoToAdmin}
-              className="bg-cyan-600/20 text-cyan-400 px-6 py-2 rounded-full font-bold text-sm md:text-base hover:bg-cyan-600 hover:text-white border border-cyan-500/30 transition-all shadow-[0_0_20px_rgba(6,182,212,0.2)]"
-            >
-              Dashboard
-            </button>
-          ) : (
-            <button 
-              onClick={handleGoToApp}
-              className="bg-cyan-600/20 text-cyan-400 px-6 py-2 rounded-full font-bold text-sm md:text-base hover:bg-cyan-600 hover:text-white border border-cyan-500/30 transition-all shadow-[0_0_20px_rgba(6,182,212,0.2)]"
-            >
-              Go to App
-            </button>
+          {(adminToken || token) && (
+             <button 
+               onClick={adminToken && !token ? handleGoToAdmin : handleGoToApp}
+               className="bg-gray-100 text-gray-800 px-6 py-2.5 rounded-lg font-semibold text-[15px] hover:bg-gray-200 transition-all"
+             >
+               {adminToken && !token ? "Dashboard" : "Go to App"}
+             </button>
           )}
         </div>
         
         {/* Mobile Menu Toggle Button */}
         <button 
-          className="lg:hidden p-2 text-white/80 hover:text-white transition-colors"
+          className="lg:hidden p-2 text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
           {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
@@ -140,64 +105,43 @@ export default function WebHeader() {
 
       {/* Mobile Navigation Menu */}
       {isMobileMenuOpen && (
-        <div className="absolute top-full left-0 w-full bg-[#020617]/98 backdrop-blur-2xl border-b border-white/10 shadow-2xl lg:hidden flex flex-col py-4 px-6 gap-3 z-40 overflow-y-auto max-h-[calc(100vh-80px)]">
+        <div className="absolute top-full left-0 w-full bg-white shadow-xl lg:hidden flex flex-col py-4 px-6 gap-3 z-40 border-b border-gray-100">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
-            
-            if (item.isButton) {
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`relative text-[15px] font-bold transition-all duration-300 flex items-center gap-3 px-4 py-2.5 rounded-xl border w-fit
-                    ${isActive
-                      ? "bg-cyan-500/20 border-cyan-500/50 text-white shadow-[0_0_15px_rgba(6,182,212,0.3)]"
-                      : "bg-white/5 border-white/10 text-white"
-                    }`}
-                >
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
-                  </span>
-                  {item.name}
-                </Link>
-              );
-            }
-
             return (
               <Link
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`text-[17px] font-bold transition-all duration-300 border-b border-white/5 pb-2.5
-                  ${isActive ? "text-white" : "text-white hover:text-white/80"}`}
+                className={`text-[16px] font-medium transition-all duration-300 border-b border-gray-100 pb-3
+                  ${isActive ? "text-blue-600 font-bold" : "text-gray-700 hover:text-blue-600"}`}
               >
                 {item.name}
               </Link>
             );
           })}
           
-          <div className="grid grid-cols-2 gap-3 mt-1">
-            <Link to="/live-demo" onClick={() => setIsMobileMenuOpen(false)}>
-              <button className="w-full bg-indigo-600/20 text-white py-3 rounded-xl font-bold text-[14px] border border-indigo-500/30">
-                Live Demo
+          <div className="flex flex-col gap-3 mt-4">
+            {!token && !adminToken && (
+              <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                 <button className="w-full bg-white text-gray-800 py-3 rounded-xl font-bold text-[15px] border border-gray-200">
+                   Login
+                 </button>
+              </Link>
+            )}
+
+            <Link to="/contact-us" onClick={() => setIsMobileMenuOpen(false)}>
+              <button className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-[15px] shadow-md">
+                Book a Demo
               </button>
             </Link>
 
-            {adminToken && !token ? (
+            {(adminToken || token) && (
               <button 
-                onClick={handleGoToAdmin}
-                className="w-full bg-cyan-600/20 text-white py-3 rounded-xl font-bold text-[14px] border border-cyan-500/30"
+                onClick={adminToken && !token ? handleGoToAdmin : handleGoToApp}
+                className="w-full bg-gray-100 text-gray-800 py-3 rounded-xl font-bold text-[15px]"
               >
-                Dashboard
-              </button>
-            ) : (
-              <button 
-                onClick={handleGoToApp}
-                className="w-full bg-cyan-600/20 text-white py-3 rounded-xl font-bold text-[14px] border border-cyan-500/30"
-              >
-                Go to App
+                {adminToken && !token ? "Dashboard" : "Go to App"}
               </button>
             )}
           </div>

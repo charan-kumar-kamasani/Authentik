@@ -22,6 +22,8 @@ import WebLiveDemo from "./pages/web/WebLiveDemo";
 import WebAIPulse from "./pages/web/WebAIPulse";
 import WebProblem from "./pages/web/WebProblem";
 import WebVerified from "./pages/web/WebVerified";
+import WebPlatform from "./pages/web/WebPlatform";
+import WebSolutions from "./pages/web/WebSolutions";
 import Scan from "./pages/mobile/scan";
 import Result from "./pages/mobile/Result";
 import ConsumerSupport from "./pages/mobile/ConsumerSupport";
@@ -262,6 +264,9 @@ export default function App() {
             <Route path="/verified" element={<WebVerified />} />
             <Route path="/industries" element={<WebIndustries />} />
             <Route path="/pricing" element={<WebPricing />} />
+            <Route path="/plans" element={<Navigate to="/pricing" replace />} />
+            <Route path="/platform" element={<WebPlatform />} />
+            <Route path="/solutions" element={<WebSolutions />} />
             <Route path="/about-us" element={<WebAboutUs />} />
             <Route path="/faqs" element={<WebFAQs />} />
             <Route path="/contact-us" element={<WebContactUs />} />
