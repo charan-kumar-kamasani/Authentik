@@ -440,21 +440,21 @@ export default function LandingPage() {
               <div className="w-12 h-12 border border-white/20 rounded-full flex items-center justify-center"><Mail size={20}/></div>
               <div>
                 <div className="text-xs text-gray-400 font-medium">Email</div>
-                <div className="font-semibold">hello@authentiks.in</div>
+                <div className="font-semibold whitespace-nowrap">hello@authentiks.in</div>
               </div>
             </div>
             <div className="flex items-center gap-4 text-white">
               <div className="w-12 h-12 border border-white/20 rounded-full flex items-center justify-center"><Phone size={20}/></div>
               <div>
                 <div className="text-xs text-gray-400 font-medium">Phone</div>
-                <div className="font-semibold">+91 93425 01819</div>
+                <div className="font-semibold whitespace-nowrap">+91 93425 01819</div>
               </div>
             </div>
             <div className="flex items-center gap-4 text-white">
               <div className="w-12 h-12 border border-white/20 rounded-full flex items-center justify-center"><MessageCircle size={20}/></div>
               <div>
                 <div className="text-xs text-gray-400 font-medium">WhatsApp</div>
-                <div className="font-semibold">Chat with us</div>
+                <div className="font-semibold whitespace-nowrap">Chat with us</div>
               </div>
             </div>
           </div>
