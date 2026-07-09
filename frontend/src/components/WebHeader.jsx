@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
-import logo from "../assets/logo.svg"; // Changed to use standard logo
+import logo from "../assets/logo.png"; // Changed to use standard logo
 
 export default function WebHeader() {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+
   const token = localStorage.getItem("token");
   const adminToken = localStorage.getItem("adminToken");
 
@@ -57,7 +57,7 @@ export default function WebHeader() {
                   }`}
               >
                 {item.name}
-                
+
                 {/* Underline effect */}
                 <span
                   className={`absolute left-0 -bottom-1 h-[2px] w-full bg-blue-600 transition-all duration-300 
@@ -85,17 +85,17 @@ export default function WebHeader() {
           </Link>
 
           {(adminToken || token) && (
-             <button 
-               onClick={adminToken && !token ? handleGoToAdmin : handleGoToApp}
-               className="bg-gray-100 text-gray-800 px-6 py-2.5 rounded-lg font-semibold text-[15px] hover:bg-gray-200 transition-all"
-             >
-               {adminToken && !token ? "Dashboard" : "Go to App"}
-             </button>
+            <button
+              onClick={adminToken && !token ? handleGoToAdmin : handleGoToApp}
+              className="bg-gray-100 text-gray-800 px-6 py-2.5 rounded-lg font-semibold text-[15px] hover:bg-gray-200 transition-all"
+            >
+              {adminToken && !token ? "Dashboard" : "Go to App"}
+            </button>
           )}
         </div>
-        
+
         {/* Mobile Menu Toggle Button */}
-        <button 
+        <button
           className="lg:hidden p-2 text-gray-800 hover:bg-gray-100 rounded-lg transition-colors"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
@@ -120,13 +120,13 @@ export default function WebHeader() {
               </Link>
             );
           })}
-          
+
           <div className="flex flex-col gap-3 mt-4">
             {!token && !adminToken && (
               <Link to="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                 <button className="w-full bg-white text-gray-800 py-3 rounded-xl font-bold text-[15px] border border-gray-200">
-                   Login
-                 </button>
+                <button className="w-full bg-white text-gray-800 py-3 rounded-xl font-bold text-[15px] border border-gray-200">
+                  Login
+                </button>
               </Link>
             )}
 
@@ -137,7 +137,7 @@ export default function WebHeader() {
             </Link>
 
             {(adminToken || token) && (
-              <button 
+              <button
                 onClick={adminToken && !token ? handleGoToAdmin : handleGoToApp}
                 className="w-full bg-gray-100 text-gray-800 py-3 rounded-xl font-bold text-[15px]"
               >
