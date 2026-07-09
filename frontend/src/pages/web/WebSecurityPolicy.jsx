@@ -3,28 +3,28 @@ import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 
 const SectionTitle = ({ children }) => (
-  <h2 className={`text-2xl md:text-3xl font-black text-white uppercase tracking-tight mb-6 mt-16`}>
+  <h2 className={`text-2xl md:text-3xl font-black text-slate-900 uppercase tracking-tight mb-6 mt-16`}>
     {children}
   </h2>
 );
 
 export default function WebSecurityPolicy() {
     return (
-        <div className="min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden flex flex-col">
+        <div className="min-h-screen bg-slate-50 text-slate-800 overflow-x-hidden flex flex-col">
             <WebHeader />
 
             <section className="py-20 md:py-32 px-6">
                 <div className="container mx-auto max-w-4xl">
-                    <div className="mb-16 border-b border-white/10 pb-10">
-                        <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white mb-6 uppercase">
+                    <div className="mb-16 border-b border-slate-200 pb-10">
+                        <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 mb-6 uppercase">
                             Security <span className="gradient-text">Policy</span>
                         </h1>
-                        <p className="text-gray-400 font-bold mb-2">Version: 1.0</p>
-                        <p className="text-gray-400 font-bold mb-2">Effective Date: May 7, 2026</p>
-                        <p className="text-gray-400 font-bold mb-2">Last Updated: May 7, 2026</p>
+                        <p className="text-slate-600 font-bold mb-2">Version: 1.0</p>
+                        <p className="text-slate-600 font-bold mb-2">Effective Date: May 7, 2026</p>
+                        <p className="text-slate-600 font-bold mb-2">Last Updated: May 7, 2026</p>
                     </div>
 
-                    <div className="prose prose-invert prose-lg max-w-none prose-headings:font-black prose-headings:uppercase prose-headings:tracking-tight prose-p:font-medium prose-p:text-gray-400 prose-ul:font-medium prose-ul:text-gray-400">
+                    <div className="prose  prose-lg max-w-none prose-headings:font-black prose-headings:uppercase prose-headings:tracking-tight prose-p:font-medium prose-p:text-slate-600 prose-ul:font-medium prose-ul:text-slate-600">
                         
                         <SectionTitle>1. Security Commitment</SectionTitle>
                         <p>Authentiks is committed to building a secure, trusted, and transparent product authentication ecosystem for brands and consumers.</p>

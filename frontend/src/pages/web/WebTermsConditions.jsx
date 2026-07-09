@@ -3,30 +3,30 @@ import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 
 const SectionTitle = ({ children }) => (
-  <h2 className={`text-2xl md:text-3xl font-black text-white uppercase tracking-tight mb-6 mt-16`}>
+  <h2 className={`text-2xl md:text-3xl font-black text-slate-900 uppercase tracking-tight mb-6 mt-16`}>
     {children}
   </h2>
 );
 
 export default function WebTermsConditions() {
     return (
-        <div className="min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden flex flex-col">
+        <div className="min-h-screen bg-slate-50 text-slate-800 overflow-x-hidden flex flex-col">
             <WebHeader />
 
             <section className="py-20 md:py-32 px-6">
                 <div className="container mx-auto max-w-4xl">
-                    <div className="mb-16 border-b border-white/10 pb-10">
-                        <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-white mb-6 uppercase">
+                    <div className="mb-16 border-b border-slate-200 pb-10">
+                        <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 mb-6 uppercase">
                             Terms & <span className="gradient-text">Conditions</span>
                         </h1>
-                        <p className="text-gray-400 font-bold mb-2">Effective Date: [1/4/2026]</p>
-                        <p className="text-gray-400 font-bold leading-relaxed">
+                        <p className="text-slate-600 font-bold mb-2">Effective Date: [1/4/2026]</p>
+                        <p className="text-slate-600 font-bold leading-relaxed">
                             These Terms & Conditions (“Terms”) govern your use of Authentiks, a product of Recomm Innovations Private Limited (“Company”, “we”, “our”, “us”).<br/><br/>
                             By accessing or using our website, platform, or services, you agree to these Terms.
                         </p>
                     </div>
 
-                    <div className="prose prose-invert prose-lg max-w-none prose-headings:font-black prose-headings:uppercase prose-headings:tracking-tight prose-p:font-medium prose-p:text-gray-400 prose-ul:font-medium prose-ul:text-gray-400">
+                    <div className="prose  prose-lg max-w-none prose-headings:font-black prose-headings:uppercase prose-headings:tracking-tight prose-p:font-medium prose-p:text-slate-600 prose-ul:font-medium prose-ul:text-slate-600">
                         
                         <SectionTitle>1. DEFINITIONS</SectionTitle>
                         <ul>
@@ -45,7 +45,7 @@ export default function WebTermsConditions() {
                             <li>Data analytics and insights</li>
                             <li>Customer engagement tools (e.g., coupons, redirects)</li>
                         </ul>
-                        <p className="italic text-gray-400">Services may evolve or be updated over time.</p>
+                        <p className="italic text-slate-600">Services may evolve or be updated over time.</p>
 
                         <SectionTitle>3. USER ELIGIBILITY</SectionTitle>
                         <p>To use our services, you must:</p>
@@ -56,21 +56,21 @@ export default function WebTermsConditions() {
                         </ul>
 
                         <SectionTitle>4. PRICING & PAYMENTS</SectionTitle>
-                        <h3 className="text-xl font-black text-white mt-8 mb-4">A. Subscription Plans</h3>
+                        <h3 className="text-xl font-black text-slate-900 mt-8 mb-4">A. Subscription Plans</h3>
                         <ul>
                             <li>Users can subscribe to Starter, Growth or Enterprise plans</li>
                             <li>Plans may be billed monthly, half-yearly, or annually</li>
                         </ul>
-                        <h3 className="text-xl font-black text-white mt-8 mb-4">B. QR Code Charges</h3>
+                        <h3 className="text-xl font-black text-slate-900 mt-8 mb-4">B. QR Code Charges</h3>
                         <ul>
                             <li>QR code printing and delivery are charged separately based on quantity</li>
                         </ul>
-                        <h3 className="text-xl font-black text-white mt-8 mb-4">C. Credits</h3>
+                        <h3 className="text-xl font-black text-slate-900 mt-8 mb-4">C. Credits</h3>
                         <ul>
                             <li>Annual plans may include credits usable for QR code orders</li>
                             <li>Credits are non-transferable and may have expiry conditions</li>
                         </ul>
-                        <h3 className="text-xl font-black text-white mt-8 mb-4">D. Payment Terms</h3>
+                        <h3 className="text-xl font-black text-slate-900 mt-8 mb-4">D. Payment Terms</h3>
                         <ul>
                             <li>All payments must be made in advance</li>
                             <li>Failure to pay may result in suspension of services</li>
@@ -136,7 +136,7 @@ export default function WebTermsConditions() {
                             <li>Loss of business, revenue, or reputation</li>
                             <li>Third-party misuse of QR codes</li>
                         </ul>
-                        <div className="bg-indigo-500/10 border-l-4 border-indigo-500 p-4 my-6 text-indigo-300 font-bold italic">
+                        <div className="bg-indigo-50 border-l-4 border-indigo-500 p-4 my-6 text-indigo-700 font-bold italic">
                             👉 Our total liability is limited to the amount paid by you in the last billing cycle.
                         </div>
 
@@ -174,17 +174,17 @@ export default function WebTermsConditions() {
                         </ul>
 
                         <div className="mt-20 glass-effect p-10 rounded-[2.5rem] border border-white/5 text-center">
-                            <h3 className="text-xl md:text-2xl font-black text-white uppercase mb-4">Final Statement</h3>
-                            <p className="text-gray-400 font-bold mb-8 text-lg">By using Authentiks, you agree to operate with integrity while we ensure your products remain trusted and intelligent.</p>
+                            <h3 className="text-xl md:text-2xl font-black text-slate-900 uppercase mb-4">Final Statement</h3>
+                            <p className="text-slate-600 font-bold mb-8 text-lg">By using Authentiks, you agree to operate with integrity while we ensure your products remain trusted and intelligent.</p>
                             
                             <div className="p-6 bg-white/5 border border-red-500/20 rounded-2xl max-w-2xl mx-auto shadow-[0_0_30px_rgba(239,68,68,0.1)]">
                                 <h4 className="text-sm font-black text-red-500 uppercase tracking-widest mb-2 flex items-center justify-center gap-2">Founder Tip (Important)</h4>
                                 <p className="text-red-400 font-bold italic mb-4">This clause is powerful for your business:</p>
-                                <ul className="text-white font-black italic space-y-2 mb-4 text-left inline-block">
+                                <ul className="text-slate-900 font-black italic space-y-2 mb-4 text-left inline-block">
                                     <li>👉 “Liability limited to last billing cycle”</li>
                                     <li>👉 “Not responsible after QR is applied”</li>
                                 </ul>
-                                <p className="text-gray-400 font-bold text-sm">These protect you from huge enterprise risk exposure.</p>
+                                <p className="text-slate-600 font-bold text-sm">These protect you from huge enterprise risk exposure.</p>
                             </div>
                         </div>
 

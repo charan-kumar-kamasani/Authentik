@@ -14,7 +14,9 @@ import {
   ChevronRight, 
   Calendar,
   HeartHandshake,
-  Menu
+  Menu,
+  Clock,
+  CheckCircle2
 } from "lucide-react";
 
 
@@ -357,19 +359,33 @@ export default function Home() {
                           <span className="truncate">{scan.productName}</span>
                         </h4>
                         <p className="text-[12px] text-[#64748B] truncate mt-0.5 font-medium">{scan.brandName || "Unknown Brand"}</p>
-                        <div className="flex items-center gap-1.5 text-[#94A3B8] text-[11px] font-semibold mt-1.5">
-                          <Calendar className="w-3.5 h-3.5" strokeWidth={2} />
-                          <span>{scan.scannedDate}, {scan.scannedTime}</span>
+                        <div className="flex items-center gap-2 mt-1.5 w-full">
+                          <div className="flex items-center gap-1 text-[#94A3B8] text-[10px] font-semibold shrink-0">
+                            <Calendar className="w-3 h-3 shrink-0" strokeWidth={2} />
+                            <span>{scan.scannedDate}, {scan.scannedTime}</span>
+                          </div>
+                          {scan.status === "ORIGINAL" && (
+                            <>
+                              <div className="w-1 h-1 rounded-full bg-[#E2E8F0] shrink-0"></div>
+                              {scan.alreadyReviewed ? (
+                                <div className="flex items-center gap-1 text-[#10B981] text-[10px] font-bold shrink-0">
+                                  <CheckCircle2 className="w-3 h-3" strokeWidth={2.5} />
+                                  <span>Reviewed</span>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-1 text-[#F59E0B] text-[10px] font-bold shrink-0">
+                                  <Clock className="w-3 h-3" strokeWidth={2.5} />
+                                  <span>Pending</span>
+                                </div>
+                              )}
+                            </>
+                          )}
                         </div>
                       </div>
 
                       {/* Chevron */}
                       <ChevronRight className="w-5 h-5 text-[#CBD5E1] flex-shrink-0" strokeWidth={2.5} />
                     </div>
-                    {/* Pending Review Indicator */}
-                    {scan.status === "ORIGINAL" && !scan.alreadyReviewed && (
-                      <span className="absolute bottom-3 right-3 w-2.5 h-2.5 rounded-full bg-[#105DE4]" title="Review pending"></span>
-                    )}
                   </div>
                 );
               })

@@ -1,81 +1,117 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Play, CheckCircle2, ChevronRight, Shield, ShieldCheck, Mail, Phone, MessageCircle, QrCode, Factory, Smartphone, Package, Gift, BarChart3, Users, Globe, Settings, Store, Pill, Sparkles, ShoppingBag, HeartPulse, Monitor, ShoppingBasket, Gem, ShieldPlus, Cloud, Lock, Network, Database, Activity, Target } from "lucide-react";
+import { Play, CheckCircle2, ChevronRight, Shield, ShieldCheck, Mail, Phone, MessageCircle, QrCode, Factory, Smartphone, Package, Gift, BarChart3, Users, Globe, Settings, Store, Pill, Sparkles, ShoppingBag, HeartPulse, Monitor, ShoppingBasket, Gem, ShieldPlus, Cloud, Lock, Network, Database, Activity, Target, X } from "lucide-react";
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import heroImage from "../../assets/web/hero_image.png";
 import logoShield from "../../assets/logo-shield.png";
+import h_b1 from "../../assets/banners/new_banners/h_b1.png";
+import h_b2 from "../../assets/banners/new_banners/h_b2.png";
+import h_b3 from "../../assets/banners/new_banners/h_b3.png";
+
+const AnimatedCounter = ({ end, suffix = "", duration = 2500 }) => {
+  const [count, setCount] = useState(0);
+  const [hasAnimated, setHasAnimated] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !hasAnimated) {
+          setHasAnimated(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [hasAnimated]);
+
+  useEffect(() => {
+    if (!hasAnimated) return;
+    
+    let startTimestamp = null;
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      
+      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+      setCount(Math.floor(easeOutQuart * end));
+      
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+    window.requestAnimationFrame(step);
+  }, [end, duration, hasAnimated]);
+
+  return <span ref={ref}>{count}{suffix}</span>;
+};
 
 export default function LandingPage() {
+  const banners = [h_b1, h_b2, h_b3];
+  const [currentBanner, setCurrentBanner] = useState(0);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentBanner((prev) => (prev + 1) % banners.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [banners.length]);
+
   return (
     <div className="min-h-screen bg-white font-sans text-slate-800">
       <WebHeader />
 
-      {/* Hero Section */}
-      <section className="relative pt-20 pb-32 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 grid lg:grid-cols-2 gap-12 items-center">
-          <div className="z-10">
-            <h1 className="text-[44px] md:text-[56px] font-bold leading-[1.1] text-slate-900 mb-6 tracking-tight">
-              Consumer Intelligence <br/>
-              Platform for <span className="text-blue-600">Modern Brands</span>
-            </h1>
-            <p className="text-lg md:text-xl text-slate-600 mb-8 max-w-[540px] leading-relaxed">
-              Transform every physical product into a connected digital asset that authenticates products, identifies consumers, captures first-party data, and builds lifelong customer relationships.
-            </p>
+      {/* Hero Banner Carousel */}
+      <section className="relative w-full cursor-pointer" onClick={() => setIsDialogOpen(true)}>
+        <div className="relative w-full h-[250px] md:h-[400px] lg:h-[600px] overflow-hidden bg-slate-100">
+          {banners.map((banner, index) => (
+              <img
+                key={index}
+                src={banner}
+                alt={`Banner ${index + 1}`}
+                className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-1000 ${
+                  index === currentBanner ? "opacity-100 z-10" : "opacity-0 z-0"
+                }`}
+              />
+            ))}
             
-            <div className="flex flex-wrap gap-4 mb-10">
-              <Link to="/contact-us">
-                <button className="bg-blue-600 text-white px-8 py-3.5 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl flex items-center gap-2">
-                  Book a Demo
-                </button>
-              </Link>
-              <Link to="/platform">
-                <button className="bg-white text-blue-600 border border-blue-600 px-8 py-3.5 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2">
-                  <Play size={18} /> Explore Platform
-                </button>
-              </Link>
-            </div>
-
-            <div className="mb-4">
-              <div className="font-bold text-slate-800">Trusted Consumer Intelligence</div>
-              <div className="text-sm text-slate-500 mb-3">Every scan creates value.</div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-2 text-[14px] text-slate-700 font-medium">
-                {[
-                  "Product Authentication", "Consumer Intelligence", "Digital Product Passport", 
-                  "Consumer Engagement", "Smart Reorder", "Warranty & Ownership", "Counterfeit Detection"
-                ].map((feature, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <CheckCircle2 size={16} className="text-blue-500 shrink-0" />
-                    <span>{feature}</span>
-                  </div>
-                ))}
-              </div>
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-20">
+              {banners.map((_, index) => (
+                <div
+                  key={index}
+                  className={`h-2 rounded-full transition-all duration-300 shadow-sm ${
+                    index === currentBanner ? "w-8 bg-blue-600" : "w-2 bg-slate-300"
+                  }`}
+                />
+              ))}
             </div>
           </div>
-          
-          <div className="relative z-10 hidden lg:block">
-            <div className="relative w-full h-full flex items-center justify-end">
-               <img src={heroImage} alt="Authentiks Platform" className="w-[120%] max-w-none h-auto -translate-y-4 translate-x-8 mix-blend-multiply" />
-            </div>
-          </div>
-        </div>
-        
-        {/* Background Decorative Blob */}
-        <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-[800px] h-[800px] bg-blue-50/50 rounded-full blur-3xl pointer-events-none -z-10"></div>
       </section>
 
-      {/* Trusted By */}
-      <section className="py-12 border-y border-slate-100 bg-slate-50/50">
+      {/* Metrics Section */}
+      <section className="py-16 border-y border-slate-100 bg-slate-50/50">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
-          <p className="text-center text-[12px] font-bold uppercase tracking-widest text-slate-400 mb-8">Trusted by Innovative Brands</p>
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12 opacity-60 hover:opacity-100 transition-opacity duration-500 grayscale">
-             <div className="text-xl font-black tracking-tighter">ORIGIN <span className="text-sm font-bold block -mt-1 tracking-widest text-center">NUTRITION</span></div>
-             <div className="text-xl font-serif italic flex items-center gap-2"><div className="w-6 h-6 rounded-full border-2 border-current"></div> CAPLIN POINT</div>
-             <div className="text-2xl font-bold tracking-widest">INLIFE</div>
-             <div className="text-2xl font-black lowercase">mars <span className="text-sm font-normal block -mt-2 text-right">by GHC</span></div>
-             <div className="text-3xl font-black">WOW <span className="text-[10px] font-bold block -mt-2 tracking-widest text-center">SKIN SCIENCE</span></div>
-             <div className="text-xl font-bold font-serif flex items-center gap-2"><div className="w-4 h-4 bg-current transform rotate-45"></div> DR. VAIDYA'S</div>
-             <div className="text-xl font-bold">TrueBasics</div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div className="flex flex-col items-center">
+              <div className="text-4xl md:text-5xl lg:text-6xl font-black text-blue-600 mb-3"><AnimatedCounter end={50} suffix="+" /></div>
+              <div className="text-sm md:text-base font-bold uppercase tracking-wider text-slate-500">Brands</div>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="text-4xl md:text-5xl lg:text-6xl font-black text-blue-600 mb-3"><AnimatedCounter end={2} suffix="M+" /></div>
+              <div className="text-sm md:text-base font-bold uppercase tracking-wider text-slate-500">Total Product Secured</div>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="text-4xl md:text-5xl lg:text-6xl font-black text-blue-600 mb-3"><AnimatedCounter end={800} suffix="K+" /></div>
+              <div className="text-sm md:text-base font-bold uppercase tracking-wider text-slate-500">Product Scanned</div>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="text-4xl md:text-5xl lg:text-6xl font-black text-blue-600 mb-3"><AnimatedCounter end={40} suffix="%" /></div>
+              <div className="text-sm md:text-base font-bold uppercase tracking-wider text-slate-500">Scan Rate</div>
+            </div>
           </div>
         </div>
       </section>
@@ -344,6 +380,14 @@ export default function LandingPage() {
                 </div>
               ))}
             </div>
+
+            <div className="mt-12 text-center lg:text-left">
+              <Link to="/security-policy">
+                <button className="bg-white/20 text-white border border-white/30 px-6 py-2.5 rounded-lg font-semibold hover:bg-white/30 transition-colors flex items-center gap-2 mx-auto lg:mx-0">
+                   View Security Policy <ChevronRight size={16} />
+                </button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
@@ -418,6 +462,38 @@ export default function LandingPage() {
       </section>
 
       <WebFooter />
+
+      {isDialogOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl p-6 md:p-8 w-full max-w-md relative shadow-2xl">
+            <button onClick={() => setIsDialogOpen(false)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition-colors">
+              <X size={24} />
+            </button>
+            <h3 className="text-2xl font-bold text-slate-800 mb-6">Request More Information</h3>
+            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setIsDialogOpen(false); }}>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Name</label>
+                <input type="text" required className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                <input type="email" required className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
+                <input type="tel" required className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Company</label>
+                <input type="text" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none" />
+              </div>
+              <button type="submit" className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg mt-4 hover:bg-blue-700 transition-colors">
+                Submit
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

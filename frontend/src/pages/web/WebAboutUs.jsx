@@ -86,80 +86,73 @@ export default function WebAboutUs() {
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           <h2 className="text-3xl font-bold text-slate-900 mb-16 text-center">Leadership</h2>
           
-          <div className="grid md:grid-cols-2 gap-8 mb-16">
+          {/* Rajeev */}
+          <div className="bg-slate-50 border border-slate-200 rounded-[32px] p-8 md:p-12 flex flex-col md:flex-row gap-10 shadow-sm max-w-5xl mx-auto items-center md:items-start mb-16">
+             <div className="shrink-0">
+                <div className="w-48 h-48 rounded-full bg-slate-200 border-4 border-white shadow-md mx-auto overflow-hidden relative">
+                   <img src={rajeevImage} alt="Rajeev Mecheri" className="w-full h-full object-cover object-top" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+                   <div className="absolute inset-0 bg-slate-300 hidden flex-col justify-end items-center"><div className="w-24 h-24 rounded-full bg-slate-400 mb-1"></div><div className="w-36 h-20 bg-slate-400 rounded-t-full"></div></div>
+                </div>
+             </div>
+             
+             <div className="flex-1 text-center md:text-left">
+                <div className="mb-2">
+                  <div className="text-blue-600 font-bold text-xs uppercase tracking-wider mb-2">Founder & Strategic Advisor</div>
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <h3 className="text-3xl font-bold text-slate-900">Rajeev Mecheri</h3>
+                    <a href="https://www.linkedin.com/in/rajeevmecheri/" target="_blank" rel="noopener noreferrer" className="text-blue-600 bg-blue-50 p-2 rounded-lg hover:bg-blue-100 inline-flex self-center md:self-auto transition-colors"><Linkedin size={18}/></a>
+                  </div>
+                </div>
+                <div className="space-y-4 text-[15px] text-slate-600 leading-relaxed mt-4">
+                  <p>
+                    A highly respected visionary and business leader, Rajeev Mecheri is the Founder of Imetrex and Mecheri Capital. With a distinguished track record of building, scaling, and advising successful technology-driven enterprises, he brings unparalleled strategic expertise.
+                  </p>
+                  <p>
+                    As Founder and Strategic Advisor to Authentiks, Rajeev provides critical guidance on product innovation, enterprise partnerships, and long-term vision, playing a pivotal role in shaping Authentiks into a global Consumer Intelligence Platform.
+                  </p>
+                </div>
+             </div>
+          </div>
+          
+          {/* Founders */}
+          <div className="grid md:grid-cols-2 gap-8 mb-8">
             {/* Ibadul */}
-            <div className="bg-white border border-slate-200 rounded-[32px] p-8 md:p-10 flex flex-col sm:flex-row gap-8 shadow-sm hover:shadow-md transition-shadow">
-               <div className="shrink-0 flex justify-center sm:justify-start">
-                 <div className="w-36 h-36 rounded-full bg-slate-100 border-4 border-white shadow-md overflow-hidden relative">
-                   <img src={ibadulImage} alt="Ibadul Hassan" className="w-full h-full object-cover" />
+            <div className="bg-white border border-slate-200 rounded-[32px] p-8 md:p-10 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-shadow">
+               <div className="shrink-0 mb-6">
+                 <div className="w-40 h-40 rounded-full bg-slate-100 border-4 border-white shadow-md overflow-hidden relative">
+                   <img src={ibadulImage} alt="Ibadul Hassan" className="w-full h-full object-cover object-top" />
                  </div>
                </div>
-               <div className="flex-1">
-                 <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-4 gap-4 sm:gap-0">
-                   <div className="text-center sm:text-left">
-                     <h3 className="text-2xl font-bold text-blue-700 mb-1">Ibadul Hassan</h3>
-                     <p className="text-slate-500 font-bold text-sm tracking-wide">Co-Founder & Business Head</p>
-                   </div>
-                   <div className="flex justify-center sm:justify-start">
-                     <a href="#" className="text-blue-600 bg-blue-50 p-2.5 rounded-xl hover:bg-blue-100 transition-colors"><Linkedin size={20}/></a>
-                   </div>
+               <div className="flex-1 w-full flex flex-col items-center">
+                 <div className="flex flex-col items-center justify-center mb-4">
+                   <h3 className="text-2xl font-bold text-blue-700 mb-1">Ibadul Hassan</h3>
+                   <p className="text-slate-500 font-bold text-sm tracking-wide mb-4">Co-Founder & Business Head</p>
+                   <a href="https://www.linkedin.com/in/ibadul-hassan-6430b247/" target="_blank" rel="noopener noreferrer" className="text-blue-600 bg-blue-50 p-2.5 rounded-full hover:bg-blue-100 transition-colors"><Linkedin size={20}/></a>
                  </div>
-                 <p className="text-[15px] text-slate-600 leading-relaxed text-center sm:text-left">
+                 <p className="text-[15px] text-slate-600 leading-relaxed max-w-[350px]">
                    Business leader with 16+ years of experience across operations, strategy, business development, supply chain, and growth. Passionate about helping brands build scalable businesses through technology and consumer intelligence.
                  </p>
                </div>
             </div>
             
             {/* Charan */}
-            <div className="bg-white border border-slate-200 rounded-[32px] p-8 md:p-10 flex flex-col sm:flex-row gap-8 shadow-sm hover:shadow-md transition-shadow">
-               <div className="shrink-0 flex justify-center sm:justify-start">
-                 <div className="w-36 h-36 rounded-full bg-slate-100 border-4 border-white shadow-md overflow-hidden relative">
-                   <img src={charanImage} alt="Charan Kumar Kamasani" className="w-full h-full object-cover" />
+            <div className="bg-white border border-slate-200 rounded-[32px] p-8 md:p-10 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-shadow">
+               <div className="shrink-0 mb-6">
+                 <div className="w-40 h-40 rounded-full bg-slate-100 border-4 border-white shadow-md overflow-hidden relative">
+                   <img src={charanImage} alt="Charan Kumar Kamasani" className="w-full h-full object-cover object-top" />
                  </div>
                </div>
-               <div className="flex-1">
-                 <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-4 gap-4 sm:gap-0">
-                   <div className="text-center sm:text-left">
-                     <h3 className="text-2xl font-bold text-blue-700 mb-1">Charan Kumar Kamasani</h3>
-                     <p className="text-slate-500 font-bold text-sm tracking-wide">Co-Founder & Technology</p>
-                   </div>
-                   <div className="flex justify-center sm:justify-start">
-                     <a href="#" className="text-blue-600 bg-blue-50 p-2.5 rounded-xl hover:bg-blue-100 transition-colors"><Linkedin size={20}/></a>
-                   </div>
+               <div className="flex-1 w-full flex flex-col items-center">
+                 <div className="flex flex-col items-center justify-center mb-4">
+                   <h3 className="text-2xl font-bold text-blue-700 mb-1">Charan Kumar Kamasani</h3>
+                   <p className="text-slate-500 font-bold text-sm tracking-wide mb-4">Co-Founder & Technology</p>
+                   <a href="https://www.linkedin.com/in/charan-kumar-kamasani" target="_blank" rel="noopener noreferrer" className="text-blue-600 bg-blue-50 p-2.5 rounded-full hover:bg-blue-100 transition-colors"><Linkedin size={20}/></a>
                  </div>
-                 <p className="text-[15px] text-slate-600 leading-relaxed text-center sm:text-left">
+                 <p className="text-[15px] text-slate-600 leading-relaxed max-w-[350px]">
                    Technology leader focused on building secure, scalable, enterprise-grade platforms that simplify digital product identity and deliver exceptional user experiences.
                  </p>
                </div>
             </div>
-          </div>
-          
-          {/* Mentor */}
-          <div className="bg-slate-50 border border-slate-200 rounded-[32px] p-8 md:p-12 flex flex-col md:flex-row gap-10 shadow-sm max-w-5xl mx-auto items-center md:items-start">
-             <div className="shrink-0">
-                <div className="w-40 h-40 rounded-full bg-slate-200 border-4 border-white shadow-md mx-auto overflow-hidden relative">
-                   <img src={rajeevImage} alt="Rajeev Mecheri" className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
-                   <div className="absolute inset-0 bg-slate-300 hidden flex-col justify-end items-center"><div className="w-20 h-20 rounded-full bg-slate-400 mb-1"></div><div className="w-32 h-16 bg-slate-400 rounded-t-full"></div></div>
-                </div>
-             </div>
-             
-             <div className="flex-1 text-center md:text-left">
-                <div className="mb-2">
-                  <div className="text-blue-600 font-bold text-xs uppercase tracking-wider mb-2">Our Mentor & Strategic Advisor</div>
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <h3 className="text-3xl font-bold text-slate-900">Rajeev Mecheri</h3>
-                    <a href="#" className="text-blue-600 bg-blue-50 p-2 rounded-lg hover:bg-blue-100 inline-flex self-center md:self-auto"><Linkedin size={18}/></a>
-                  </div>
-                </div>
-                <div className="space-y-4 text-[15px] text-slate-600 leading-relaxed mt-4">
-                  <p>
-                    Rajeev Mecheri is an accomplished entrepreneur and business leader with extensive experience in building and scaling technology-driven businesses.
-                  </p>
-                  <p>
-                    As Mentor and Strategic Advisor to Authentiks, he provides guidance on product strategy, enterprise partnerships, business growth, and long-term vision. His mentorship continues to play a key role in shaping Authentiks' journey as a Consumer Intelligence Platform.
-                  </p>
-                </div>
-             </div>
           </div>
         </div>
       </section>

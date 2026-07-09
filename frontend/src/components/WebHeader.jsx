@@ -11,10 +11,7 @@ export default function WebHeader() {
   const token = localStorage.getItem("token");
   const adminToken = localStorage.getItem("adminToken");
 
-  const handleGoToApp = () => {
-    sessionStorage.setItem("appMode", "product");
-    window.location.href = "/home";
-  };
+
 
   const handleGoToAdmin = () => {
     navigate("/admin/dashboard");
@@ -84,12 +81,12 @@ export default function WebHeader() {
             </button>
           </Link>
 
-          {(adminToken || token) && (
+          {adminToken && (
             <button
-              onClick={adminToken && !token ? handleGoToAdmin : handleGoToApp}
+              onClick={handleGoToAdmin}
               className="bg-gray-100 text-gray-800 px-6 py-2.5 rounded-lg font-semibold text-[15px] hover:bg-gray-200 transition-all"
             >
-              {adminToken && !token ? "Dashboard" : "Go to App"}
+              Dashboard
             </button>
           )}
         </div>
@@ -136,12 +133,12 @@ export default function WebHeader() {
               </button>
             </Link>
 
-            {(adminToken || token) && (
+            {adminToken && (
               <button
-                onClick={adminToken && !token ? handleGoToAdmin : handleGoToApp}
+                onClick={handleGoToAdmin}
                 className="w-full bg-gray-100 text-gray-800 py-3 rounded-xl font-bold text-[15px]"
               >
-                {adminToken && !token ? "Dashboard" : "Go to App"}
+                Dashboard
               </button>
             )}
           </div>

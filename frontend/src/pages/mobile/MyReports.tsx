@@ -83,6 +83,8 @@ export default function MyReports() {
                 onLeftClick={() => navigate("/profile")}
                 onNotificationClick={() => navigate("/notifications")}
                 rightIcon={<div className="w-10" />}
+                showBack={true}
+                onBackClick={() => navigate("/profile")}
             />
 
             <div className="w-full max-w-md p-4 space-y-4 pb-24">

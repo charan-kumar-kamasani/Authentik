@@ -1,7 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import Logo from "../../assets/Authentiks.png";
 import NotificationIcon from "../../assets/icon_notification.png";
-
+import { Linkedin } from "lucide-react";
+import ibadulImage from "../../assets/web/founders/main.png";
+import charanImage from "../../assets/web/founders/charan.png";
+import rajeevImage from "../../assets/web/founders/image.png";
 export default function AboutUs() {
   const navigate = useNavigate();
 
@@ -126,6 +129,47 @@ export default function AboutUs() {
                 <p className="font-bold">
                     Authentiks is building the infrastructure that makes trust measurable.
                 </p>
+            </div>
+
+            {/* Leadership */}
+            <div className="mt-8">
+                <h3 className="font-black text-[22px] mb-6 text-[#0D4E96] text-center tracking-tight">Leadership</h3>
+                
+                {/* Rajeev */}
+                <div className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100 flex flex-col items-center text-center mb-6">
+                   <div className="w-32 h-32 rounded-full bg-slate-100 border-4 border-white shadow-md overflow-hidden mb-4">
+                     <img src={rajeevImage} alt="Rajeev Mecheri" className="w-full h-full object-cover object-top" onError={(e) => { e.target.style.display = 'none'; }} />
+                   </div>
+                   <div className="text-blue-600 font-bold text-[10px] uppercase tracking-wider mb-1">Founder & Strategic Advisor</div>
+                   <h3 className="text-xl font-black text-slate-900 mb-2">Rajeev Mecheri</h3>
+                   <a href="https://www.linkedin.com/in/rajeevmecheri/" target="_blank" rel="noopener noreferrer" className="text-blue-600 bg-blue-50 p-2 rounded-full hover:bg-blue-100 mb-4 inline-block"><Linkedin size={16}/></a>
+                   <div className="text-[13.5px] text-slate-600 leading-relaxed font-medium">
+                     <p className="mb-3">A highly respected visionary and business leader, Rajeev Mecheri is the Founder of Imetrex and Mecheri Capital. With a distinguished track record of building, scaling, and advising successful technology-driven enterprises, he brings unparalleled strategic expertise.</p>
+                     <p>As Founder and Strategic Advisor to Authentiks, Rajeev provides critical guidance on product innovation, enterprise partnerships, and long-term vision, playing a pivotal role in shaping Authentiks into a global Consumer Intelligence Platform.</p>
+                   </div>
+                </div>
+
+                {/* Ibadul */}
+                <div className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100 flex flex-col items-center text-center mb-6">
+                   <div className="w-28 h-28 rounded-full bg-slate-100 border-4 border-white shadow-md overflow-hidden mb-4">
+                     <img src={ibadulImage} alt="Ibadul Hassan" className="w-full h-full object-cover object-top" />
+                   </div>
+                   <h3 className="text-lg font-black text-blue-700 mb-1">Ibadul Hassan</h3>
+                   <p className="text-slate-500 font-bold text-[10px] uppercase tracking-wider mb-2">Co-Founder & Business Head</p>
+                   <a href="https://www.linkedin.com/in/ibadul-hassan-6430b247/" target="_blank" rel="noopener noreferrer" className="text-blue-600 bg-blue-50 p-2 rounded-full hover:bg-blue-100 mb-4 inline-block"><Linkedin size={16}/></a>
+                   <p className="text-[13.5px] text-slate-600 leading-relaxed font-medium">Business leader with 16+ years of experience across operations, strategy, business development, supply chain, and growth. Passionate about helping brands build scalable businesses through technology and consumer intelligence.</p>
+                </div>
+
+                {/* Charan */}
+                <div className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100 flex flex-col items-center text-center">
+                   <div className="w-28 h-28 rounded-full bg-slate-100 border-4 border-white shadow-md overflow-hidden mb-4">
+                     <img src={charanImage} alt="Charan Kumar Kamasani" className="w-full h-full object-cover object-top" />
+                   </div>
+                   <h3 className="text-lg font-black text-blue-700 mb-1">Charan Kumar Kamasani</h3>
+                   <p className="text-slate-500 font-bold text-[10px] uppercase tracking-wider mb-2">Co-Founder & Technology</p>
+                   <a href="https://www.linkedin.com/in/charan-kumar-kamasani" target="_blank" rel="noopener noreferrer" className="text-blue-600 bg-blue-50 p-2 rounded-full hover:bg-blue-100 mb-4 inline-block"><Linkedin size={16}/></a>
+                   <p className="text-[13.5px] text-slate-600 leading-relaxed font-medium">Technology leader focused on building secure, scalable, enterprise-grade platforms that simplify digital product identity and deliver exceptional user experiences.</p>
+                </div>
             </div>
         </div>
       </div>

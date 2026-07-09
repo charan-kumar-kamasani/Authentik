@@ -10,6 +10,7 @@ export default function WebContactUs() {
     name: '',
     email: '',
     phone: '',
+    countryCode: '+91',
     company: '',
     role: '',
     country: '',
@@ -48,7 +49,7 @@ export default function WebContactUs() {
       const payload = {
         name: form.name,
         email: form.email,
-        phone: form.phone,
+        phone: form.phone.trim() ? `${form.countryCode} ${form.phone}` : '',
         company: form.company,
         requirements: fullRequirements,
         source: 'contact-page'
@@ -74,7 +75,7 @@ export default function WebContactUs() {
       setStatus('success');
       setTimeout(() => {
         setStatus('idle');
-        setForm({ name: '', email: '', phone: '', company: '', role: '', country: '', requirements: '' });
+        setForm({ name: '', email: '', phone: '', countryCode: '+91', company: '', role: '', country: '', requirements: '' });
       }, 3000);
     } catch (err) {
       setStatus('error');
@@ -110,7 +111,7 @@ export default function WebContactUs() {
 
                <div>
                   <h3 className="font-bold text-slate-900 mb-1">General Inquiries</h3>
-                  <p className="text-slate-600 text-sm">info@authentiks.in</p>
+                  <p className="text-slate-600 text-sm">hello@authentiks.in</p>
                </div>
 
                <div>
@@ -123,11 +124,12 @@ export default function WebContactUs() {
                   <div className="space-y-6">
                     <div>
                       <h4 className="font-bold text-slate-800 text-sm flex items-center gap-2"><MapPin size={16} className="text-blue-600"/> India (Headquarters)</h4>
-                      <p className="text-slate-600 text-sm pl-6 mt-1">Hyderabad, Telangana</p>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-slate-800 text-sm flex items-center gap-2"><MapPin size={16} className="text-blue-600"/> UAE</h4>
-                      <p className="text-slate-600 text-sm pl-6 mt-1">Dubai</p>
+                      <div className="text-slate-600 text-sm pl-6 mt-2 leading-relaxed">
+                        <span className="font-bold text-slate-800">RECOMM INNOVATIONS PVT LTD</span><br/>
+                        Plot No-264 Door No F/22, F-block, 2nd Main Road,<br/>
+                        Anna Nagar East, Chennai,<br/>
+                        Tamil Nadu, India, 600102
+                      </div>
                     </div>
                   </div>
                </div>
@@ -178,7 +180,17 @@ export default function WebContactUs() {
                   </div>
                   <div className="space-y-1.5">
                      <label className="text-xs font-bold text-slate-700">Phone Number</label>
-                     <input type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="Enter your phone number" className="w-full px-4 py-3 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+                     <div className="flex gap-2">
+                       <select name="countryCode" value={form.countryCode} onChange={handleChange} className="w-24 px-2 py-3 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all bg-white text-slate-700">
+                         <option value="+91">+91 (IN)</option>
+                         <option value="+1">+1 (US)</option>
+                         <option value="+44">+44 (UK)</option>
+                         <option value="+971">+971 (UAE)</option>
+                         <option value="+61">+61 (AU)</option>
+                         <option value="+65">+65 (SG)</option>
+                       </select>
+                       <input type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="Enter your phone number" className="flex-1 w-full px-4 py-3 text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+                     </div>
                   </div>
                </div>
                

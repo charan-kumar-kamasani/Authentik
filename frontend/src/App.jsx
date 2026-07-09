@@ -247,7 +247,7 @@ export default function App() {
 
   /* ================= DESKTOP (WEBSITE + ADMIN) OR "BRAND" MODE ON MOBILE ================= */
 
-  if (!isMobile || appMode === 'brand') {
+  if (!isMobile) {
     return (
       <HelmetProvider>
       <LoadingProvider>

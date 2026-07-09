@@ -143,9 +143,7 @@ export default function WebPricing() {
                   <ul className="space-y-4">
                      <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-purple-600 shrink-0" size={18}/> Advanced Analytics</li>
                      <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-purple-600 shrink-0" size={18}/> AI Insights</li>
-                     <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-purple-600 shrink-0" size={18}/> API Access</li>
-                     <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-purple-600 shrink-0" size={18}/> ERP Integration</li>
-                     <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-purple-600 shrink-0" size={18}/> CRM Integration</li>
+                     <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-purple-600 shrink-0" size={18}/> API Integration</li>
                      <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-purple-600 shrink-0" size={18}/> Custom Dashboards</li>
                      <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-purple-600 shrink-0" size={18}/> Dedicated Success Manager</li>
                      <li className="flex gap-3 text-sm text-slate-700"><CheckCircle2 className="text-purple-600 shrink-0" size={18}/> Priority Support</li>
@@ -214,11 +212,15 @@ export default function WebPricing() {
       </section>
 
       {/* Flat Pricing Strip */}
-      <section className="py-16 bg-white border-y border-slate-100">
-         <div className="max-w-4xl mx-auto px-6 md:px-12 text-center">
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">Flat QR Pricing</h2>
-            <p className="text-lg text-slate-600 leading-relaxed">
-              Every plan includes secure QR labels at a flat rate of ₹1 per QR label, ensuring predictable costs as you scale.
+      <section className="py-20 bg-blue-50 border-y border-blue-100 relative overflow-hidden">
+         <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/3 w-64 h-64 bg-blue-200/50 rounded-full blur-3xl"></div>
+         <div className="max-w-4xl mx-auto px-6 md:px-12 text-center relative z-10">
+            <div className="inline-block bg-blue-100 text-blue-700 font-bold px-4 py-1.5 rounded-full text-sm tracking-wide uppercase mb-6 shadow-sm">Simple & Transparent</div>
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-6">
+              Just <span className="text-blue-600">₹1</span> per QR Code
+            </h2>
+            <p className="text-xl text-slate-600 leading-relaxed max-w-2xl mx-auto font-medium">
+              Every plan includes bank-grade secure QR labels at a predictable flat rate. No hidden fees. No complex tiers. Just seamless scaling for your brand.
             </p>
          </div>
       </section>
