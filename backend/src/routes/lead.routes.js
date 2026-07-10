@@ -24,7 +24,7 @@ router.post('/', async (req, res) => {
       phone: (phone || '').trim(),
       company: (company || '').trim(),
       requirements: (requirements || '').trim(),
-      source: 'website'
+      source: req.body.source ? req.body.source.trim() : 'website'
     });
 
     // Send confirmation emails (non-blocking)
