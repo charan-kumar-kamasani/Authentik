@@ -135,21 +135,7 @@ export default function WebPlatform() {
                       )}
                    </div>
                    
-                   {/* Tiny UI Skeleton Graphic matching design */}
-                   <div className="hidden md:flex flex-col w-36 h-[68px] bg-[#f8fafc] rounded-lg border border-slate-100 p-3 justify-between shrink-0 ml-4 lg:ml-12 group-hover:bg-slate-50 transition-colors self-center">
-                     <div>
-                       <div className="h-1.5 bg-slate-200 rounded-full w-full mb-1.5"></div>
-                       <div className="h-1.5 bg-slate-200 rounded-full w-[65%]"></div>
-                     </div>
-                     <div className="flex justify-between items-end mt-2">
-                       <div className="h-4 w-4 bg-blue-100 rounded-sm"></div>
-                       <div className="h-2.5 w-10 bg-slate-200 rounded-sm"></div>
-                     </div>
-                   </div>
 
-                   <div className="shrink-0 text-slate-300 group-hover:text-blue-600 transition-colors ml-2 hidden md:block self-center">
-                      <ChevronRight size={20} />
-                   </div>
                 </div>
              ))}
           </div>
