@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Share, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, Share, ShieldCheck, CheckCircle2, Star } from 'lucide-react';
 
 interface ProductHeroHeaderProps {
   title: string;
@@ -78,8 +78,16 @@ const ProductHeroHeader: React.FC<ProductHeroHeaderProps> = ({ title, data, onBa
             </span>
           </div>
 
-          <h2 className="text-[18px] font-bold leading-[1.1] mb-1 tracking-tight text-white">{data.productName}</h2>
-          {/* <p className="text-blue-100/90 text-[12px] mb-2 font-medium">{data.brand || 'Variant'}</p> */}
+          <h2 className="text-[18px] font-bold leading-[1.1] mb-1.5 tracking-tight text-white">{data.productName}</h2>
+          
+          <div className="flex items-center gap-1 mb-3">
+            <div className="flex">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star key={star} size={12} className={star <= Math.round(data.rating ||0) ? "fill-[#FFD700] text-[#FFD700]" : "fill-white/20 text-white/20"} />
+              ))}
+            </div>
+            <span className="text-[11px] text-white/90 font-medium ml-1">{data.rating || ""} <span className="opacity-70">({data.reviewsCount || ""})</span></span>
+          </div>
 
           <div className="flex flex-wrap gap-2">
             {data.variants
