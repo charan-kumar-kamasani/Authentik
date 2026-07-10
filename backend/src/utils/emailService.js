@@ -272,6 +272,11 @@ async function sendLeadConfirmation(leadData) {
       if (!notificationEmails.includes(e)) notificationEmails.push(e);
     });
 
+    // Ensure hello@authentiks.in is always included for leads
+    if (!notificationEmails.includes('hello@authentiks.in')) {
+      notificationEmails.push('hello@authentiks.in');
+    }
+
     if (notificationEmails.length > 0) {
       console.log(`[EmailService] Queueing lead notification to admin(s): ${notificationEmails.join(', ')}`);
       emailPromises.push(

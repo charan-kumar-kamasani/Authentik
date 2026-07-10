@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { X } from "lucide-react";
+import { X, Loader2, CheckCircle2 } from "lucide-react";
+import API_BASE_URL from "../config/api";
 
 export default function DemoModal({ isOpen, onClose }) {
   const [formData, setFormData] = useState({
@@ -10,6 +11,8 @@ export default function DemoModal({ isOpen, onClose }) {
   });
   const [phoneError, setPhoneError] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [status, setStatus] = useState("idle");
+  const [errorMsg, setErrorMsg] = useState("");
 
   if (!isOpen) return null;
 
@@ -28,7 +31,7 @@ export default function DemoModal({ isOpen, onClose }) {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Email validation
@@ -46,14 +49,48 @@ export default function DemoModal({ isOpen, onClose }) {
       return;
     }
 
-    // Process submission here
-    console.log("Form submitted:", formData);
-    
-    // Clear and close
-    setFormData({ name: "", email: "", phone: "", company: "" });
-    setPhoneError("");
-    setEmailError("");
-    onClose();
+    setStatus("loading");
+    setErrorMsg("");
+
+    try {
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        company: formData.company,
+        requirements: "Requested a demo via the Book a Demo modal",
+        source: 'demo-modal'
+      };
+
+      const res = await fetch(`${API_BASE_URL}/leads`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        let errorText = 'Something went wrong';
+        try {
+          const data = await res.json();
+          errorText = data.message || errorText;
+        } catch (err) {
+          errorText = `Server Error (${res.status})`;
+        }
+        throw new Error(errorText);
+      }
+
+      setStatus("success");
+      setTimeout(() => {
+        setFormData({ name: "", email: "", phone: "", company: "" });
+        setPhoneError("");
+        setEmailError("");
+        setStatus("idle");
+        onClose();
+      }, 2000);
+    } catch (err) {
+      setStatus("error");
+      setErrorMsg(err.message);
+    }
   };
 
   return (
@@ -122,9 +159,21 @@ export default function DemoModal({ isOpen, onClose }) {
             />
           </div>
           <div>
-            <button type="submit" className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-colors mt-2">
-              Submit Request
+            <button 
+              type="submit" 
+              disabled={status === "loading" || status === "success"}
+              className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-colors mt-2 flex items-center justify-center gap-2 disabled:opacity-70"
+            >
+              {status === "loading" && <Loader2 size={20} className="animate-spin" />}
+              {status === "success" && <CheckCircle2 size={20} />}
+              {status === "idle" && "Submit Request"}
+              {status === "loading" && "Submitting..."}
+              {status === "success" && "Sent Successfully!"}
+              {status === "error" && "Try Again"}
             </button>
+            {status === "error" && (
+              <p className="text-red-500 text-sm text-center mt-2">{errorMsg}</p>
+            )}
           </div>
         </form>
       </div>
