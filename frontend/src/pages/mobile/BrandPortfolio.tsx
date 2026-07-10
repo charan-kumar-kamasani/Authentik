@@ -242,11 +242,19 @@ export default function BrandPortfolio() {
                         </span>
                       </div>
                       
-                      <div className="mt-auto pt-2.5 flex items-center gap-1.5">
-                        <div className="w-3.5 h-3.5 bg-[#105DE4] rounded-full flex items-center justify-center shadow-[0_2px_4px_rgba(16,93,228,0.2)]">
-                          <CheckCircle2 size={9} className="text-white" strokeWidth={3} />
-                        </div>
-                        <span className="text-[#105DE4] text-[10.5px] font-bold tracking-wide">100% Authentic</span>
+                      <div className="mt-auto pt-2.5 flex items-center gap-1">
+                        {(() => {
+                           const rating = prod.rating || prod.orderLinks?.[0]?.rating;
+                           const reviewsCount = prod.reviewsCount || prod.orderLinks?.[0]?.reviewsCount;
+                           if (!rating) return null;
+                           return (
+                             <>
+                               <Star size={11} className="fill-[#FFD700] text-[#FFD700]" />
+                               <span className="text-slate-700 text-[10.5px] font-bold ml-0.5">{rating}</span>
+                               {reviewsCount && <span className="text-slate-400 text-[10.5px] ml-0.5">({reviewsCount})</span>}
+                             </>
+                           );
+                        })()}
                       </div>
                     </div>
                   </div>

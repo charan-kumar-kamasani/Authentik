@@ -56,10 +56,7 @@ const ProductHeroHeader: React.FC<ProductHeroHeaderProps> = ({ title, data, onBa
           />
         </div>
         <div className="flex flex-col flex-1 pt-0">
-          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-[#1A3385] border border-[#2B47A1] rounded-lg mb-2 self-start">
-            <ShieldCheck size={10} className="text-blue-300" />
-            <span className="text-[8px] font-bold tracking-wide text-white uppercase">100% Authentic</span>
-          </div>
+         
 
           <div
             className="flex items-center gap-1.5 mb-1.5 cursor-pointer active:opacity-70 transition-opacity"
