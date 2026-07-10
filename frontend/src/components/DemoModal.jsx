@@ -7,7 +7,8 @@ export default function DemoModal({ isOpen, onClose }) {
     name: "",
     email: "",
     phone: "",
-    company: ""
+    company: "",
+    message: ""
   });
   const [phoneError, setPhoneError] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -58,7 +59,7 @@ export default function DemoModal({ isOpen, onClose }) {
         email: formData.email,
         phone: formData.phone,
         company: formData.company,
-        requirements: "Requested a demo via the Book a Demo modal",
+        requirements: formData.message || "Requested a demo via the Book a Demo modal",
         source: 'demo-modal'
       };
 
@@ -81,7 +82,7 @@ export default function DemoModal({ isOpen, onClose }) {
 
       setStatus("success");
       setTimeout(() => {
-        setFormData({ name: "", email: "", phone: "", company: "" });
+        setFormData({ name: "", email: "", phone: "", company: "", message: "" });
         setPhoneError("");
         setEmailError("");
         setStatus("idle");
@@ -157,6 +158,16 @@ export default function DemoModal({ isOpen, onClose }) {
               onChange={handleChange}
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none" 
             />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Message / Requirements</label>
+            <textarea 
+              name="message"
+              value={formData.message}
+              onChange={handleChange}
+              rows="3"
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none resize-none" 
+            ></textarea>
           </div>
           <div>
             <button 
