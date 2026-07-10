@@ -234,22 +234,68 @@ async function sendLeadConfirmation(leadData) {
           to: leadData.email,
           subject: 'Thank you for your interest in Authentiks!',
           html: `
-            <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-              <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:30px;text-align:center;border-radius:12px 12px 0 0;">
-                <h1 style="margin:0;">🔐 Authentiks</h1>
-                <p style="margin:8px 0 0;">World-Class Brand Protection</p>
-              </div>
-              <div style="background:#f9f9f9;padding:25px;border:1px solid #ddd;">
-                <h2>Hi ${leadData.name},</h2>
-                <p>Thank you for your interest in Authentiks! We've received your inquiry and our team will get back to you within 24 hours.</p>
-                <div style="background:white;padding:15px;margin:15px 0;border-radius:8px;border-left:4px solid #667eea;">
-                  ${leadData.requirements ? `<p><strong>Your Requirements:</strong> ${leadData.requirements}</p>` : '<p>We have received your general inquiry.</p>'}
-                </div>
-                <p>In the meantime, feel free to explore our features at <a href="https://authentiks.in">authentiks.in</a></p>
-              </div>
-              <div style="background:#333;color:#fff;padding:15px;text-align:center;border-radius:0 0 8px 8px;font-size:12px;">
-                <p>© 2026 Authentiks - QR Authentication System</p>
-              </div>
+            <div style="margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f6; padding: 40px 0;">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="center">
+                    <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: left;">
+                      <tr>
+                        <td style="background-color: #0f172a; padding: 32px 40px; text-align: center;">
+                          <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 600; letter-spacing: 1px;">AUTHENTIKS</h1>
+                          <p style="margin: 8px 0 0; color: #94a3b8; font-size: 14px;">Next-Generation Brand Protection</p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 40px;">
+                          <p style="margin: 0 0 20px; font-size: 16px; color: #334155;">Dear ${leadData.name},</p>
+                          <p style="margin: 0 0 24px; font-size: 16px; color: #475569; line-height: 1.6;">
+                            Thank you for reaching out to Authentiks. We have successfully received your inquiry and our team is currently reviewing your details. A brand protection specialist will be in touch with you shortly.
+                          </p>
+                          
+                          <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 24px; margin-bottom: 32px;">
+                            <h3 style="margin: 0 0 16px; font-size: 14px; color: #0f172a; text-transform: uppercase; letter-spacing: 0.5px;">Your Inquiry Details</h3>
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                              <tr>
+                                <td style="padding: 8px 0; font-size: 14px; color: #64748b; width: 120px;">Name:</td>
+                                <td style="padding: 8px 0; font-size: 14px; color: #0f172a; font-weight: 500;">${leadData.name}</td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 8px 0; font-size: 14px; color: #64748b;">Phone:</td>
+                                <td style="padding: 8px 0; font-size: 14px; color: #0f172a; font-weight: 500;">${leadData.phone || 'N/A'}</td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 8px 0; font-size: 14px; color: #64748b;">Company:</td>
+                                <td style="padding: 8px 0; font-size: 14px; color: #0f172a; font-weight: 500;">${leadData.company || 'N/A'}</td>
+                              </tr>
+                              ${leadData.requirements ? \`
+                              <tr>
+                                <td style="padding: 16px 0 8px; font-size: 14px; color: #64748b;" colspan="2">Requirements:</td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 0 0 8px; font-size: 14px; color: #0f172a; font-weight: 500; line-height: 1.5;" colspan="2">
+                                  \${leadData.requirements}
+                                </td>
+                              </tr>
+                              \` : ''}
+                            </table>
+                          </div>
+
+                          <p style="margin: 0; font-size: 16px; color: #475569;">
+                            Best regards,<br>
+                            <strong style="color: #0f172a;">The Authentiks Team</strong>
+                          </p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 24px 40px; text-align: center;">
+                          <p style="margin: 0; font-size: 12px; color: #64748b;">&copy; ${new Date().getFullYear()} Authentiks. All rights reserved.</p>
+                          <p style="margin: 8px 0 0; font-size: 12px; color: #94a3b8;"><a href="https://authentiks.in" style="color: #2563eb; text-decoration: none;">www.authentiks.in</a></p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
             </div>
           `
         }).then(info => {
@@ -285,51 +331,80 @@ async function sendLeadConfirmation(leadData) {
           to: notificationEmails.join(','),
           subject: `🔔 New Lead: ${leadData.name} (${leadData.company || 'No Company'})`,
           html: `
-            <div style="font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 40px; background-color: #f8fafc; color: #1e293b;">
-              <div style="background-color: #ffffff; border-radius: 24px; padding: 40px; border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);">
-                
-                <div style="margin-bottom: 32px; border-bottom: 2px solid #3b82f6; padding-bottom: 16px;">
-                  <h1 style="margin: 0; font-size: 24px; font-weight: 800; color: #0f172a; letter-spacing: -0.025em;">New Lead Captured</h1>
-                  <p style="margin: 4px 0 0; color: #64748b; font-weight: 500;">A new brand authentication inquiry has been received.</p>
-                </div>
-
-                <div style="display: grid; gap: 20px;">
-                  
-                  <div style="background-color: #f1f5f9; padding: 20px; border-radius: 16px;">
-                    <span style="display: block; font-size: 11px; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px;">Brand Expert</span>
-                    <span style="display: block; font-size: 18px; font-weight: 700; color: #0f172a;">${leadData.name}</span>
-                  </div>
-
-                  <div style="margin-top: 20px;">
-                    <table style="width: 100%; border-collapse: separate; border-spacing: 0 8px;">
+            <div style="margin: 0; padding: 0; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f6; padding: 40px 0;">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="center">
+                    <table width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: left;">
                       <tr>
-                        <td style="padding: 12px; background-color: #f8fafc; border-radius: 12px 0 0 12px; width: 40%; font-weight: 700; color: #475569; font-size: 14px;">Email</td>
-                        <td style="padding: 12px; background-color: #f8fafc; border-radius: 0 12px 12px 0; color: #0f172a; font-size: 14px; font-weight: 600;">${leadData.email || 'Not provided'}</td>
+                        <td style="background-color: #2563eb; padding: 32px 40px;">
+                          <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                            <tr>
+                              <td>
+                                <h1 style="margin: 0; color: #ffffff; font-size: 20px; font-weight: 600;">New Lead Generated</h1>
+                                <p style="margin: 4px 0 0; color: #bfdbfe; font-size: 14px;">Action Required</p>
+                              </td>
+                              <td align="right">
+                                <span style="background-color: #ffffff; color: #2563eb; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; text-transform: uppercase;">Authentiks Lead</span>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
                       </tr>
                       <tr>
-                        <td style="padding: 12px; background-color: #ffffff; border: 1px solid #f1f5f9; border-radius: 12px 0 0 12px; width: 40%; font-weight: 700; color: #475569; font-size: 14px;">Phone</td>
-                        <td style="padding: 12px; background-color: #ffffff; border: 1px solid #f1f5f9; border-radius: 0 12px 12px 0; color: #0f172a; font-size: 14px; font-weight: 600;">${leadData.phone || 'Not provided'}</td>
+                        <td style="padding: 40px;">
+                          <h2 style="margin: 0 0 24px; font-size: 18px; color: #0f172a; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px;">Contact Information</h2>
+                          
+                          <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 32px;">
+                            <tr>
+                              <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9; width: 140px;">
+                                <span style="font-size: 13px; font-weight: 600; color: #64748b; text-transform: uppercase;">Full Name</span>
+                              </td>
+                              <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9;">
+                                <span style="font-size: 15px; color: #0f172a; font-weight: 500;">${leadData.name}</span>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9;">
+                                <span style="font-size: 13px; font-weight: 600; color: #64748b; text-transform: uppercase;">Email Address</span>
+                              </td>
+                              <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9;">
+                                <a href="mailto:${leadData.email}" style="font-size: 15px; color: #2563eb; text-decoration: none; font-weight: 500;">${leadData.email || 'Not provided'}</a>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9;">
+                                <span style="font-size: 13px; font-weight: 600; color: #64748b; text-transform: uppercase;">Phone Number</span>
+                              </td>
+                              <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9;">
+                                <span style="font-size: 15px; color: #0f172a; font-weight: 500;">${leadData.phone || 'Not provided'}</span>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9;">
+                                <span style="font-size: 13px; font-weight: 600; color: #64748b; text-transform: uppercase;">Company</span>
+                              </td>
+                              <td style="padding: 12px 0; border-bottom: 1px solid #f1f5f9;">
+                                <span style="font-size: 15px; color: #0f172a; font-weight: 500;">${leadData.company || 'Not provided'}</span>
+                              </td>
+                            </tr>
+                          </table>
+
+                          <h2 style="margin: 0 0 16px; font-size: 18px; color: #0f172a;">Requirements & Details</h2>
+                          <div style="background-color: #f8fafc; border-left: 4px solid #2563eb; padding: 20px; border-radius: 0 6px 6px 0;">
+                            <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #334155; white-space: pre-wrap;">${leadData.requirements || 'No specific requirements provided.'}</p>
+                          </div>
+                        </td>
                       </tr>
                       <tr>
-                        <td style="padding: 12px; background-color: #f8fafc; border-radius: 12px 0 0 12px; width: 40%; font-weight: 700; color: #475569; font-size: 14px;">Company</td>
-                        <td style="padding: 12px; background-color: #f8fafc; border-radius: 0 12px 12px 0; color: #0f172a; font-size: 14px; font-weight: 600;">${leadData.company || 'Not provided'}</td>
+                        <td style="background-color: #0f172a; padding: 24px 40px; text-align: center;">
+                          <p style="margin: 0; font-size: 12px; color: #94a3b8;">This is an automated notification from the Authentiks platform.</p>
+                        </td>
                       </tr>
                     </table>
-                  </div>
-
-                  <div style="margin-top: 24px; padding: 24px; background-color: #0f172a; border-radius: 20px; color: #f8fafc;">
-                    <span style="display: block; font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;">Requirements & Details</span>
-                    <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #e2e8f0; font-style: italic;">
-                      "${leadData.requirements || 'The user did not provide specific requirements.'}"
-                    </p>
-                  </div>
-
-                </div>
-
-                <div style="margin-top: 40px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 24px;">
-                  <p style="font-size: 12px; color: #94a3b8; font-weight: 600; margin: 0;">This lead was captured from the Authentiks Public Website.</p>
-                </div>
-              </div>
+                  </td>
+                </tr>
+              </table>
             </div>
           `
         }).then(info => {
