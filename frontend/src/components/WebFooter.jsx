@@ -18,17 +18,20 @@ export default function WebFooter() {
           </p>
           <div className="flex items-center gap-4 text-gray-300">
             <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors"><Linkedin size={20} /></a>
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors"><X size={20} /></a>
-            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors"><Youtube size={20} /></a>
           </div>
         </div>
 
         {/* Company Column */}
-        <div className="flex flex-col gap-4">
-          <h4 className="font-bold text-[16px]">Company</h4>
-          <Link to="/about-us" className="text-gray-400 hover:text-white transition-colors text-[14px]">About Us</Link>
-          <Link to="/contact-us" className="text-gray-400 hover:text-white transition-colors text-[14px]">Resources</Link>
-          <Link to="/contact-us" className="text-gray-400 hover:text-white transition-colors text-[14px]">Contact Us</Link>
+        <div className="flex flex-col">
+          <h4 className="font-bold text-[16px] mb-4">Company</h4>
+          <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+            <Link to="/about-us" className="text-gray-400 hover:text-white transition-colors text-[14px]">About Us</Link>
+            <Link to="/contact-us" className="text-gray-400 hover:text-white transition-colors text-[14px]">Resources</Link>
+            <Link to="/contact-us" className="text-gray-400 hover:text-white transition-colors text-[14px]">Contact Us</Link>
+            <Link to="/about-us" className="text-gray-400 hover:text-white transition-colors text-[14px]">About Us</Link>
+            <Link to="/contact-us" className="text-gray-400 hover:text-white transition-colors text-[14px]">Resources</Link>
+            <Link to="/contact-us" className="text-gray-400 hover:text-white transition-colors text-[14px]">Contact Us</Link>
+          </div>
         </div>
         
         {/* Legal Column */}

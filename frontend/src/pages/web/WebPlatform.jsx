@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Layers, Network, ShieldCheck, LineChart, ChevronRight, Shield, User, FileText, Gift, ShoppingCart, BarChart3, AlertTriangle, AlertCircle, Puzzle, Lock } from "lucide-react";
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
-import platformHeroImage from "../../assets/web/platform_hero.png";
+import DemoModal from "../../components/DemoModal";
+import platformHeroImage from "../../assets/banners/new_banners/platform.png";
 
 export default function WebPlatform() {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   const capabilities = [
     {
       num: "1",
@@ -82,55 +85,14 @@ export default function WebPlatform() {
     <div className="min-h-screen bg-white font-sans text-slate-800">
       <WebHeader />
 
-      {/* Hero Section */}
-      <section className="pt-20 pb-24 overflow-hidden relative border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 grid lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <h3 className="text-blue-600 font-bold text-sm uppercase tracking-wider mb-4">Platform</h3>
-            <h1 className="text-4xl md:text-5xl font-bold text-slate-900 leading-[1.15] mb-6">
-              One Platform. Every Capability.
-            </h1>
-            <p className="text-lg text-slate-600 mb-10 leading-relaxed">
-              Everything brands need to authenticate products, understand consumers, and build lasting relationships.
-            </p>
-
-            <div className="grid grid-cols-2 gap-6">
-               <div className="flex gap-3">
-                  <div className="text-blue-600 shrink-0"><Layers size={24} /></div>
-                  <div>
-                     <h4 className="font-bold text-sm text-slate-900">Unified Platform</h4>
-                     <p className="text-xs text-slate-500">All capabilities in one place</p>
-                  </div>
-               </div>
-               <div className="flex gap-3">
-                  <div className="text-blue-600 shrink-0"><Network size={24} /></div>
-                  <div>
-                     <h4 className="font-bold text-sm text-slate-900">Easy Integration</h4>
-                     <p className="text-xs text-slate-500">APIs & no-code options</p>
-                  </div>
-               </div>
-               <div className="flex gap-3">
-                  <div className="text-blue-600 shrink-0"><ShieldCheck size={24} /></div>
-                  <div>
-                     <h4 className="font-bold text-sm text-slate-900">Enterprise Ready</h4>
-                     <p className="text-xs text-slate-500">Scalable & secure</p>
-                  </div>
-               </div>
-               <div className="flex gap-3">
-                  <div className="text-blue-600 shrink-0"><LineChart size={24} /></div>
-                  <div>
-                     <h4 className="font-bold text-sm text-slate-900">Actionable Insights</h4>
-                     <p className="text-xs text-slate-500">Real-time & data-driven</p>
-                  </div>
-               </div>
-            </div>
-          </div>
-          
-          <div className="relative z-10 hidden lg:block">
-            <div className="relative w-full h-full flex items-center justify-end">
-               <img src={platformHeroImage} alt="Authentiks Platform Overview" className="w-[120%] max-w-none h-auto -translate-y-4 translate-x-8 mix-blend-multiply" />
-            </div>
-          </div>
+      {/* Hero Banner */}
+      <section className="relative w-full cursor-pointer" onClick={() => setIsDialogOpen(true)}>
+        <div className="relative w-full h-[250px] md:h-[400px] lg:h-[600px] overflow-hidden bg-slate-100">
+          <img
+            src={platformHeroImage}
+            alt="Authentiks Platform Overview"
+            className="absolute inset-0 w-full h-full object-contain"
+          />
         </div>
       </section>
 
@@ -223,6 +185,11 @@ export default function WebPlatform() {
       </section>
 
       <WebFooter />
+
+      <DemoModal 
+        isOpen={isDialogOpen} 
+        onClose={() => setIsDialogOpen(false)} 
+      />
     </div>
   );
 }

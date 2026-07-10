@@ -137,6 +137,16 @@ const ProductPassport = () => {
   const daysLeft = Math.max(0, estimatedDaysTotal - daysSinceScan);
   const percentageLeft = Math.max(0, Math.min(100, Math.round((daysLeft / estimatedDaysTotal) * 100)));
 
+  const filteredRecommendations = recommendations.filter((item: any) => {
+    const currentId = data?.productId?._id || data?.product?._id || data?._id;
+    const currentName = data?.productName || data?.productId?.productName;
+    const itemId = item?._id || item?.id;
+    const itemName = item?.title || item?.productName;
+    if (currentId && itemId && String(currentId) === String(itemId)) return false;
+    if (currentName && itemName && currentName === itemName) return false;
+    return true;
+  }).slice(0, 4);
+
   return (
     <div className="min-h-screen bg-[#F5F7FA] relative pb-24 overflow-x-hidden font-sans">
       <ProductHeroHeader title="Product Passport" data={data} />
@@ -342,7 +352,7 @@ const ProductPassport = () => {
         </div>
 
         {/* Recommendation For You */}
-        {recommendations.length > 0 && (
+        {filteredRecommendations.length > 0 && (
           <div className="pt-2">
             <div className="flex items-center justify-between mb-4 px-1">
               <h3 className="text-[15px] font-bold text-slate-900">Recommendation for You</h3>
@@ -355,7 +365,7 @@ const ProductPassport = () => {
             </div>
 
             <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide snap-x px-1">
-              {recommendations.map((rec: any, idx: number) => (
+              {filteredRecommendations.map((rec: any, idx: number) => (
                 <div
                   key={idx}
                   onClick={() => navigate("/product-details", {

@@ -1,82 +1,96 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { ShieldCheck, Eye, MapPin, BarChart3, Users, Briefcase, Handshake, Shield, Target, Lightbulb, TrendingUp, Calendar, CalendarCheck2, Globe, Linkedin, Phone, Settings, Activity } from "lucide-react";
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
-import aboutHeroImage from "../../assets/web/about_us_hero.png";
+import DemoModal from "../../components/DemoModal";
+import aboutHeroImage from "../../assets/banners/new_banners/about_us.png";
 import ibadulImage from "../../assets/web/founders/main.png";
 import charanImage from "../../assets/web/founders/charan.png";
 import rajeevImage from "../../assets/web/founders/image.png";
 
 export default function WebAboutUs() {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-white font-sans text-slate-800">
       <WebHeader />
 
-      {/* Hero Section */}
-      <section className="pt-20 pb-16 overflow-hidden relative bg-white">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 grid lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <h3 className="text-blue-600 font-bold text-sm uppercase tracking-wider mb-4">About Us</h3>
-            <h1 className="text-4xl md:text-[52px] font-bold text-slate-900 leading-[1.1] mb-6 tracking-tight">
-              Building the <span className="text-blue-600">Digital Identity Layer</span> for Physical Products
-            </h1>
-            <p className="text-lg text-slate-600 mb-12 leading-relaxed max-w-xl">
-              Authentiks empowers brands to transform every physical product into a connected digital asset—bridging the gap between products and consumers through authentication, intelligence, and engagement.
-            </p>
+      {/* Hero Banner */}
+      <section className="relative w-full cursor-pointer" onClick={() => setIsDialogOpen(true)}>
+        <div className="relative w-full h-[250px] md:h-[400px] lg:h-[600px] overflow-hidden bg-slate-100">
+          <img
+            src={aboutHeroImage}
+            alt="About Us"
+            className="absolute inset-0 w-full h-full object-contain"
+          />
+        </div>
+      </section>
 
-            <div className="grid sm:grid-cols-2 gap-8">
-              <div className="flex flex-col gap-3">
-                <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 shadow-sm border border-blue-100">
-                  <ShieldCheck size={24} />
-                </div>
-                <div>
-                  <h4 className="font-bold text-slate-900 mb-2">Our Mission</h4>
-                  <p className="text-sm text-slate-600 leading-relaxed">
-                    To help brands build trusted, data-driven relationships with consumers through connected products.
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-col gap-3">
-                <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 shadow-sm border border-blue-100">
-                  <Eye size={24} />
-                </div>
-                <div>
-                  <h4 className="font-bold text-slate-900 mb-2">Our Vision</h4>
-                  <p className="text-sm text-slate-600 leading-relaxed">
-                    A future where every physical product has a secure digital identity and every brand owns its consumer relationship.
-                  </p>
-                </div>
-              </div>
+      {/* Why Authentiks Exists */}
+      <section className="pt-20 pb-16 overflow-hidden relative bg-white">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
+          <div className="max-w-4xl mx-auto">
+            <h3 className="text-blue-600 font-bold text-sm uppercase tracking-wider mb-4 text-center">Why Authentiks Exists</h3>
+            <h1 className="text-4xl md:text-[42px] font-bold text-slate-900 leading-[1.1] mb-8 tracking-tight text-center">
+              Brands own the product—but not the <span className="text-blue-600">consumer relationship</span>. Authentiks changes that.
+            </h1>
+            <div className="text-lg text-slate-600 mb-12 leading-relaxed space-y-4">
+              <p>
+                Modern businesses invest heavily in acquiring customers, building products, and growing distribution. Yet once a product reaches the consumer, brands often lose visibility and ownership of the relationship.
+              </p>
+              <ul className="list-disc pl-6 space-y-1 font-medium text-slate-700">
+                <li>Marketplaces own customer data.</li>
+                <li>Retailers own the transaction.</li>
+                <li>Distributors own the supply chain.</li>
+              </ul>
+              <p>
+                Our Consumer Intelligence Platform transforms every physical product into a secure digital identity, enabling brands to authenticate products, register consumers, collect first-party data, deliver engaging post-purchase experiences, and make smarter business decisions through real-time insights.
+              </p>
             </div>
-          </div>
-          
-          <div className="relative z-10 hidden lg:block">
-            <div className="relative w-full h-full flex items-center justify-end">
-               <img src={aboutHeroImage} alt="Authentiks About Us" className="w-[120%] max-w-none h-auto -translate-y-4 translate-x-8" />
+
+            <div className="grid sm:grid-cols-2 gap-12 mt-12 pt-12 border-t border-slate-100">
+              <div className="flex flex-col gap-4 items-center text-center">
+                <div className="w-16 h-16 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 shadow-sm border border-blue-100">
+                  <ShieldCheck size={32} />
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-slate-900 mb-3">Our Mission</h4>
+                  <p className="text-base text-slate-600 leading-relaxed">
+                    To help every brand build trusted, data-driven relationships with consumers by transforming physical products into connected digital assets.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col gap-4 items-center text-center">
+                <div className="w-16 h-16 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 shadow-sm border border-blue-100">
+                  <Eye size={32} />
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-slate-900 mb-3">Our Vision</h4>
+                  <p className="text-base text-slate-600 leading-relaxed">
+                    A future where every physical product has a secure digital identity, every consumer can trust what they buy, and every brand truly owns its customer relationship.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* What We Believe */}
+      {/* Why Brands Choose Authentiks */}
       <section className="py-20 bg-slate-50 border-y border-slate-100">
-        <div className="max-w-7xl mx-auto px-6 md:px-12">
-          <h2 className="text-3xl font-bold text-slate-900 mb-12 text-center">What We Believe</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-             {[
-               { icon: <Shield size={24}/>, title: "Trust should be built into every product." },
-               { icon: <Eye size={24}/>, title: "Consumers deserve transparency." },
-               { icon: <BarChart3 size={24}/>, title: "Brands deserve first-party customer intelligence." },
-               { icon: <Handshake size={24}/>, title: "Every interaction should create value." }
-             ].map((item, idx) => (
-               <div key={idx} className="bg-white border border-slate-200 rounded-2xl p-8 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-all">
-                 <div className="w-14 h-14 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-6">
-                   {item.icon}
-                 </div>
-                 <h3 className="font-bold text-slate-900 text-lg leading-snug">{item.title}</h3>
-               </div>
-             ))}
+        <div className="max-w-5xl mx-auto px-6 md:px-12 text-center">
+          <h2 className="text-3xl font-bold text-slate-900 mb-8">Why Brands Choose Authentiks</h2>
+          <div className="text-lg text-slate-600 space-y-6 max-w-3xl mx-auto leading-relaxed">
+            <p>
+              Brands choose Authentiks because we help them move beyond product authentication.
+            </p>
+            <p>
+              We enable them to build direct consumer relationships, capture first-party intelligence, protect brand integrity, and create meaningful post-purchase experiences—all through one connected platform.
+            </p>
+            <p>
+              Our solution combines enterprise-grade security, scalable technology, and actionable insights, helping brands make every product work harder long after it has been sold.
+            </p>
           </div>
         </div>
       </section>
@@ -87,7 +101,7 @@ export default function WebAboutUs() {
           <h2 className="text-3xl font-bold text-slate-900 mb-16 text-center">Leadership</h2>
           
           {/* Rajeev */}
-          <div className="bg-slate-50 border border-slate-200 rounded-[32px] p-8 md:p-12 flex flex-col md:flex-row gap-10 shadow-sm max-w-5xl mx-auto items-center md:items-start mb-16">
+          <div className="bg-slate-50 border border-slate-200 rounded-[32px] p-8 md:p-12 flex flex-col md:flex-row gap-10 shadow-sm max-w-5xl mx-auto items-center md:items-start mb-8">
              <div className="shrink-0">
                 <div className="w-48 h-48 rounded-full bg-slate-200 border-4 border-white shadow-md mx-auto overflow-hidden relative">
                    <img src={rajeevImage} alt="Rajeev Mecheri" className="w-full h-full object-cover object-top" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
@@ -97,62 +111,80 @@ export default function WebAboutUs() {
              
              <div className="flex-1 text-center md:text-left">
                 <div className="mb-2">
-                  <div className="text-blue-600 font-bold text-xs uppercase tracking-wider mb-2">Founder & Strategic Advisor</div>
+                  <div className="text-blue-600 font-bold text-xs uppercase tracking-wider mb-2">Mentor & Strategic Advisor</div>
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <h3 className="text-3xl font-bold text-slate-900">Rajeev Mecheri</h3>
+                    <div>
+                      <h3 className="text-3xl font-bold text-slate-900">Rajeev Mecheri</h3>
+                      <p className="text-sm font-medium text-slate-500 mt-1">Serial Entrepreneur • Angel Investor • Technology Leader</p>
+                    </div>
                     <a href="https://www.linkedin.com/in/rajeevmecheri/" target="_blank" rel="noopener noreferrer" className="text-blue-600 bg-blue-50 p-2 rounded-lg hover:bg-blue-100 inline-flex self-center md:self-auto transition-colors"><Linkedin size={18}/></a>
                   </div>
                 </div>
                 <div className="space-y-4 text-[15px] text-slate-600 leading-relaxed mt-4">
                   <p>
-                    A highly respected visionary and business leader, Rajeev Mecheri is the Founder of Imetrex and Mecheri Capital. With a distinguished track record of building, scaling, and advising successful technology-driven enterprises, he brings unparalleled strategic expertise.
+                    Rajeev Mecheri is one of India's most respected technology entrepreneurs and startup mentors. Over the past three decades, he has built and scaled multiple technology companies, led successful global exits, invested in innovative startups and contributed extensively to the entrepreneurial ecosystem through organizations including The Chennai Angels, TiE, EO and YPO.
                   </p>
                   <p>
-                    As Founder and Strategic Advisor to Authentiks, Rajeev provides critical guidance on product innovation, enterprise partnerships, and long-term vision, playing a pivotal role in shaping Authentiks into a global Consumer Intelligence Platform.
+                    At Authentiks, Rajeev serves as Mentor and Strategic Advisor, helping shape our long-term vision, product strategy and enterprise growth. His mentorship reflects our commitment to building a globally trusted Consumer Intelligence Platform that enables brands to create secure, connected and intelligent product experiences.
                   </p>
                 </div>
              </div>
           </div>
           
-          {/* Founders */}
-          <div className="grid md:grid-cols-2 gap-8 mb-8">
-            {/* Ibadul */}
-            <div className="bg-white border border-slate-200 rounded-[32px] p-8 md:p-10 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-shadow">
-               <div className="shrink-0 mb-6">
-                 <div className="w-40 h-40 rounded-full bg-slate-100 border-4 border-white shadow-md overflow-hidden relative">
-                   <img src={ibadulImage} alt="Ibadul Hassan" className="w-full h-full object-cover object-top" />
-                 </div>
-               </div>
-               <div className="flex-1 w-full flex flex-col items-center">
-                 <div className="flex flex-col items-center justify-center mb-4">
-                   <h3 className="text-2xl font-bold text-blue-700 mb-1">Ibadul Hassan</h3>
-                   <p className="text-slate-500 font-bold text-sm tracking-wide mb-4">Co-Founder & Business Head</p>
-                   <a href="https://www.linkedin.com/in/ibadul-hassan-6430b247/" target="_blank" rel="noopener noreferrer" className="text-blue-600 bg-blue-50 p-2.5 rounded-full hover:bg-blue-100 transition-colors"><Linkedin size={20}/></a>
-                 </div>
-                 <p className="text-[15px] text-slate-600 leading-relaxed max-w-[350px]">
-                   Business leader with 16+ years of experience across operations, strategy, business development, supply chain, and growth. Passionate about helping brands build scalable businesses through technology and consumer intelligence.
-                 </p>
-               </div>
-            </div>
-            
-            {/* Charan */}
-            <div className="bg-white border border-slate-200 rounded-[32px] p-8 md:p-10 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-shadow">
-               <div className="shrink-0 mb-6">
-                 <div className="w-40 h-40 rounded-full bg-slate-100 border-4 border-white shadow-md overflow-hidden relative">
-                   <img src={charanImage} alt="Charan Kumar Kamasani" className="w-full h-full object-cover object-top" />
-                 </div>
-               </div>
-               <div className="flex-1 w-full flex flex-col items-center">
-                 <div className="flex flex-col items-center justify-center mb-4">
-                   <h3 className="text-2xl font-bold text-blue-700 mb-1">Charan Kumar Kamasani</h3>
-                   <p className="text-slate-500 font-bold text-sm tracking-wide mb-4">Co-Founder & Technology</p>
-                   <a href="https://www.linkedin.com/in/charan-kumar-kamasani" target="_blank" rel="noopener noreferrer" className="text-blue-600 bg-blue-50 p-2.5 rounded-full hover:bg-blue-100 transition-colors"><Linkedin size={20}/></a>
-                 </div>
-                 <p className="text-[15px] text-slate-600 leading-relaxed max-w-[350px]">
-                   Technology leader focused on building secure, scalable, enterprise-grade platforms that simplify digital product identity and deliver exceptional user experiences.
-                 </p>
-               </div>
-            </div>
+          {/* Ibadul */}
+          <div className="bg-slate-50 border border-slate-200 rounded-[32px] p-8 md:p-12 flex flex-col md:flex-row gap-10 shadow-sm max-w-5xl mx-auto items-center md:items-start mb-8">
+             <div className="shrink-0">
+                <div className="w-48 h-48 rounded-full bg-slate-200 border-4 border-white shadow-md mx-auto overflow-hidden relative">
+                   <img src={ibadulImage} alt="Ibadul Hassan" className="w-full h-full object-cover object-top" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+                   <div className="absolute inset-0 bg-slate-300 hidden flex-col justify-end items-center"><div className="w-24 h-24 rounded-full bg-slate-400 mb-1"></div><div className="w-36 h-20 bg-slate-400 rounded-t-full"></div></div>
+                </div>
+             </div>
+             
+             <div className="flex-1 text-center md:text-left">
+                <div className="mb-2">
+                  <div className="text-blue-600 font-bold text-xs uppercase tracking-wider mb-2">Co-Founder & Business Head</div>
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <h3 className="text-3xl font-bold text-slate-900">Ibadul Hassan</h3>
+                    <a href="https://www.linkedin.com/in/ibadul-hassan-6430b247/" target="_blank" rel="noopener noreferrer" className="text-blue-600 bg-blue-50 p-2 rounded-lg hover:bg-blue-100 inline-flex self-center md:self-auto transition-colors"><Linkedin size={18}/></a>
+                  </div>
+                </div>
+                <div className="space-y-4 text-[15px] text-slate-600 leading-relaxed mt-4">
+                  <p>
+                    Hassan is the Co-Founder & Business Head of Authentiks, where he leads business strategy, product innovation, and enterprise growth. With over 18 years of cross-functional leadership experience, he has worked with both global enterprises and high-growth startups, driving initiatives across operations, supply chain, digital transformation, customer experience and business development.
+                  </p>
+                  <p>
+                    Driven by the belief that brands should own their customer relationships—not just their sales—he co-founded Authentiks to redefine how physical products connect with consumers. His focus is on building a platform that enables brands to authenticate products, capture first-party consumer intelligence and create meaningful post-purchase experiences at scale.
+                  </p>
+                </div>
+             </div>
+          </div>
+
+          {/* Charan */}
+          <div className="bg-slate-50 border border-slate-200 rounded-[32px] p-8 md:p-12 flex flex-col md:flex-row gap-10 shadow-sm max-w-5xl mx-auto items-center md:items-start mb-8">
+             <div className="shrink-0">
+                <div className="w-48 h-48 rounded-full bg-slate-200 border-4 border-white shadow-md mx-auto overflow-hidden relative">
+                   <img src={charanImage} alt="Charan Kumar" className="w-full h-full object-cover object-top" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
+                   <div className="absolute inset-0 bg-slate-300 hidden flex-col justify-end items-center"><div className="w-24 h-24 rounded-full bg-slate-400 mb-1"></div><div className="w-36 h-20 bg-slate-400 rounded-t-full"></div></div>
+                </div>
+             </div>
+             
+             <div className="flex-1 text-center md:text-left">
+                <div className="mb-2">
+                  <div className="text-blue-600 font-bold text-xs uppercase tracking-wider mb-2">Co-Founder & Technology Head</div>
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <h3 className="text-3xl font-bold text-slate-900">Charan Kumar</h3>
+                    <a href="https://www.linkedin.com/in/charan-kumar-kamasani" target="_blank" rel="noopener noreferrer" className="text-blue-600 bg-blue-50 p-2 rounded-lg hover:bg-blue-100 inline-flex self-center md:self-auto transition-colors"><Linkedin size={18}/></a>
+                  </div>
+                </div>
+                <div className="space-y-4 text-[15px] text-slate-600 leading-relaxed mt-4">
+                  <p>
+                    Charan is the Co-Founder & Head of Technology at Authentiks, leading the platform's technology vision, product engineering and architecture. With expertise in full-stack development, cloud technologies, APIs and scalable application development, he focuses on building secure, high-performance systems that enable brands to connect every physical product with its digital identity.
+                  </p>
+                  <p>
+                    At Authentiks, Charan drives the development of the Consumer Intelligence Platform, ensuring every component—from product authentication and digital product passports to analytics and enterprise integrations—is built with scalability, security and reliability at its core.
+                  </p>
+                </div>
+             </div>
           </div>
         </div>
       </section>
@@ -161,27 +193,38 @@ export default function WebAboutUs() {
       <section className="py-24 bg-slate-50 border-t border-slate-100">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           <h2 className="text-3xl font-bold text-slate-900 mb-16 text-center">Our Values</h2>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { icon: <ShieldCheck size={32}/>, title: "Integrity" },
-              { icon: <Users size={32}/>, title: "Consumer First" },
-              { icon: <Lightbulb size={32}/>, title: "Innovation" },
-              { icon: <Target size={32}/>, title: "Ownership" },
-              { icon: <Handshake size={32}/>, title: "Collaboration" }
+              { icon: <ShieldCheck size={32}/>, title: "Trust by Design", desc: "Trust is built into every product through secure digital identities and verified consumer experiences." },
+              { icon: <Users size={32}/>, title: "Consumer First", desc: "Technology should simplify ownership, improve transparency, and create meaningful experiences for consumers." },
+              { icon: <Lightbulb size={32}/>, title: "Innovation with Purpose", desc: "Every feature we build is designed to solve real business challenges while delivering measurable value." },
+              { icon: <Handshake size={32}/>, title: "Long-Term Partnerships", desc: "We believe the strongest businesses are built through trust, collaboration, and lasting relationships." }
             ].map((value, idx) => (
-              <div key={idx} className="flex flex-col items-center text-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:-translate-y-1 transition-transform">
-                <div className="w-16 h-16 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-2">
+              <div key={idx} className="flex flex-col text-center gap-4 bg-white p-8 rounded-[24px] shadow-sm border border-slate-100 hover:-translate-y-1 transition-transform">
+                <div className="w-16 h-16 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-2">
                   {value.icon}
                 </div>
                 <h4 className="font-bold text-slate-900 text-lg">{value.title}</h4>
+                <p className="text-slate-600 text-[15px] leading-relaxed">{value.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Bottom */}
+      {/* Building the Future & CTA Bottom */}
       <section className="pb-24 pt-12 px-6 md:px-12 bg-white">
+         
+         <div className="max-w-4xl mx-auto text-center mb-16">
+            <h2 className="text-3xl font-bold text-slate-900 mb-6">Building the Future</h2>
+            <div className="text-[17px] text-slate-600 space-y-4 leading-relaxed">
+              <p>The future of commerce is not just about selling products.</p>
+              <p>It is about creating trusted, connected experiences that continue long after the purchase.</p>
+              <p>At Authentiks, we are building the digital infrastructure that enables every physical product to become a source of trust, intelligence, and lifelong consumer engagement.</p>
+              <p className="font-bold text-slate-800">Because every product should do more than reach a consumer.<br/>It should build a relationship.</p>
+            </div>
+         </div>
+
          <div className="max-w-6xl mx-auto bg-[#0d47a1] rounded-[32px] p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-10 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/20 blur-[80px] rounded-full -translate-y-1/2 translate-x-1/3"></div>
             
@@ -190,8 +233,8 @@ export default function WebAboutUs() {
                   <ShieldCheck size={40} className="text-white opacity-90" />
                </div>
                <div className="max-w-xl text-center md:text-left">
-                  <h2 className="text-[28px] md:text-3xl font-bold mb-4 leading-tight">Ready to Build Stronger Consumer Relationships?</h2>
-                  <p className="text-blue-100 text-lg">Let's connect and create impact together.</p>
+                  <h2 className="text-[28px] md:text-3xl font-bold mb-4 leading-tight">Ready to Build Smarter Consumer Relationships?</h2>
+                  <p className="text-blue-100 text-lg">Transform every product into a connected digital asset and unlock the power of consumer intelligence.</p>
                </div>
             </div>
             
@@ -201,16 +244,16 @@ export default function WebAboutUs() {
                    <Calendar size={20}/> Book a Demo
                  </button>
                </Link>
-               <Link to="/contact-us" className="w-full sm:w-auto">
-                 <button className="w-full md:w-auto bg-blue-800 border border-blue-600 text-white px-8 py-4 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg flex items-center justify-center gap-2">
-                   <Phone size={20}/> Talk to Sales
-                 </button>
-               </Link>
             </div>
          </div>
       </section>
 
       <WebFooter />
+
+      <DemoModal 
+        isOpen={isDialogOpen} 
+        onClose={() => setIsDialogOpen(false)} 
+      />
     </div>
   );
 }

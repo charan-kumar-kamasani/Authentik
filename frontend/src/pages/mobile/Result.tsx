@@ -362,6 +362,16 @@ function ResultAuthentic({ data }: { data: any }) {
     }
   };
 
+  const filteredRecommendations = recommendations.filter((item: any) => {
+    const currentId = data?.productId?._id || data?.product?._id || data?._id;
+    const currentName = data?.productName || data?.productId?.productName;
+    const itemId = item?._id || item?.id;
+    const itemName = item?.title || item?.productName;
+    if (currentId && itemId && String(currentId) === String(itemId)) return false;
+    if (currentName && itemName && currentName === itemName) return false;
+    return true;
+  }).slice(0, 4);
+
   return (
     <div className="min-h-screen bg-[#FAFAFA] font-sans flex flex-col relative pb-32">
       
@@ -597,7 +607,7 @@ function ResultAuthentic({ data }: { data: any }) {
         </button>
 
         {/* Recommendations Section */}
-        {recommendations.length > 0 && (
+        {filteredRecommendations.length > 0 && (
           <div className="mt-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-[16px] font-extrabold text-[#0B1E36]">Recommendation for You</h3>
@@ -607,7 +617,7 @@ function ResultAuthentic({ data }: { data: any }) {
             </div>
             
             <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
-               {recommendations.map((item: any, index: number) => (
+               {filteredRecommendations.map((item: any, index: number) => (
                  <div 
                    key={item.id || item._id || index} 
                    onClick={() => navigate("/product-details", { 

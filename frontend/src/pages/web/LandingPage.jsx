@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Play, CheckCircle2, ChevronRight, Shield, ShieldCheck, Mail, Phone, MessageCircle, QrCode, Factory, Smartphone, Package, Gift, BarChart3, Users, Globe, Settings, Store, Pill, Sparkles, ShoppingBag, HeartPulse, Monitor, ShoppingBasket, Gem, ShieldPlus, Cloud, Lock, Network, Database, Activity, Target, X } from "lucide-react";
+import { Play, CheckCircle2, ChevronRight, Shield, ShieldCheck, Mail, Phone, MessageCircle, QrCode, Factory, Smartphone, Package, Gift, BarChart3, Users, Globe, Settings, Store, Pill, Sparkles, ShoppingBag, HeartPulse, Monitor, ShoppingBasket, Gem, ShieldPlus, Cloud, Lock, Network, Database, Activity, Target } from "lucide-react";
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
+import DemoModal from "../../components/DemoModal";
 import heroImage from "../../assets/web/hero_image.png";
 import logoShield from "../../assets/logo-shield.png";
 import h_b1 from "../../assets/banners/new_banners/h_b1.png";
@@ -463,37 +464,10 @@ export default function LandingPage() {
 
       <WebFooter />
 
-      {isDialogOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white rounded-2xl p-6 md:p-8 w-full max-w-md relative shadow-2xl">
-            <button onClick={() => setIsDialogOpen(false)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition-colors">
-              <X size={24} />
-            </button>
-            <h3 className="text-2xl font-bold text-slate-800 mb-6">Request More Information</h3>
-            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); setIsDialogOpen(false); }}>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Name</label>
-                <input type="text" required className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                <input type="email" required className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
-                <input type="tel" required className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Company</label>
-                <input type="text" className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none" />
-              </div>
-              <button type="submit" className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg mt-4 hover:bg-blue-700 transition-colors">
-                Submit
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+      <DemoModal 
+        isOpen={isDialogOpen} 
+        onClose={() => setIsDialogOpen(false)} 
+      />
     </div>
   );
 }

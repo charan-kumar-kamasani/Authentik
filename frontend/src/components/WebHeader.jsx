@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import logo from "../assets/logo.png"; // Changed to use standard logo
+import DemoModal from "./DemoModal";
 
 export default function WebHeader() {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
 
   const token = localStorage.getItem("token");
   const adminToken = localStorage.getItem("adminToken");
@@ -75,11 +77,12 @@ export default function WebHeader() {
             </Link>
           )}
 
-          <Link to="/contact-us">
-            <button className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold text-[15px] hover:bg-blue-700 transition-all shadow-md hover:shadow-lg">
-              Book a Demo
-            </button>
-          </Link>
+          <button 
+            onClick={() => setIsDemoModalOpen(true)}
+            className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-semibold text-[15px] hover:bg-blue-700 transition-all shadow-md hover:shadow-lg"
+          >
+            Book a Demo
+          </button>
 
           {adminToken && (
             <button
@@ -127,11 +130,15 @@ export default function WebHeader() {
               </Link>
             )}
 
-            <Link to="/contact-us" onClick={() => setIsMobileMenuOpen(false)}>
-              <button className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-[15px] shadow-md">
-                Book a Demo
-              </button>
-            </Link>
+            <button 
+              onClick={() => {
+                setIsDemoModalOpen(true);
+                setIsMobileMenuOpen(false);
+              }}
+              className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold text-[15px] shadow-md"
+            >
+              Book a Demo
+            </button>
 
             {adminToken && (
               <button
@@ -144,6 +151,11 @@ export default function WebHeader() {
           </div>
         </div>
       )}
+
+      <DemoModal 
+        isOpen={isDemoModalOpen} 
+        onClose={() => setIsDemoModalOpen(false)} 
+      />
     </header>
   );
 }

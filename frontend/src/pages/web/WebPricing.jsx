@@ -1,57 +1,32 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { CheckCircle2, Check, ArrowRight, ShieldCheck, Lock, Activity, Cloud, TrendingUp, RefreshCw, BarChart3, Star, Rocket, Building2, Calendar, MessageSquare, Network } from "lucide-react";
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
-import plansHeroImage from "../../assets/web/plans_hero.png";
+import DemoModal from "../../components/DemoModal";
+import plansHeroImage from "../../assets/banners/new_banners/plans.png";
 
 export default function WebPricing() {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   // Using generic images for the placeholders since the user will add them later
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
       <WebHeader />
 
-      {/* Hero Section */}
-      <section className="pt-20 pb-24 overflow-hidden relative">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 grid lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <h3 className="text-blue-600 font-bold text-[11px] uppercase tracking-[0.2em] mb-4">Plans</h3>
-            <h1 className="text-4xl md:text-[52px] font-bold text-slate-900 leading-[1.1] mb-6 tracking-tight">
-              Flexible Plans for Every Stage of Growth
-            </h1>
-            <p className="text-lg text-slate-600 leading-relaxed mb-10 max-w-xl">
-              Whether you're launching your first connected product or scaling across millions of units, Authentiks grows with your business.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-8">
-               <div className="flex gap-4 items-center">
-                  <ShieldCheck className="text-blue-600" size={32} strokeWidth={1.5} />
-                  <div>
-                    <h4 className="font-bold text-slate-900 text-sm">Enterprise Security</h4>
-                    <p className="text-slate-500 text-xs">Powered by Cloudflare</p>
-                  </div>
-               </div>
-               <div className="flex gap-4 items-center">
-                  <Lock className="text-blue-600" size={32} strokeWidth={1.5} />
-                  <div>
-                    <h4 className="font-bold text-slate-900 text-sm">Your Data. Always Secure.</h4>
-                    <p className="text-slate-500 text-xs">Built with privacy by design.</p>
-                  </div>
-               </div>
-            </div>
-          </div>
-          
-          <div className="relative z-10 hidden lg:block">
-             <div className="relative w-full h-full flex items-center justify-end">
-               <img src={plansHeroImage} alt="Authentiks Plans" className="w-[120%] max-w-none h-auto -translate-y-4 translate-x-8" />
-             </div>
-          </div>
+      {/* Hero Banner */}
+      <section className="relative w-full cursor-pointer" onClick={() => setIsDialogOpen(true)}>
+        <div className="relative w-full h-[250px] md:h-[400px] lg:h-[600px] overflow-hidden bg-slate-100">
+          <img
+            src={plansHeroImage}
+            alt="Authentiks Plans"
+            className="absolute inset-0 w-full h-full object-contain"
+          />
         </div>
       </section>
 
       {/* Pricing Cards */}
-      <section className="py-12 -mt-12 relative z-20">
+      <section className="py-12 mt-12 relative z-20">
          <div className="max-w-7xl mx-auto px-6 md:px-12 grid lg:grid-cols-3 gap-8">
             
             {/* Starter */}
@@ -252,6 +227,11 @@ export default function WebPricing() {
       </section>
 
       <WebFooter />
+
+      <DemoModal 
+        isOpen={isDialogOpen} 
+        onClose={() => setIsDialogOpen(false)} 
+      />
     </div>
   );
 }

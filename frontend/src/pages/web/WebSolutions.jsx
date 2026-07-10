@@ -3,10 +3,13 @@ import { Link } from "react-router-dom";
 import { Megaphone, ShieldAlert, HeartHandshake, Truck, ShoppingBag, ArrowRight, CheckCircle2, Factory, ShieldCheck, Dumbbell, Sparkles, Coffee, Laptop, Gem, BarChart3, Package, Users, QrCode, Settings, Globe } from "lucide-react";
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
+import DemoModal from "../../components/DemoModal";
 import logoShield from "../../assets/logo-shield.png";
+import solutionsHeroImage from "../../assets/banners/new_banners/solutions.png";
 
 export default function WebSolutions() {
   const [activeTab, setActiveTab] = useState("marketing");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const personas = {
     marketing: {
@@ -74,83 +77,14 @@ export default function WebSolutions() {
     <div className="min-h-screen bg-white font-sans text-slate-800">
       <WebHeader />
 
-      {/* Hero Section */}
-      <section className="pt-20 pb-24 overflow-hidden relative border-b border-slate-100 bg-slate-50/50">
-        <div className="max-w-7xl mx-auto px-6 md:px-12 grid lg:grid-cols-2 gap-16 items-center">
-           <div>
-             <h3 className="text-blue-600 font-bold text-sm uppercase tracking-wider mb-4">Solutions</h3>
-             <h1 className="text-4xl md:text-[56px] font-bold text-slate-900 leading-[1.1] mb-6 tracking-tight">
-               Built for Every Team
-             </h1>
-             <p className="text-lg text-slate-600 mb-10 leading-relaxed max-w-xl">
-               One platform delivering measurable value across your organization.
-             </p>
-             
-             <Link to="/contact-us">
-                <button className="bg-blue-600 text-white px-8 py-3.5 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl inline-flex items-center gap-2">
-                   Book a Demo
-                </button>
-             </Link>
-           </div>
-           
-           <div className="relative z-10 hidden lg:flex justify-end w-full">
-             {/* Coded Dashboard Mockup from Landing Page */}
-             <div className="w-full max-w-2xl bg-white rounded-xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-slate-100/50 overflow-hidden flex flex-col md:flex-row h-[350px] lg:h-[400px] transform lg:translate-x-8">
-               {/* Sidebar */}
-               <div className="hidden md:flex flex-col w-[180px] bg-[#f8fafc] border-r border-slate-100 p-5 shrink-0">
-                 <div className="flex items-center gap-2 mb-8 text-blue-600 font-bold text-[15px]">
-                   <img src={logoShield} className="w-6 h-6 object-contain" alt="Logo" /> Authentiks
-                 </div>
-                 <div className="space-y-1.5">
-                   <div className="flex items-center gap-3 text-xs font-bold text-blue-700 bg-blue-100/80 px-3 py-2.5 rounded-lg"><BarChart3 size={16} strokeWidth={2.5}/> Dashboard</div>
-                   <div className="flex items-center gap-3 text-xs font-semibold text-slate-500 px-3 py-2.5 hover:bg-slate-100 rounded-lg"><Package size={16}/> Products</div>
-                   <div className="flex items-center gap-3 text-xs font-semibold text-slate-500 px-3 py-2.5 hover:bg-slate-100 rounded-lg"><Users size={16}/> Consumers</div>
-                   <div className="flex items-center gap-3 text-xs font-semibold text-slate-500 px-3 py-2.5 hover:bg-slate-100 rounded-lg"><QrCode size={16}/> Scans</div>
-                   <div className="flex items-center gap-3 text-xs font-semibold text-slate-500 px-3 py-2.5 hover:bg-slate-100 rounded-lg"><Settings size={16}/> Settings</div>
-                 </div>
-               </div>
-               
-               {/* Main Content */}
-               <div className="flex-1 p-6 md:p-8 flex flex-col gap-6 bg-white overflow-hidden">
-                 <h4 className="font-bold text-slate-800 text-[15px]">Dashboard Overview</h4>
-                 
-                 {/* Stats */}
-                 <div className="grid grid-cols-2 gap-4 lg:gap-5">
-                   {[
-                     { title: "Total Scans", value: "1,25,430", trend: "+18.6%" },
-                     { title: "Registered Consumers", value: "87,420", trend: "+22.4%" },
-                     { title: "Repeat Consumers", value: "32,410", trend: "+16.2%" },
-                     { title: "Countries", value: "12", trend: "+2" },
-                   ].map((stat, i) => (
-                     <div key={i} className="bg-white border border-slate-100/60 rounded-xl p-4 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex flex-col justify-between">
-                       <div className="text-[9px] uppercase tracking-wider text-slate-400 font-bold mb-1.5 line-clamp-1">{stat.title}</div>
-                       <div className="text-xl md:text-2xl font-black text-slate-800 tracking-tight">{stat.value}</div>
-                       <div className="text-[10px] md:text-xs text-emerald-500 font-bold mt-1.5">{stat.trend}</div>
-                     </div>
-                   ))}
-                 </div>
-                 
-                 {/* Charts Area */}
-                 <div className="flex-1 grid grid-cols-2 gap-5 mt-2">
-                   <div className="border border-slate-100/60 rounded-xl p-4 flex flex-col shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
-                      <div className="text-[10px] font-bold text-slate-400 mb-3">Scan Trend</div>
-                      <div className="flex-1 relative w-full h-full overflow-hidden">
-                         <svg viewBox="0 0 100 50" className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
-                           <path d="M0,50 L0,35 Q15,20 30,30 T60,20 T80,25 T100,10 L100,50 Z" fill="#eff6ff" />
-                           <path d="M0,35 Q15,20 30,30 T60,20 T80,25 T100,10" fill="none" stroke="#3b82f6" strokeWidth="2" vectorEffect="non-scaling-stroke" />
-                         </svg>
-                      </div>
-                   </div>
-                   <div className="border border-slate-100/60 rounded-xl flex items-center justify-center bg-[#f8fafc] overflow-hidden relative shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)]">
-                      <Globe size={160} className="text-blue-100 absolute -right-8 -bottom-8 opacity-70" strokeWidth={1} />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-sm text-[10px] font-bold text-blue-600 tracking-wider">Global Reach</div>
-                      </div>
-                   </div>
-                 </div>
-               </div>
-             </div>
-           </div>
+      {/* Hero Banner */}
+      <section className="relative w-full cursor-pointer" onClick={() => setIsDialogOpen(true)}>
+        <div className="relative w-full h-[250px] md:h-[400px] lg:h-[600px] overflow-hidden bg-slate-100">
+          <img
+            src={solutionsHeroImage}
+            alt="Authentiks Solutions Overview"
+            className="absolute inset-0 w-full h-full object-contain"
+          />
         </div>
       </section>
 
@@ -269,6 +203,11 @@ export default function WebSolutions() {
       </section>
 
       <WebFooter />
+
+      <DemoModal 
+        isOpen={isDialogOpen} 
+        onClose={() => setIsDialogOpen(false)} 
+      />
     </div>
   );
 }
