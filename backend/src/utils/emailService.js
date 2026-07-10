@@ -267,16 +267,16 @@ async function sendLeadConfirmation(leadData) {
                                 <td style="padding: 8px 0; font-size: 14px; color: #64748b;">Company:</td>
                                 <td style="padding: 8px 0; font-size: 14px; color: #0f172a; font-weight: 500;">${leadData.company || 'N/A'}</td>
                               </tr>
-                              ${leadData.requirements ? \`
+                              ${leadData.requirements ? `
                               <tr>
                                 <td style="padding: 16px 0 8px; font-size: 14px; color: #64748b;" colspan="2">Requirements:</td>
                               </tr>
                               <tr>
                                 <td style="padding: 0 0 8px; font-size: 14px; color: #0f172a; font-weight: 500; line-height: 1.5;" colspan="2">
-                                  \${leadData.requirements}
+                                  ${leadData.requirements}
                                 </td>
                               </tr>
-                              \` : ''}
+                              ` : ''}
                             </table>
                           </div>
 
