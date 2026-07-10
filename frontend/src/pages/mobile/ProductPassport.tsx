@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Share, ShieldCheck, ScanLine, Calendar, FileText, ChevronDown, Globe, HeadphonesIcon, ShoppingCart, Bell, CheckCircle2, X, FlaskConical, Award, BookOpen, AlignLeft, Info, ExternalLink, Phone, Mail } from 'lucide-react';
 import API_BASE_URL from '../../config/api';
 import ProductHeroHeader from '../../components/ProductHeroHeader';
+import ProductRating from '../../components/ProductRating';
 import { AccordionItem, KeyValueRow, CertificateViewer } from '../../components/AccordionComponents';
 
 const ProductPassport = () => {
@@ -386,11 +387,12 @@ const ProductPassport = () => {
                     )}
                   </div>
                   <h4 className="text-[11px] font-bold text-slate-900 leading-[1.3] mb-1 line-clamp-2">{rec.productName}</h4>
-                  <p className="text-[9px] font-medium text-slate-500 mb-2 line-clamp-1">{rec.brand || rec.category}</p>
                   <div className="mt-auto flex items-center gap-1.5">
                     <span className="text-[13px] font-black text-slate-900 leading-none">₹{rec.price || rec.mrp || 0}</span>
                     {rec.mrp && rec.price && <span className="text-[10px] font-medium text-slate-400 line-through leading-none">₹{rec.mrp}</span>}
                   </div>
+                  <p className="text-[9px] font-medium text-slate-500 mb-1 line-clamp-1"></p>
+                  <ProductRating data={rec} variant="single" className="mb-2" />
                 </div>
               ))}
             </div>

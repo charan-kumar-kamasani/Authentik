@@ -75,11 +75,11 @@ const ProductRating: React.FC<ProductRatingProps> = ({
   }
 
   return (
-    <>
+    <div className={`flex items-center gap-0.5 ${className}`}>
       <Star size={11} className="fill-[#FFD700] text-[#FFD700]" />
-      <span className="text-slate-700 text-[10.5px] font-bold ml-0.5">{rating}</span>
-      {reviewsCount > 0 && <span className="text-slate-400 text-[10.5px] ml-0.5">({reviewsCount})</span>}
-    </>
+      <span className="text-slate-700 text-[10.5px] font-bold">{rating}</span>
+      {reviewsCount > 0 && <span className="text-slate-400 text-[10.5px]">({reviewsCount})</span>}
+    </div>
   );
 };
 
