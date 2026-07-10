@@ -497,26 +497,6 @@ function ResultAuthentic({ data }: { data: any }) {
              </div>
            </button>
 
-           {/* Product Education - shown if educationContent exists */}
-           {hasEducation && (
-             <button onClick={() => navigate("/product-education", { state: data })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
-               <BookOpen className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
-               <div className="flex items-end justify-between w-full mt-auto">
-                 <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Product Education</span>
-                 <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
-               </div>
-             </button>
-           )}
-
-           {/* Consumer Support - always shown */}
-           <button onClick={() => navigate("/consumer-support", { state: data })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
-             <Headset className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
-             <div className="flex items-end justify-between w-full mt-auto">
-               <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Consumer Support</span>
-               <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
-             </div>
-           </button>
-
            {/* Ingredients - shown if ingredients exist */}
            {extractedIngredients && (
              <button onClick={() => navigate("/ingredients", { state: { ...data, ingredients: extractedIngredients } })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
@@ -538,6 +518,26 @@ function ResultAuthentic({ data }: { data: any }) {
                </div>
              </button>
            )}
+
+           {/* Product Education - shown if educationContent exists */}
+           {hasEducation && (
+             <button onClick={() => navigate("/product-education", { state: data })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
+               <BookOpen className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
+               <div className="flex items-end justify-between w-full mt-auto">
+                 <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Product Education</span>
+                 <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
+               </div>
+             </button>
+           )}
+
+           {/* Consumer Support - always shown */}
+           <button onClick={() => navigate("/consumer-support", { state: data })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
+             <Headset className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
+             <div className="flex items-end justify-between w-full mt-auto">
+               <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Consumer Support</span>
+               <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
+             </div>
+           </button>
         </div>
 
 

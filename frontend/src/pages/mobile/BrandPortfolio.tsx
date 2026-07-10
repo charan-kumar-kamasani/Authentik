@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ChevronLeft, Share, ShieldCheck, Leaf, FlaskConical, Sprout, Star, CheckCircle2, ChevronRight, SlidersHorizontal } from "lucide-react";
+import ProductRating from '../../components/ProductRating';
 import API_BASE_URL from "../../config/api";
 import MobileNavbar from "../../components/MobileNavbar";
 
@@ -236,25 +237,14 @@ export default function BrandPortfolio() {
                         {product.keyBenefits || brandData?.brandName || 'Verified Product'}
                       </p>
                       
-                      <div className="mb-3.5">
+                      <div className="mb-1.5">
                         <span className={`inline-block px-2.5 py-1 ${catBg} text-[9.5px] font-bold rounded-md`}>
                           {catTag}
                         </span>
                       </div>
                       
-                      <div className="mt-auto pt-2.5 flex items-center gap-1">
-                        {(() => {
-                           const rating = prod.rating || prod.orderLinks?.[0]?.rating;
-                           const reviewsCount = prod.reviewsCount || prod.orderLinks?.[0]?.reviewsCount;
-                           if (!rating) return null;
-                           return (
-                             <>
-                               <Star size={11} className="fill-[#FFD700] text-[#FFD700]" />
-                               <span className="text-slate-700 text-[10.5px] font-bold ml-0.5">{rating}</span>
-                               {reviewsCount && <span className="text-slate-400 text-[10.5px] ml-0.5">({reviewsCount})</span>}
-                             </>
-                           );
-                        })()}
+                      <div className="pt-0.5 flex items-center gap-1">
+                        <ProductRating data={product} variant="single" />
                       </div>
                     </div>
                   </div>
