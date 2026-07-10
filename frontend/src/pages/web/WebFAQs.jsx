@@ -5,15 +5,14 @@ import WebFooter from "../../components/WebFooter";
 import DemoModal from "../../components/DemoModal";
 import faqHeroImage from "../../assets/banners/new_banners/faq.png";
 
-const FaqItem = ({ question, answer }) => {
-  const [isOpen, setIsOpen] = useState(false);
+const FaqItem = ({ question, answer, isOpen, onToggle }) => {
   return (
     <div 
       className={`border rounded-xl mb-4 overflow-hidden transition-all duration-300 ${isOpen ? 'border-blue-600 bg-blue-50/50' : 'border-slate-200 bg-white hover:border-blue-300 hover:shadow-md'}`}
     >
       <button 
         className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={onToggle}
       >
         <span className={`font-bold text-lg ${isOpen ? 'text-blue-700' : 'text-slate-900'}`}>{question}</span>
         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300 ${isOpen ? 'bg-blue-600 text-white rotate-180' : 'bg-slate-100 text-slate-500'}`}>
@@ -31,7 +30,7 @@ const FaqItem = ({ question, answer }) => {
   );
 };
 
-const FaqSection = ({ title, items }) => (
+const FaqSection = ({ title, items, openFaqId, setOpenFaqId }) => (
   <div className="mb-16">
     <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
       <div className="w-2 h-6 bg-blue-600 rounded-full"></div>
@@ -39,7 +38,13 @@ const FaqSection = ({ title, items }) => (
     </h3>
     <div className="space-y-4">
       {items.map((item, index) => (
-        <FaqItem key={index} question={item.question} answer={item.answer} />
+        <FaqItem 
+          key={index} 
+          question={item.question} 
+          answer={item.answer} 
+          isOpen={openFaqId === item.question}
+          onToggle={() => setOpenFaqId(openFaqId === item.question ? null : item.question)}
+        />
       ))}
     </div>
   </div>
@@ -47,6 +52,7 @@ const FaqSection = ({ title, items }) => (
 
 export default function WebFAQs() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [openFaqId, setOpenFaqId] = useState(null);
 
   const faqData = [
     {
@@ -186,7 +192,7 @@ export default function WebFAQs() {
 
           <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-8 md:p-12 border border-slate-100">
             {faqData.map((section, index) => (
-              <FaqSection key={index} title={section.title} items={section.items} />
+              <FaqSection key={index} title={section.title} items={section.items} openFaqId={openFaqId} setOpenFaqId={setOpenFaqId} />
             ))}
           </div>
 
