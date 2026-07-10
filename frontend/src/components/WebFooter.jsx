@@ -25,12 +25,12 @@ export default function WebFooter() {
         <div className="flex flex-col">
           <h4 className="font-bold text-[16px] mb-4">Company</h4>
           <div className="grid grid-cols-2 gap-x-8 gap-y-4">
+            <Link to="/" className="text-gray-400 hover:text-white transition-colors text-[14px]">Home</Link>
+            <Link to="/solutions" className="text-gray-400 hover:text-white transition-colors text-[14px]">Solutions</Link>
             <Link to="/about-us" className="text-gray-400 hover:text-white transition-colors text-[14px]">About Us</Link>
-            <Link to="/contact-us" className="text-gray-400 hover:text-white transition-colors text-[14px]">Resources</Link>
-            <Link to="/contact-us" className="text-gray-400 hover:text-white transition-colors text-[14px]">Contact Us</Link>
-            <Link to="/about-us" className="text-gray-400 hover:text-white transition-colors text-[14px]">About Us</Link>
-            <Link to="/contact-us" className="text-gray-400 hover:text-white transition-colors text-[14px]">Resources</Link>
-            <Link to="/contact-us" className="text-gray-400 hover:text-white transition-colors text-[14px]">Contact Us</Link>
+            <Link to="/pricing" className="text-gray-400 hover:text-white transition-colors text-[14px]">Plans</Link>
+            <Link to="/platform" className="text-gray-400 hover:text-white transition-colors text-[14px]">Platform</Link>
+            <Link to="/faqs" className="text-gray-400 hover:text-white transition-colors text-[14px]">FAQ</Link>
           </div>
         </div>
         
