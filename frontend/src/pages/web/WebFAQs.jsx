@@ -1,242 +1,221 @@
 import React, { useState } from "react";
-import { HelpCircle, ArrowRight, MessageCircle, ChevronDown } from "lucide-react";
+import { ChevronDown, Calendar, ChevronRight } from "lucide-react";
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
-import ContactFormModal from "../../components/ContactFormModal";
-import SEO from "../../components/SEO";
-
-const Glow = ({ color, className }) => (
-    <div className={`glow-bg h-72 w-72 ${color} ${className}`} />
-);
-
-const SectionTitle = ({ children, className = '' }) => (
-    <h3 className={`text-2xl md:text-3xl font-black text-white uppercase tracking-tighter mb-8 pb-4 border-b border-white/10 ${className}`}>
-        {children}
-    </h3>
-);
+import DemoModal from "../../components/DemoModal";
+import faqHeroImage from "../../assets/banners/new_banners/faq.png";
 
 const FaqItem = ({ question, answer }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    return (
-        <div
-            className={`glass-effect p-6 md:p-8 rounded-2xl border mb-6 transition-all duration-300 cursor-pointer ${isOpen ? 'border-indigo-500/40 bg-indigo-500/20' : 'border-white/5 bg-white/5 hover:bg-white/10 hover:border-indigo-500/20'}`}
-            onClick={() => setIsOpen(!isOpen)}
-        >
-            <div className="flex justify-between items-center gap-4">
-                <h4 className="text-lg font-black text-white tracking-tight">{question}</h4>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${isOpen ? 'bg-indigo-500 text-white rotate-180' : 'bg-white/10 text-white'}`}>
-                    <ChevronDown size={20} />
-                </div>
-            </div>
-
-            <div className={`grid transition-all duration-300 ease-in-out ${isOpen ? 'grid-rows-[1fr] mt-6 opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-                <div className="overflow-hidden">
-                    <div className="text-gray-400 font-bold leading-relaxed space-y-4 whitespace-pre-line pt-2 border-t border-white/5">
-                        {answer}
-                    </div>
-                </div>
-            </div>
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div 
+      className={`border rounded-xl mb-4 overflow-hidden transition-all duration-300 ${isOpen ? 'border-blue-600 bg-blue-50/50' : 'border-slate-200 bg-white hover:border-blue-300 hover:shadow-md'}`}
+    >
+      <button 
+        className="w-full px-6 py-5 flex items-center justify-between text-left focus:outline-none"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span className={`font-bold text-lg ${isOpen ? 'text-blue-700' : 'text-slate-900'}`}>{question}</span>
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-transform duration-300 ${isOpen ? 'bg-blue-600 text-white rotate-180' : 'bg-slate-100 text-slate-500'}`}>
+          <ChevronDown size={18} />
         </div>
-    );
+      </button>
+      <div 
+        className={`transition-all duration-300 ease-in-out px-6 text-slate-600 leading-relaxed overflow-hidden ${isOpen ? 'max-h-[500px] pb-6 opacity-100' : 'max-h-0 opacity-0'}`}
+      >
+        <div className="pt-2 border-t border-blue-100 whitespace-pre-line">
+          {answer}
+        </div>
+      </div>
+    </div>
+  );
 };
 
+const FaqSection = ({ title, items }) => (
+  <div className="mb-16">
+    <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-3">
+      <div className="w-2 h-6 bg-blue-600 rounded-full"></div>
+      {title}
+    </h3>
+    <div className="space-y-4">
+      {items.map((item, index) => (
+        <FaqItem key={index} question={item.question} answer={item.answer} />
+      ))}
+    </div>
+  </div>
+);
+
 export default function WebFAQs() {
-    const [contactOpen, setContactOpen] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    return (
-        <div className="min-h-screen bg-[#020617] text-slate-200 overflow-x-hidden flex flex-col">
-            <SEO 
-                title="FAQs | Anti Counterfeit & QR Code Authentication Support"
-                description="Find answers to common questions about how to prevent counterfeit products, qr code authentication for brands, and implementing smart packaging for your products."
-                keywords="how to prevent counterfeit products, qr code authentication for brands, how to verify original products, anti counterfeit qr code solution, smart packaging for brands, qr code warranty system, connected packaging platform, traceability using qr codes, fake product prevention software, digital product authentication"
-            />
-            <WebHeader />
+  const faqData = [
+    {
+      title: "General",
+      items: [
+        {
+          question: "What is Authentiks?",
+          answer: "Authentiks is a Consumer Intelligence Platform that transforms every physical product into a connected digital asset. Through a secure QR identity, brands can authenticate products, register consumers, deliver digital product passports, and build long-term customer relationships."
+        },
+        {
+          question: "Who is Authentiks built for?",
+          answer: "Authentiks is designed for consumer brands across industries including Nutraceuticals, Pharmaceuticals, Cosmetics, Personal Care, Electronics, Luxury Goods, FMCG, and other businesses looking to enhance product trust and consumer engagement."
+        },
+        {
+          question: "How is Authentiks different from a QR code generator?",
+          answer: "Authentiks goes far beyond QR generation. Every QR code is linked to a unique digital product identity, enabling authentication, consumer registration, product passports, loyalty programs, warranty management, and actionable consumer intelligence."
+        }
+      ]
+    },
+    {
+      title: "Product Authentication",
+      items: [
+        {
+          question: "How does product authentication work?",
+          answer: "Each product is assigned a unique secure QR identity. When consumers scan the QR code, Authentiks instantly verifies the product's authenticity and provides a trusted digital experience."
+        },
+        {
+          question: "Can counterfeit products be detected?",
+          answer: "Yes. Authentiks can identify duplicate or suspicious QR scans, helping brands detect potential counterfeit activity and gain visibility into product authenticity."
+        },
+        {
+          question: "Does every product receive a unique QR code?",
+          answer: "Yes. Every individual product is assigned its own unique secure digital identity."
+        }
+      ]
+    },
+    {
+      title: "Consumer Intelligence",
+      items: [
+        {
+          question: "What is Consumer Intelligence?",
+          answer: "Consumer Intelligence gives brands valuable first-party insights about product ownership, consumer registrations, engagement, regional demand, and post-purchase behavior—helping businesses make better marketing and product decisions."
+        },
+        {
+          question: "What consumer information can brands collect?",
+          answer: "Brands can collect information voluntarily shared by consumers during product registration, such as contact details, purchase information, location, and engagement history, in accordance with applicable privacy regulations and user consent."
+        },
+        {
+          question: "Can brands engage consumers after purchase?",
+          answer: "Yes. Authentiks enables brands to continue engaging consumers through product passports, rewards, campaigns, warranty services, reorder reminders, and exclusive offers."
+        }
+      ]
+    },
+    {
+      title: "Platform Features",
+      items: [
+        {
+          question: "What is a Digital Product Passport?",
+          answer: "A Digital Product Passport provides consumers with instant access to product information, ingredients, certifications, usage instructions, warranties, authenticity verification, and other brand content from a single scan."
+        },
+        {
+          question: "Does Authentiks support warranty management?",
+          answer: "Yes. Brands can activate warranties, register product ownership, and manage warranty-related consumer interactions through the platform."
+        },
+        {
+          question: "Can Authentiks help increase repeat purchases?",
+          answer: "Yes. Features such as Smart Reorder, rewards, loyalty campaigns, and personalized consumer engagement help brands encourage repeat purchases and strengthen long-term customer relationships."
+        }
+      ]
+    },
+    {
+      title: "Security & Implementation",
+      items: [
+        {
+          question: "Is consumer data secure?",
+          answer: "Yes. Authentiks follows industry best practices to protect consumer information using secure cloud infrastructure, encrypted communications, and enterprise-grade security controls."
+        },
+        {
+          question: "Can Authentiks integrate with existing business systems?",
+          answer: "Yes. Authentiks is designed with an API-ready architecture to support integration with existing business applications and workflows where required."
+        },
+        {
+          question: "How long does implementation take?",
+          answer: "Implementation timelines depend on business requirements and product volume. Our team works closely with every brand to ensure a smooth and efficient deployment."
+        },
+        {
+          question: "Is onboarding support provided?",
+          answer: "Yes. Every implementation includes guidance from our team to help brands successfully launch and maximize the value of the platform."
+        }
+      ]
+    },
+    {
+      title: "Plans",
+      items: [
+        {
+          question: "Which plan is right for my business?",
+          answer: "Our Starter, Growth, and Enterprise plans are designed to support businesses at different stages of growth. Our team will help recommend the most suitable plan based on your business objectives and product scale."
+        },
+        {
+          question: "Can I upgrade my plan later?",
+          answer: "Yes. Brands can seamlessly upgrade their plan as their business and platform requirements evolve."
+        },
+        {
+          question: "How do I get started?",
+          answer: "Simply book a demo with our team. We'll understand your business needs, demonstrate the platform, and recommend the best implementation approach."
+        }
+      ]
+    }
+  ];
 
-            {/* ═══════════════ HERO SECTION ═══════════════ */}
-            <section className="relative pt-10 md:pt-16 pb-20 px-6 overflow-hidden">
-                <Glow color="bg-indigo-600" className="-top-32 left-1/2 -translate-x-1/2 opacity-20" />
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800">
+      <WebHeader />
 
-                <div className="container mx-auto text-center relative z-10 max-w-4xl">
-                    <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 text-[11px] font-black uppercase tracking-[0.2em] mb-8 hero-slide-enter">
-                        <HelpCircle size={14} /> Documentation & Support
-                    </div>
-
-                    <h1 className="hero-slide-enter text-4xl md:text-7xl font-black tracking-tighter text-white mb-8 leading-[1.05]">
-                        Frequently Asked <span className="gradient-text">Questions</span>
-                    </h1>
-
-                    <p className="hero-slide-enter-delay max-w-2xl mx-auto text-lg md:text-2xl font-bold text-gray-400 mb-10 leading-relaxed">
-                        Everything you need to know about how Authentiks works, security, pricing, and getting started.
-                    </p>
-
-                    <div className="hero-slide-enter-delay flex flex-col items-center">
-                        <button
-                            onClick={() => setContactOpen(true)}
-                            className="bg-white/5 border border-white/10 text-white rounded-full px-8 py-4 font-black uppercase tracking-widest text-sm hover:bg-white/10 transition-all flex items-center gap-3"
-                        >
-                            Still have questions? Let's Talk
-                            <MessageCircle size={18} />
-                        </button>
-                    </div>
-                </div>
-            </section>
-
-            {/* ═══════════════ FAQ SECTIONS ═══════════════ */}
-            <section className="py-20 px-6 relative">
-                <div className="container mx-auto max-w-4xl relative z-10">
-
-                    {/* SECTION 1: GETTING STARTED */}
-                    <div className="mb-20">
-                        <SectionTitle>1. Getting Started</SectionTitle>
-                        <FaqItem
-                            question="❓ What is Authentiks and how to prevent counterfeit products?"
-                            answer={<>Authentiks is a product intelligence platform that provides an anti counterfeit qr code solution to give every unit a unique identity — helping brands:<br /><br />• Prevent counterfeits<br />• Track product movement<br />• Engage customers<br />• Gain real-time insights</>}
-                        />
-                        <FaqItem
-                            question="❓ How do I start using qr code authentication for brands?"
-                            answer={<>Getting started with our digital product authentication is simple:<br />1. Choose a plan<br />2. Share your product (SKU) details<br />3. Order QR codes<br />4. Receive printed labels at your location<br />5. Apply them to your products<br /><br /><span className="text-indigo-400 font-black italic">👉 No technical integration required.</span></>}
-                        />
-                        <FaqItem
-                            question="❓ How long does it take to go live?"
-                            answer={<>Most brands go live within a few days after placing their QR order.<br /><br /><span className="text-indigo-400 font-black italic">👉 Fast, simple onboarding.</span></>}
-                        />
-                    </div>
-
-                    {/* SECTION 2: AUTHENTICATION & SECURITY */}
-                    <div className="mb-20">
-                        <SectionTitle>2. Authentication & Security</SectionTitle>
-                        <FaqItem
-                            question="❓ Can QR codes be copied or duplicated?"
-                            answer={<>Yes — like any QR, they can be visually copied.<br /><br /><span className="text-indigo-400 font-black italic">👉 But here's the difference:</span><br /><br />Authentiks detects:<br />• Multiple scans<br />• Unusual scan patterns<br />• Suspicious locations<br /><br /><span className="text-red-400 font-black">🚨 Duplicate or fake activity is instantly flagged in your dashboard.</span></>}
-                        />
-                        <FaqItem
-                            question="❓ What happens if the same QR is scanned multiple times?"
-                            answer={<>First scan → marked as authentic<br />Repeated scans → marked as suspicious<br /><br /><span className="text-indigo-400 font-black italic">👉 This helps you identify counterfeit or misuse.</span></>}
-                        />
-                        <FaqItem
-                            question="❓ How to verify original products using Authentiks?"
-                            answer={<>Yes.<br /><br />Even within the same SKU, every product unit gets a completely unique QR code for unit-level traceability using qr codes.<br /><br /><span className="text-indigo-400 font-black italic">👉 This enables unit-level tracking and authentication.</span></>}
-                        />
-                        <FaqItem
-                            question="❓ How secure is the system?"
-                            answer={<>Authentiks uses:<br />• Unique code generation per product<br />• Backend validation on every scan<br />• Real-time monitoring for anomalies<br /><br /><span className="text-indigo-400 font-black italic">👉 Every scan is verified and tracked.</span></>}
-                        />
-                    </div>
-
-                    {/* SECTION 3: QR CODES & OPERATIONS */}
-                    <div className="mb-20">
-                        <SectionTitle>3. QR Codes & Operations</SectionTitle>
-                        <FaqItem
-                            question="❓ Do you provide physical QR labels?"
-                            answer={<>Yes.<br /><br />We:<br />• Generate QR codes<br />• Print them<br />• Deliver them to your location<br /><br /><span className="text-indigo-400 font-black italic">👉 Ready to use — no extra setup needed.</span></>}
-                        />
-                        <FaqItem
-                            question="❓ Do you offer scratch-protected labels?"
-                            answer={<>Yes, Scratch layers are added for enhanced security.<br /><br /><span className="text-indigo-400 font-black italic">👉 Useful for high-value or sensitive products.</span></>}
-                        />
-                        <FaqItem
-                            question="❓ What is the cost of QR labels?"
-                            answer={<>QR label pricing depends on quantity:<br /><br />• Starts from ₹3 per label<br />• Goes down to ₹1 for higher volumes<br /><br /><span className="text-indigo-400 font-black italic">👉 Scales with your production.</span></>}
-                        />
-                    </div>
-
-                    {/* SECTION 4: DATA & ANALYTICS */}
-                    <div className="mb-20">
-                        <SectionTitle>4. Data & Analytics</SectionTitle>
-                        <FaqItem
-                            question="❓ What kind of data will I get?"
-                            answer={<>You get:<br />• Scan locations (geo tracking)<br />• Authentic vs duplicate scans<br />• Customer engagement<br />• Product performance<br /><br /><span className="text-indigo-400 font-black italic">👉 Actionable insights in real time.</span></>}
-                        />
-                        <FaqItem
-                            question="❓ Can I export my data?"
-                            answer={<>Yes. You can export your data in formats like Excel for further analysis.</>}
-                        />
-                        <FaqItem
-                            question="❓ Do you provide real-time alerts?"
-                            answer={<>Yes.<br /><br />You’ll receive alerts for:<br />• Suspicious scans<br />• High-risk locations<br />• Unusual activity<br /><br /><span className="text-indigo-400 font-black italic">👉 Helps you act quickly.</span></>}
-                        />
-                    </div>
-
-                    {/* SECTION 5: CUSTOMER ENGAGEMENT */}
-                    <div className="mb-20">
-                        <SectionTitle>5. Customer Engagement</SectionTitle>
-                        <FaqItem
-                            question="❓ What happens when a customer scans the QR?"
-                            answer={<>You can:<br />• Show authentication result<br />• Redirect to your website<br />• Offer coupons or rewards<br />• Capture customer details (optional)<br /><br /><span className="text-indigo-400 font-black italic">👉 Turn every scan into engagement.</span></>}
-                        />
-                        <FaqItem
-                            question="❓ Can I drive customers to my website?"
-                            answer={<>Yes.<br /><br />You can redirect users to your own platform — helping you:<br />• Reduce dependency on marketplaces<br />• Increase direct sales</>}
-                        />
-                        <FaqItem
-                            question="❓ Can I collect customer data?"
-                            answer={<>Yes (optional and consent-based).<br /><br />You can collect:<br />• Phone number<br />• Name<br />• Basic demographics<br /><br /><span className="text-indigo-400 font-black italic">👉 Build your own customer database.</span></>}
-                        />
-                    </div>
-
-                    {/* SECTION 6: PRICING & PLANS */}
-                    <div className="mb-20">
-                        <SectionTitle>6. Pricing & Plans</SectionTitle>
-                        <FaqItem
-                            question="❓ What plans do you offer?"
-                            answer={<>Starter – ₹5,000/month<br />Growth – ₹10,000/month<br />Enterprise – ₹20,000/month<br /><br /><span className="text-indigo-400 font-black italic">👉 Plans scale with your business needs.</span></>}
-                        />
-                        <FaqItem
-                            question="❓ Do you offer free trials?"
-                            answer={<>Yes. You get 90 days of premium features to experience the platform fully.</>}
-                        />
-                        <FaqItem
-                            question="❓ What are QR credits in annual plans?"
-                            answer={<>If you choose annual billing, you get QR credits:<br />• Starter → ₹10,000 credits<br />• Growth → ₹20,000 credits<br />• Enterprise → ₹40,000 credits<br /><br /><span className="text-indigo-400 font-black italic">👉 These can be used to order QR labels.</span></>}
-                        />
-                        <FaqItem
-                            question="❓ Are there any hidden charges?"
-                            answer={<>No. You only pay:<br />1. Subscription fee<br />2. QR label cost (based on quantity)</>}
-                        />
-                    </div>
-
-                    {/* SECTION 7: SCALABILITY */}
-                    <div className="mb-20">
-                        <SectionTitle>7. Scalability</SectionTitle>
-                        <FaqItem
-                            question="❓ Can Authentiks handle large-scale production?"
-                            answer={<>Yes.<br />The platform is built to handle:<br />• High-volume QR generation<br />• Multiple SKUs<br />• Batch-level tracking<br /><br /><span className="text-indigo-400 font-black italic">👉 Suitable for startups to enterprises.</span></>}
-                        />
-                        <FaqItem
-                            question="❓ Can I track multiple products and batches?"
-                            answer={<>Yes.<br />You can manage:<br />• Multiple SKUs<br />• Different batches<br />• Product-level performance</>}
-                        />
-                    </div>
-
-                    {/* FINAL SUPPORT SECTION */}
-                    <div className="mb-10 text-center glass-effect p-12 rounded-[3rem] border border-white/5">
-                        <h3 className="text-2xl font-black text-white uppercase tracking-tight mb-4">What if I need help?</h3>
-                        <p className="text-gray-400 font-bold mb-6">We provide:<br />• Dedicated support<br />• Onboarding assistance<br />• Ongoing guidance</p>
-                        <p className="text-indigo-400 font-black italic flex items-center justify-center gap-2"><ArrowRight size={18} /> You’re never on your own.</p>
-                    </div>
-
-                </div>
-            </section>
-
-            {/* ═══════════════ FINAL CTA ═══════════════ */}
-            <section className="py-24 px-6 border-t border-white/5 bg-gradient-to-t from-indigo-900/10 to-transparent">
-                <div className="container mx-auto max-w-4xl text-center">
-                    <h2 className="text-3xl md:text-5xl font-black text-white mb-6 tracking-tighter leading-[1.05]">
-                        Still Have Questions? Let’s Talk.
-                    </h2>
-                    <br />
-                    <button
-                        onClick={() => setContactOpen(true)}
-                        className="px-12 py-6 bg-white text-black rounded-full font-black uppercase tracking-widest hover:bg-gray-100 transition-all shadow-[0_0_80px_rgba(255,255,255,0.15)] hover:scale-105 active:scale-95 text-sm inline-flex items-center gap-3"
-                    >
-                        Start Your 90-Day Free Trial
-                        <ArrowRight size={18} />
-                    </button>
-                </div>
-            </section>
-
-            <WebFooter />
-            <ContactFormModal isOpen={contactOpen} onClose={() => setContactOpen(false)} />
+      {/* Hero Banner */}
+      <section className="relative w-full cursor-pointer" onClick={() => setIsDialogOpen(true)}>
+        <div className="relative w-full h-[250px] md:h-[400px] lg:h-[600px] overflow-hidden bg-slate-100">
+          <img
+            src={faqHeroImage}
+            alt="FAQ Banner"
+            className="absolute inset-0 w-full h-full object-contain"
+          />
         </div>
-    );
+      </section>
+
+      {/* FAQ Content */}
+      <section className="pt-20 pb-16 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">
+              Frequently Asked Questions
+            </h1>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              Everything you need to know about Authentiks, from product authentication to integration and pricing.
+            </p>
+          </div>
+
+          <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-8 md:p-12 border border-slate-100">
+            {faqData.map((section, index) => (
+              <FaqSection key={index} title={section.title} items={section.items} />
+            ))}
+          </div>
+
+          {/* CTA Section */}
+          <div className="mt-20 text-center bg-blue-600 rounded-3xl p-10 md:p-16 relative overflow-hidden shadow-2xl shadow-blue-900/20">
+            <div className="relative z-10">
+              <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-6">
+                Still Have Questions?
+              </h2>
+              <p className="text-blue-100 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+                We're here to help. Whether you're exploring product authentication, consumer intelligence, or enterprise deployment, our team is ready to answer your questions.
+              </p>
+              <button 
+                onClick={() => setIsDialogOpen(true)}
+                className="bg-white text-blue-900 px-8 py-4 rounded-xl font-bold hover:bg-slate-50 transition-colors shadow-lg shadow-black/10 inline-flex items-center justify-center gap-2 transform hover:scale-105 active:scale-95 duration-200"
+              >
+                <Calendar size={20} /> Book a Demo
+              </button>
+            </div>
+            
+            {/* Decorative background elements */}
+            <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 bg-blue-400 opacity-20 rounded-full blur-3xl"></div>
+          </div>
+        </div>
+      </section>
+
+      <WebFooter />
+      <DemoModal isOpen={isDialogOpen} onClose={() => setIsDialogOpen(false)} />
+    </div>
+  );
 }

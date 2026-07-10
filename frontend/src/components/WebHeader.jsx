@@ -25,6 +25,7 @@ export default function WebHeader() {
     { name: "Platform", path: "/platform" },
     { name: "Solutions", path: "/solutions" },
     { name: "Plans", path: "/pricing" },
+    { name: "FAQ", path: "/faqs" },
     { name: "Contact Us", path: "/contact-us" },
   ];
 

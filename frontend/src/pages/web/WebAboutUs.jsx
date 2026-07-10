@@ -239,11 +239,9 @@ export default function WebAboutUs() {
             </div>
             
             <div className="relative z-10 shrink-0 w-full md:w-auto flex flex-col sm:flex-row gap-4">
-               <Link to="/contact-us" className="w-full sm:w-auto">
-                 <button className="w-full md:w-auto bg-white text-blue-900 px-8 py-4 rounded-xl font-bold hover:bg-slate-50 transition-colors shadow-lg flex items-center justify-center gap-2">
+                 <button onClick={() => setIsDialogOpen(true)} className="w-full md:w-auto bg-white text-blue-900 px-8 py-4 rounded-xl font-bold hover:bg-slate-50 transition-colors shadow-lg flex items-center justify-center gap-2">
                    <Calendar size={20}/> Book a Demo
                  </button>
-               </Link>
             </div>
          </div>
       </section>

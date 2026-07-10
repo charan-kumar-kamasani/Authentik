@@ -429,11 +429,9 @@ export default function LandingPage() {
             <p className="text-gray-400 text-lg mb-8">
               Transform every product into a trusted digital touchpoint.
             </p>
-            <Link to="/contact-us">
-              <button className="bg-white text-[#0b1b36] px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors flex items-center gap-2">
+              <button onClick={() => setIsDialogOpen(true)} className="bg-white text-[#0b1b36] px-8 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors flex items-center gap-2">
                 Book a Demo <ChevronRight size={18} />
               </button>
-            </Link>
           </div>
           
           <div className="flex flex-col sm:flex-row gap-8 lg:gap-12">

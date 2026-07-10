@@ -188,11 +188,9 @@ export default function WebSolutions() {
             </div>
             
             <div className="relative z-10 flex flex-col gap-4 w-full md:w-auto">
-              <Link to="/contact-us">
-                <button className="w-full bg-white text-blue-800 px-8 py-3.5 rounded-lg font-bold hover:bg-slate-100 transition-colors shadow-lg flex items-center justify-center gap-2">
-                  Book a Demo
-                </button>
-              </Link>
+              <button onClick={() => setIsDialogOpen(true)} className="w-full bg-white text-blue-800 px-8 py-3.5 rounded-lg font-bold hover:bg-slate-100 transition-colors shadow-lg flex items-center justify-center gap-2">
+                Book a Demo
+              </button>
               <Link to="/contact-us">
                 <button className="w-full bg-transparent border border-white text-white px-8 py-3.5 rounded-lg font-bold hover:bg-white/10 transition-colors flex items-center justify-center">
                   Contact Sales

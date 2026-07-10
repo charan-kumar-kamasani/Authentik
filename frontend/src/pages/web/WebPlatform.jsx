@@ -170,11 +170,9 @@ export default function WebPlatform() {
             </h2>
             
             <div className="flex flex-col sm:flex-row gap-4 z-10 mt-4">
-              <Link to="/contact-us">
-                <button className="w-full sm:w-auto bg-white text-blue-800 px-8 py-3.5 rounded-lg font-bold hover:bg-slate-100 transition-colors shadow-lg flex items-center justify-center gap-2">
-                  Book a Demo <ChevronRight size={18} />
-                </button>
-              </Link>
+              <button onClick={() => setIsDialogOpen(true)} className="w-full sm:w-auto bg-white text-blue-800 px-8 py-3.5 rounded-lg font-bold hover:bg-slate-100 transition-colors shadow-lg flex items-center justify-center gap-2">
+                Book a Demo <ChevronRight size={18} />
+              </button>
               <Link to="/solutions">
                 <button className="w-full sm:w-auto bg-transparent border border-white text-white px-8 py-3.5 rounded-lg font-bold hover:bg-white/10 transition-colors flex items-center justify-center">
                   Explore Solutions
