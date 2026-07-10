@@ -80,14 +80,25 @@ const ProductHeroHeader: React.FC<ProductHeroHeaderProps> = ({ title, data, onBa
 
           <h2 className="text-[18px] font-bold leading-[1.1] mb-1.5 tracking-tight text-white">{data.productName}</h2>
           
-          <div className="flex items-center gap-1 mb-3">
-            <div className="flex">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star key={star} size={12} className={star <= Math.round(data.rating ||0) ? "fill-[#FFD700] text-[#FFD700]" : "fill-white/20 text-white/20"} />
-              ))}
-            </div>
-            <span className="text-[11px] text-white/90 font-medium ml-1">{data.rating || ""} <span className="opacity-70">({data.reviewsCount || ""})</span></span>
-          </div>
+          {(() => {
+            const rating = data.rating || data.product?.rating || data.orderLinks?.[0]?.rating || data.product?.orderLinks?.[0]?.rating;
+            const reviewsCount = data.reviewsCount || data.product?.reviewsCount || data.orderLinks?.[0]?.reviewsCount || data.product?.orderLinks?.[0]?.reviewsCount;
+            
+            if (!rating) return null;
+            
+            return (
+              <div className="flex items-center gap-1 mb-3">
+                <div className="flex">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star key={star} size={12} className={star <= Math.round(rating) ? "fill-[#FFD700] text-[#FFD700]" : "fill-white/20 text-white/20"} />
+                  ))}
+                </div>
+                <span className="text-[11px] text-white/90 font-medium ml-1">
+                  {rating} {reviewsCount && <span className="opacity-70">({reviewsCount})</span>}
+                </span>
+              </div>
+            );
+          })()}
 
           <div className="flex flex-wrap gap-2">
             {data.variants
