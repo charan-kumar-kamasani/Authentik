@@ -201,6 +201,9 @@ export default function BrandPortfolio() {
               {products.map((product, idx) => {
                 const catTag = product.category || 'Product';
                 const catBg = 'bg-blue-50 text-blue-600';
+                const prices = product.orderLinks?.map((l: any) => Number(l.price)).filter((p: number) => !isNaN(p) && p > 0) || [];
+                const lowestPrice = prices.length > 0 ? Math.min(...prices) : product.price;
+                const displayPrice = lowestPrice || product.mrp || '';
                 
                 return (
                   <div 
@@ -232,18 +235,26 @@ export default function BrandPortfolio() {
                     
                     {/* Info Section */}
                     <div className="px-1.5 flex flex-col flex-1 pt-1">
-                      <h4 className="text-[#0B1E36] text-[13px] font-extrabold leading-tight mb-1">{product.productName}</h4>
-                      <p className="text-slate-500 text-[11px] mb-3 leading-snug line-clamp-1">
+                      <div className="flex items-baseline gap-2 mb-1.5">
+                        <span className="text-[15px] font-extrabold text-[#0B1E36]">
+                          {displayPrice ? `₹${displayPrice}` : ''}
+                        </span>
+                        {lowestPrice && product.mrp && (
+                          <span className="text-[11px] font-semibold text-[#829AB1] line-through">₹{product.mrp}</span>
+                        )}
+                      </div>
+                      <h4 className="text-[#0B1E36] text-[13px] font-extrabold leading-tight mb-1 line-clamp-2">{product.productName}</h4>
+                      <p className="text-slate-500 text-[11px] mb-2 leading-snug line-clamp-1">
                         {product.keyBenefits || brandData?.brandName || 'Verified Product'}
                       </p>
                       
-                      <div className="mb-1.5">
+                      <div className="mb-2">
                         <span className={`inline-block px-2.5 py-1 ${catBg} text-[9.5px] font-bold rounded-md`}>
                           {catTag}
                         </span>
                       </div>
                       
-                      <div className="pt-0.5 flex items-center gap-1">
+                      <div className="mt-auto flex items-center gap-1">
                         <ProductRating data={product} variant="single" />
                       </div>
                     </div>

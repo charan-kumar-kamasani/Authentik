@@ -181,7 +181,12 @@ export default function Recommendations() {
             ) : recommendations.length === 0 ? (
               <div className="py-6 text-center text-gray-500 text-xs">No products found.</div>
             ) : (
-              recommendations.map((item: any, idx: number) => (
+              recommendations.map((item: any, idx: number) => {
+                const prices = item.orderLinks?.map((l: any) => Number(l.price)).filter((p: number) => !isNaN(p) && p > 0) || [];
+                const lowestPrice = prices.length > 0 ? Math.min(...prices) : item.price;
+                const displayPrice = lowestPrice || item.mrp || 0;
+                
+                return (
                 <div key={item._id || idx} className="flex items-center justify-between border-b border-gray-50 pb-4 last:border-0 last:pb-0">
                   <div className="flex items-center gap-3 max-w-[55%]">
                     <div className="w-10 h-10 border border-gray-100 rounded-lg flex-shrink-0 bg-white p-1 flex items-center justify-center">
@@ -206,13 +211,13 @@ export default function Recommendations() {
                        </span>
                      )}
                      <div className="flex flex-col items-end min-w-[40px]">
-                        {(item.price && item.mrp) ? (
+                        {(lowestPrice && item.mrp) ? (
                           <span className="text-[#829AB1] text-[10px] font-medium line-through leading-none mb-0.5">₹{item.mrp}</span>
                         ) : item.oldPrice ? (
                           <span className="text-[#829AB1] text-[10px] font-medium line-through leading-none mb-0.5">{item.oldPrice}</span>
                         ) : null}
                         <span className="text-[#0B1E36] font-extrabold text-[14px] leading-none">
-                          {item.price ? `₹${item.price}` : (item.mrp ? `₹${item.mrp}` : '')}
+                          {displayPrice ? `₹${displayPrice}` : ''}
                         </span>
                      </div>
                      <button onClick={() => navigate(`/product/${item._id}`)} className="bg-[#105DE4] text-white text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-sm">
@@ -220,7 +225,7 @@ export default function Recommendations() {
                      </button>
                   </div>
                 </div>
-              ))
+              )})
             )}
             
             {hasMore && (

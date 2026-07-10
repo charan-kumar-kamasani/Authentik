@@ -618,7 +618,12 @@ function ResultAuthentic({ data }: { data: any }) {
             </div>
             
             <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
-               {filteredRecommendations.map((item: any, index: number) => (
+               {filteredRecommendations.map((item: any, index: number) => {
+                 const prices = item.orderLinks?.map((l: any) => Number(l.price)).filter((p: number) => !isNaN(p) && p > 0) || [];
+                 const lowestPrice = prices.length > 0 ? Math.min(...prices) : item.price;
+                 const displayPrice = lowestPrice || item.mrp || '';
+                 
+                 return (
                  <div 
                    key={item.id || item._id || index} 
                    onClick={() => navigate("/product-details", { 
@@ -646,7 +651,7 @@ function ResultAuthentic({ data }: { data: any }) {
                      )}
                    </div>
                    <div className="flex items-baseline gap-2 mb-2 mt-auto">
-                     <span className="text-[17px] font-extrabold text-[#0B1E36]">{item.price ? `₹${item.price}` : (item.mrp ? `₹${item.mrp}` : '')}</span>
+                     <span className="text-[17px] font-extrabold text-[#0B1E36]">{displayPrice ? `₹${displayPrice}` : ''}</span>
                      {item.oldPrice && (
                        <span className="text-[13px] font-semibold text-[#829AB1] line-through">{item.oldPrice}</span>
                       )}
@@ -659,7 +664,7 @@ function ResultAuthentic({ data }: { data: any }) {
                    <h4 className="text-[13px] font-bold text-[#0B1E36] leading-snug mb-2 line-clamp-2 min-h-[36px]">{item.title || item.productName}</h4>
                    <ProductRating data={item} variant="single" className="mb-2" />
                  </div>
-               ))}
+               )})}
             </div>
           </div>
         )}

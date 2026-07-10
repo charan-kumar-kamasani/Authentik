@@ -10,7 +10,7 @@ import h_b1 from "../../assets/banners/new_banners/h_b1.png";
 import h_b2 from "../../assets/banners/new_banners/h_b2.png";
 import h_b3 from "../../assets/banners/new_banners/h_b3.png";
 
-const AnimatedCounter = ({ end, suffix = "", duration = 2500 }) => {
+const AnimatedCounter = ({ end, suffix = "", prefix = "", duration = 2500 }) => {
   const [count, setCount] = useState(0);
   const [hasAnimated, setHasAnimated] = useState(false);
   const ref = useRef(null);
@@ -47,7 +47,7 @@ const AnimatedCounter = ({ end, suffix = "", duration = 2500 }) => {
     window.requestAnimationFrame(step);
   }, [end, duration, hasAnimated]);
 
-  return <span ref={ref}>{count}{suffix}</span>;
+  return <span ref={ref}>{prefix}{count}{suffix}</span>;
 };
 
 export default function LandingPage() {
@@ -106,11 +106,11 @@ export default function LandingPage() {
               <div className="text-sm md:text-base font-bold uppercase tracking-wider text-slate-500">Total Product Secured</div>
             </div>
             <div className="flex flex-col items-center">
-              <div className="text-4xl md:text-5xl lg:text-6xl font-black text-blue-600 mb-3"><AnimatedCounter end={800} suffix="K+" /></div>
+              <div className="text-4xl md:text-5xl lg:text-6xl font-black text-blue-600 mb-3"><AnimatedCounter end={800} suffix="K+"  /></div>
               <div className="text-sm md:text-base font-bold uppercase tracking-wider text-slate-500">Product Scanned</div>
             </div>
             <div className="flex flex-col items-center">
-              <div className="text-4xl md:text-5xl lg:text-6xl font-black text-blue-600 mb-3"><AnimatedCounter end={40} suffix="%" /></div>
+              <div className="text-4xl md:text-5xl lg:text-6xl font-black text-blue-600 mb-3"><AnimatedCounter end={60} suffix="%" prefix="~" /></div>
               <div className="text-sm md:text-base font-bold uppercase tracking-wider text-slate-500">Scan Rate</div>
             </div>
           </div>

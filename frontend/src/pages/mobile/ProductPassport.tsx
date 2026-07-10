@@ -209,7 +209,7 @@ const ProductPassport = () => {
                 <>
                   <h4 className="text-[13px] font-bold text-[#0B1E36] mt-4 mb-2">Key Benefits</h4>
                   <div className="flex flex-col gap-2">
-                     {data.keyBenefits.split('\n').map((benefit, idx) => (
+                     {data.keyBenefits.split('\n').map((benefit: string, idx: number) => (
                        <div key={idx} className="flex items-start gap-2">
                          <CheckCircle2 size={16} className="text-[#105DE4] shrink-0 mt-0.5" />
                          <span className="text-[13px] font-medium text-slate-700">{benefit}</span>
@@ -366,7 +366,12 @@ const ProductPassport = () => {
             </div>
 
             <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide snap-x px-1">
-              {filteredRecommendations.map((rec: any, idx: number) => (
+              {filteredRecommendations.map((rec: any, idx: number) => {
+                const prices = rec.orderLinks?.map((l: any) => Number(l.price)).filter((p: number) => !isNaN(p) && p > 0) || [];
+                const lowestPrice = prices.length > 0 ? Math.min(...prices) : rec.price;
+                const displayPrice = lowestPrice || rec.mrp || 0;
+                
+                return (
                 <div
                   key={idx}
                   onClick={() => navigate("/product-details", {
@@ -382,19 +387,18 @@ const ProductPassport = () => {
                 >
                   <div className="w-full h-[110px] bg-slate-50/80 rounded-[12px] mb-3 relative flex items-center justify-center p-2">
                     <img src={rec.productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"} className="w-full h-full object-contain mix-blend-multiply" alt={rec.productName} />
-                    {rec.mrp && rec.price && (
-                      <span className="absolute bottom-2 left-2 px-1.5 py-0.5 bg-green-100 text-green-700 text-[8px] font-black rounded border border-green-200">{Math.round(((rec.mrp - rec.price) / rec.mrp) * 100)}% OFF</span>
+                    {rec.mrp && lowestPrice && (
+                      <span className="absolute bottom-2 left-2 px-1.5 py-0.5 bg-green-100 text-green-700 text-[8px] font-black rounded border border-green-200">{Math.round(((rec.mrp - lowestPrice) / rec.mrp) * 100)}% OFF</span>
                     )}
                   </div>
-                  <h4 className="text-[11px] font-bold text-slate-900 leading-[1.3] mb-1 line-clamp-2">{rec.productName}</h4>
-                  <div className="mt-auto flex items-center gap-1.5">
-                    <span className="text-[13px] font-black text-slate-900 leading-none">₹{rec.price || rec.mrp || 0}</span>
-                    {rec.mrp && rec.price && <span className="text-[10px] font-medium text-slate-400 line-through leading-none">₹{rec.mrp}</span>}
+                  <div className="flex items-baseline gap-1.5 mb-1.5 mt-auto">
+                    <span className="text-[14px] font-black text-slate-900 leading-none">₹{displayPrice}</span>
+                    {rec.mrp && lowestPrice && <span className="text-[10px] font-medium text-slate-400 line-through leading-none">₹{rec.mrp}</span>}
                   </div>
-                  <p className="text-[9px] font-medium text-slate-500 mb-1 line-clamp-1"></p>
-                  <ProductRating data={rec} variant="single" className="mb-2" />
+                  <h4 className="text-[11px] font-bold text-slate-900 leading-[1.3] mb-2 line-clamp-2 min-h-[28px]">{rec.productName}</h4>
+                  <ProductRating data={rec} variant="single" className="mb-1" />
                 </div>
-              ))}
+              )})}
             </div>
           </div>
         )}

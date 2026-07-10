@@ -60,9 +60,11 @@ const ProductDetails = () => {
   const orderLinks = data.orderLinks && data.orderLinks.length > 0 ? data.orderLinks : [];
   const benefitsList = data.keyBenefits ? data.keyBenefits.split(/[\n,]+/).map((b: string) => b.trim()).filter(Boolean) : [];
 
-  const defaultPrice = orderLinks.find((l: any) => l.price)?.price;
-  const defaultMrp = orderLinks.find((l: any) => l.mrp)?.mrp;
-  const defaultDiscount = orderLinks.find((l: any) => l.discount)?.discount;
+  const validLinks = orderLinks.filter((l: any) => l.price && !isNaN(Number(l.price)));
+  const lowestPriceLink = validLinks.length > 0 ? validLinks.reduce((min: any, link: any) => Number(link.price) < Number(min.price) ? link : min) : null;
+  const defaultPrice = lowestPriceLink ? lowestPriceLink.price : undefined;
+  const defaultMrp = lowestPriceLink ? lowestPriceLink.mrp : undefined;
+  const defaultDiscount = lowestPriceLink ? lowestPriceLink.discount : undefined;
 
   return (
     <div className="min-h-screen bg-[#001466] font-sans overflow-x-hidden pb-20">
