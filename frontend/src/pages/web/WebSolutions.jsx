@@ -33,16 +33,6 @@ export default function WebSolutions() {
         "Build stronger customer relationships."
       ]
     },
-    operations: {
-      title: "Operations Teams",
-      icon: <Truck className="w-8 h-8" />,
-      desc: "Gain complete supply chain visibility.",
-      benefits: [
-        "Track product movement.",
-        "Monitor distribution.",
-        "Improve visibility."
-      ]
-    },
     cx: {
       title: "Customer Experience",
       icon: <HeartHandshake className="w-8 h-8" />,
