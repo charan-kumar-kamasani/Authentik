@@ -67,11 +67,6 @@ const ProductHeroHeader: React.FC<ProductHeroHeaderProps> = ({ title, data, onBa
             }}
           >
             <span className="text-[12px] font-bold tracking-wider text-white flex items-center gap-1.5">
-              {data.brand && (
-                <div className="w-4 h-4 bg-white rounded-full flex items-center justify-center shrink-0 overflow-hidden text-[#001466] font-black text-[8px]">
-                  {data.brand.charAt(0).toUpperCase()}
-                </div>
-              )}
               {data.brand || 'Brand'}
             </span>
           </div>

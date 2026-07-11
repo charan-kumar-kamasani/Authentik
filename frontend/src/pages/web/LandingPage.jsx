@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Play, CheckCircle2, ChevronRight, Shield, ShieldCheck, Mail, Phone, MessageCircle, QrCode, Factory, Smartphone, Package, Gift, BarChart3, Users, Globe, Settings, Store, Pill, Sparkles, ShoppingBag, HeartPulse, Monitor, ShoppingBasket, Gem, ShieldPlus, Cloud, Lock, Network, Database, Activity, Target } from "lucide-react";
+import { Play, CheckCircle2, ChevronRight, Shield, ShieldCheck, Mail, Phone, MessageCircle, QrCode, Factory, Smartphone, Package, Gift, BarChart3, Users, Globe, Settings, Store, Pill, Sparkles, ShoppingBag, HeartPulse, Monitor, ShoppingBasket, Gem, ShieldPlus, Cloud, Lock, Network, Database, Activity, Target, X } from "lucide-react";
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import DemoModal from "../../components/DemoModal";
 import heroImage from "../../assets/web/hero_image.png";
 import logoShield from "../../assets/logo-shield.png";
+import h_challenge from "../../assets/web/h_challenge.png";
+import h_b0 from "../../assets/banners/new_banners/h_b0.png";
 import h_b1 from "../../assets/banners/new_banners/h_b1.png";
 import h_b2 from "../../assets/banners/new_banners/h_b2.png";
 import h_b3 from "../../assets/banners/new_banners/h_b3.png";
@@ -51,7 +53,7 @@ const AnimatedCounter = ({ end, suffix = "", prefix = "", duration = 2500 }) => 
 };
 
 export default function LandingPage() {
-  const banners = [h_b1, h_b2, h_b3];
+  const banners = [h_b0, h_b1, h_b2, h_b3];
   const [currentBanner, setCurrentBanner] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -118,17 +120,104 @@ export default function LandingPage() {
       </section>
 
       {/* The Challenge */}
-      <section className="py-24 bg-slate-900 text-white text-center">
-        <div className="max-w-4xl mx-auto px-6 md:px-12">
-          <h3 className="text-blue-400 font-bold text-sm uppercase tracking-wider mb-4">The Challenge</h3>
-          <h2 className="text-3xl md:text-5xl font-bold mb-8 leading-tight">Your products reach consumers.<br/>Your data doesn't.</h2>
-          <p className="text-lg md:text-xl text-slate-300 mb-10 leading-relaxed">
-            Most brands lose visibility the moment a product is sold. Marketplaces own customer relationships, distributors own the channel, and valuable consumer insights remain inaccessible.
-          </p>
-          <div className="bg-blue-600/20 border border-blue-500/30 rounded-2xl p-6 md:p-8">
-            <p className="text-xl md:text-2xl font-bold text-white">
-              Authentiks helps brands reconnect with consumers through every product they sell.
-            </p>
+      <section className="py-24 bg-slate-900 text-white">
+        <div className="max-w-7xl mx-auto px-6 md:px-12">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h3 className="text-blue-400 font-bold text-sm uppercase tracking-wider mb-4">BEYOND THE SALE. BEYOND THE MARKETPLACE.</h3>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">Every Sale Is an Opportunity.<br/>Don't Lose the Relationship.</h2>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-16 items-center mb-24">
+            <div>
+              <img src={h_challenge} alt="The Challenge" className="w-full rounded-2xl shadow-2xl" />
+            </div>
+            <div>
+              <div className="mb-10">
+                <h4 className="text-xl font-bold text-slate-200 mb-6 uppercase tracking-wide">Selling Across Leading Marketplaces</h4>
+                <div className="flex flex-wrap gap-3">
+                  {["Amazon", "Flipkart", "Myntra", "Nykaa", "Tata CLiQ", "Meesho"].map(mp => (
+                    <span key={mp} className="px-4 py-2 bg-slate-800/80 rounded-lg text-sm font-semibold border border-slate-700/50 shadow-sm">{mp}</span>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <h4 className="text-xl font-bold text-slate-200 mb-6 uppercase tracking-wide">Quick Commerce Platforms</h4>
+                <div className="flex flex-wrap gap-3">
+                  {["Zepto", "Blinkit", "Swiggy Instamart", "BigBasket", "Jio Mart"].map(mp => (
+                    <span key={mp} className="px-4 py-2 bg-slate-800/80 rounded-lg text-sm font-semibold border border-slate-700/50 shadow-sm">{mp}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 mb-24">
+            <div className="bg-red-900/20 border border-red-500/30 rounded-2xl p-8 md:p-10 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/10 blur-3xl rounded-full"></div>
+              <h4 className="text-2xl font-bold text-red-400 mb-6 flex items-center gap-3">Without Authentiks</h4>
+              <ul className="space-y-4">
+                {[
+                  "Marketplace owns the customer relationship",
+                  "Anonymous purchases",
+                  "Limited post-purchase engagement",
+                  "One-time transactions",
+                  "Limited customer insights"
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3 text-slate-300">
+                    <X className="text-red-400 mt-1 shrink-0" size={20} />
+                    <span className="text-lg">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            <div className="bg-emerald-900/20 border border-emerald-500/30 rounded-2xl p-8 md:p-10 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full"></div>
+              <h4 className="text-2xl font-bold text-emerald-400 mb-6 flex items-center gap-3">With Authentiks</h4>
+              <ul className="space-y-4">
+                {[
+                  "Brand builds direct consumer relationships",
+                  "Verified consumer registration",
+                  "Digital Product Passport & engagement",
+                  "Long-term customer loyalty",
+                  "First-party consumer intelligence"
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3 text-slate-300">
+                    <CheckCircle2 className="text-emerald-400 mt-1 shrink-0" size={20} />
+                    <span className="text-lg">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="text-center mb-16">
+            <h3 className="text-2xl font-bold text-white mb-12 uppercase tracking-wide">The Numbers Don't Lie</h3>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="p-6 bg-slate-800/30 rounded-2xl border border-slate-700/50">
+                <div className="text-5xl font-black text-blue-500 mb-4">60%+</div>
+                <p className="text-slate-300 text-lg">of global ecommerce sales are driven by online marketplaces.</p>
+              </div>
+              <div className="p-6 bg-slate-800/30 rounded-2xl border border-slate-700/50">
+                <div className="text-5xl font-black text-blue-500 mb-4">5–7×</div>
+                <p className="text-slate-300 text-lg">more expensive to acquire a new customer than to retain an existing one.</p>
+              </div>
+              <div className="p-6 bg-slate-800/30 rounded-2xl border border-slate-700/50">
+                <div className="text-5xl font-black text-blue-500 mb-4">80%</div>
+                <p className="text-slate-300 text-lg">of consumers are more likely to purchase from brands that deliver personalized experiences.</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="border-t border-slate-800 pt-8 mt-12 text-center text-slate-500 text-sm">
+            <p className="font-semibold mb-3 text-slate-400">Sources:</p>
+            <div className="flex flex-col md:flex-row justify-center gap-4 md:gap-8">
+              <span>Digital Commerce 360 / Statista — Global Marketplace Trends 2024</span>
+              <span className="hidden md:inline text-slate-700">•</span>
+              <span>Harvard Business Review & Bain & Company — The Value of Customer Retention</span>
+              <span className="hidden md:inline text-slate-700">•</span>
+              <span>Epsilon — 2023 Personalization Report</span>
+            </div>
           </div>
         </div>
       </section>

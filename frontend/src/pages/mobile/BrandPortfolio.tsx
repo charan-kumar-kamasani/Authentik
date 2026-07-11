@@ -244,17 +244,9 @@ export default function BrandPortfolio() {
                         )}
                       </div>
                       <h4 className="text-[#0B1E36] text-[13px] font-extrabold leading-tight mb-1 line-clamp-2">{product.productName}</h4>
-                      <p className="text-slate-500 text-[11px] mb-2 leading-snug line-clamp-1">
-                        {product.keyBenefits || brandData?.brandName || 'Verified Product'}
-                      </p>
                       
-                      <div className="mb-2">
-                        <span className={`inline-block px-2.5 py-1 ${catBg} text-[9.5px] font-bold rounded-md`}>
-                          {catTag}
-                        </span>
-                      </div>
                       
-                      <div className="mt-auto flex items-center gap-1">
+                      <div className="mt-1 flex items-center gap-1">
                         <ProductRating data={product} variant="single" />
                       </div>
                     </div>

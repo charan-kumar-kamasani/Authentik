@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Share, ShieldCheck, ScanLine, Calendar, FileText, ChevronDown, Globe, HeadphonesIcon, ShoppingCart, Bell, CheckCircle2, X, FlaskConical, Award, BookOpen, AlignLeft, Info, ExternalLink, Phone, Mail } from 'lucide-react';
+import { ChevronLeft, Share, ShieldCheck, ScanLine, Calendar, FileText, ChevronDown, Globe, HeadphonesIcon, ShoppingCart, Bell, CheckCircle2, X, FlaskConical, Award, BookOpen, AlignLeft, Info, ExternalLink, Phone, Mail, Gift, Copy } from 'lucide-react';
 import API_BASE_URL from '../../config/api';
 import ProductHeroHeader from '../../components/ProductHeroHeader';
 import ProductRating from '../../components/ProductRating';
@@ -60,6 +60,7 @@ const ProductPassport = () => {
   const [openSection, setOpenSection] = useState<string>('Product Details');
   const [showPriceAlert, setShowPriceAlert] = useState(false);
   const [priceAlertAmount, setPriceAlertAmount] = useState('');
+  const [couponCopied, setCouponCopied] = useState(false);
 
   useEffect(() => {
     if ((!data?.recommendations || data.recommendations.length === 0) && (data?.brandId || data?.product?.brandId || data?.productId?.brandId || data?.brandId?._id)) {
@@ -131,6 +132,9 @@ const ProductPassport = () => {
   };
   const filteredDetails = Object.entries(rawDetails).filter(([_, v]) => v !== undefined && v !== null && v !== '');
 
+  const couponCode = data.couponCode || data.coupon?.code || data.coupon?.couponCode || data.coupons?.[0]?.code || data.coupons?.[0]?.couponCode || (typeof data.coupon === 'string' ? data.coupon : null);
+  const hasWarranty = !!(data.warranty && (data.warranty.duration || data.warranty.warrantyType));
+
   // Mocking usage left for the Reorder widget
   const estimatedDaysTotal = 30;
   const scanTime = new Date(data.createdAt || Date.now());
@@ -179,8 +183,104 @@ const ProductPassport = () => {
           </div>
         </div>
 
+        {/* Quick Actions */}
+        <div className="mt-5 mb-1">
+          <h3 className="text-[15px] font-bold text-[#0B1E36] mb-3 px-1">Quick Actions</h3>
+          <div className="flex flex-col gap-3">
+            
+            {/* Reorder */}
+            <div className="bg-white rounded-[16px] p-3 border border-[#105DE4]/20 flex items-center shadow-sm">
+              <div className="w-10 h-10 rounded-full bg-[#F0F5FF] flex items-center justify-center shrink-0 mr-3">
+                <ShoppingCart size={18} className="text-[#105DE4]" strokeWidth={2} />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-[14px] font-bold text-[#105DE4] leading-tight mb-0.5">Reorder</h4>
+                <p className="text-[11px] text-slate-500 font-medium leading-tight">Never run out of your essentials</p>
+              </div>
+              <button 
+                onClick={() => navigate(`/smart-reorder/${data?.productId?._id || data?.productId || data?.product?._id || data?._id || 'unknown'}`, { state: data })}
+                className="bg-[#105DE4] text-white text-[11px] font-bold px-3 py-2.5 rounded-lg flex items-center justify-between w-[140px] shrink-0 active:scale-95 transition-transform ml-2"
+              >
+                <span className="flex-1 text-left">Reorder Now</span>
+                <ChevronRight size={14} className="shrink-0" />
+              </button>
+            </div>
+
+            {/* Price Alert */}
+            <div className="bg-white rounded-[16px] p-3 border border-[#059669]/20 flex items-center shadow-sm">
+              <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center shrink-0 mr-3">
+                <Bell size={18} className="text-[#059669]" strokeWidth={2} />
+              </div>
+              <div className="flex-1">
+                <h4 className="text-[14px] font-bold text-[#059669] leading-tight mb-0.5">Price Alert</h4>
+                <p className="text-[11px] text-slate-500 font-medium leading-tight">Notify me when the price drops</p>
+              </div>
+              <button 
+                onClick={() => setShowPriceAlert(true)}
+                className="bg-[#059669] text-white text-[11px] font-bold px-3 py-2.5 rounded-lg flex items-center justify-between w-[140px] shrink-0 active:scale-95 transition-transform ml-2"
+              >
+                <span className="flex-1 text-left">Set Price Alert</span>
+                <ChevronRight size={14} className="shrink-0" />
+              </button>
+            </div>
+
+            {/* Coupons & Offers */}
+            {couponCode && (
+              <div className="bg-white rounded-[16px] p-3 border border-[#7C3AED]/20 flex items-center shadow-sm">
+                <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center shrink-0 mr-3">
+                  <Gift size={18} className="text-[#7C3AED]" strokeWidth={2} />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-[14px] font-bold text-[#7C3AED] leading-tight mb-0.5">Coupons & Offers</h4>
+                  <p className="text-[11px] text-slate-500 font-medium leading-tight">View exclusive offers and save more</p>
+                </div>
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(couponCode);
+                    setCouponCopied(true);
+                    setTimeout(() => setCouponCopied(false), 2000);
+                  }}
+                  className="bg-[#7C3AED] text-white text-[11px] font-bold px-3 py-2.5 rounded-lg flex items-center justify-between w-[140px] shrink-0 active:scale-95 transition-transform whitespace-nowrap ml-2"
+                >
+                  {couponCopied ? (
+                    <><span className="flex-1 text-left">Copied!</span> <CheckCircle2 size={14} className="shrink-0" /></>
+                  ) : (
+                    <><span className="flex-1 text-left truncate pr-1">{couponCode}</span> <Copy size={14} className="shrink-0" /></>
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* Warranty */}
+            {hasWarranty && (
+              <div className="bg-white rounded-[16px] p-3 border border-[#EA580C]/20 flex items-center shadow-sm">
+                <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center shrink-0 mr-3">
+                  <ShieldCheck size={18} className="text-[#EA580C]" strokeWidth={2} />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-[14px] font-bold text-[#EA580C] leading-tight mb-0.5">Warranty</h4>
+                  <p className="text-[11px] text-slate-500 font-medium leading-tight">Manage or extend your warranty</p>
+                </div>
+                <button 
+                  onClick={() => navigate('/warranty', { state: data })}
+                  className="bg-[#EA580C] text-white text-[11px] font-bold px-3 py-2.5 rounded-lg flex items-center justify-between w-[140px] shrink-0 active:scale-95 transition-transform ml-2"
+                >
+                  <span className="flex-1 text-left">Warranty</span>
+                  <ChevronRight size={14} className="shrink-0" />
+                </button>
+              </div>
+            )}
+
+          </div>
+        </div>
+
+        {/* Product Information */}
+        <div className="mt-6 px-1 mb-2">
+          <h3 className="text-[15px] font-bold text-[#0B1E36]">Product Information</h3>
+        </div>
+
         {/* Accordions */}
-        <div className="flex flex-col gap-3 mb-3 mt-3">
+        <div className="flex flex-col gap-3 mb-3">
           {/* 1. Product Details */}
           <AccordionItem title="Product Details" subtitle="View specifications and details" icon={FileText} isOpen={openSection === 'Product Details'} onToggle={() => setOpenSection(openSection === 'Product Details' ? '' : 'Product Details')}>
             <KeyValueRow label="Brand" value={data.brand || data.companyName} />
@@ -321,36 +421,7 @@ const ProductPassport = () => {
           )}
         </div>
         
-        {/* Quick Actions (Re Order & Price Alert) */}
-        <div className="flex gap-3">
-          <button
-            onClick={() => navigate(`/smart-reorder/${data?.productId?._id || data?.productId || data?.product?._id || data?._id || 'unknown'}`, { state: data })}
-            className="flex-1 bg-[#105DE4] rounded-[16px] p-3 text-left active:opacity-80 transition-opacity flex items-center shadow-[0_4px_15px_rgba(16,93,228,0.2)]"
-          >
-            <div className="flex-1">
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <ShoppingCart size={16} className="text-white" strokeWidth={2.5} />
-                <h4 className="text-[13px] font-bold text-white tracking-wide">Re Order</h4>
-              </div>
-              <p className="text-[9px] text-blue-100/90 font-medium leading-[1.2]">Never run out of your essentials</p>
-            </div>
-            <ChevronRight size={16} className="text-white shrink-0 opacity-80" />
-          </button>
 
-          <button
-            onClick={() => setShowPriceAlert(true)}
-            className="flex-1 bg-[#059669] rounded-[16px] p-3 text-left active:opacity-80 transition-opacity flex items-center shadow-[0_4px_15px_rgba(5,150,105,0.2)]"
-          >
-            <div className="flex-1">
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <Bell size={16} className="text-white" strokeWidth={2.5} />
-                <h4 className="text-[13px] font-bold text-white tracking-wide">Price Alert</h4>
-              </div>
-              <p className="text-[9px] text-emerald-100/90 font-medium leading-[1.2]">Notify me when the price drops</p>
-            </div>
-            <ChevronRight size={16} className="text-white shrink-0 opacity-80" />
-          </button>
-        </div>
 
         {/* Recommendation For You */}
         {filteredRecommendations.length > 0 && (

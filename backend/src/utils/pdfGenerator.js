@@ -94,37 +94,37 @@ const formatSN = (num) => {
  * Note: Caller is responsible for calling doc.end() when finished.
  */
 const buildQrPdf = async (products, options = {}) => {
-  /** ─── PAGE SIZE — A3 Plus (13 × 19 inches) ─── **/
-  const widthPts = 13 * 72; // 936 pts  ≈ 330.2 mm
-  const heightPts = 19 * 72; // 1368 pts ≈ 482.6 mm
+  /** ─── PAGE SIZE — A3 Plus Horizontal (19 × 13 inches) ─── **/
+  const widthPts = 19 * 72; // 1368 pts ≈ 482.6 mm
+  const heightPts = 13 * 72; // 936 pts  ≈ 330.2 mm
 
-  /** ─── CELL SIZE — 20 mm wide × 25 mm tall ─── **/
+  /** ─── CELL SIZE — 20 mm wide × 27 mm tall (includes 1mm right/bottom margins) ─── **/
   const MM = 2.83465; // 1 mm ≈ 2.835 pts
-  const cellWidth = 20 * MM; // ~56.69 pts
-  const cellHeight = 25 * MM; // ~70.87 pts
+  const cellWidth = 20 * MM;
+  const cellHeight = 27 * MM;
+  
+  const contentWidth = 19 * MM;
+  const contentHeight = 26 * MM;
 
-  /** ─── GRID — 15 cols × 17 rows = 250 per page ─── **/
-  const cols = 15;
-  const rows = options.isBlankQr ? 17 : 18;
-  const perPage = options.isBlankQr ? 250 : cols * rows; // 250 exact for blank QRs
+  /** ─── GRID — 23 cols × 11 rows = 253 per page ─── **/
+  const cols = 23;
+  const rows = 11;
+  const perPage = 250; // Exactly 250 per page (leaves 3 empty cells at the end of the page)
 
-  // To achieve exactly 15mm margin on A3+ height (482.6mm):
-  // 17 rows * 25mm = 425mm content height
-  // 482.6mm - 425mm - 30mm (15mm top + 15mm bottom margin) = 27.6mm for gaps
-  // 27.6mm / 16 gaps = 1.725mm gap. 1.725 * 2.83465 = 4.88977 pts
-  const rowGap = options.isBlankQr ? 4.88977 : 0; 
+  const rowGap = 0; 
 
-  /** ─── MARGINS — exactly centred on the page (creates ~15mm margins) ─── **/
+  /** ─── MARGINS — exactly centred on the page ─── **/
   const gridWidth = cols * cellWidth;
-  const gridHeight = rows * cellHeight + (rows > 0 ? (rows - 1) * rowGap : 0);
+  const gridHeight = rows * cellHeight;
   const marginLeft = (widthPts - gridWidth) / 2;
-  const marginTop = Math.max(0, (heightPts - gridHeight) /2);
+  const marginTop = Math.max(0, (heightPts - gridHeight) / 2);
 
   /** ─── STICKER INTERNAL ZONES ─── **/
-  const brandColor = "#FFFFFF";
-  const headerHeight = cellHeight * 0.2; // ~20% for "Scratch & Scan"
-  const footerBannerH = cellHeight * 0.2; // ~20% for "Authentiks.in"
-  const qrAreaHeight = cellHeight - headerHeight - footerBannerH; // ~60% QR
+  const brandColor = "#0b1b36"; // Dark navy blue
+  const topRibbonH = 6 * MM;
+  const midSectionH = 13 * MM;
+  const bottomRibbonH = 7 * MM;
+  const qrSize = 11 * MM;
 
   const totalPages = Math.ceil(products.length / perPage);
 
@@ -203,133 +203,76 @@ const buildQrPdf = async (products, options = {}) => {
       const col = idx % cols;
 
       const x = marginLeft + col * cellWidth;
-      const y = marginTop + row * (cellHeight + rowGap);
+      const y = marginTop + row * cellHeight;
 
-      /** ── HEADER — white band with "Scratch & Scan" ── **/
-      doc.rect(x, y, cellWidth, headerHeight).fill(brandColor);
+      /** ── TOP RIBBON (6mm) ── **/
+      doc.rect(x, y, contentWidth, topRibbonH).fill(brandColor);
 
+      const str1 = "VERIFY & ";
+      const str2 = "WIN";
+      doc.font(BOLD_FONT).fontSize(6.5);
+      const w1 = doc.widthOfString(str1);
+      const w2 = doc.widthOfString(str2);
+      const totalW = w1 + w2;
+      const startX = x + (contentWidth - totalW) / 2;
+      
+      doc.fillColor("#FFFFFF").text(str1, startX, y + (topRibbonH - 6.5) / 2 + 0.5, { lineBreak: false });
+      doc.fillColor("#8CB4D6").text(str2, startX + w1, y + (topRibbonH - 6.5) / 2 + 0.5, { lineBreak: false });
+
+      /** ── QR CODE SECTION (13mm) ── **/
+      const midY = y + topRibbonH;
+      doc.rect(x, midY, contentWidth, midSectionH).fill("#FFFFFF");
+
+      const qrBuffer = allQrBuffers[i];
+      const qrX = x + (contentWidth - qrSize) / 2;
+      // 1mm gap top and bottom means centering an 11mm QR in a 13mm section = exactly 1mm padding.
+      const qrImgY = midY + (midSectionH - qrSize) / 2;
+
+      doc.image(qrBuffer, qrX, qrImgY, {
+        width: qrSize,
+        height: qrSize,
+      });
+
+      /** ── BOTTOM RIBBON (7mm) ── **/
+      const bottomY = midY + midSectionH;
+      doc.rect(x, bottomY, contentWidth, bottomRibbonH).fill(brandColor);
+
+      // "Use a Coin"
       doc
-        .fillColor("#000")
+        .fillColor("#FFFFFF")
         .font(BOLD_FONT)
         .fontSize(6.5)
-        .text("Scratch & Win", x, y + headerHeight / 2 - 3, {
-          width: cellWidth,
+        .text("Use a Coin", x, bottomY + 3.5, {
+          width: contentWidth,
           align: "center",
           lineBreak: false,
         });
 
-      /** ── QR CODE — white area ── **/
-      const qrY = y + headerHeight;
-      doc.rect(x, qrY, cellWidth, qrAreaHeight).fill("#FFFFFF");
-
-      const qrBuffer = allQrBuffers[i];
-
-      // QR image size increased
-      const qrSide = 13 * MM;
-      const qrX = x + (cellWidth - qrSide) / 2;
-      const qrImgY = qrY + (qrAreaHeight - qrSide) / 2;
-
-      doc.image(qrBuffer, qrX, qrImgY, {
-        width: qrSide,
-        height: qrSide,
-      });
-
-      /** ── SERIAL NUMBER (If exists) ── **/
-      if (products[i].serialNumber && rowGap > 0) {
+      /** ── SERIAL NUMBER ── **/
+      if (products[i].serialNumber !== undefined) {
         doc
-          .fillColor("#666")
+          .fillColor("#FFFFFF")
           .font(BOLD_FONT)
-          .fontSize(4)
+          .fontSize(4.5)
           .text(
             `${formatSN(products[i].serialNumber)}`,
             x,
-            y + cellHeight + 0.5,
+            bottomY + 11.5,
             {
-              width: cellWidth,
+              width: contentWidth,
               align: "center",
               lineBreak: false,
             }
           );
       }
 
-
-
-
-      // /** ── COMPANY LOGO OVERLAY — centred on QR ── **/
-      // if (logoBuffer) {
-      //   const logoSize = qrSide * 0.2;
-      //   const bgPadding = logoSize * 0.35;
-      //   const bgSize = logoSize + bgPadding * 2;
-      //   const bgX = qrX + (qrSide - bgSize) / 2;
-      //   const bgY = qrImgY + (qrSide - bgSize) / 2;
-      //   const cornerRadius = bgSize * 0.18;
-
-      //   doc
-      //     .save()
-      //     .roundedRect(bgX, bgY, bgSize, bgSize, cornerRadius)
-      //     .fill("#FFFFFF");
-
-      //   doc
-      //     .roundedRect(bgX, bgY, bgSize, bgSize, cornerRadius)
-      //     .lineWidth(0.6)
-      //     .strokeColor("#E0E0E0")
-      //     .stroke();
-      //   doc.restore();
-
-      //   const logoX = bgX + bgPadding;
-      //   const logoY = bgY + bgPadding;
-
-      //   try {
-      //     doc.image(logoBuffer, logoX, logoY, {
-      //       fit: [logoSize, logoSize],
-      //       align: "center",
-      //       valign: "center",
-      //     });
-      //   } catch (imageErr) {
-      //     console.warn(
-      //       "Primary logo render failed, trying default fallback:",
-      //       imageErr.message
-      //     );
-      //     try {
-      //       const defaultLogoPath = path.join(__dirname, "../assets/logo.png");
-      //       const defaultLogoBuffer = fs.readFileSync(defaultLogoPath);
-      //       doc.image(defaultLogoBuffer, logoX, logoY, {
-      //         fit: [logoSize, logoSize],
-      //         align: "center",
-      //         valign: "center",
-      //       });
-      //     } catch (fallbackErr) {
-      //       console.error(
-      //         "Default logo fallback also failed:",
-      //         fallbackErr.message
-      //       );
-      //     }
-      //   }
-      // }
-
-      /** ── FOOTER BANNER — white band with "Authentiks.in" ── **/
-      const footerY = qrY + qrAreaHeight;
-      doc.rect(x, footerY, cellWidth, footerBannerH).fill(brandColor);
-
-      doc
-        .fillColor("#000")
-        .font(BOLD_FONT)
-        .fontSize(6.5)
-        .text("Use Coin/Key", x, footerY + footerBannerH / 2 - 3, {
-          width: cellWidth,
-          align: "center",
-          lineBreak: false,
-        });
-
-      doc.fillColor("#000");
-
-      /** Cell border for scoring **/
+      /** Cell border for scoring (outline the whole cell including margin) **/
       if (options.scoring !== false) {
         doc
           .save()
           .strokeColor("#E0E0E0")
           .lineWidth(0.3)
-          .rect(x, y, cellWidth, cellHeight)
+          .rect(x, y, cellWidth, cellHeight) // including the 1mm margin area
           .stroke()
           .restore();
       }
@@ -339,35 +282,37 @@ const buildQrPdf = async (products, options = {}) => {
 
     /** PAGE FOOTER — info **/
     const orderId = options.orderId || products[start]?.orderId || "N/A";
-    let brand = products[start]?.brand || options.brand || "N/A";
+    const brand = products[start]?.brand || options.brand || "Authentiks";
 
-    if (options.isBlankQr) {
-      const pageStartSN = products[start]?.serialNumber;
-      const pageEndSN = products[end - 1]?.serialNumber;
-      if (pageStartSN && pageEndSN) {
-        brand = `${formatSN(pageStartSN)} to ${formatSN(pageEndSN)}`;
-      }
+    let qrRange = "";
+    const pageStartSN = products[start]?.serialNumber;
+    // The actual last item processed on this page is start + idx - 1
+    const actualEndIdx = start + idx - 1;
+    const pageEndSN = products[actualEndIdx]?.serialNumber;
+    
+    if (pageStartSN !== undefined && pageEndSN !== undefined) {
+      qrRange = `QR Range: ${formatSN(pageStartSN)} to ${formatSN(pageEndSN)}`;
     }
 
     // Push the footer securely to the bottom of the page, avoiding the grid
     const pageFooterY = heightPts - 25;
-    doc.font(BOLD_FONT).fontSize(8);
+    doc.fillColor("#000000").font(BOLD_FONT).fontSize(8);
 
     const footerWidth = gridWidth;
     const colW = footerWidth / 3;
 
-    doc.text(`${orderId}`, marginLeft, pageFooterY, {
+    doc.text(`Brand: ${brand}   |   Order ID: ${orderId}`, marginLeft, pageFooterY, {
       width: colW,
       align: "left",
     });
 
-    doc.text(`${brand}`, marginLeft + colW, pageFooterY, {
+    doc.text(qrRange, marginLeft + colW, pageFooterY, {
       width: colW,
       align: "center",
     });
 
     doc.text(
-      `Page ${page + 1} of ${totalPages}`,
+      `Page ${page + 1} of ${totalPages}  (${idx} QRs)`,
       marginLeft + colW * 2,
       pageFooterY,
       {

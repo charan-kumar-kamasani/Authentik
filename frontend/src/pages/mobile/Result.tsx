@@ -429,7 +429,7 @@ function ResultAuthentic({ data }: { data: any }) {
           </div>
           <div className="flex flex-col flex-1 py-1 justify-center">
             <div className="flex items-center gap-1.5 mb-1.5">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E05206" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              {/* <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E05206" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> */}
               <span className="text-[#0B1E36] font-bold text-[13px]">{companyName}</span>
               <ShieldCheck className="w-[14px] h-[14px] text-[#105DE4] fill-[#105DE4] stroke-white" strokeWidth={1} />
             </div>
@@ -488,6 +488,44 @@ function ResultAuthentic({ data }: { data: any }) {
           )}
         </div>
 
+ {/* Review & Claim Reward Banner */}
+        <button
+          onClick={async () => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+              setShowReviewModal(true);
+              return;
+            }
+            try {
+              const { getProfile } = await import("../../config/api");
+              const profileData = await getProfile(token);
+              if (profileData && !profileData.name) {
+                setShowProfilePrompt(true);
+              } else {
+                setShowReviewModal(true);
+              }
+            } catch (e) {
+              setShowReviewModal(true);
+            }
+          }}
+          disabled={isReviewed}
+          className={`relative overflow-hidden w-full ${isReviewed ? 'bg-gray-400' : 'bg-[#01227E]'} text-white rounded-[24px] p-4 flex items-center shadow-[0_8px_25px_rgba(1,34,126,0.25)] active:scale-[0.98] transition-transform`}
+        >
+          {/* Flash animation layer */}
+          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-flash-shimmer" />
+          
+          <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center flex-shrink-0 mr-3 relative z-10">
+             <Gift className="w-[20px] h-[20px] text-[#01227E]" strokeWidth={2} />
+          </div>
+          <div className="flex flex-col flex-1 text-left relative z-10">
+             <span className="text-[15px] font-extrabold mb-0.5">{isReviewed ? "Product Reviewed" : "Review & Claim Reward"}</span>
+             <span className="text-[11px] font-medium text-[#B3C8F9]">
+               {isReviewed ? "Thank you for your valuable feedback!" : "Share your experience and earn exciting rewards!"}
+             </span>
+          </div>
+          <ChevronRight className="w-5 h-5 text-white/80 relative z-10" />
+        </button>
+        
         {/* Action Menu Cards */}
         <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x pt-1">
            <button onClick={() => navigate("/product-passport", { state: data })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
@@ -568,44 +606,6 @@ function ResultAuthentic({ data }: { data: any }) {
             <ChevronRight className="w-5 h-5 text-white/80 relative z-10" />
           </button>
         )}
-        
-        {/* Review & Claim Reward Banner */}
-        <button
-          onClick={async () => {
-            const token = localStorage.getItem("token");
-            if (!token) {
-              setShowReviewModal(true);
-              return;
-            }
-            try {
-              const { getProfile } = await import("../../config/api");
-              const profileData = await getProfile(token);
-              if (profileData && !profileData.name) {
-                setShowProfilePrompt(true);
-              } else {
-                setShowReviewModal(true);
-              }
-            } catch (e) {
-              setShowReviewModal(true);
-            }
-          }}
-          disabled={isReviewed}
-          className={`relative overflow-hidden w-full ${isReviewed ? 'bg-gray-400' : 'bg-[#01227E]'} text-white rounded-[24px] p-4 flex items-center shadow-[0_8px_25px_rgba(1,34,126,0.25)] active:scale-[0.98] transition-transform`}
-        >
-          {/* Flash animation layer */}
-          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-flash-shimmer" />
-          
-          <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center flex-shrink-0 mr-3 relative z-10">
-             <Gift className="w-[20px] h-[20px] text-[#01227E]" strokeWidth={2} />
-          </div>
-          <div className="flex flex-col flex-1 text-left relative z-10">
-             <span className="text-[15px] font-extrabold mb-0.5">{isReviewed ? "Product Reviewed" : "Review & Claim Reward"}</span>
-             <span className="text-[11px] font-medium text-[#B3C8F9]">
-               {isReviewed ? "Thank you for your valuable feedback!" : "Share your experience and earn exciting rewards!"}
-             </span>
-          </div>
-          <ChevronRight className="w-5 h-5 text-white/80 relative z-10" />
-        </button>
 
         {/* Recommendations Section */}
         {filteredRecommendations.length > 0 && (
