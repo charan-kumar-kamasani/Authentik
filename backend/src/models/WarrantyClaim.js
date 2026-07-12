@@ -45,7 +45,7 @@ const warrantyClaimSchema = new mongoose.Schema({
   // Claim status
   status: {
     type: String,
-    enum: ['Registered', 'Claimed', 'Processing', 'Reviewing', 'Contacted', 'Resolved', 'Rejected'],
+    enum: ['Registered', 'Sent', 'Processing', 'Reviewing', 'Contacted', 'Resolved', 'Rejected'],
     default: 'Registered',
   },
 

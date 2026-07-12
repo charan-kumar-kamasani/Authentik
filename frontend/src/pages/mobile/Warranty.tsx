@@ -136,7 +136,9 @@ export default function Warranty() {
               </div>
             ) : (
               currentList.map(item => (
-                <WarrantyCard key={item._id} item={item} activeTab={activeTab} />
+                <div key={item._id} onClick={() => navigate(`/warranty-details/${item._id}`)}>
+                  <WarrantyCard item={item} activeTab={activeTab} />
+                </div>
               ))
             )}
           </div>
@@ -318,6 +320,10 @@ function WarrantyCard({ item, activeTab }: { item: any, activeTab: string }) {
             </button>
           </div>
         )}
+      </div>
+
+      <div className="flex items-center -mr-1">
+        <ChevronRight size={16} className="text-[#94A3B8]" />
       </div>
     </div>
   );

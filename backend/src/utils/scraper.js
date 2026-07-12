@@ -281,7 +281,7 @@ const getAmazonPrice = (html) => {
   }
   
   if (!result.mrp) {
-    let mrpText = $('.a-text-price .a-offscreen').first().text().trim() || $('.priceBlockStrikePriceString').text().trim();
+    let mrpText = $('.a-text-price[data-a-strike="true"] .a-offscreen').first().text().trim() || $('.priceBlockStrikePriceString').text().trim();
     if (mrpText) result.mrp = cleanPrice(mrpText);
   }
   
@@ -353,36 +353,44 @@ const getBlinkitPrice = (html) => {
   const result = getUniversalData(html);
   const $ = cheerio.load(html);
 
+  let found = false;
   $('span').each((i, el) => {
+    if (found) return false;
+    
     const text = $(el).text().trim().toUpperCase();
     if (text === 'MRP' || text.includes('MRP')) {
        const parent = $(el).parent(); // typically the containing span
+       let currentMrp = null;
+       let currentPrice = null;
        
        // Try finding next sibling span with the MRP price
        const nextSpan = $(el).next('span');
        if (nextSpan.length) {
-         const mrp = cleanPrice(nextSpan.text());
-         if (mrp) result.mrp = mrp;
+         currentMrp = cleanPrice(nextSpan.text());
        } else {
          // Maybe it's in the same text
          const mrpMatch = parent.text().match(/MRP\s*(?:₹|Rs\.?)\s*([0-9,.]+)/i);
          if (mrpMatch) {
-            result.mrp = cleanPrice(mrpMatch[1]);
+            currentMrp = cleanPrice(mrpMatch[1]);
          }
        }
 
        // Selling price is in the previous sibling of the parent's parent div
        let priceContainer = parent.parent().prev('div');
        if (priceContainer.length && priceContainer.text().includes('₹')) {
-          const price = cleanPrice(priceContainer.text());
-          if (price) result.price = price;
+          currentPrice = cleanPrice(priceContainer.text());
        } else {
          // Fallback: look at immediate parent's prev sibling if structure is flatter
          priceContainer = parent.prev('div');
          if (priceContainer.length && priceContainer.text().includes('₹')) {
-            const price = cleanPrice(priceContainer.text());
-            if (price) result.price = price;
+            currentPrice = cleanPrice(priceContainer.text());
          }
+       }
+       
+       if (currentMrp && currentPrice) {
+           result.mrp = currentMrp;
+           result.price = currentPrice;
+           found = true;
        }
     }
   });

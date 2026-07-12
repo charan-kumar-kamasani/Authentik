@@ -188,8 +188,8 @@ router.put('/claims/:id/status', protect, async (req, res) => {
 
     const { status, adminNotes } = req.body;
 
-    if (!status || !['Registered', 'Claimed', 'Processing', 'Reviewing', 'Contacted', 'Resolved', 'Rejected'].includes(status)) {
-      return res.status(400).json({ error: 'Invalid status. Must be Registered, Claimed, Processing, Reviewing, Contacted, Resolved, or Rejected.' });
+    if (!status || !['Registered', 'Sent', 'Processing', 'Reviewing', 'Contacted', 'Resolved', 'Rejected'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status. Must be Registered, Sent, Processing, Reviewing, Contacted, Resolved, or Rejected.' });
     }
 
     const claim = await WarrantyClaim.findById(req.params.id);
@@ -232,6 +232,7 @@ router.patch('/claim/:id', protect, async (req, res) => {
       issue,
       claimDescription,
       claimImages,
+      status,
     } = req.body;
 
     const claim = await WarrantyClaim.findOne({ _id: id, userId });
@@ -246,14 +247,22 @@ router.patch('/claim/:id', protect, async (req, res) => {
     if (claimDescription) claim.claimDescription = claimDescription;
     if (claimImages && Array.isArray(claimImages)) claim.claimImages = claimImages;
 
-    // If user is adding issue details and claim is still Registered, advance to Claimed
+    // If user is adding issue details and claim is still Registered, advance to Sent
     if (issue && claim.status === 'Registered') {
-      claim.status = 'Claimed';
+      claim.status = 'Sent';
       claim.statusHistory.push({
-        status: 'Claimed',
+        status: 'Sent',
         changedBy: userId,
         changedAt: new Date(),
         notes: 'Customer raised a warranty claim'
+      });
+    } else if (status) {
+      claim.status = status;
+      claim.statusHistory.push({
+        status,
+        changedBy: userId,
+        changedAt: new Date(),
+        notes: `Status updated to ${status}`
       });
     }
 

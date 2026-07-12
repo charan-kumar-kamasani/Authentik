@@ -109,7 +109,7 @@ export default function WarrantyClaims() {
     const displayStatus = status === 'Sent' ? 'Registered' : status;
     const config = {
       Registered: { color: 'bg-blue-50 text-blue-700 border-blue-200', icon: Send },
-      Claimed: { color: 'bg-indigo-50 text-indigo-700 border-indigo-200', icon: AlertCircle },
+      Sent: { color: 'bg-indigo-50 text-indigo-700 border-indigo-200', icon: AlertCircle },
       Processing: { color: 'bg-amber-50 text-amber-700 border-amber-200', icon: Loader },
       Reviewing: { color: 'bg-purple-50 text-purple-700 border-purple-200', icon: Eye },
       Contacted: { color: 'bg-cyan-50 text-cyan-700 border-cyan-200', icon: MessageSquare },
@@ -140,8 +140,8 @@ export default function WarrantyClaims() {
     if (statusFilter === 'Registered') {
       return c.status === 'Registered' || c.status === 'Sent';
     }
-    if (statusFilter === 'Claimed') {
-      return c.status === 'Claimed';
+    if (statusFilter === 'Sent') {
+      return c.status === 'Sent';
     }
     if (statusFilter === 'Processing') {
       return ['Processing', 'Reviewing', 'Contacted'].includes(c.status);
@@ -159,7 +159,7 @@ export default function WarrantyClaims() {
   const stats = {
     total: claims.length,
     registered: claims.filter(c => c.status === 'Registered' || c.status === 'Sent').length,
-    claimed: claims.filter(c => c.status === 'Claimed').length,
+    sent: claims.filter(c => c.status === 'Sent').length,
     processing: claims.filter(c => ['Processing', 'Reviewing', 'Contacted'].includes(c.status)).length,
     resolved: claims.filter(c => c.status === 'Resolved').length,
     rejected: claims.filter(c => c.status === 'Rejected').length,
@@ -206,7 +206,7 @@ export default function WarrantyClaims() {
       <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-8">
         <StatCard label="Total" value={stats.total} color="slate" icon={Clipboard} onClick={() => setStatusFilter('')} active={statusFilter === ''} />
         <StatCard label="Registered" value={stats.registered} color="blue" icon={Send} onClick={() => setStatusFilter('Registered')} active={statusFilter === 'Registered'} />
-        <StatCard label="Claimed" value={stats.claimed} color="indigo" icon={AlertCircle} onClick={() => setStatusFilter('Claimed')} active={statusFilter === 'Claimed'} />
+        <StatCard label="Sent" value={stats.sent} color="indigo" icon={AlertCircle} onClick={() => setStatusFilter('Sent')} active={statusFilter === 'Sent'} />
         <StatCard label="In Progress" value={stats.processing} color="amber" icon={Loader} onClick={() => setStatusFilter('Processing')} active={statusFilter === 'Processing'} />
         <StatCard label="Resolved" value={stats.resolved} color="emerald" icon={CheckCircle2} onClick={() => setStatusFilter('Resolved')} active={statusFilter === 'Resolved'} />
         <StatCard label="Rejected" value={stats.rejected} color="red" icon={XCircle} onClick={() => setStatusFilter('Rejected')} active={statusFilter === 'Rejected'} />
@@ -477,7 +477,7 @@ export default function WarrantyClaims() {
                                         defaultValue={claim.status}
                                       >
                                         <option value="Registered" disabled>New Request (Registered)</option>
-                                        <option value="Claimed" disabled>Claimed</option>
+                                        <option value="Sent" disabled>Sent</option>
                                         <option value="Processing">Processing / Inspection</option>
                                         <option value="Reviewing">Under Expert Review</option>
                                         <option value="Contacted">Customer Contacted</option>

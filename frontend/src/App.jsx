@@ -51,6 +51,7 @@ import Warranty from "./pages/mobile/Warranty";
 import RaiseClaim from "./pages/mobile/RaiseClaim";
 import UpdateWarranty from "./pages/mobile/UpdateWarranty";
 import RegisterWarranty from "./pages/mobile/RegisterWarranty";
+import WarrantyDetails from "./pages/mobile/WarrantyDetails";
 import Wallet from "./pages/mobile/Wallet";
 import ProductPassport from "./pages/mobile/ProductPassport";
 
@@ -470,6 +471,7 @@ export default function App() {
             <Route path="/my-reports" element={<MyReports />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/warranty" element={<Warranty />} />
+            <Route path="/warranty-details/:id" element={<WarrantyDetails />} />
             <Route path="/raise-claim/:id" element={<RaiseClaim />} />
             <Route path="/update-warranty/:id" element={<UpdateWarranty />} />
             <Route path="/register-warranty" element={<RegisterWarranty />} />

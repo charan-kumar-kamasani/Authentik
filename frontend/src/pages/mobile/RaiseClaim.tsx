@@ -96,9 +96,9 @@ export default function RaiseClaim() {
       <MobileHeader title="Raise Claim" onLeftClick={() => navigate(-1)} />
       
       <div className="px-6 py-6">
-        <div className="bg-blue-50 rounded-2xl p-4 mb-8 flex gap-3 border border-blue-100">
-           <AlertCircle className="text-blue-600 shrink-0" size={20} />
-           <p className="text-[13px] font-bold text-blue-800 leading-tight">
+        <div className="bg-[#EFF6FF] rounded-[16px] p-4 mb-8 flex gap-3 border border-[#DBEAFE]">
+           <AlertCircle className="text-[#105DE4] shrink-0 mt-0.5" size={18} />
+           <p className="text-[13px] font-bold text-[#0B1E36] leading-tight">
              Please provide accurate details about the issue to help us resolve it quickly.
            </p>
         </div>
@@ -206,8 +206,8 @@ export default function RaiseClaim() {
         <button
           onClick={handleSubmit}
           disabled={submitting}
-          className={`w-full mt-12 py-5 rounded-[24px] font-black text-[17px] shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-3 ${
-            submitting ? 'bg-slate-100 text-slate-400' : 'bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-blue-200'
+          className={`w-full mt-12 py-4 rounded-[12px] font-bold text-[15px] shadow-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${
+            submitting ? 'bg-slate-100 text-slate-400' : 'bg-[#105DE4] text-white'
           }`}
         >
           {submitting ? (

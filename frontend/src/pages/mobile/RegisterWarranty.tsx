@@ -87,11 +87,11 @@ export default function RegisterWarranty() {
       <MobileHeader title="Register Warranty" onLeftClick={() => navigate(-1)} />
       
       <div className="px-6 py-6">
-        <div className="bg-emerald-50 rounded-2xl p-4 mb-8 flex gap-3 border border-emerald-100">
-           <ShieldCheck className="text-emerald-600 shrink-0" size={20} />
+        <div className="bg-[#EFF6FF] rounded-[16px] p-4 mb-8 flex gap-3 border border-[#DBEAFE]">
+           <ShieldCheck className="text-[#105DE4] shrink-0 mt-0.5" size={20} />
            <div className="space-y-1">
-             <p className="text-[13px] font-black text-emerald-800 leading-tight">Warranty Registration</p>
-             <p className="text-[12px] font-bold text-emerald-700/70">Please provide your purchase details and invoice proof to activate your warranty.</p>
+             <p className="text-[13px] font-bold text-[#0B1E36] leading-tight">Warranty Registration</p>
+             <p className="text-[12px] font-medium text-[#64748B]">Please provide your purchase details and invoice proof to activate your warranty.</p>
            </div>
         </div>
 
@@ -125,7 +125,7 @@ export default function RegisterWarranty() {
                 value={purchaseDate}
                 max={new Date().toISOString().split('T')[0]}
                 onChange={(e) => setPurchaseDate(e.target.value)}
-                className="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-[15px] font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
+                className="w-full pl-12 pr-5 py-4 bg-slate-50 border border-slate-200 rounded-[12px] text-[15px] font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#105DE4] focus:bg-white transition-all"
               />
             </div>
           </div>
@@ -162,8 +162,8 @@ export default function RegisterWarranty() {
         <button
           onClick={handleSubmit}
           disabled={submitting}
-          className={`w-full mt-12 py-5 rounded-[24px] font-black text-[17px] shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-3 ${
-            submitting ? 'bg-slate-100 text-slate-400' : 'bg-gradient-to-r from-emerald-600 to-emerald-800 text-white shadow-emerald-200'
+          className={`w-full mt-12 py-4 rounded-[12px] font-bold text-[15px] shadow-sm transition-all active:scale-[0.98] flex items-center justify-center gap-2 ${
+            submitting ? 'bg-slate-100 text-slate-400' : 'bg-[#105DE4] text-white'
           }`}
         >
           {submitting ? (
