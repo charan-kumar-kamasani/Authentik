@@ -160,7 +160,7 @@ export default function DemoModal({ isOpen, onClose }) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Message / Requirements (Optional)</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Message / Requirements</label>
             <textarea 
               name="message"
               value={formData.message}

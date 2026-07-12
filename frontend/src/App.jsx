@@ -50,6 +50,7 @@ import DemoResult from "./pages/mobile/DemoResult";
 import Warranty from "./pages/mobile/Warranty";
 import RaiseClaim from "./pages/mobile/RaiseClaim";
 import UpdateWarranty from "./pages/mobile/UpdateWarranty";
+import RegisterWarranty from "./pages/mobile/RegisterWarranty";
 import Wallet from "./pages/mobile/Wallet";
 import ProductPassport from "./pages/mobile/ProductPassport";
 
@@ -471,6 +472,7 @@ export default function App() {
             <Route path="/warranty" element={<Warranty />} />
             <Route path="/raise-claim/:id" element={<RaiseClaim />} />
             <Route path="/update-warranty/:id" element={<UpdateWarranty />} />
+            <Route path="/register-warranty" element={<RegisterWarranty />} />
             <Route path="/wallet" element={<Wallet />} />
             <Route path="/recommendations/:brandId" element={<Recommendations />} />
           </Route>

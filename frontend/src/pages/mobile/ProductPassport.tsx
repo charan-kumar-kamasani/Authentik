@@ -209,15 +209,15 @@ const ProductPassport = () => {
             {/* Price Alert Banner */}
             <button
               onClick={() => setShowPriceAlert(true)}
-              className="relative overflow-hidden w-full bg-[#059669] text-white rounded-[24px] p-4 flex items-center shadow-[0_8px_25px_rgba(5,150,105,0.25)] active:scale-[0.98] transition-transform"
+              className="relative overflow-hidden w-full bg-[#EA580C] text-white rounded-[24px] p-4 flex items-center shadow-[0_8px_25px_rgba(234,88,12,0.25)] active:scale-[0.98] transition-transform"
             >
               <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-flash-shimmer" />
               <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center flex-shrink-0 mr-3 relative z-10">
-                <Bell className="w-[20px] h-[20px] text-[#059669]" strokeWidth={2} />
+                <Bell className="w-[20px] h-[20px] text-[#EA580C]" strokeWidth={2} />
               </div>
               <div className="flex flex-col flex-1 text-left relative z-10">
                 <span className="text-[15px] font-extrabold mb-0.5">Price Alert</span>
-                <span className="text-[11px] font-medium text-emerald-100">Notify me when the price drops</span>
+                <span className="text-[11px] font-medium text-orange-100">Notify me when the price drops</span>
               </div>
               <ChevronRight className="w-5 h-5 text-white/80 relative z-10" />
             </button>
@@ -253,16 +253,22 @@ const ProductPassport = () => {
             {/* Warranty Banner */}
             {hasWarranty && (
               <button
-                onClick={() => navigate('/warranty', { state: data })}
-                className="relative overflow-hidden w-full bg-[#EA580C] text-white rounded-[24px] p-4 flex items-center shadow-[0_8px_25px_rgba(234,88,12,0.25)] active:scale-[0.98] transition-transform"
+                onClick={() => {
+                  if (data.warrantyClaimStatus) {
+                    navigate('/warranty', { state: data });
+                  } else {
+                    navigate('/register-warranty', { state: { data } });
+                  }
+                }}
+                className="relative overflow-hidden w-full bg-[#059669] text-white rounded-[24px] p-4 flex items-center shadow-[0_8px_25px_rgba(5,150,105,0.25)] active:scale-[0.98] transition-transform"
               >
                 <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-flash-shimmer" />
                 <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center flex-shrink-0 mr-3 relative z-10">
-                  <ShieldCheck className="w-[20px] h-[20px] text-[#EA580C]" strokeWidth={2} />
+                  <ShieldCheck className="w-[20px] h-[20px] text-[#059669]" strokeWidth={2} />
                 </div>
                 <div className="flex flex-col flex-1 text-left relative z-10">
-                  <span className="text-[15px] font-extrabold mb-0.5">Warranty</span>
-                  <span className="text-[11px] font-medium text-orange-100">Manage or extend your warranty</span>
+                  <span className="text-[15px] font-extrabold mb-0.5">{data.warrantyClaimStatus ? 'Manage/Extend Warranty' : 'Register Warranty'}</span>
+                  <span className="text-[11px] font-medium text-emerald-100">{data.warrantyClaimStatus ? 'View or update your warranty details' : 'Activate your product protection'}</span>
                 </div>
                 <ChevronRight className="w-5 h-5 text-white/80 relative z-10" />
               </button>
@@ -480,10 +486,10 @@ const ProductPassport = () => {
           <div className="bg-white rounded-[24px] w-full max-w-sm overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
             <div className="p-6">
               <div className="flex justify-between items-start mb-2">
-                <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center">
                   <div className="relative">
-                    <Bell size={24} className="text-[#059669]" />
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#059669] rounded-full flex items-center justify-center text-[8px] font-bold text-white">₹</div>
+                    <Bell size={24} className="text-[#EA580C]" />
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#EA580C] rounded-full flex items-center justify-center text-[8px] font-bold text-white">₹</div>
                   </div>
                 </div>
                 <button onClick={() => setShowPriceAlert(false)} className="p-2 -mr-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-50 transition-colors">
@@ -516,11 +522,11 @@ const ProductPassport = () => {
                 <p className="text-[11px] text-slate-500 font-medium mt-2">You will be notified when the price is equal to or less than this price.</p>
               </div>
 
-              <div className="bg-emerald-50 rounded-xl p-4 flex gap-3 mb-6 border border-emerald-100">
-                <Bell size={20} className="text-[#059669] shrink-0 mt-0.5" />
+              <div className="bg-orange-50 rounded-xl p-4 flex gap-3 mb-6 border border-orange-100">
+                <Bell size={20} className="text-[#EA580C] shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-[13px] font-bold text-[#065F46] mb-0.5">We'll monitor all major platforms for you</h4>
-                  <p className="text-[11px] text-[#065F46]/80 font-medium leading-relaxed">You'll get notified when the price drops on any of the listed platforms.</p>
+                  <h4 className="text-[13px] font-bold text-[#9A3412] mb-0.5">We'll monitor all major platforms for you</h4>
+                  <p className="text-[11px] text-[#9A3412]/80 font-medium leading-relaxed">You'll get notified when the price drops on any of the listed platforms.</p>
                 </div>
               </div>
 
@@ -533,7 +539,7 @@ const ProductPassport = () => {
                       setPriceAlertAmount('');
                     }
                   }}
-                  className="w-full bg-[#059669] text-white font-bold py-3.5 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all"
+                  className="w-full bg-[#EA580C] text-white font-bold py-3.5 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all"
                 >
                   Set Price Alert
                 </button>

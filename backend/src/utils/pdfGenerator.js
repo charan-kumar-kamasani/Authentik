@@ -304,7 +304,7 @@ const buildQrPdf = async (products, options = {}) => {
     const footerWidth = gridHeight; // Available width is now the height of the grid
     const colW = footerWidth / 3;
 
-    doc.text(`Brand: ${brand}   |   Order ID: ${orderId}`, 0, 0, {
+    doc.text(`Order ID: ${orderId}`, 0, 0, {
       width: colW,
       align: "left",
     });

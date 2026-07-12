@@ -308,6 +308,171 @@ const getAmazonPrice = (html) => {
   return result;
 };
 
+const getZeptoPrice = (html) => {
+  const result = getUniversalData(html);
+  const $ = cheerio.load(html);
+
+  $('span').each((i, el) => {
+    const text = $(el).text().trim().toUpperCase();
+    if (text === 'MRP') {
+      const parent = $(el).parent();
+      
+      const mrpText = parent.text().replace(/\u00A0/g, ' ');
+      const mrpMatch = mrpText.match(/MRP\s*(?:₹|Rs\.?)\s*([0-9,.]+)/i);
+      
+      if (mrpMatch) {
+         result.mrp = cleanPrice(mrpMatch[1]);
+      } else {
+         const nextSpan = $(el).nextAll('span').filter((i, e) => $(e).text().includes('₹')).first();
+         if (nextSpan.length) {
+            result.mrp = cleanPrice(nextSpan.text());
+         }
+      }
+
+      const priceContainer = parent.prev('div');
+      if (priceContainer.length) {
+         const priceText = priceContainer.text().replace(/\u00A0/g, ' ');
+         const price = cleanPrice(priceText);
+         if (price) {
+            result.price = price;
+         }
+      }
+    }
+  });
+
+  if (result.price && result.mrp && result.mrp > result.price) {
+    const diff = result.mrp - result.price;
+    const pct = Math.round((diff / result.mrp) * 100);
+    result.discount = pct + '%';
+  }
+
+  return result;
+};
+
+const getBlinkitPrice = (html) => {
+  const result = getUniversalData(html);
+  const $ = cheerio.load(html);
+
+  $('span').each((i, el) => {
+    const text = $(el).text().trim().toUpperCase();
+    if (text === 'MRP' || text.includes('MRP')) {
+       const parent = $(el).parent(); // typically the containing span
+       
+       // Try finding next sibling span with the MRP price
+       const nextSpan = $(el).next('span');
+       if (nextSpan.length) {
+         const mrp = cleanPrice(nextSpan.text());
+         if (mrp) result.mrp = mrp;
+       } else {
+         // Maybe it's in the same text
+         const mrpMatch = parent.text().match(/MRP\s*(?:₹|Rs\.?)\s*([0-9,.]+)/i);
+         if (mrpMatch) {
+            result.mrp = cleanPrice(mrpMatch[1]);
+         }
+       }
+
+       // Selling price is in the previous sibling of the parent's parent div
+       let priceContainer = parent.parent().prev('div');
+       if (priceContainer.length && priceContainer.text().includes('₹')) {
+          const price = cleanPrice(priceContainer.text());
+          if (price) result.price = price;
+       } else {
+         // Fallback: look at immediate parent's prev sibling if structure is flatter
+         priceContainer = parent.prev('div');
+         if (priceContainer.length && priceContainer.text().includes('₹')) {
+            const price = cleanPrice(priceContainer.text());
+            if (price) result.price = price;
+         }
+       }
+    }
+  });
+
+  // Calculate discount percentage if we have price and mrp
+  if (result.price && result.mrp && result.mrp > result.price) {
+    const diff = result.mrp - result.price;
+    const pct = Math.round((diff / result.mrp) * 100);
+    result.discount = pct + '%';
+  }
+
+  return result;
+};
+
+const getSwiggyInstamartPrice = (html) => {
+  const result = getUniversalData(html);
+  const $ = cheerio.load(html);
+
+  const offerEl = $('[data-testid="item-offer-price"]').first();
+  if (offerEl.length) {
+    const p = cleanPrice(offerEl.attr('aria-label') || offerEl.text());
+    if (p) result.price = p;
+  }
+
+  const mrpEl = $('[data-testid="item-mrp-price"]').first();
+  if (mrpEl.length) {
+    const p = cleanPrice(mrpEl.attr('aria-label') || mrpEl.text());
+    if (p) result.mrp = p;
+  }
+
+  // Fallback if data-testids are slightly different
+  if (!result.price || !result.mrp) {
+     const container = $('[data-testid="itemMRPPrice"]').first();
+     if (container.length) {
+       const prices = [];
+       container.children().each((i, el) => {
+          const p = cleanPrice($(el).attr('aria-label') || $(el).text());
+          if (p) prices.push(p);
+       });
+       if (prices.length >= 2) {
+          result.price = Math.min(prices[0], prices[1]);
+          result.mrp = Math.max(prices[0], prices[1]);
+       } else if (prices.length === 1) {
+          result.price = prices[0];
+       }
+     }
+  }
+
+  // Calculate discount percentage
+  if (result.price && result.mrp && result.mrp > result.price) {
+    const diff = result.mrp - result.price;
+    const pct = Math.round((diff / result.mrp) * 100);
+    result.discount = pct + '%';
+  }
+
+  return result;
+};
+
+const getJioMartPrice = (html) => {
+  const result = getUniversalData(html);
+  const $ = cheerio.load(html);
+
+  const currentPriceEl = $('.PriceContainer__currentPrice').first();
+  if (currentPriceEl.length) {
+    const p = cleanPrice(currentPriceEl.text());
+    if (p) result.price = p;
+  }
+
+  const originalPriceEl = $('.PriceContainer__originalPrice').first();
+  if (originalPriceEl.length) {
+    const p = cleanPrice(originalPriceEl.text());
+    if (p) result.mrp = p;
+  }
+
+  const discountEl = $('.PriceContainer__discountText').first();
+  if (discountEl.length) {
+    const txt = discountEl.text().replace(/[^0-9]/g, '');
+    if (txt) result.discount = txt + '%';
+  }
+
+  if (result.price && result.mrp && result.mrp > result.price && !result.discount) {
+    const diff = result.mrp - result.price;
+    const pct = Math.round((diff / result.mrp) * 100);
+    result.discount = pct + '%';
+  }
+
+  return result;
+};
+
+
 const scrapeProductPrice = async (rawUrl) => {
   if (!rawUrl) return null;
   const url = rawUrl.split(' ')[0].trim();
@@ -336,6 +501,14 @@ const scrapeProductPrice = async (rawUrl) => {
       result = getCromaPrice(html);
     } else if (lowerUrl.includes('optimumnutrition.co.in')) {
       result = getONPrice(html);
+    } else if (lowerUrl.includes('zeptonow.com') || lowerUrl.includes('zepto.com')) {
+      result = getZeptoPrice(html);
+    } else if (lowerUrl.includes('blinkit.com')) {
+      result = getBlinkitPrice(html);
+    } else if (lowerUrl.includes('swiggy.com')) {
+      result = getSwiggyInstamartPrice(html);
+    } else if (lowerUrl.includes('jiomart.com')) {
+      result = getJioMartPrice(html);
     } else {
       result = getUniversalData(html);
     }

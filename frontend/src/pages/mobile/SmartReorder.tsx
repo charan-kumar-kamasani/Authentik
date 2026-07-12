@@ -114,12 +114,12 @@ const SmartReorder = () => {
           return (
             <div className="bg-white rounded-2xl p-4 shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-[#F0F5FF] flex items-center justify-center text-[#105DE4] shrink-0 border border-[#E0EBFF]">
+                <div className="w-11 h-11 rounded-xl bg-purple-50 flex items-center justify-center text-[#7C3AED] shrink-0 border border-purple-100">
                   <Tag size={20} strokeWidth={2.5} />
                 </div>
                 <div>
                   <h4 className="text-[#0B1E36] text-[15px] font-bold">Coupons & Offers</h4>
-                  <p className="text-[#105DE4] text-[13px] font-bold mt-0.5 tracking-wide bg-blue-50 inline-block px-1.5 py-0.5 rounded">{couponCode}</p>
+                  <p className="text-[#7C3AED] text-[13px] font-bold mt-0.5 tracking-wide bg-purple-50 inline-block px-1.5 py-0.5 rounded">{couponCode}</p>
                 </div>
               </div>
               <button 
@@ -127,7 +127,7 @@ const SmartReorder = () => {
                   navigator.clipboard.writeText(couponCode);
                   alert('Coupon code copied!');
                 }}
-                className="flex items-center gap-1 text-[#105DE4] text-[13px] font-bold active:opacity-70 transition-opacity bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100"
+                className="flex items-center gap-1 text-[#7C3AED] text-[13px] font-bold active:opacity-70 transition-opacity bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-100"
               >
                 Copy
               </button>
@@ -256,10 +256,10 @@ const SmartReorder = () => {
           <div className="bg-white rounded-[24px] w-full max-w-sm overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
             <div className="p-6">
               <div className="flex justify-between items-start mb-2">
-                <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center">
                   <div className="relative">
-                    <Bell size={24} className="text-[#059669]" />
-                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#059669] rounded-full flex items-center justify-center text-[8px] font-bold text-white">₹</div>
+                    <Bell size={24} className="text-[#EA580C]" />
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#EA580C] rounded-full flex items-center justify-center text-[8px] font-bold text-white">₹</div>
                   </div>
                 </div>
                 <button onClick={() => { setShowPriceAlert(false); setIsPriceAlertSet(false); }} className="p-2 -mr-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-50 transition-colors">
@@ -292,11 +292,11 @@ const SmartReorder = () => {
                 <p className="text-[11px] text-slate-500 font-medium mt-2">You will be notified when the price is equal to or less than this price.</p>
               </div>
 
-              <div className="bg-emerald-50 rounded-xl p-4 flex gap-3 mb-6 border border-emerald-100">
-                <Bell size={20} className="text-[#059669] shrink-0 mt-0.5" />
+              <div className="bg-orange-50 rounded-xl p-4 flex gap-3 mb-6 border border-orange-100">
+                <Bell size={20} className="text-[#EA580C] shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-[13px] font-bold text-[#065F46] mb-0.5">We'll monitor all major platforms for you</h4>
-                  <p className="text-[11px] text-[#065F46]/80 font-medium leading-relaxed">You'll get notified when the price drops on any of the listed platforms.</p>
+                  <h4 className="text-[13px] font-bold text-[#9A3412] mb-0.5">We'll monitor all major platforms for you</h4>
+                  <p className="text-[11px] text-[#9A3412]/80 font-medium leading-relaxed">You'll get notified when the price drops on any of the listed platforms.</p>
                 </div>
               </div>
 
@@ -321,7 +321,7 @@ const SmartReorder = () => {
                       alert('Price Alert Set Successfully!');
                     }
                   }}
-                  className="w-full bg-[#059669] text-white font-bold py-3.5 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all"
+                  className="w-full bg-[#EA580C] text-white font-bold py-3.5 rounded-xl hover:opacity-90 active:scale-[0.98] transition-all"
                 >
                   Set Price Alert
                 </button>
