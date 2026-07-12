@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { ChevronLeft, Share, ShieldCheck, Star, ChevronRight, Check, Tag, Bell, X } from 'lucide-react';
+import { ChevronLeft, Share, ShieldCheck, Star, ChevronRight, Check, Tag, Bell, X, CheckCircle2, Copy, Gift } from 'lucide-react';
 import ProductHeroHeader from '../../components/ProductHeroHeader';
 
 import API_BASE_URL from '../../config/api';
@@ -13,6 +13,7 @@ const SmartReorder = () => {
   const [showPriceAlert, setShowPriceAlert] = useState(false);
   const [priceAlertAmount, setPriceAlertAmount] = useState('');
   const [isPriceAlertSet, setIsPriceAlertSet] = useState(false);
+  const [couponCopied, setCouponCopied] = useState(false);
 
   // Allow passing state directly via location, otherwise fetch
   const location = useLocation();
@@ -112,56 +113,48 @@ const SmartReorder = () => {
           if (!couponCode) return null;
 
           return (
-            <div className="bg-white rounded-2xl p-4 shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-purple-50 flex items-center justify-center text-[#7C3AED] shrink-0 border border-purple-100">
-                  <Tag size={20} strokeWidth={2.5} />
-                </div>
-                <div>
-                  <h4 className="text-[#0B1E36] text-[15px] font-bold">Coupons & Offers</h4>
-                  <p className="text-[#7C3AED] text-[13px] font-bold mt-0.5 tracking-wide bg-purple-50 inline-block px-1.5 py-0.5 rounded">{couponCode}</p>
-                </div>
-              </div>
-              <button 
+              <button
                 onClick={() => {
-                  navigator.clipboard.writeText(couponCode);
-                  alert('Coupon code copied!');
+                  navigator.clipboard.writeText(couponCode || 'SAVE20');
+                  setCouponCopied(true);
+                  setTimeout(() => setCouponCopied(false), 2000);
                 }}
-                className="flex items-center gap-1 text-[#7C3AED] text-[13px] font-bold active:opacity-70 transition-opacity bg-purple-50 px-3 py-1.5 rounded-lg border border-purple-100"
+                className="relative overflow-hidden w-full bg-[#7C3AED] text-white rounded-[24px] p-4 flex items-center shadow-[0_8px_25px_rgba(124,58,237,0.25)] active:scale-[0.98] transition-transform"
               >
-                Copy
+                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-flash-shimmer" />
+                <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center flex-shrink-0 mr-3 relative z-10">
+                  <Gift className="w-[20px] h-[20px] text-[#7C3AED]" strokeWidth={2} />
+                </div>
+                <div className="flex flex-col flex-1 text-left relative z-10">
+                  <span className="text-[15px] font-extrabold mb-0.5">Coupons & Offers</span>
+                  <span className="text-[11px] font-medium text-purple-100">View exclusive offers and save more</span>
+                </div>
+                <div className="relative z-10 flex items-center bg-white/20 rounded-lg px-3 py-1.5 backdrop-blur-sm">
+                  {couponCopied ? (
+                    <><span className="text-[11px] font-bold mr-1">Copied!</span> <CheckCircle2 size={14} /></>
+                  ) : (
+                    <><span className="text-[11px] font-bold mr-1">{couponCode || 'SAVE20'}</span> <Copy size={14} /></>
+                  )}
+                </div>
               </button>
-            </div>
           );
         })()}
 
         {/* Price Alert */}
-        <div className="bg-white rounded-2xl p-4 shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-[#FFF4E5] flex items-center justify-center text-[#FF9800] shrink-0 border border-[#FFE8CC]">
-              <Bell size={20} strokeWidth={2.5} />
-            </div>
-            <div>
-              <h4 className="text-[#0B1E36] text-[15px] font-bold">Price Alert</h4>
-              <p className="text-slate-500 text-[12px] font-medium mt-0.5">Notify me when price drops</p>
-            </div>
+        <button
+          onClick={() => setShowPriceAlert(true)}
+          className="relative overflow-hidden w-full bg-[#EA580C] text-white rounded-[24px] p-4 flex items-center shadow-[0_8px_25px_rgba(234,88,12,0.25)] active:scale-[0.98] transition-transform"
+        >
+          <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-flash-shimmer" />
+          <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center flex-shrink-0 mr-3 relative z-10">
+            <Bell className="w-[20px] h-[20px] text-[#EA580C]" strokeWidth={2} />
           </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input 
-              type="checkbox" 
-              className="sr-only peer" 
-              checked={isPriceAlertSet}
-              onChange={(e) => {
-                if (e.target.checked) {
-                  setShowPriceAlert(true);
-                } else {
-                  setIsPriceAlertSet(false);
-                }
-              }}
-            />
-            <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#105DE4]"></div>
-          </label>
-        </div>
+          <div className="flex flex-col flex-1 text-left relative z-10">
+            <span className="text-[15px] font-extrabold mb-0.5">Price Alert</span>
+            <span className="text-[11px] font-medium text-orange-100">Notify me when the price drops</span>
+          </div>
+          <ChevronRight className="w-5 h-5 text-white/80 relative z-10" />
+        </button>
 
         {/* Where to Buy */}
         {orderLinks.length > 0 && (

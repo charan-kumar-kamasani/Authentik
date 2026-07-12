@@ -95,6 +95,25 @@ export default function RegisterWarranty() {
            </div>
         </div>
 
+        {/* Product Details Header */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.03)] p-4 mb-6 flex gap-3 items-center">
+           <div className="w-14 h-14 bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100 overflow-hidden shrink-0">
+              <img src={data?.productImage || data?.productId?.productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"} alt="Product" className="w-full h-full object-cover mix-blend-multiply" />
+           </div>
+           <div className="flex-1 min-w-0">
+             <h3 className="text-[#0B1E36] text-[14px] font-bold leading-tight truncate">{data?.productName || data?.productId?.productName || 'Verified Product'}</h3>
+             <p className="text-slate-500 text-[11px] font-medium mt-0.5">SN: {data?.qrCode?.slice(-8).toUpperCase()}</p>
+             {(data?.warranty || data?.productId?.warranty) && (
+                <div className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 rounded-md">
+                   <ShieldCheck size={12} className="text-[#105DE4]" />
+                   <span className="text-[#105DE4] text-[10px] font-bold uppercase">
+                     {(data?.warranty?.duration || data?.productId?.warranty?.duration)} {(data?.warranty?.durationUnit || data?.productId?.warranty?.durationUnit)} Warranty
+                   </span>
+                </div>
+             )}
+           </div>
+        </div>
+
         <div className="space-y-6">
           {/* Purchase Date */}
           <div>

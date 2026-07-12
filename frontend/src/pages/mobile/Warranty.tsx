@@ -71,7 +71,7 @@ export default function Warranty() {
       const expiry = calculateExpiry(c.purchaseDate, c.warrantyInfo?.duration || 0, c.warrantyInfo?.durationUnit || 'years');
       return expiry.getTime() <= new Date().getTime();
     }),
-    claims: claims.filter(c => c.issue || c.status !== 'Sent')
+    claims: claims.filter(c => c.issue || (c.status !== 'Registered' && c.status !== 'Sent'))
   };
 
   const currentList = categorizedClaims[activeTab as keyof typeof categorizedClaims] || [];
@@ -318,10 +318,6 @@ function WarrantyCard({ item, activeTab }: { item: any, activeTab: string }) {
             </button>
           </div>
         )}
-      </div>
-
-      <div className="flex items-center -mr-1">
-        <ChevronRight size={16} className="text-[#94A3B8]" />
       </div>
     </div>
   );
