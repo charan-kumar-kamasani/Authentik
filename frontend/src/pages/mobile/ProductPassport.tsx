@@ -49,6 +49,8 @@ const ProductPassport = () => {
         educationContent: product.educationContent || order.educationContent || template.educationContent || d.educationContent,
         ingredients: product.ingredients || order.ingredients || template.ingredients || d.ingredients,
         certificates: (product.certificates && product.certificates.length > 0) ? product.certificates : ((order.certificates && order.certificates.length > 0) ? order.certificates : (template.certificates || d.certificates)),
+        coupon: product.coupon || order.coupon || template.coupon || d.coupon,
+        couponCode: product.couponCode || order.couponCode || template.couponCode || d.couponCode,
       };
     }
     return d;
@@ -134,7 +136,7 @@ const ProductPassport = () => {
 
   const couponCode = data.couponCode || data.coupon?.code || data.coupon?.couponCode || data.coupons?.[0]?.code || data.coupons?.[0]?.couponCode || (typeof data.coupon === 'string' ? data.coupon : null);
   const hasWarranty = !!(data.warranty && (data.warranty.duration || data.warranty.warrantyType));
-
+  console.log("_____data.", data)
   // Mocking usage left for the Reorder widget
   const estimatedDaysTotal = 30;
   const scanTime = new Date(data.createdAt || Date.now());
@@ -187,88 +189,83 @@ const ProductPassport = () => {
         <div className="mt-5 mb-1">
           <h3 className="text-[15px] font-bold text-[#0B1E36] mb-3 px-1">Quick Actions</h3>
           <div className="flex flex-col gap-3">
-            
-            {/* Reorder */}
-            <div className="bg-white rounded-[16px] p-3 border border-[#105DE4]/20 flex items-center shadow-sm">
-              <div className="w-10 h-10 rounded-full bg-[#F0F5FF] flex items-center justify-center shrink-0 mr-3">
-                <ShoppingCart size={18} className="text-[#105DE4]" strokeWidth={2} />
-              </div>
-              <div className="flex-1">
-                <h4 className="text-[14px] font-bold text-[#105DE4] leading-tight mb-0.5">Reorder</h4>
-                <p className="text-[11px] text-slate-500 font-medium leading-tight">Never run out of your essentials</p>
-              </div>
-              <button 
-                onClick={() => navigate(`/smart-reorder/${data?.productId?._id || data?.productId || data?.product?._id || data?._id || 'unknown'}`, { state: data })}
-                className="bg-[#105DE4] text-white text-[11px] font-bold px-3 py-2.5 rounded-lg flex items-center justify-between w-[140px] shrink-0 active:scale-95 transition-transform ml-2"
-              >
-                <span className="flex-1 text-left">Reorder Now</span>
-                <ChevronRight size={14} className="shrink-0" />
-              </button>
-            </div>
 
-            {/* Price Alert */}
-            <div className="bg-white rounded-[16px] p-3 border border-[#059669]/20 flex items-center shadow-sm">
-              <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center shrink-0 mr-3">
-                <Bell size={18} className="text-[#059669]" strokeWidth={2} />
+            {/* Reorder Banner */}
+            <button
+              onClick={() => navigate(`/smart-reorder/${data?.productId?._id || data?.productId || data?.product?._id || data?._id || 'unknown'}`, { state: data })}
+              className="relative overflow-hidden w-full bg-[#105DE4] text-white rounded-[24px] p-4 flex items-center shadow-[0_8px_25px_rgba(16,93,228,0.25)] active:scale-[0.98] transition-transform"
+            >
+              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-flash-shimmer" />
+              <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center flex-shrink-0 mr-3 relative z-10">
+                <ShoppingCart className="w-[20px] h-[20px] text-[#105DE4]" strokeWidth={2} />
               </div>
-              <div className="flex-1">
-                <h4 className="text-[14px] font-bold text-[#059669] leading-tight mb-0.5">Price Alert</h4>
-                <p className="text-[11px] text-slate-500 font-medium leading-tight">Notify me when the price drops</p>
+              <div className="flex flex-col flex-1 text-left relative z-10">
+                <span className="text-[15px] font-extrabold mb-0.5">Reorder</span>
+                <span className="text-[11px] font-medium text-blue-100">Never run out of your essentials</span>
               </div>
-              <button 
-                onClick={() => setShowPriceAlert(true)}
-                className="bg-[#059669] text-white text-[11px] font-bold px-3 py-2.5 rounded-lg flex items-center justify-between w-[140px] shrink-0 active:scale-95 transition-transform ml-2"
-              >
-                <span className="flex-1 text-left">Set Price Alert</span>
-                <ChevronRight size={14} className="shrink-0" />
-              </button>
-            </div>
+              <ChevronRight className="w-5 h-5 text-white/80 relative z-10" />
+            </button>
 
-            {/* Coupons & Offers */}
+            {/* Price Alert Banner */}
+            <button
+              onClick={() => setShowPriceAlert(true)}
+              className="relative overflow-hidden w-full bg-[#059669] text-white rounded-[24px] p-4 flex items-center shadow-[0_8px_25px_rgba(5,150,105,0.25)] active:scale-[0.98] transition-transform"
+            >
+              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-flash-shimmer" />
+              <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center flex-shrink-0 mr-3 relative z-10">
+                <Bell className="w-[20px] h-[20px] text-[#059669]" strokeWidth={2} />
+              </div>
+              <div className="flex flex-col flex-1 text-left relative z-10">
+                <span className="text-[15px] font-extrabold mb-0.5">Price Alert</span>
+                <span className="text-[11px] font-medium text-emerald-100">Notify me when the price drops</span>
+              </div>
+              <ChevronRight className="w-5 h-5 text-white/80 relative z-10" />
+            </button>
+
+            {/* Coupons & Offers Banner */}
             {couponCode && (
-              <div className="bg-white rounded-[16px] p-3 border border-[#7C3AED]/20 flex items-center shadow-sm">
-                <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center shrink-0 mr-3">
-                  <Gift size={18} className="text-[#7C3AED]" strokeWidth={2} />
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(couponCode || 'SAVE20');
+                  setCouponCopied(true);
+                  setTimeout(() => setCouponCopied(false), 2000);
+                }}
+                className="relative overflow-hidden w-full bg-[#7C3AED] text-white rounded-[24px] p-4 flex items-center shadow-[0_8px_25px_rgba(124,58,237,0.25)] active:scale-[0.98] transition-transform"
+              >
+                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-flash-shimmer" />
+                <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center flex-shrink-0 mr-3 relative z-10">
+                  <Gift className="w-[20px] h-[20px] text-[#7C3AED]" strokeWidth={2} />
                 </div>
-                <div className="flex-1">
-                  <h4 className="text-[14px] font-bold text-[#7C3AED] leading-tight mb-0.5">Coupons & Offers</h4>
-                  <p className="text-[11px] text-slate-500 font-medium leading-tight">View exclusive offers and save more</p>
+                <div className="flex flex-col flex-1 text-left relative z-10">
+                  <span className="text-[15px] font-extrabold mb-0.5">Coupons & Offers</span>
+                  <span className="text-[11px] font-medium text-purple-100">View exclusive offers and save more</span>
                 </div>
-                <button 
-                  onClick={() => {
-                    navigator.clipboard.writeText(couponCode);
-                    setCouponCopied(true);
-                    setTimeout(() => setCouponCopied(false), 2000);
-                  }}
-                  className="bg-[#7C3AED] text-white text-[11px] font-bold px-3 py-2.5 rounded-lg flex items-center justify-between w-[140px] shrink-0 active:scale-95 transition-transform whitespace-nowrap ml-2"
-                >
+                <div className="relative z-10 flex items-center bg-white/20 rounded-lg px-3 py-1.5 backdrop-blur-sm">
                   {couponCopied ? (
-                    <><span className="flex-1 text-left">Copied!</span> <CheckCircle2 size={14} className="shrink-0" /></>
+                    <><span className="text-[11px] font-bold mr-1">Copied!</span> <CheckCircle2 size={14} /></>
                   ) : (
-                    <><span className="flex-1 text-left truncate pr-1">{couponCode}</span> <Copy size={14} className="shrink-0" /></>
+                    <><span className="text-[11px] font-bold mr-1">{couponCode || 'SAVE20'}</span> <Copy size={14} /></>
                   )}
-                </button>
-              </div>
+                </div>
+              </button>
             )}
 
-            {/* Warranty */}
+            {/* Warranty Banner */}
             {hasWarranty && (
-              <div className="bg-white rounded-[16px] p-3 border border-[#EA580C]/20 flex items-center shadow-sm">
-                <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center shrink-0 mr-3">
-                  <ShieldCheck size={18} className="text-[#EA580C]" strokeWidth={2} />
+              <button
+                onClick={() => navigate('/warranty', { state: data })}
+                className="relative overflow-hidden w-full bg-[#EA580C] text-white rounded-[24px] p-4 flex items-center shadow-[0_8px_25px_rgba(234,88,12,0.25)] active:scale-[0.98] transition-transform"
+              >
+                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-flash-shimmer" />
+                <div className="w-11 h-11 bg-white rounded-full flex items-center justify-center flex-shrink-0 mr-3 relative z-10">
+                  <ShieldCheck className="w-[20px] h-[20px] text-[#EA580C]" strokeWidth={2} />
                 </div>
-                <div className="flex-1">
-                  <h4 className="text-[14px] font-bold text-[#EA580C] leading-tight mb-0.5">Warranty</h4>
-                  <p className="text-[11px] text-slate-500 font-medium leading-tight">Manage or extend your warranty</p>
+                <div className="flex flex-col flex-1 text-left relative z-10">
+                  <span className="text-[15px] font-extrabold mb-0.5">Warranty</span>
+                  <span className="text-[11px] font-medium text-orange-100">Manage or extend your warranty</span>
                 </div>
-                <button 
-                  onClick={() => navigate('/warranty', { state: data })}
-                  className="bg-[#EA580C] text-white text-[11px] font-bold px-3 py-2.5 rounded-lg flex items-center justify-between w-[140px] shrink-0 active:scale-95 transition-transform ml-2"
-                >
-                  <span className="flex-1 text-left">Warranty</span>
-                  <ChevronRight size={14} className="shrink-0" />
-                </button>
-              </div>
+                <ChevronRight className="w-5 h-5 text-white/80 relative z-10" />
+              </button>
             )}
 
           </div>
@@ -280,18 +277,18 @@ const ProductPassport = () => {
         </div>
 
         {/* Accordions */}
-        <div className="flex flex-col gap-3 mb-3">
+        <div className="mb-3">
           {/* 1. Product Details */}
           <AccordionItem title="Product Details" subtitle="View specifications and details" icon={FileText} isOpen={openSection === 'Product Details'} onToggle={() => setOpenSection(openSection === 'Product Details' ? '' : 'Product Details')}>
             <KeyValueRow label="Brand" value={data.brand || data.companyName} />
             <KeyValueRow label="Product Name" value={data.productName} />
             <KeyValueRow label="Category" value={data.category} />
             {data.variants?.map((v: any, i: number) => (
-               <KeyValueRow key={i} label={v.variantName || v.variantLabel || 'Variant'} value={v.value} />
+              <KeyValueRow key={i} label={v.variantName || v.variantLabel || 'Variant'} value={v.value} />
             ))}
             <KeyValueRow label="Batch No" value={data.batchNo} />
             <KeyValueRow label="MRP" value={data.mrp || data.dynamicFields?.mrp} />
-            
+
             <KeyValueRow label="Country of Origin" value={data.countryOfOrigin} />
             <KeyValueRow label="Manufactured By" value={data.manufacturedBy} />
             <KeyValueRow label="Marketed By" value={data.marketedBy} />
@@ -309,12 +306,12 @@ const ProductPassport = () => {
                 <>
                   <h4 className="text-[13px] font-bold text-[#0B1E36] mt-4 mb-2">Key Benefits</h4>
                   <div className="flex flex-col gap-2">
-                     {data.keyBenefits.split('\n').map((benefit: string, idx: number) => (
-                       <div key={idx} className="flex items-start gap-2">
-                         <CheckCircle2 size={16} className="text-[#105DE4] shrink-0 mt-0.5" />
-                         <span className="text-[13px] font-medium text-slate-700">{benefit}</span>
-                       </div>
-                     ))}
+                    {data.keyBenefits.split('\n').map((benefit: string, idx: number) => (
+                      <div key={idx} className="flex items-start gap-2">
+                        <CheckCircle2 size={16} className="text-[#105DE4] shrink-0 mt-0.5" />
+                        <span className="text-[13px] font-medium text-slate-700">{benefit}</span>
+                      </div>
+                    ))}
                   </div>
                 </>
               )}
@@ -340,11 +337,11 @@ const ProductPassport = () => {
           {/* 5. Certifications and Lab Tests */}
           {(data.certificates && data.certificates.length > 0) && (
             <AccordionItem title="Certifications and Lab" subtitle="Verified certificates and lab tests" icon={Award} isOpen={openSection === 'Certifications and Lab'} onToggle={() => setOpenSection(openSection === 'Certifications and Lab' ? '' : 'Certifications and Lab')}>
-               <div className="flex flex-col gap-3">
-                 {data.certificates.map((cert: any, idx: number) => (
-                    <CertificateViewer key={idx} cert={cert} />
-                 ))}
-               </div>
+              <div className="flex flex-col gap-3">
+                {data.certificates.map((cert: any, idx: number) => (
+                  <CertificateViewer key={idx} cert={cert} />
+                ))}
+              </div>
             </AccordionItem>
           )}
 
@@ -355,22 +352,22 @@ const ProductPassport = () => {
                 {data.educationContent.map((edu: any, idx: number) => {
                   const isVideo = edu.url?.includes('youtube.com') || edu.url?.includes('youtu.be') || edu.url?.endsWith('.mp4');
                   const isImage = edu.url?.match(/\.(jpeg|jpg|gif|png)$/i);
-                  
+
                   return (
                     <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-100 bg-slate-50">
-                       <h4 className="text-[13px] font-bold text-[#0B1E36]">{edu.title || 'Guide'}</h4>
-                       {edu.description && <p className="text-[12px] text-slate-600 leading-relaxed mb-1">{edu.description}</p>}
-                       {edu.url && (
-                         <a 
-                           href={edu.url} 
-                           target="_blank" 
-                           rel="noreferrer"
-                           className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#105DE4] bg-blue-100/50 px-3 py-1.5 rounded-lg w-max"
-                         >
-                           {isVideo ? 'Watch Video' : isImage ? 'View Image' : 'Open Link'}
-                           <ChevronRight size={14} />
-                         </a>
-                       )}
+                      <h4 className="text-[13px] font-bold text-[#0B1E36]">{edu.title || 'Guide'}</h4>
+                      {edu.description && <p className="text-[12px] text-slate-600 leading-relaxed mb-1">{edu.description}</p>}
+                      {edu.url && (
+                        <a
+                          href={edu.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#105DE4] bg-blue-100/50 px-3 py-1.5 rounded-lg w-max"
+                        >
+                          {isVideo ? 'Watch Video' : isImage ? 'View Image' : 'Open Link'}
+                          <ChevronRight size={14} />
+                        </a>
+                      )}
                     </div>
                   );
                 })}
@@ -396,31 +393,31 @@ const ProductPassport = () => {
               <div className="flex flex-col gap-3">
                 {data.customerCare && (
                   <a href={`tel:${data.customerCare.replace(/[^0-9]/g, '')}`} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-[#F8FAFC]">
-                     <div className="w-10 h-10 rounded-full bg-blue-100 text-[#105DE4] flex items-center justify-center shrink-0">
-                       <Phone size={18} />
-                     </div>
-                     <div>
-                       <h4 className="text-[13px] font-bold text-[#0B1E36]">Call Us</h4>
-                       <p className="text-[12px] text-slate-500 font-medium">{data.customerCare}</p>
-                     </div>
+                    <div className="w-10 h-10 rounded-full bg-blue-100 text-[#105DE4] flex items-center justify-center shrink-0">
+                      <Phone size={18} />
+                    </div>
+                    <div>
+                      <h4 className="text-[13px] font-bold text-[#0B1E36]">Call Us</h4>
+                      <p className="text-[12px] text-slate-500 font-medium">{data.customerCare}</p>
+                    </div>
                   </a>
                 )}
                 {data.supportEmail && (
                   <a href={`mailto:${data.supportEmail}`} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-[#F8FAFC]">
-                     <div className="w-10 h-10 rounded-full bg-red-100 text-red-500 flex items-center justify-center shrink-0">
-                       <Mail size={18} />
-                     </div>
-                     <div>
-                       <h4 className="text-[13px] font-bold text-[#0B1E36]">Email Support</h4>
-                       <p className="text-[12px] text-slate-500 font-medium">{data.supportEmail}</p>
-                     </div>
+                    <div className="w-10 h-10 rounded-full bg-red-100 text-red-500 flex items-center justify-center shrink-0">
+                      <Mail size={18} />
+                    </div>
+                    <div>
+                      <h4 className="text-[13px] font-bold text-[#0B1E36]">Email Support</h4>
+                      <p className="text-[12px] text-slate-500 font-medium">{data.supportEmail}</p>
+                    </div>
                   </a>
                 )}
               </div>
             </AccordionItem>
           )}
         </div>
-        
+
 
 
         {/* Recommendation For You */}
@@ -441,35 +438,36 @@ const ProductPassport = () => {
                 const prices = rec.orderLinks?.map((l: any) => Number(l.price)).filter((p: number) => !isNaN(p) && p > 0) || [];
                 const lowestPrice = prices.length > 0 ? Math.min(...prices) : rec.price;
                 const displayPrice = lowestPrice || rec.mrp || 0;
-                
+
                 return (
-                <div
-                  key={idx}
-                  onClick={() => navigate("/product-details", {
-                    state: {
-                      ...rec,
-                      productName: rec.title || rec.productName,
-                      productImage: rec.image || rec.productImage,
-                      brand: data.brand || data.companyName,
-                      companyName: data.companyName || data.brand
-                    }
-                  })}
-                  className="snap-start flex-shrink-0 w-[140px] bg-white rounded-[20px] p-3 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex flex-col cursor-pointer active:scale-95 transition-transform"
-                >
-                  <div className="w-full h-[110px] bg-slate-50/80 rounded-[12px] mb-3 relative flex items-center justify-center p-2">
-                    <img src={rec.productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"} className="w-full h-full object-contain mix-blend-multiply" alt={rec.productName} />
-                    {rec.mrp && lowestPrice && (
-                      <span className="absolute bottom-2 left-2 px-1.5 py-0.5 bg-green-100 text-green-700 text-[8px] font-black rounded border border-green-200">{Math.round(((rec.mrp - lowestPrice) / rec.mrp) * 100)}% OFF</span>
-                    )}
+                  <div
+                    key={idx}
+                    onClick={() => navigate("/product-details", {
+                      state: {
+                        ...rec,
+                        productName: rec.title || rec.productName,
+                        productImage: rec.image || rec.productImage,
+                        brand: data.brand || data.companyName,
+                        companyName: data.companyName || data.brand
+                      }
+                    })}
+                    className="snap-start flex-shrink-0 w-[140px] bg-white rounded-[20px] p-3 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex flex-col cursor-pointer active:scale-95 transition-transform"
+                  >
+                    <div className="w-full h-[110px] bg-slate-50/80 rounded-[12px] mb-3 relative flex items-center justify-center p-2">
+                      <img src={rec.productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"} className="w-full h-full object-contain mix-blend-multiply" alt={rec.productName} />
+                      {rec.mrp && lowestPrice && (
+                        <span className="absolute bottom-2 left-2 px-1.5 py-0.5 bg-green-100 text-green-700 text-[8px] font-black rounded border border-green-200">{Math.round(((rec.mrp - lowestPrice) / rec.mrp) * 100)}% OFF</span>
+                      )}
+                    </div>
+                    <div className="flex items-baseline gap-1.5 mb-1.5 mt-auto">
+                      <span className="text-[14px] font-black text-slate-900 leading-none">₹{displayPrice}</span>
+                      {rec.mrp && lowestPrice && <span className="text-[10px] font-medium text-slate-400 line-through leading-none">₹{rec.mrp}</span>}
+                    </div>
+                    <h4 className="text-[11px] font-bold text-slate-900 leading-[1.3] mb-2 line-clamp-2 min-h-[28px]">{rec.productName}</h4>
+                    <ProductRating data={rec} variant="single" className="mb-1" />
                   </div>
-                  <div className="flex items-baseline gap-1.5 mb-1.5 mt-auto">
-                    <span className="text-[14px] font-black text-slate-900 leading-none">₹{displayPrice}</span>
-                    {rec.mrp && lowestPrice && <span className="text-[10px] font-medium text-slate-400 line-through leading-none">₹{rec.mrp}</span>}
-                  </div>
-                  <h4 className="text-[11px] font-bold text-slate-900 leading-[1.3] mb-2 line-clamp-2 min-h-[28px]">{rec.productName}</h4>
-                  <ProductRating data={rec} variant="single" className="mb-1" />
-                </div>
-              )})}
+                )
+              })}
             </div>
           </div>
         )}

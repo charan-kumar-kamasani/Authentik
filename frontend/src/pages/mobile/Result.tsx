@@ -1,4 +1,5 @@
-import { ChevronLeft, Share, FileText, BookOpen, MessageSquare, ShieldCheck, Gift, ChevronRight, XCircle, AlertTriangle, Headset, Flag, X, ShieldAlert, Calendar, Phone, MapPin, RefreshCcw, ScanLine, CheckCircle2, FlaskConical, Award } from "lucide-react";
+import { ChevronLeft, Share, FileText, BookOpen, MessageSquare, ShieldCheck, Gift, ChevronRight, XCircle, AlertTriangle, Headset, Flag, X, ShieldAlert, Calendar, Phone, MapPin, RefreshCcw, ScanLine, CheckCircle2, FlaskConical, Award, Globe, HeadphonesIcon, Mail, Info, ExternalLink, Check, Star } from "lucide-react";
+import { AccordionItem, KeyValueRow, CertificateViewer } from '../../components/AccordionComponents';
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import API_BASE_URL from "../../config/api";
@@ -109,13 +110,15 @@ function ResultAuthentic({ data }: { data: any }) {
   const [optIn, setOptIn] = useState(false);
   const [purchaseLocation, setPurchaseLocation] = useState("");
   const [customPurchaseLocation, setCustomPurchaseLocation] = useState("");
+  const [locationError, setLocationError] = useState(false);
+  const [ratingError, setRatingError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [isReviewed, setIsReviewed] = useState(data.alreadyReviewed || false);
   const [awardedCoupon, setAwardedCoupon] = useState<any>(null);
   const [showCouponReveal, setShowCouponReveal] = useState(false);
   const [couponCopied, setCouponCopied] = useState(false);
   const [showProfilePrompt, setShowProfilePrompt] = useState(false);
-
+  const [openSection, setOpenSection] = useState<string>('');
   // Warranty claim state
   const [showWarrantyModal, setShowWarrantyModal] = useState(false);
   const [warrantyClaiming, setWarrantyClaiming] = useState(false);
@@ -526,60 +529,6 @@ function ResultAuthentic({ data }: { data: any }) {
           <ChevronRight className="w-5 h-5 text-white/80 relative z-10" />
         </button>
         
-        {/* Action Menu Cards */}
-        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x pt-1">
-           <button onClick={() => navigate("/product-passport", { state: data })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
-             <FileText className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
-             <div className="flex items-end justify-between w-full mt-auto">
-               <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Product Details</span>
-               <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
-             </div>
-           </button>
-
-           {/* Ingredients - shown if ingredients exist */}
-           {extractedIngredients && (
-             <button onClick={() => navigate("/ingredients", { state: { ...data, ingredients: extractedIngredients } })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
-               <FlaskConical className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
-               <div className="flex items-end justify-between w-full mt-auto">
-                 <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Ingredients</span>
-                 <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
-               </div>
-             </button>
-           )}
-
-           {/* Certifications & Lab Tests - shown if certificates exist */}
-           {(extractedCertificates && extractedCertificates.length > 0) && (
-             <button onClick={() => navigate("/certificates", { state: { ...data, certificates: extractedCertificates } })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
-               <Award className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
-               <div className="flex items-end justify-between w-full mt-auto">
-                 <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Certifications & Lab Tests</span>
-                 <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
-               </div>
-             </button>
-           )}
-
-           {/* Product Education - shown if educationContent exists */}
-           {hasEducation && (
-             <button onClick={() => navigate("/product-education", { state: data })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
-               <BookOpen className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
-               <div className="flex items-end justify-between w-full mt-auto">
-                 <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Product Education</span>
-                 <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
-               </div>
-             </button>
-           )}
-
-           {/* Consumer Support - always shown */}
-           <button onClick={() => navigate("/consumer-support", { state: data })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
-             <Headset className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
-             <div className="flex items-end justify-between w-full mt-auto">
-               <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Consumer Support</span>
-               <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
-             </div>
-           </button>
-        </div>
-
-
         {/* Warranty Claim Banner */}
         {data.warranty && (data.warranty.duration || data.warranty.warrantyType) && (
           <button
@@ -588,7 +537,7 @@ function ResultAuthentic({ data }: { data: any }) {
               setShowWarrantyModal(true);
             }}
             disabled={warrantyClaimed}
-            className={`relative overflow-hidden w-full mt-3 ${warrantyClaimed ? 'bg-gray-400' : 'bg-emerald-600'} text-white rounded-[24px] p-4 flex items-center shadow-[0_8px_25px_rgba(5,150,105,0.25)] active:scale-[0.98] transition-transform`}
+            className={`relative overflow-hidden w-full ${warrantyClaimed ? 'bg-gray-400' : 'bg-emerald-600'} text-white rounded-[24px] p-4 flex items-center shadow-[0_8px_25px_rgba(5,150,105,0.25)] active:scale-[0.98] transition-transform`}
           >
             {!warrantyClaimed && (
               <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-flash-shimmer" style={{ animationDelay: '2s' }} />
@@ -606,6 +555,164 @@ function ResultAuthentic({ data }: { data: any }) {
             <ChevronRight className="w-5 h-5 text-white/80 relative z-10" />
           </button>
         )}
+
+        {/* Accordions */}
+        <div className="mt-4 mb-2">
+          {/* 1. Product Details */}
+          <AccordionItem title="Product Details" subtitle="View specifications and details" icon={FileText} isOpen={openSection === 'Product Details'} onToggle={() => setOpenSection(openSection === 'Product Details' ? '' : 'Product Details')}>
+            <KeyValueRow label="Brand" value={data.brand || data.companyName} />
+            <KeyValueRow label="Product Name" value={data.productName} />
+            <KeyValueRow label="Category" value={data.category} />
+            {data.variants?.map((v: any, i: number) => (
+               <KeyValueRow key={i} label={v.variantName || v.variantLabel || 'Variant'} value={v.value} />
+            ))}
+            <KeyValueRow label="Batch No" value={data.batchNo} />
+            <KeyValueRow label="MRP" value={data.mrp || data.dynamicFields?.mrp} />
+            
+            <KeyValueRow label="Country of Origin" value={data.countryOfOrigin} />
+            <KeyValueRow label="Manufactured By" value={data.manufacturedBy} />
+            <KeyValueRow label="Marketed By" value={data.marketedBy} />
+            <KeyValueRow label="Serving Size" value={data.servingSize || data.dynamicFields?.servingSize || data.dynamicFields?.['Serving Size']} />
+            <KeyValueRow label="Shelf Life" value={data.bestBefore?.value ? `${data.bestBefore.value} ${data.bestBefore.unit}` : null} />
+            <KeyValueRow label="Warranty" value={data.warranty && (data.warranty.duration || data.warranty.warrantyType) ? `${data.warranty.duration || ''} ${data.warranty.durationUnit || ''} ${data.warranty.warrantyType || ''}`.trim() : null} />
+            <KeyValueRow label="Storage Instructions" value={data.dynamicFields?.storageInstructions || data.dynamicFields?.['Storage Instructions']} />
+          </AccordionItem>
+
+          {/* 2. Description */}
+          <AccordionItem title="Description" subtitle="About this product" icon={Info} isOpen={openSection === 'Description'} onToggle={() => setOpenSection(openSection === 'Description' ? '' : 'Description')}>
+            {data.productInfo || data.description ? (
+              <>
+                <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">{data.productInfo || data.description}</p>
+                {data.keyBenefits && (
+                  <>
+                    <h4 className="text-[13px] font-bold text-[#0B1E36] mt-4 mb-2">Key Benefits</h4>
+                    <div className="flex flex-col gap-2">
+                       {data.keyBenefits.split('\n').map((benefit: string, idx: number) => (
+                         <div key={idx} className="flex items-start gap-2">
+                           <CheckCircle2 size={16} className="text-[#105DE4] shrink-0 mt-0.5" />
+                           <span className="text-[13px] font-medium text-slate-700">{benefit}</span>
+                         </div>
+                       ))}
+                    </div>
+                  </>
+                )}
+              </>
+            ) : (
+              <p className="text-[13px] text-slate-400 italic">No description available for this product.</p>
+            )}
+          </AccordionItem>
+
+          {/* 3. Ingredients */}
+          <AccordionItem title="Ingredients" subtitle="What goes into this product" icon={FlaskConical} isOpen={openSection === 'Ingredients'} onToggle={() => setOpenSection(openSection === 'Ingredients' ? '' : 'Ingredients')}>
+            {extractedIngredients ? (
+              <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">{extractedIngredients}</p>
+            ) : (
+              <p className="text-[13px] text-slate-400 italic">No ingredients information available.</p>
+            )}
+          </AccordionItem>
+
+          {/* 4. Additional Details */}
+          <AccordionItem title="Additional Details" subtitle="Manufacturing and other info" icon={FileText} isOpen={openSection === 'Additional Details'} onToggle={() => setOpenSection(openSection === 'Additional Details' ? '' : 'Additional Details')}>
+            {data.additionalInfo ? (
+              <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">
+                {data.additionalInfo}
+              </p>
+            ) : (
+              <p className="text-[13px] text-slate-400 italic">No additional details available.</p>
+            )}
+          </AccordionItem>
+
+          {/* 5. Certifications and Lab Tests */}
+          <AccordionItem title="Certifications and Lab" subtitle="Verified certificates and lab tests" icon={Award} isOpen={openSection === 'Certifications and Lab'} onToggle={() => setOpenSection(openSection === 'Certifications and Lab' ? '' : 'Certifications and Lab')}>
+             {extractedCertificates && extractedCertificates.length > 0 ? (
+               <div className="flex flex-col gap-3">
+                 {extractedCertificates.map((cert: any, idx: number) => (
+                    <CertificateViewer key={idx} cert={cert} />
+                 ))}
+               </div>
+             ) : (
+               <p className="text-[13px] text-slate-400 italic">No certifications or lab tests available.</p>
+             )}
+          </AccordionItem>
+
+          {/* 6. Product Education */}
+          <AccordionItem title="Product Education" subtitle="Discover how to use this product" icon={BookOpen} isOpen={openSection === 'Product Education'} onToggle={() => setOpenSection(openSection === 'Product Education' ? '' : 'Product Education')}>
+            {edu && hasEducation ? (
+              <div className="flex flex-col gap-3">
+                {(Array.isArray(edu) ? edu : [edu]).map((e: any, idx: number) => {
+                  const isVideo = e.url?.includes('youtube.com') || e.url?.includes('youtu.be') || e.url?.endsWith('.mp4');
+                  const isImage = e.url?.match(/\.(jpeg|jpg|gif|png)$/i);
+                  
+                  return (
+                    <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-100 bg-slate-50">
+                       <h4 className="text-[13px] font-bold text-[#0B1E36]">{e.title || 'Guide'}</h4>
+                       {e.description && <p className="text-[12px] text-slate-600 leading-relaxed mb-1">{e.description}</p>}
+                       {e.url && (
+                         <a 
+                           href={e.url} 
+                           target="_blank" 
+                           rel="noreferrer"
+                           className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#105DE4] bg-blue-100/50 px-3 py-1.5 rounded-lg w-max"
+                         >
+                           {isVideo ? 'Watch Video' : isImage ? 'View Image' : 'Open Link'}
+                           <ChevronRight size={14} />
+                         </a>
+                       )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-[13px] text-slate-400 italic">No product education content available.</p>
+            )}
+          </AccordionItem>
+
+          {/* 7. Website */}
+          <AccordionItem title="Website" subtitle="Visit our official store" icon={Globe} isOpen={openSection === 'Website'} onToggle={() => setOpenSection(openSection === 'Website' ? '' : 'Website')}>
+            {data.website ? (
+              <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100">
+                <span className="text-[13px] font-medium text-slate-700">{data.website}</span>
+                <a href={data.website.startsWith('http') ? data.website : `https://${data.website}`} target="_blank" rel="noreferrer" className="text-[#105DE4]">
+                  <ExternalLink size={18} />
+                </a>
+              </div>
+            ) : (
+              <p className="text-[13px] text-slate-400 italic">No website available.</p>
+            )}
+          </AccordionItem>
+
+          {/* 8. Consumer Support */}
+          <AccordionItem title="Consumer Support" subtitle="Get in touch with us" icon={HeadphonesIcon} isOpen={openSection === 'Consumer Support'} onToggle={() => setOpenSection(openSection === 'Consumer Support' ? '' : 'Consumer Support')}>
+            {hasSupport ? (
+              <div className="flex flex-col gap-3">
+                {data.customerCare && (
+                  <a href={`tel:${data.customerCare.replace(/[^0-9]/g, '')}`} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-[#F8FAFC]">
+                     <div className="w-10 h-10 rounded-full bg-blue-100 text-[#105DE4] flex items-center justify-center shrink-0">
+                       <Phone size={18} />
+                     </div>
+                     <div>
+                       <h4 className="text-[13px] font-bold text-[#0B1E36]">Call Us</h4>
+                       <p className="text-[12px] text-slate-500 font-medium">{data.customerCare}</p>
+                     </div>
+                  </a>
+                )}
+                {data.supportEmail && (
+                  <a href={`mailto:${data.supportEmail}`} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-[#F8FAFC]">
+                     <div className="w-10 h-10 rounded-full bg-red-100 text-red-500 flex items-center justify-center shrink-0">
+                       <Mail size={18} />
+                     </div>
+                     <div>
+                       <h4 className="text-[13px] font-bold text-[#0B1E36]">Email Support</h4>
+                       <p className="text-[12px] text-slate-500 font-medium">{data.supportEmail}</p>
+                     </div>
+                  </a>
+                )}
+              </div>
+            ) : (
+              <p className="text-[13px] text-slate-400 italic">No consumer support information available.</p>
+            )}
+          </AccordionItem>
+        </div>
 
         {/* Recommendations Section */}
         {filteredRecommendations.length > 0 && (
@@ -718,14 +825,14 @@ function ResultAuthentic({ data }: { data: any }) {
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
-                      onClick={() => setRating(star)}
+                      onClick={() => { setRating(star); setRatingError(false); }}
                       className="transition-all duration-200 active:scale-75 hover:scale-110"
                       style={{
                         transform: star <= rating ? 'scale(1.15)' : 'scale(1)',
                         transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
                       }}
                     >
-                      <svg width="48" height="48" viewBox="0 0 24 24" fill={star <= rating ? "#F59E0B" : "none"} stroke={star <= rating ? "#F59E0B" : "#CBD5E1"} strokeWidth="1.5">
+                      <svg width="48" height="48" viewBox="0 0 24 24" fill={star <= rating ? "#F59E0B" : "none"} stroke={star <= rating ? (ratingError ? "#EF4444" : "#F59E0B") : (ratingError ? "#FECACA" : "#CBD5E1")} strokeWidth="1.5">
                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                       </svg>
                     </button>
@@ -737,18 +844,22 @@ function ResultAuthentic({ data }: { data: any }) {
                       {['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][rating]}
                     </p>
                   )}
+                  {rating === 0 && ratingError && (
+                    <p className="text-center text-[13px] font-bold text-red-500" style={{ animation: 'reviewFadeIn 0.3s ease' }}>
+                      Please select a rating
+                    </p>
+                  )}
                 </div>
               </div>
 
 
 
-              {/* Purchase Location Dropdown */}
               <div className="px-6 pb-2">
                 <label className="block text-sm font-bold text-[#1F2642] mb-2">Where did you buy this product?</label>
                 <select
                   value={purchaseLocation}
-                  onChange={(e) => setPurchaseLocation(e.target.value)}
-                  className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-[14px] px-4 py-3 text-[#1F2642] font-semibold text-[14px] focus:outline-none focus:border-[#0D4E96] focus:ring-1 focus:ring-[#0D4E96] transition-all appearance-none"
+                  onChange={(e) => { setPurchaseLocation(e.target.value); setLocationError(false); }}
+                  className={`w-full bg-[#F8FAFC] border rounded-[14px] px-4 py-3 text-[#1F2642] font-semibold text-[14px] focus:outline-none transition-all appearance-none ${locationError ? 'border-red-500 ring-1 ring-red-500' : 'border-[#CBD5E1] focus:border-[#0D4E96] focus:ring-1 focus:ring-[#0D4E96]'}`}
                   style={{
                     backgroundImage: `url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
                     backgroundRepeat: 'no-repeat',
@@ -769,10 +880,13 @@ function ResultAuthentic({ data }: { data: any }) {
                   <input
                     type="text"
                     value={customPurchaseLocation}
-                    onChange={(e) => setCustomPurchaseLocation(e.target.value)}
+                    onChange={(e) => { setCustomPurchaseLocation(e.target.value); setLocationError(false); }}
                     placeholder="Enter store or website name"
-                    className="w-full mt-3 bg-[#F8FAFC] border border-[#CBD5E1] rounded-[14px] px-4 py-3 text-[#1F2642] font-semibold text-[14px] focus:outline-none focus:border-[#0D4E96] focus:ring-1 focus:ring-[#0D4E96] transition-all"
+                    className={`w-full mt-3 bg-[#F8FAFC] border rounded-[14px] px-4 py-3 text-[#1F2642] font-semibold text-[14px] focus:outline-none transition-all ${locationError && !customPurchaseLocation.trim() ? 'border-red-500 ring-1 ring-red-500' : 'border-[#CBD5E1] focus:border-[#0D4E96] focus:ring-1 focus:ring-[#0D4E96]'}`}
                   />
+                )}
+                {locationError && (
+                  <p className="text-red-500 text-[11px] font-bold mt-2 ml-1">Please specify where you bought this product</p>
                 )}
               </div>
 
@@ -791,15 +905,11 @@ function ResultAuthentic({ data }: { data: any }) {
                 <button
                   onClick={async () => {
                     if (rating === 0) {
-                      await confirmModal({ title: 'Required', description: "Please select a rating", cancelText: null });
+                      setRatingError(true);
                       return;
                     }
-                    if (!purchaseLocation) {
-                      await confirmModal({ title: 'Required', description: "Please select where you bought this product", cancelText: null });
-                      return;
-                    }
-                    if (purchaseLocation === "Other" && !customPurchaseLocation.trim()) {
-                      await confirmModal({ title: 'Required', description: "Please enter where you bought this product", cancelText: null });
+                    if (!purchaseLocation || (purchaseLocation === "Other" && !customPurchaseLocation.trim())) {
+                      setLocationError(true);
                       return;
                     }
                     
@@ -836,20 +946,18 @@ function ResultAuthentic({ data }: { data: any }) {
                         await confirmModal({ title: 'Success', description: "Thank you for your review!", cancelText: null });
                       }
                     } catch (error: any) {
-                      await confirmModal({ title: 'Error', description: error.message || "Failed to submit review", cancelText: null });
                       if (error.message && error.message.includes("already reviewed")) {
                         setIsReviewed(true);
                         setShowReviewModal(false);
+                      } else {
+                        await confirmModal({ title: 'Error', description: error.message || "Failed to submit review", cancelText: null });
                       }
                     } finally {
                       setSubmitting(false);
                     }
                   }}
-                  disabled={submitting || rating === 0}
-                  className={`w-full font-bold text-[16px] py-4 rounded-2xl shadow-lg transition-all duration-300 active:scale-[0.97] ${rating === 0
-                    ? 'bg-gray-200 text-gray-400 shadow-none cursor-not-allowed'
-                    : 'bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] text-white shadow-blue-500/25 hover:shadow-blue-500/40'
-                    } disabled:opacity-60`}
+                  disabled={submitting}
+                  className={`w-full font-bold text-[16px] py-4 rounded-2xl shadow-lg transition-all duration-300 active:scale-[0.97] bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] text-white shadow-blue-500/25 hover:shadow-blue-500/40 disabled:opacity-60`}
                 >
                   {submitting ? (
                     <span className="flex items-center justify-center gap-2">
@@ -879,133 +987,143 @@ function ResultAuthentic({ data }: { data: any }) {
         )}
 
         {/* Coupon Reveal Dialog - Full Screen */}
+        {/* Coupon Reveal Dialog - Full Screen */}
         {showCouponReveal && awardedCoupon && (
-          <div className="fixed inset-0 z-[200] bg-gradient-to-b from-[#F0F7FF] via-[#FFFFFF] to-[#F8FAFC] flex flex-col font-sans overflow-y-auto" style={{ animation: 'couponFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1)' }}>
-            <MobileHeader
-              title="Authentiks"
-              onLeftClick={() => setShowCouponReveal(false)}
-              onNotificationClick={handleNotificationClick}
-              rightIcon={<div className="w-10" />}
-            />
+          <div className="fixed inset-0 z-[200] bg-white flex flex-col font-sans overflow-y-auto" style={{ animation: 'couponFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+            <div className="w-full flex items-center justify-between p-4 bg-white sticky top-0 z-50">
+              <button onClick={() => setShowCouponReveal(false)} className="text-black p-1 active:scale-90 transition-transform">
+                <ChevronLeft size={24} strokeWidth={2.5} />
+              </button>
+              <h1 className="text-[16px] font-bold text-slate-900 tracking-tight">Your Reward Unlocked!</h1>
+              <div className="w-8"></div>
+            </div>
 
-            <div className="flex-1 px-5 py-8 flex flex-col items-center relative overflow-hidden">
-              {/* Confetti & Celebratory background SVGs */}
-              <div className="absolute top-10 left-6 w-8 h-8 opacity-25 text-pink-500 animate-bounce">🎈</div>
-              <div className="absolute top-20 right-8 w-6 h-6 opacity-25 text-amber-500 animate-pulse">✨</div>
-              <div className="absolute bottom-40 left-10 w-6 h-6 opacity-25 text-blue-500 animate-pulse">✨</div>
-              <div className="absolute bottom-20 right-10 w-8 h-8 opacity-25 text-indigo-500 animate-bounce">🎈</div>
+            <div className="flex-1 px-5 py-6 flex flex-col items-center relative overflow-x-hidden">
+              {/* Confetti background */}
+              <div className="absolute inset-0 pointer-events-none opacity-40 overflow-hidden">
+                <div className="absolute top-10 left-10 text-xl animate-bounce">🎉</div>
+                <div className="absolute top-20 right-10 text-2xl animate-pulse">🎊</div>
+                <div className="absolute top-40 left-5 text-lg animate-bounce" style={{ animationDelay: '0.5s' }}>✨</div>
+                <div className="absolute top-30 right-20 text-xl animate-pulse" style={{ animationDelay: '0.2s' }}>🎉</div>
+              </div>
 
-              <div className="text-center mb-8 relative z-10">
-                <span className="text-[12px] font-black uppercase tracking-widest text-[#2CA4D6] bg-cyan-50 px-3.5 py-1.5 rounded-full border border-cyan-100/50 mb-3 inline-block">
-                  Reward Unlocked 🎉
-                </span>
-                <h2 className="bg-gradient-to-r from-[#0D4E96] to-[#1E3A8A] bg-clip-text text-transparent text-[24px] font-black text-center leading-tight">
-                  Congratulations!<br />You've Earned a Coupon
+              {/* Text Header */}
+              <div className="text-center relative z-10 mb-4">
+                <h2 className="text-[22px] font-black text-[#1F2642] mb-1.5 flex items-center justify-center gap-2">
+                  <span className="text-xl">🎉</span> Congratulations!
                 </h2>
+                <p className="text-[13px] text-slate-600 font-medium leading-tight">Thank you for your review.</p>
+                <p className="text-[13px] text-slate-600 font-medium leading-tight">You've earned an exclusive coupon.</p>
+              </div>
+
+              {/* Gift Image */}
+              <div className="relative z-10 w-48 h-40 mb-4 flex items-center justify-center">
+                <div className="text-[110px] drop-shadow-2xl animate-bounce" style={{ animationDuration: '2s' }}>🎁</div>
               </div>
 
               {/* Ticket Card */}
-              <div className="w-full max-w-sm relative mt-8 shadow-[0_20px_50px_rgba(13,78,150,0.1)] rounded-[24px] bg-white border border-slate-100">
-
-                {/* Gift Icon overlapping top */}
-                <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 bg-gradient-to-tr from-[#0D4E96] to-[#2CA4D6] rounded-full border-[6px] border-white flex items-center justify-center z-20 shadow-xl shadow-blue-500/20">
-                  <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 12 20 22 4 22 4 12"></polyline>
-                    <rect x="2" y="7" width="20" height="5"></rect>
-                    <line x1="12" y1="22" x2="12" y2="7"></line>
-                    <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
-                    <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
-                  </svg>
+              <div className="w-full relative z-10 mb-6 drop-shadow-xl flex h-[140px]">
+                {/* Left Side */}
+                <div className="flex-1 bg-gradient-to-r from-[#4A3AFF] to-[#2B1EB1] rounded-l-[16px] p-5 flex flex-col justify-center relative overflow-hidden">
+                  <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full z-10" />
+                  <span className="text-[#FFD700] text-[10px] font-bold tracking-widest uppercase mb-1 drop-shadow-sm">YOU WON</span>
+                  <h3 className="text-white text-[32px] font-black leading-none mb-1.5 drop-shadow-sm">{awardedCoupon.title}</h3>
+                  <p className="text-white/80 text-[11px] font-bold uppercase tracking-wide leading-tight line-clamp-2">{awardedCoupon.description}</p>
                 </div>
-
-                {/* Top Section: Gradient Header */}
-                <div className="bg-[#1F2642] bg-gradient-to-br from-[#0D4E96] via-[#1E3A8A] to-[#1F2642] rounded-t-[24px] pt-16 pb-8 px-6 text-center relative overflow-hidden">
-                  {/* Decorative glowing blobs */}
-                  <div className="absolute -right-10 -top-10 w-28 h-28 bg-white/5 rounded-full blur-xl" />
-                  
-                  {/* Brand Tag */}
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 mb-3">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                    <span className="text-white/95 text-[10px] font-black tracking-wider uppercase">
-                      {companyName}
-                    </span>
+                
+                {/* Right Side */}
+                <div className="w-[130px] bg-gradient-to-r from-[#2B1EB1] to-[#1E1683] rounded-r-[16px] p-4 flex flex-col items-center justify-center relative overflow-hidden border-l-[3px] border-dashed border-white/20">
+                  <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full z-10" />
+                  <span className="text-white/90 text-[10px] font-bold tracking-wider mb-2 flex items-center gap-1 text-center">COUPON CODE <span className="text-[#FFD700] text-[12px] -mt-0.5">★</span></span>
+                  <div className="bg-white rounded-lg py-2 px-2 w-full text-center mb-3 shadow-inner">
+                    <span className="text-[#251C9B] font-black text-[15px]">{awardedCoupon.code}</span>
                   </div>
-
-                  <h3 className="text-white text-[22px] font-black uppercase tracking-wide leading-tight drop-shadow-sm px-2">
-                    {awardedCoupon.title || "REWARD UNLOCKED"}
-                  </h3>
-                </div>
-
-                {/* Ticket Notch Divider Area */}
-                <div className="relative py-5 bg-slate-50 border-y border-dashed border-slate-200 flex items-center justify-center">
-                  {/* Left Notch */}
-                  <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#F8FAFC] rounded-full border border-slate-200/50 shadow-[inset_-3px_0_6px_rgba(0,0,0,0.02)] z-10" />
-                  {/* Right Notch */}
-                  <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#F8FAFC] rounded-full border border-slate-200/50 shadow-[inset_3px_0_6px_rgba(0,0,0,0.02)] z-10" />
-                  
-                  {/* Coupon Code Dashed Box */}
-                  <div className="flex items-center justify-between gap-3 px-5 py-2.5 rounded-2xl border-2 border-dashed font-mono text-[18px] font-black uppercase tracking-widest border-cyan-500/30 bg-cyan-500/5 text-[#0D4E96]">
-                    <span>{awardedCoupon.code}</span>
-                    
-                    <button
-                      onClick={() => {
-                        navigator.clipboard.writeText(awardedCoupon.code);
-                        setCouponCopied(true);
-                        setTimeout(() => setCouponCopied(false), 2000);
-                      }}
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
-                        couponCopied
-                          ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 scale-105'
-                          : 'bg-white text-slate-500 hover:text-slate-700 shadow-sm border border-slate-200 hover:border-slate-300 active:scale-90'
-                      }`}
-                    >
-                      {couponCopied ? (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M20 6L9 17l-5-5" /></svg>
-                      ) : (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Bottom Details Section */}
-                <div className="bg-white rounded-b-[24px] p-6 text-center">
-                  {awardedCoupon.expiryDate && (
-                    <div className="flex items-center justify-center gap-1.5 text-slate-500 mb-4">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="opacity-60">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                      </svg>
-                      <p className="text-[13px] font-black uppercase tracking-wider text-slate-400">
-                        Valid Until: <span className="text-slate-700 font-bold normal-case">{new Date(awardedCoupon.expiryDate).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}</span>
-                      </p>
-                    </div>
-                  )}
-
-                  {awardedCoupon.description && (
-                    <div className="text-left mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                      <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">Reward Description</p>
-                      <p className="text-slate-600 text-[13px] font-medium leading-relaxed break-all whitespace-pre-wrap">
-                        {awardedCoupon.description}
-                      </p>
-                    </div>
-                  )}
-
-                  <button
+                  <button 
                     onClick={() => {
-                      if (awardedCoupon.websiteLink) {
-                        window.open(awardedCoupon.websiteLink, '_blank');
-                      } else {
-                        navigate('/rewards');
-                      }
+                      navigator.clipboard.writeText(awardedCoupon.code);
+                      setCouponCopied(true);
+                      setTimeout(() => setCouponCopied(false), 2000);
                     }}
-                    className="w-full bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] text-white font-extrabold text-[15px] py-4 rounded-2xl shadow-lg shadow-blue-500/10 hover:shadow-blue-500/25 active:scale-95 transition-all uppercase tracking-wider"
+                    className="flex items-center gap-1.5 text-white/90 text-[11px] font-bold border border-white/30 rounded-md px-3 py-1.5 hover:bg-white/10 active:scale-95 transition-all"
                   >
-                    Redeem Now
+                    {couponCopied ? <Check size={14} /> : <span className="text-[14px]">📄</span>}
+                    {couponCopied ? 'Copied!' : 'Copy Code'}
                   </button>
                 </div>
+              </div>
+
+              {/* Details List */}
+              <div className="w-full bg-white border border-slate-100 rounded-[16px] p-4 mb-6 shadow-sm">
+                {awardedCoupon.expiryDate && (
+                  <div className="flex items-center justify-between py-3 border-b border-slate-50">
+                    <div className="flex items-center gap-2.5 text-slate-500">
+                      <Calendar size={16} strokeWidth={2} />
+                      <span className="text-[13px] font-medium">Valid Till</span>
+                    </div>
+                    <span className="text-[13px] font-bold text-[#1F2642]">
+                      {new Date(awardedCoupon.expiryDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between py-3 border-b border-slate-50">
+                  <div className="flex items-center gap-2.5 text-slate-500">
+                    <Info size={16} strokeWidth={2} />
+                    <span className="text-[13px] font-medium">Applicable On</span>
+                  </div>
+                  <span className="text-[13px] font-bold text-[#1F2642] text-right max-w-[50%] line-clamp-2 leading-tight">
+                    {awardedCoupon.description}
+                  </span>
+                </div>
+                {awardedCoupon.websiteLink && (
+                  <div className="flex items-center justify-between py-3">
+                    <div className="flex items-center gap-2.5 text-slate-500">
+                      <Globe size={16} strokeWidth={2} />
+                      <span className="text-[13px] font-medium">Website</span>
+                    </div>
+                    <a href={awardedCoupon.websiteLink} target="_blank" rel="noreferrer" className="text-[13px] font-bold text-[#105DE4] flex items-center gap-1">
+                      {new URL(awardedCoupon.websiteLink).hostname.replace('www.', '')} <ExternalLink size={12} strokeWidth={2.5} />
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              {/* Shop Now Button */}
+              <button
+                onClick={() => {
+                  if (awardedCoupon.websiteLink) {
+                    window.open(awardedCoupon.websiteLink, '_blank');
+                  } else {
+                    navigate('/rewards');
+                  }
+                }}
+                className="w-full bg-[#059669] text-white font-bold text-[16px] py-4 rounded-[14px] shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all mb-6 flex items-center justify-center gap-2"
+              >
+                <span className="text-xl -mt-1">🛍️</span> Shop Now
+              </button>
+
+              {/* Want Another Reward Banner */}
+              <div className="w-full bg-[#F0FDF4] border border-[#DCFCE7] rounded-[16px] p-4 flex items-center justify-between mb-8 cursor-pointer active:scale-[0.98] transition-all" onClick={() => navigate('/')}>
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#059669] text-white flex items-center justify-center shrink-0 shadow-sm">
+                    <Star size={20} fill="white" stroke="white" strokeWidth={1} />
+                  </div>
+                  <div>
+                    <h4 className="text-[14px] font-bold text-[#064E3B] mb-0.5">Want another reward?</h4>
+                    <p className="text-[11px] font-medium text-[#047857] leading-tight">Review another verified product<br/>to unlock more coupons.</p>
+                  </div>
+                </div>
+                <button className="bg-white text-[#059669] text-[11px] font-bold px-3 py-1.5 rounded-lg border border-[#A7F3D0] shadow-sm whitespace-nowrap">
+                  Explore More
+                </button>
+              </div>
+
+              {/* Footer text */}
+              <div className="text-center pb-6 opacity-70 flex flex-col items-center">
+                <div className="flex items-center gap-1.5 mb-1">
+                   <ShieldCheck size={14} className="text-[#0D4E96]" strokeWidth={2.5} />
+                   <span className="text-[11px] font-bold text-[#1F2642]">100% Authentic. 100% Rewarded.</span>
+                </div>
+                <span className="text-[10px] text-slate-500 font-medium">Thank you for choosing authentic products.</span>
               </div>
             </div>
 

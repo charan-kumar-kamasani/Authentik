@@ -106,7 +106,7 @@ export default function DemoModal({ isOpen, onClose }) {
         <h3 className="text-2xl font-bold text-slate-800 mb-6">Request More Information</h3>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Name</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Name <span className="text-red-500">*</span></label>
             <input 
               type="text" 
               name="name"
@@ -117,7 +117,7 @@ export default function DemoModal({ isOpen, onClose }) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Email <span className="text-red-500">*</span></label>
             <input 
               type="email" 
               name="email"
@@ -133,7 +133,7 @@ export default function DemoModal({ isOpen, onClose }) {
             )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number <span className="text-red-500">*</span></label>
             <input 
               type="tel" 
               name="phone"
@@ -160,7 +160,7 @@ export default function DemoModal({ isOpen, onClose }) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Message / Requirements</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Message / Requirements (Optional)</label>
             <textarea 
               name="message"
               value={formData.message}

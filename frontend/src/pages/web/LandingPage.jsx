@@ -6,13 +6,12 @@ import WebFooter from "../../components/WebFooter";
 import DemoModal from "../../components/DemoModal";
 import heroImage from "../../assets/web/hero_image.png";
 import logoShield from "../../assets/logo-shield.png";
-import h_challenge from "../../assets/web/h_challenge.png";
 import h_b0 from "../../assets/banners/new_banners/h_b0.png";
 import h_b1 from "../../assets/banners/new_banners/h_b1.png";
 import h_b2 from "../../assets/banners/new_banners/h_b2.png";
 import h_b3 from "../../assets/banners/new_banners/h_b3.png";
 
-const AnimatedCounter = ({ end, suffix = "", prefix = "", duration = 2500 }) => {
+const AnimatedCounter = ({ end, suffix = "", prefix = "", duration = 2500, useKMSuffix = false }) => {
   const [count, setCount] = useState(0);
   const [hasAnimated, setHasAnimated] = useState(false);
   const ref = useRef(null);
@@ -49,7 +48,15 @@ const AnimatedCounter = ({ end, suffix = "", prefix = "", duration = 2500 }) => 
     window.requestAnimationFrame(step);
   }, [end, duration, hasAnimated]);
 
-  return <span ref={ref}>{prefix}{count}{suffix}</span>;
+  const displayCount = useKMSuffix ? (
+    count >= 1000000 
+      ? (count / 1000000).toFixed(count % 1000000 >= 100000 ? 1 : 0).replace(/\.0$/, '') + "M" 
+      : count >= 1000 
+        ? Math.floor(count / 1000) + "K" 
+        : count
+  ) : count;
+
+  return <span ref={ref}>{prefix}{displayCount}{suffix}</span>;
 };
 
 export default function LandingPage() {
@@ -104,11 +111,11 @@ export default function LandingPage() {
               <div className="text-sm md:text-base font-bold uppercase tracking-wider text-slate-500">Brands</div>
             </div>
             <div className="flex flex-col items-center">
-              <div className="text-4xl md:text-5xl lg:text-6xl font-black text-blue-600 mb-3"><AnimatedCounter end={2} suffix="M+" /></div>
+              <div className="text-4xl md:text-5xl lg:text-6xl font-black text-blue-600 mb-3"><AnimatedCounter end={2000000} useKMSuffix suffix="+" /></div>
               <div className="text-sm md:text-base font-bold uppercase tracking-wider text-slate-500">Total Product Secured</div>
             </div>
             <div className="flex flex-col items-center">
-              <div className="text-4xl md:text-5xl lg:text-6xl font-black text-blue-600 mb-3"><AnimatedCounter end={800} suffix="K+"  /></div>
+              <div className="text-4xl md:text-5xl lg:text-6xl font-black text-blue-600 mb-3"><AnimatedCounter end={1000000} useKMSuffix suffix="+"  /></div>
               <div className="text-sm md:text-base font-bold uppercase tracking-wider text-slate-500">Product Scanned</div>
             </div>
             <div className="flex flex-col items-center">
@@ -125,28 +132,46 @@ export default function LandingPage() {
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h3 className="text-blue-400 font-bold text-sm uppercase tracking-wider mb-4">BEYOND THE SALE. BEYOND THE MARKETPLACE.</h3>
             <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">Every Sale Is an Opportunity.<br/>Don't Lose the Relationship.</h2>
+            <p className="text-slate-400 text-lg">
+              Marketplaces and quick commerce platforms drive sales.<br />
+              But they own the customer relationship, not you.
+            </p>
           </div>
 
-          <div className="grid lg:grid-cols-2 gap-16 items-center mb-24">
-            <div>
-              <img src={h_challenge} alt="The Challenge" className="w-full rounded-2xl shadow-2xl" />
+          <div className="max-w-4xl mx-auto mb-24 text-center">
+            <div className="mb-12">
+              <h4 className="text-lg md:text-xl font-bold text-slate-200 mb-8 uppercase tracking-wide">Selling Across Leading Marketplaces</h4>
+              <div className="flex flex-wrap justify-center gap-4">
+                {[
+                  { name: "Amazon", domain: "amazon.in" },
+                  { name: "Flipkart", domain: "flipkart.com" },
+                  { name: "Myntra", domain: "myntra.com" },
+                  { name: "Nykaa", domain: "nykaa.com" },
+                  { name: "Tata CLiQ", domain: "tatacliq.com" },
+                  { name: "Meesho", domain: "meesho.com" }
+                ].map(mp => (
+                  <span key={mp.name} className="flex items-center gap-2.5 px-5 py-2.5 md:px-6 md:py-3 bg-slate-800/80 rounded-xl text-sm md:text-base font-semibold border border-slate-700/50 shadow-sm transition-all hover:bg-slate-800">
+                    <img src={`https://www.google.com/s2/favicons?domain=${mp.domain}&sz=64`} alt={mp.name} className="w-5 h-5 md:w-6 md:h-6 rounded object-contain bg-white" />
+                    {mp.name}
+                  </span>
+                ))}
+              </div>
             </div>
             <div>
-              <div className="mb-10">
-                <h4 className="text-xl font-bold text-slate-200 mb-6 uppercase tracking-wide">Selling Across Leading Marketplaces</h4>
-                <div className="flex flex-wrap gap-3">
-                  {["Amazon", "Flipkart", "Myntra", "Nykaa", "Tata CLiQ", "Meesho"].map(mp => (
-                    <span key={mp} className="px-4 py-2 bg-slate-800/80 rounded-lg text-sm font-semibold border border-slate-700/50 shadow-sm">{mp}</span>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h4 className="text-xl font-bold text-slate-200 mb-6 uppercase tracking-wide">Quick Commerce Platforms</h4>
-                <div className="flex flex-wrap gap-3">
-                  {["Zepto", "Blinkit", "Swiggy Instamart", "BigBasket", "Jio Mart"].map(mp => (
-                    <span key={mp} className="px-4 py-2 bg-slate-800/80 rounded-lg text-sm font-semibold border border-slate-700/50 shadow-sm">{mp}</span>
-                  ))}
-                </div>
+              <h4 className="text-lg md:text-xl font-bold text-slate-200 mb-8 uppercase tracking-wide">And Quick Commerce Platforms</h4>
+              <div className="flex flex-wrap justify-center gap-4">
+                {[
+                  { name: "Zepto", domain: "zeptonow.com" },
+                  { name: "Blinkit", domain: "blinkit.com" },
+                  { name: "Swiggy Instamart", domain: "swiggy.com" },
+                  { name: "BigBasket", domain: "bigbasket.com" },
+                  { name: "Jio Mart", domain: "jiomart.com" }
+                ].map(mp => (
+                  <span key={mp.name} className="flex items-center gap-2.5 px-5 py-2.5 md:px-6 md:py-3 bg-slate-800/80 rounded-xl text-sm md:text-base font-semibold border border-slate-700/50 shadow-sm transition-all hover:bg-slate-800">
+                    <img src={`https://www.google.com/s2/favicons?domain=${mp.domain}&sz=64`} alt={mp.name} className="w-5 h-5 md:w-6 md:h-6 rounded object-contain bg-white" />
+                    {mp.name}
+                  </span>
+                ))}
               </div>
             </div>
           </div>

@@ -121,6 +121,8 @@ function ResultAuthentic({ data }) {
   const [optIn, setOptIn] = useState(false);
   const [purchaseLocation, setPurchaseLocation] = useState("");
   const [customPurchaseLocation, setCustomPurchaseLocation] = useState("");
+  const [locationError, setLocationError] = useState(false);
+  const [ratingError, setRatingError] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [isReviewed, setIsReviewed] = useState(false);
   const [awardedCoupon, setAwardedCoupon] = useState(null);
@@ -475,14 +477,14 @@ function ResultAuthentic({ data }) {
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
-                    onClick={() => setRating(star)}
+                    onClick={() => { setRating(star); setRatingError(false); }}
                     className="transition-all duration-200 active:scale-75 hover:scale-110"
                     style={{
                       transform: star <= rating ? 'scale(1.15)' : 'scale(1)',
                       transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
                     }}
                   >
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill={star <= rating ? "#F59E0B" : "none"} stroke={star <= rating ? "#F59E0B" : "#CBD5E1"} strokeWidth="1.5">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill={star <= rating ? "#F59E0B" : "none"} stroke={star <= rating ? (ratingError ? "#EF4444" : "#F59E0B") : (ratingError ? "#FECACA" : "#CBD5E1")} strokeWidth="1.5">
                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                     </svg>
                   </button>
@@ -494,6 +496,11 @@ function ResultAuthentic({ data }) {
                     {['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][rating]}
                   </p>
                 )}
+                {rating === 0 && ratingError && (
+                  <p className="text-center text-[13px] font-bold text-red-500">
+                    Please select a rating
+                  </p>
+                )}
               </div>
             </div>
 
@@ -501,13 +508,27 @@ function ResultAuthentic({ data }) {
               <label className="block text-sm font-bold text-[#1F2642] mb-2">Where did you buy this product?</label>
               <select
                 value={purchaseLocation}
-                onChange={(e) => setPurchaseLocation(e.target.value)}
-                className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-[14px] px-4 py-3 text-[#1F2642] font-semibold text-[14px] focus:outline-none focus:border-[#0D4E96]"
+                onChange={(e) => { setPurchaseLocation(e.target.value); setLocationError(false); }}
+                className={`w-full bg-[#F8FAFC] border rounded-[14px] px-4 py-3 text-[#1F2642] font-semibold text-[14px] focus:outline-none transition-all ${locationError ? 'border-red-500 ring-1 ring-red-500' : 'border-[#CBD5E1] focus:border-[#0D4E96]'}`}
               >
                 <option value="" disabled>Select marketplace</option>
                 <option value="Amazon">Amazon</option>
                 <option value="Retail Store">Retail Store</option>
+                <option value="Other">Other (Please specify)</option>
               </select>
+
+              {purchaseLocation === "Other" && (
+                <input
+                  type="text"
+                  value={customPurchaseLocation}
+                  onChange={(e) => { setCustomPurchaseLocation(e.target.value); setLocationError(false); }}
+                  placeholder="Enter store or website name"
+                  className={`w-full mt-3 bg-[#F8FAFC] border rounded-[14px] px-4 py-3 text-[#1F2642] font-semibold text-[14px] focus:outline-none transition-all ${locationError && !customPurchaseLocation.trim() ? 'border-red-500 ring-1 ring-red-500' : 'border-[#CBD5E1] focus:border-[#0D4E96]'}`}
+                />
+              )}
+              {locationError && (
+                <p className="text-red-500 text-[11px] font-bold mt-2 ml-1">Please specify where you bought this product</p>
+              )}
             </div>
 
             <div className="px-6 pb-8">
@@ -523,6 +544,15 @@ function ResultAuthentic({ data }) {
 
               <button
                 onClick={() => {
+                  if (rating === 0) {
+                    setRatingError(true);
+                    return;
+                  }
+                  if (!purchaseLocation || (purchaseLocation === "Other" && !customPurchaseLocation.trim())) {
+                    setLocationError(true);
+                    return;
+                  }
+                  
                   setSubmitting(true);
                   setTimeout(() => {
                     setSubmitting(false);
@@ -538,11 +568,8 @@ function ResultAuthentic({ data }) {
                     setTimeout(() => setShowCouponReveal(true), 300);
                   }, 1500);
                 }}
-                disabled={submitting || rating === 0 || !purchaseLocation}
-                className={`w-full font-bold text-[16px] py-4 rounded-2xl shadow-lg transition-all duration-300 active:scale-[0.97] ${rating === 0 || !purchaseLocation
-                  ? 'bg-gray-200 text-gray-400 shadow-none cursor-not-allowed'
-                  : 'bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] text-white shadow-blue-500/25'
-                  }`}
+                disabled={submitting}
+                className={`w-full font-bold text-[16px] py-4 rounded-2xl shadow-lg transition-all duration-300 active:scale-[0.97] bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] text-white shadow-blue-500/25`}
               >
                 {submitting ? "Submitting..." : "Submit Review"}
               </button>
@@ -553,75 +580,144 @@ function ResultAuthentic({ data }) {
 
       {/* Coupon Reveal */}
       {showCouponReveal && awardedCoupon && (
-        <div className="fixed inset-0 z-[200] bg-gradient-to-b from-[#F0F7FF] via-[#FFFFFF] to-[#F8FAFC] flex flex-col font-sans overflow-y-auto">
-          <div className="w-full flex items-center justify-between p-4 bg-white sticky top-0 z-50 shadow-sm/50">
-            <button onClick={() => setShowCouponReveal(false)} className="text-[#0D4E96] p-1">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+        <div className="fixed inset-0 z-[200] bg-white flex flex-col font-sans overflow-y-auto" style={{ animation: 'couponFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+          <div className="w-full flex items-center justify-between p-4 bg-white sticky top-0 z-50">
+            <button onClick={() => setShowCouponReveal(false)} className="text-black p-1 active:scale-90 transition-transform">
+              <ChevronLeft size={24} strokeWidth={2.5} />
             </button>
-            <h1 className="text-[20px] font-bold text-[#0D4E96] tracking-tight">Authentiks</h1>
+            <h1 className="text-[16px] font-bold text-slate-900 tracking-tight">Your Reward Unlocked!</h1>
             <div className="w-8"></div>
           </div>
 
-          <div className="flex-1 px-5 py-8 flex flex-col items-center relative overflow-hidden">
-            <div className="absolute top-10 left-6 w-8 h-8 opacity-25 text-pink-500 animate-bounce">🎈</div>
-            <div className="absolute top-20 right-8 w-6 h-6 opacity-25 text-amber-500 animate-pulse">✨</div>
-            <div className="absolute bottom-40 left-10 w-6 h-6 opacity-25 text-blue-500 animate-pulse">✨</div>
-            <div className="absolute bottom-20 right-10 w-8 h-8 opacity-25 text-indigo-500 animate-bounce">🎈</div>
-
-            <div className="text-center mb-8 relative z-10">
-              <span className="text-[12px] font-black uppercase tracking-widest text-[#2CA4D6] bg-cyan-50 px-3.5 py-1.5 rounded-full border border-cyan-100/50 mb-3 inline-block">Reward Unlocked 🎉</span>
-              <h2 className="bg-gradient-to-r from-[#0D4E96] to-[#1E3A8A] bg-clip-text text-transparent text-[24px] font-black text-center leading-tight">
-                Congratulations!<br />You've Earned a Coupon
-              </h2>
+          <div className="flex-1 px-5 py-6 flex flex-col items-center relative overflow-x-hidden">
+            {/* Confetti background */}
+            <div className="absolute inset-0 pointer-events-none opacity-40 overflow-hidden">
+              <div className="absolute top-10 left-10 text-xl animate-bounce">🎉</div>
+              <div className="absolute top-20 right-10 text-2xl animate-pulse">🎊</div>
+              <div className="absolute top-40 left-5 text-lg animate-bounce" style={{ animationDelay: '0.5s' }}>✨</div>
+              <div className="absolute top-30 right-20 text-xl animate-pulse" style={{ animationDelay: '0.2s' }}>🎉</div>
             </div>
 
-            <div className="w-full max-w-sm relative mt-8 shadow-[0_20px_50px_rgba(13,78,150,0.1)] rounded-[24px] bg-white border border-slate-100">
-              <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 bg-gradient-to-tr from-[#0D4E96] to-[#2CA4D6] rounded-full border-[6px] border-white flex items-center justify-center z-20 shadow-xl shadow-blue-500/20">
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
-              </div>
+            {/* Text Header */}
+            <div className="text-center relative z-10 mb-4">
+              <h2 className="text-[22px] font-black text-[#1F2642] mb-1.5 flex items-center justify-center gap-2">
+                <span className="text-xl">🎉</span> Congratulations!
+              </h2>
+              <p className="text-[13px] text-slate-600 font-medium leading-tight">Thank you for your review.</p>
+              <p className="text-[13px] text-slate-600 font-medium leading-tight">You've earned an exclusive coupon.</p>
+            </div>
 
-              <div className="bg-[#1F2642] bg-gradient-to-br from-[#0D4E96] via-[#1E3A8A] to-[#1F2642] rounded-t-[24px] pt-16 pb-8 px-6 text-center relative overflow-hidden">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 mb-3">
-                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-                  <span className="text-white/95 text-[10px] font-black tracking-wider uppercase">{companyName}</span>
-                </div>
-                <h3 className="text-white text-[22px] font-black uppercase tracking-wide leading-tight drop-shadow-sm px-2">
-                  {awardedCoupon.title}
-                </h3>
-              </div>
+            {/* Gift Image */}
+            <div className="relative z-10 w-48 h-40 mb-4 flex items-center justify-center">
+              <div className="text-[110px] drop-shadow-2xl animate-bounce" style={{ animationDuration: '2s' }}>🎁</div>
+            </div>
 
-              <div className="relative py-5 bg-slate-50 border-y border-dashed border-slate-200 flex items-center justify-center">
-                <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#F8FAFC] rounded-full border border-slate-200/50 shadow-[inset_-3px_0_6px_rgba(0,0,0,0.02)] z-10" />
-                <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-[#F8FAFC] rounded-full border border-slate-200/50 shadow-[inset_3px_0_6px_rgba(0,0,0,0.02)] z-10" />
-                
-                <div className="flex items-center justify-between gap-3 px-5 py-2.5 rounded-2xl border-2 border-dashed font-mono text-[18px] font-black uppercase tracking-widest border-cyan-500/30 bg-cyan-500/5 text-[#0D4E96]">
-                  <span>{awardedCoupon.code}</span>
-                  <button onClick={() => {
-                      navigator.clipboard.writeText(awardedCoupon.code);
-                      setCouponCopied(true);
-                      setTimeout(() => setCouponCopied(false), 2000);
-                    }}
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${couponCopied ? 'bg-emerald-500 text-white' : 'bg-white text-slate-500'}`}
-                  >
-                    {couponCopied ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M20 6L9 17l-5-5" /></svg> : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>}
-                  </button>
-                </div>
+            {/* Ticket Card */}
+            <div className="w-full relative z-10 mb-6 drop-shadow-xl flex h-[140px]">
+              {/* Left Side */}
+              <div className="flex-1 bg-gradient-to-r from-[#4A3AFF] to-[#2B1EB1] rounded-l-[16px] p-5 flex flex-col justify-center relative overflow-hidden">
+                <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full z-10" />
+                <span className="text-[#FFD700] text-[10px] font-bold tracking-widest uppercase mb-1 drop-shadow-sm">YOU WON</span>
+                <h3 className="text-white text-[32px] font-black leading-none mb-1.5 drop-shadow-sm">{awardedCoupon.title}</h3>
+                <p className="text-white/80 text-[11px] font-bold uppercase tracking-wide leading-tight line-clamp-2">{awardedCoupon.description}</p>
               </div>
-
-              <div className="bg-white rounded-b-[24px] p-6 text-center">
-                <div className="text-left mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                  <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1.5">Reward Description</p>
-                  <p className="text-slate-600 text-[13px] font-medium leading-relaxed whitespace-pre-wrap">{awardedCoupon.description}</p>
+              
+              {/* Right Side */}
+              <div className="w-[130px] bg-gradient-to-r from-[#2B1EB1] to-[#1E1683] rounded-r-[16px] p-4 flex flex-col items-center justify-center relative overflow-hidden border-l-[3px] border-dashed border-white/20">
+                <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full z-10" />
+                <span className="text-white/90 text-[10px] font-bold tracking-wider mb-2 flex items-center gap-1 text-center">COUPON CODE <span className="text-[#FFD700] text-[12px] -mt-0.5">★</span></span>
+                <div className="bg-white rounded-lg py-2 px-2 w-full text-center mb-3 shadow-inner">
+                  <span className="text-[#251C9B] font-black text-[15px]">{awardedCoupon.code}</span>
                 </div>
-                <button
-                  onClick={() => window.open(awardedCoupon.websiteLink, '_blank')}
-                  className="w-full bg-gradient-to-r from-[#0D4E96] to-[#2CA4D6] text-white font-extrabold text-[15px] py-4 rounded-2xl shadow-lg shadow-blue-500/10 hover:shadow-blue-500/25 active:scale-95 transition-all uppercase tracking-wider"
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(awardedCoupon.code);
+                    setCouponCopied(true);
+                    setTimeout(() => setCouponCopied(false), 2000);
+                  }}
+                  className="flex items-center gap-1.5 text-white/90 text-[11px] font-bold border border-white/30 rounded-md px-3 py-1.5 hover:bg-white/10 active:scale-95 transition-all"
                 >
-                  Redeem Now
+                  {couponCopied ? <Check size={14} /> : <span className="text-[14px]">📄</span>}
+                  {couponCopied ? 'Copied!' : 'Copy Code'}
                 </button>
               </div>
             </div>
+
+            {/* Details List */}
+            <div className="w-full bg-white border border-slate-100 rounded-[16px] p-4 mb-6 shadow-sm">
+              {awardedCoupon.expiryDate && (
+                <div className="flex items-center justify-between py-3 border-b border-slate-50">
+                  <div className="flex items-center gap-2.5 text-slate-500">
+                    <Calendar size={16} strokeWidth={2} />
+                    <span className="text-[13px] font-medium">Valid Till</span>
+                  </div>
+                  <span className="text-[13px] font-bold text-[#1F2642]">
+                    {new Date(awardedCoupon.expiryDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center justify-between py-3 border-b border-slate-50">
+                <div className="flex items-center gap-2.5 text-slate-500">
+                  <Info size={16} strokeWidth={2} />
+                  <span className="text-[13px] font-medium">Applicable On</span>
+                </div>
+                <span className="text-[13px] font-bold text-[#1F2642] text-right max-w-[50%] line-clamp-2 leading-tight">
+                  {awardedCoupon.description}
+                </span>
+              </div>
+              {awardedCoupon.websiteLink && (
+                <div className="flex items-center justify-between py-3">
+                  <div className="flex items-center gap-2.5 text-slate-500">
+                    <Globe size={16} strokeWidth={2} />
+                    <span className="text-[13px] font-medium">Website</span>
+                  </div>
+                  <a href={awardedCoupon.websiteLink} target="_blank" rel="noreferrer" className="text-[13px] font-bold text-[#105DE4] flex items-center gap-1">
+                    {new URL(awardedCoupon.websiteLink).hostname.replace('www.', '')} <ExternalLink size={12} strokeWidth={2.5} />
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* Shop Now Button */}
+            <button
+              onClick={() => window.open(awardedCoupon.websiteLink, '_blank')}
+              className="w-full bg-[#059669] text-white font-bold text-[16px] py-4 rounded-[14px] shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all mb-6 flex items-center justify-center gap-2"
+            >
+              <span className="text-xl -mt-1">🛍️</span> Shop Now
+            </button>
+
+            {/* Want Another Reward Banner */}
+            <div className="w-full bg-[#F0FDF4] border border-[#DCFCE7] rounded-[16px] p-4 flex items-center justify-between mb-8 cursor-pointer active:scale-[0.98] transition-all" onClick={() => navigate('/')}>
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#059669] text-white flex items-center justify-center shrink-0 shadow-sm">
+                  <Star size={20} fill="white" stroke="white" strokeWidth={1} />
+                </div>
+                <div>
+                  <h4 className="text-[14px] font-bold text-[#064E3B] mb-0.5">Want another reward?</h4>
+                  <p className="text-[11px] font-medium text-[#047857] leading-tight">Review another verified product<br/>to unlock more coupons.</p>
+                </div>
+              </div>
+              <button className="bg-white text-[#059669] text-[11px] font-bold px-3 py-1.5 rounded-lg border border-[#A7F3D0] shadow-sm whitespace-nowrap">
+                Explore More
+              </button>
+            </div>
+
+            {/* Footer text */}
+            <div className="text-center pb-6 opacity-70 flex flex-col items-center">
+              <div className="flex items-center gap-1.5 mb-1">
+                 <ShieldCheck size={14} className="text-[#0D4E96]" strokeWidth={2.5} />
+                 <span className="text-[11px] font-bold text-[#1F2642]">100% Authentic. 100% Rewarded.</span>
+              </div>
+              <span className="text-[10px] text-slate-500 font-medium">Thank you for choosing authentic products.</span>
+            </div>
           </div>
+
+          <style>{`
+            @keyframes couponFadeIn {
+              from { opacity: 0; transform: translateY(20px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+          `}</style>
         </div>
       )}
 

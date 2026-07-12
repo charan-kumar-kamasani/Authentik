@@ -35,7 +35,7 @@ const ProductHeroHeader: React.FC<ProductHeroHeaderProps> = ({ title, data, onBa
   if (!data) return null;
 
   return (
-    <div className="bg-[#001466] text-white pt-8 pb-12 px-5 relative">
+    <div className="bg-[#001466] text-white pt-8 pb-8 px-5 relative">
       {/* Top Nav */}
       <div className="flex items-center justify-between mb-4">
         <button onClick={handleBack} className="p-1 -ml-1 rounded-full hover:bg-white/10 transition-colors">
@@ -48,7 +48,7 @@ const ProductHeroHeader: React.FC<ProductHeroHeaderProps> = ({ title, data, onBa
       </div>
 
       {/* Product Header Content */}
-      <div className="flex gap-4 items-center mb-4">
+      <div className="flex gap-4 items-center mb-0">
         <div className="w-[120px] h-[140px] flex-shrink-0 relative flex items-center justify-center bg-transparent -ml-2">
           <img
             src={data.productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"}

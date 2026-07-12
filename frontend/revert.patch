@@ -1,0 +1,223 @@
+--- frontend/src/pages/mobile/ProductPassport.tsx
++++ frontend/src/pages/mobile/ProductPassport.tsx
+@@ -271,79 +271,107 @@
+           </div>
+         </div>
+ 
+-        {/* Product Details (Directly visible) */}
+-        <div className="mt-5 mb-4">
+-          <h3 className="text-[15px] font-bold text-[#0B1E36] mb-3 px-1">Product Details</h3>
+-          <div className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 flex flex-col gap-1">
++        {/* Product Information */}
++        <div className="mt-6 px-1 mb-2">
++          <h3 className="text-[15px] font-bold text-[#0B1E36]">Product Information</h3>
++        </div>
++
++        {/* Accordions */}
++        <div className="flex flex-col gap-3 mb-3">
++          {/* 1. Product Details */}
++          <AccordionItem title="Product Details" subtitle="View specifications and details" icon={FileText} isOpen={openSection === 'Product Details'} onToggle={() => setOpenSection(openSection === 'Product Details' ? '' : 'Product Details')}>
+             <KeyValueRow label="Brand" value={data.brand || data.companyName} />
+             <KeyValueRow label="Product Name" value={data.productName} />
+             <KeyValueRow label="Category" value={data.category} />
+@@ -295,14 +323,11 @@
+             <KeyValueRow label="Shelf Life" value={data.bestBefore?.value ? `${data.bestBefore.value} ${data.bestBefore.unit}` : null} />
+             <KeyValueRow label="Warranty" value={data.warranty && (data.warranty.duration || data.warranty.warrantyType) ? `${data.warranty.duration || ''} ${data.warranty.durationUnit || ''} ${data.warranty.warrantyType || ''}`.trim() : null} />
+             <KeyValueRow label="Storage Instructions" value={data.dynamicFields?.storageInstructions || data.dynamicFields?.['Storage Instructions']} />
+-          </div>
+-        </div>
+-
+-        {/* Description (Directly visible) */}
+-        {(data.productInfo || data.description) && (
+-          <div className="mb-4">
+-            <h3 className="text-[15px] font-bold text-[#0B1E36] mb-3 px-1">Description</h3>
+-            <div className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100">
++          </AccordionItem>
++
++          {/* 2. Description */}
++          {(data.productInfo || data.description) && (
++            <AccordionItem title="Description" subtitle="About this product" icon={Info} isOpen={openSection === 'Description'} onToggle={() => setOpenSection(openSection === 'Description' ? '' : 'Description')}>
+               <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">{data.productInfo || data.description}</p>
+               {data.keyBenefits && (
+                 <>
+@@ -316,79 +341,107 @@
+                   </div>
+                 </>
+               )}
+-            </div>
+-          </div>
+-        )}
+-
+-        {/* Additional Details */}
+-        {data.additionalInfo && (
+-          <div className="mb-4">
+-            <h3 className="text-[15px] font-bold text-[#0B1E36] mb-3 px-1">Additional Details</h3>
+-            <div className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100">
+-              <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">{data.additionalInfo}</p>
+-            </div>
+-          </div>
+-        )}
+-
+-        {/* Action Menu Cards for other sections */}
+-        <div className="mb-2">
+-          <h3 className="text-[15px] font-bold text-[#0B1E36] mb-3 px-1">Explore More</h3>
+-          <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide snap-x pt-1">
+-            {/* Ingredients */}
+-            {data.ingredients && (
+-              <button onClick={() => navigate("/ingredients", { state: data })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
+-                <FlaskConical className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
+-                <div className="flex items-end justify-between w-full mt-auto">
+-                  <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Ingredients</span>
+-                  <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
+-                </div>
+-              </button>
+-            )}
+-
+-            {/* Certifications & Lab Tests */}
+-            {(data.certificates && data.certificates.length > 0) && (
+-              <button onClick={() => navigate("/certificates", { state: data })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
+-                <Award className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
+-                <div className="flex items-end justify-between w-full mt-auto">
+-                  <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Certifications & Lab Tests</span>
+-                  <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
+-                </div>
+-              </button>
+-            )}
+-
+-            {/* Product Education */}
+-            {(data.educationContent && data.educationContent.length > 0) && (
+-              <button onClick={() => navigate("/product-education", { state: data })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
+-                <BookOpen className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
+-                <div className="flex items-end justify-between w-full mt-auto">
+-                  <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Product Education</span>
+-                  <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
+-                </div>
+-              </button>
+-            )}
+-
+-            {/* Website */}
+-            {data.website && (
+-              <button onClick={() => window.open(data.website.startsWith('http') ? data.website : `https://${data.website}`, '_blank')} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
+-                <Globe className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
+-                <div className="flex items-end justify-between w-full mt-auto">
+-                  <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Website</span>
+-                  <ExternalLink className="w-4 h-4 text-gray-400 -mr-1" />
+-                </div>
+-              </button>
+-            )}
+-
+-            {/* Consumer Support */}
+-            {(data.customerCare || data.supportEmail) && (
+-              <button onClick={() => navigate("/consumer-support", { state: data })} className="snap-start flex-shrink-0 w-[120px] h-[110px] bg-white rounded-[16px] p-4 flex flex-col shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-gray-100 active:scale-95 transition-transform relative">
+-                <HeadphonesIcon className="w-6 h-6 text-[#105DE4] mb-auto" strokeWidth={1.5} />
+-                <div className="flex items-end justify-between w-full mt-auto">
+-                  <span className="text-[12px] font-bold text-[#0B1E36] text-left leading-[1.2] w-[70%]">Consumer Support</span>
+-                  <ChevronRight className="w-4 h-4 text-gray-400 -mr-1" />
+-                </div>
+-              </button>
+-            )}
+-          </div>
++            </AccordionItem>
++          )}
++
++          {/* 3. Ingredients */}
++          {data.ingredients && (
++            <AccordionItem title="Ingredients" subtitle="What goes into this product" icon={FlaskConical} isOpen={openSection === 'Ingredients'} onToggle={() => setOpenSection(openSection === 'Ingredients' ? '' : 'Ingredients')}>
++              <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">{data.ingredients}</p>
++            </AccordionItem>
++          )}
++
++          {/* 4. Additional Details */}
++          {data.additionalInfo && (
++            <AccordionItem title="Additional Details" subtitle="Manufacturing and other info" icon={FileText} isOpen={openSection === 'Additional Details'} onToggle={() => setOpenSection(openSection === 'Additional Details' ? '' : 'Additional Details')}>
++              <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">
++                {data.additionalInfo}
++              </p>
++            </AccordionItem>
++          )}
++
++          {/* 5. Certifications and Lab Tests */}
++          {(data.certificates && data.certificates.length > 0) && (
++            <AccordionItem title="Certifications and Lab" subtitle="Verified certificates and lab tests" icon={Award} isOpen={openSection === 'Certifications and Lab'} onToggle={() => setOpenSection(openSection === 'Certifications and Lab' ? '' : 'Certifications and Lab')}>
++               <div className="flex flex-col gap-3">
++                 {data.certificates.map((cert: any, idx: number) => (
++                    <CertificateViewer key={idx} cert={cert} />
++                 ))}
++               </div>
++            </AccordionItem>
++          )}
++
++          {/* 6. Product Education */}
++          {(data.educationContent && data.educationContent.length > 0) && (
++            <AccordionItem title="Product Education" subtitle="Discover how to use this product" icon={BookOpen} isOpen={openSection === 'Product Education'} onToggle={() => setOpenSection(openSection === 'Product Education' ? '' : 'Product Education')}>
++              <div className="flex flex-col gap-3">
++                {data.educationContent.map((edu: any, idx: number) => {
++                  const isVideo = edu.url?.includes('youtube.com') || edu.url?.includes('youtu.be') || edu.url?.endsWith('.mp4');
++                  const isImage = edu.url?.match(/\.(jpeg|jpg|gif|png)$/i);
++                  
++                  return (
++                    <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-slate-100 bg-slate-50">
++                       <h4 className="text-[13px] font-bold text-[#0B1E36]">{edu.title || 'Guide'}</h4>
++                       {edu.description && <p className="text-[12px] text-slate-600 leading-relaxed mb-1">{edu.description}</p>}
++                       {edu.url && (
++                         <a 
++                           href={edu.url} 
++                           target="_blank" 
++                           rel="noreferrer"
++                           className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#105DE4] bg-blue-100/50 px-3 py-1.5 rounded-lg w-max"
++                         >
++                           {isVideo ? 'Watch Video' : isImage ? 'View Image' : 'Open Link'}
++                           <ChevronRight size={14} />
++                         </a>
++                       )}
++                    </div>
++                  );
++                })}
++              </div>
++            </AccordionItem>
++          )}
++
++          {/* 7. Website */}
++          {data.website && (
++            <AccordionItem title="Website" subtitle="Visit our official store" icon={Globe} isOpen={openSection === 'Website'} onToggle={() => setOpenSection(openSection === 'Website' ? '' : 'Website')}>
++              <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100">
++                <span className="text-[13px] font-medium text-slate-700">{data.website}</span>
++                <a href={data.website.startsWith('http') ? data.website : `https://${data.website}`} target="_blank" rel="noreferrer" className="text-[#105DE4]">
++                  <ExternalLink size={18} />
++                </a>
++              </div>
++            </AccordionItem>
++          )}
++
++          {/* 8. Customer Support */}
++          {(data.customerCare || data.supportEmail) && (
++            <AccordionItem title="Customer Support" subtitle="Get in touch with us" icon={HeadphonesIcon} isOpen={openSection === 'Customer Support'} onToggle={() => setOpenSection(openSection === 'Customer Support' ? '' : 'Customer Support')}>
++              <div className="flex flex-col gap-3">
++                {data.customerCare && (
++                  <a href={`tel:${data.customerCare.replace(/[^0-9]/g, '')}`} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-[#F8FAFC]">
++                     <div className="w-10 h-10 rounded-full bg-blue-100 text-[#105DE4] flex items-center justify-center shrink-0">
++                       <Phone size={18} />
++                     </div>
++                     <div>
++                       <h4 className="text-[13px] font-bold text-[#0B1E36]">Call Us</h4>
++                       <p className="text-[12px] text-slate-500 font-medium">{data.customerCare}</p>
++                     </div>
++                  </a>
++                )}
++                {data.supportEmail && (
++                  <a href={`mailto:${data.supportEmail}`} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-[#F8FAFC]">
++                     <div className="w-10 h-10 rounded-full bg-red-100 text-red-500 flex items-center justify-center shrink-0">
++                       <Mail size={18} />
++                     </div>
++                     <div>
++                       <h4 className="text-[13px] font-bold text-[#0B1E36]">Email Support</h4>
++                       <p className="text-[12px] text-slate-500 font-medium">{data.supportEmail}</p>
++                     </div>
++                  </a>
++                )}
++              </div>
++            </AccordionItem>
++          )}
+         </div>
+         
+ 

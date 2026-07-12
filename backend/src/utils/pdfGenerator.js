@@ -294,32 +294,36 @@ const buildQrPdf = async (products, options = {}) => {
       qrRange = `QR Range: ${formatSN(pageStartSN)} to ${formatSN(pageEndSN)}`;
     }
 
-    // Push the footer securely to the bottom of the page, avoiding the grid
-    const pageFooterY = heightPts - 25;
+    // Render footer vertically on the right margin
+    doc.save();
+    doc.translate(widthPts - 15, marginTop);
+    doc.rotate(90);
+    
     doc.fillColor("#000000").font(BOLD_FONT).fontSize(8);
 
-    const footerWidth = gridWidth;
+    const footerWidth = gridHeight; // Available width is now the height of the grid
     const colW = footerWidth / 3;
 
-    doc.text(`Brand: ${brand}   |   Order ID: ${orderId}`, marginLeft, pageFooterY, {
+    doc.text(`Brand: ${brand}   |   Order ID: ${orderId}`, 0, 0, {
       width: colW,
       align: "left",
     });
 
-    doc.text(qrRange, marginLeft + colW, pageFooterY, {
+    doc.text(qrRange, colW, 0, {
       width: colW,
       align: "center",
     });
 
     doc.text(
       `Page ${page + 1} of ${totalPages}  (${idx} QRs)`,
-      marginLeft + colW * 2,
-      pageFooterY,
+      colW * 2,
+      0,
       {
         width: colW,
         align: "right",
       }
     );
+    doc.restore();
   }
 
   return doc;

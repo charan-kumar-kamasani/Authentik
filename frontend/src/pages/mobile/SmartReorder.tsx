@@ -168,50 +168,68 @@ const SmartReorder = () => {
           <div className="mt-2">
             <h3 className="text-[#0B1E36] font-bold text-[16px] mb-4">All Prices</h3>
             <div className="flex flex-col gap-3">
-              {orderLinks.map((link: any, idx: number) => {
-                const displayPrice = link.price || defaultPrice;
-                const displayMrp = link.price ? link.mrp : defaultMrp;
-                const displayDiscount = link.price ? link.discount : defaultDiscount;
+              {(() => {
+                const allPrices = orderLinks.map((l: any) => Number(l.price || defaultPrice)).filter((p: number) => !isNaN(p) && p > 0);
+                const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : null;
                 
-                return (
-                <div key={idx} className="bg-white p-3.5 rounded-2xl flex items-center justify-between shadow-[0_2px_10px_rgba(0,0,0,0.02)] border border-slate-50">
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 shrink-0 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100/50 p-1.5">
-                      {link.siteImage ? (
-                        <img src={link.siteImage} alt={link.title} className="w-full h-full object-contain mix-blend-multiply" />
-                      ) : (
-                        <div className="w-full h-full rounded-lg flex items-center justify-center text-slate-400 font-black text-[14px]">
-                          {link.title?.charAt(0) || 'S'}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <span className="text-[#0B1E36] font-bold text-[14px] leading-none">{link.title}</span>
-                      </div>
-                      <span className="text-slate-400 text-[11px] font-medium leading-none">Standard Delivery</span>
-                    </div>
-                  </div>
+                return orderLinks.map((link: any, idx: number) => {
+                  const displayPrice = link.price || defaultPrice;
+                  const displayMrp = link.price ? link.mrp : defaultMrp;
+                  const displayDiscount = link.price ? link.discount : defaultDiscount;
+                  const isLowestPrice = minPrice !== null && Number(displayPrice) === minPrice;
                   
-                  <div className="flex items-center gap-3">
-                    <div className="flex flex-col items-end justify-center">
-                      {displayPrice && <span className="text-[#0B1E36] font-black text-[16px] leading-none tracking-tight">₹{displayPrice}</span>}
-                      
-                      {/* Show MRP and Discount together below the price */}
-                      {(displayMrp || displayDiscount) && (
-                        <div className="flex items-center gap-1.5 mt-1.5">
-                          {displayMrp && <span className="text-slate-400 text-[11px] font-medium line-through leading-none">₹{displayMrp}</span>}
-                          {displayDiscount && <span className="text-[#16A34A] text-[10px] font-bold leading-none">{displayDiscount}</span>}
+                  return (
+                  <div key={idx} className={`bg-white rounded-2xl flex flex-col shadow-[0_2px_10px_rgba(0,0,0,0.02)] border overflow-hidden transition-all relative ${isLowestPrice ? 'border-[#059669]/40 ring-1 ring-[#059669]/10 shadow-[0_4px_15px_rgba(5,150,105,0.08)]' : 'border-slate-50'}`}>
+                    {isLowestPrice && (
+                      <div className="absolute top-0 left-0 bg-gradient-to-r from-[#059669] to-[#10B981] text-white text-[8px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-br-xl shadow-sm z-10 flex items-center gap-1">
+                        <span className="relative flex h-1 w-1">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-1 w-1 bg-white"></span>
+                        </span>
+                        Lowest Price
+                      </div>
+                    )}
+                    <div className="p-3.5 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 shrink-0 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100/50 p-1.5">
+                          {link.siteImage ? (
+                            <img src={link.siteImage} alt={link.title} className="w-full h-full object-contain mix-blend-multiply" />
+                          ) : (
+                            <div className="w-full h-full rounded-lg flex items-center justify-center text-slate-400 font-black text-[14px]">
+                              {link.title?.charAt(0) || 'S'}
+                            </div>
+                          )}
                         </div>
-                      )}
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <span className="text-[#0B1E36] font-bold text-[14px] leading-none">{link.title}</span>
+                          </div>
+                          <span className="text-slate-400 text-[11px] font-medium leading-none">Standard Delivery</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-3">
+                        <div className="flex flex-col items-end justify-center">
+                          {displayPrice && <span className="text-[#0B1E36] font-black text-[16px] leading-none tracking-tight">₹{displayPrice}</span>}
+                          
+                          {/* Show MRP and Discount together below the price */}
+                          {(displayMrp || displayDiscount) && (
+                            <div className="flex items-center gap-1.5 mt-1.5">
+                              {displayMrp && <span className="text-slate-400 text-[11px] font-medium line-through leading-none">₹{displayMrp}</span>}
+                              {displayDiscount && <span className="text-[#16A34A] text-[10px] font-bold leading-none">{displayDiscount}</span>}
+                            </div>
+                          )}
+                        </div>
+                        
+                        <a href={link.url || '#'} target="_blank" rel="noreferrer" className="bg-[#105DE4] text-white px-4 py-2 rounded-xl text-[13px] font-bold active:scale-95 transition-transform whitespace-nowrap shadow-[0_4px_12px_rgba(16,93,228,0.25)]">
+                          Buy
+                        </a>
+                      </div>
                     </div>
-                    
-                    <a href={link.url || '#'} target="_blank" rel="noreferrer" className="bg-[#105DE4] text-white px-4 py-2 rounded-xl text-[13px] font-bold active:scale-95 transition-transform whitespace-nowrap shadow-[0_4px_12px_rgba(16,93,228,0.25)]">
-                      Buy
-                    </a>
                   </div>
-                </div>
-              )})}
+                  );
+                });
+              })()}
             </div>
           </div>
         )}
