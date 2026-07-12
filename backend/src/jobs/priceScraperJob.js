@@ -67,8 +67,10 @@ const runScraper = async () => {
 };
 
 const startPriceScraperJob = () => {
-  // Run every day at midnight (12:00 AM)
-  cron.schedule('0 0 * * *', runScraper);
+  // Run based on cron schedule in env, default to every hour
+  const scheduleTime = process.env.SCRAPER_CRON_SCHEDULE || '0 * * * *';
+  console.log(`[PriceScraper] Scheduled to run with cron expression: ${scheduleTime}`);
+  cron.schedule(scheduleTime, runScraper);
 };
 
 module.exports = { startPriceScraperJob, runScraper };

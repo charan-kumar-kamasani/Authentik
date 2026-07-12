@@ -150,7 +150,7 @@ export default function DemoModal({ isOpen, onClose }) {
             )}
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Company (Optional)</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Company</label>
             <input 
               type="text" 
               name="company"

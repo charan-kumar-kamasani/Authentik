@@ -138,7 +138,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="max-w-4xl mx-auto mb-24 text-center">
+          <div className="max-w-6xl mx-auto mb-24 text-center">
             <div className="mb-12">
               <h4 className="text-lg md:text-xl font-bold text-slate-200 mb-8 uppercase tracking-wide">Selling Across Leading Marketplaces</h4>
               <div className="flex flex-wrap justify-center gap-4">
@@ -150,8 +150,8 @@ export default function LandingPage() {
                   { name: "Tata CLiQ", domain: "tatacliq.com" },
                   { name: "Meesho", domain: "meesho.com" }
                 ].map(mp => (
-                  <span key={mp.name} className="flex items-center gap-2.5 px-5 py-2.5 md:px-6 md:py-3 bg-slate-800/80 rounded-xl text-sm md:text-base font-semibold border border-slate-700/50 shadow-sm transition-all hover:bg-slate-800">
-                    <img src={`https://www.google.com/s2/favicons?domain=${mp.domain}&sz=64`} alt={mp.name} className="w-5 h-5 md:w-6 md:h-6 rounded object-contain bg-white" />
+                  <span key={mp.name} className="flex items-center gap-2.5 px-5 py-2.5 md:px-6 md:py-3 bg-slate-800/80 rounded-xl text-sm md:text-base font-semibold border border-slate-700/50 shadow-sm transition-all hover:bg-slate-800 whitespace-nowrap">
+                    <img src={mp.customIcon || `https://www.google.com/s2/favicons?domain=${mp.domain}&sz=64`} alt={mp.name} className="w-5 h-5 md:w-6 md:h-6 rounded object-contain bg-white" />
                     {mp.name}
                   </span>
                 ))}
@@ -161,14 +161,14 @@ export default function LandingPage() {
               <h4 className="text-lg md:text-xl font-bold text-slate-200 mb-8 uppercase tracking-wide">And Quick Commerce Platforms</h4>
               <div className="flex flex-wrap justify-center gap-4">
                 {[
-                  { name: "Zepto", domain: "zeptonow.com" },
+                  { name: "Zepto", domain: "zeptonow.com", customIcon: "https://cdn.zeptonow.com/web-static-assets-prod/artifacts/16.12.0/images/header/primary-logo.svg" },
                   { name: "Blinkit", domain: "blinkit.com" },
                   { name: "Swiggy Instamart", domain: "swiggy.com" },
                   { name: "BigBasket", domain: "bigbasket.com" },
                   { name: "Jio Mart", domain: "jiomart.com" }
                 ].map(mp => (
-                  <span key={mp.name} className="flex items-center gap-2.5 px-5 py-2.5 md:px-6 md:py-3 bg-slate-800/80 rounded-xl text-sm md:text-base font-semibold border border-slate-700/50 shadow-sm transition-all hover:bg-slate-800">
-                    <img src={`https://www.google.com/s2/favicons?domain=${mp.domain}&sz=64`} alt={mp.name} className="w-5 h-5 md:w-6 md:h-6 rounded object-contain bg-white" />
+                  <span key={mp.name} className="flex items-center gap-2.5 px-5 py-2.5 md:px-6 md:py-3 bg-slate-800/80 rounded-xl text-sm md:text-base font-semibold border border-slate-700/50 shadow-sm transition-all hover:bg-slate-800 whitespace-nowrap">
+                    <img src={mp.customIcon || `https://www.google.com/s2/favicons?domain=${mp.domain}&sz=64`} alt={mp.name} className="w-5 h-5 md:w-6 md:h-6 rounded object-contain bg-white" />
                     {mp.name}
                   </span>
                 ))}
