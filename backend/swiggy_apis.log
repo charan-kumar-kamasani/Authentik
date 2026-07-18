@@ -1,0 +1,5 @@
+Method: GET | URL: https://b67f7794189c.f957f42c.ap-south-1.token.awswaf.com/b67f7794189c/5504ea1b6187/219ce11e78c5/inputs?client=browser
+Method: POST | URL: https://b67f7794189c.f957f42c.ap-south-1.token.awswaf.com/b67f7794189c/5504ea1b6187/219ce11e78c5/mp_verify
+Method: POST | URL: https://b67f7794189c.f957f42c.ap-south-1.token.awswaf.com/b67f7794189c/5504ea1b6187/219ce11e78c5/mp_verify
+Method: POST | URL: https://insights-collector.newrelic.com/v1/accounts/737486/events
+Method: POST | URL: https://insights-collector.newrelic.com/v1/accounts/737486/events

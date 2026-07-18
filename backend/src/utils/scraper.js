@@ -1,36 +1,8 @@
 const cheerio = require('cheerio');
-const puppeteer = require('puppeteer-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
-
-puppeteer.use(StealthPlugin());
-
-let browserInstance = null;
-
-const getBrowser = async () => {
-  if (!browserInstance) {
-    console.log('[Scraper] Launching Headless Browser instance...');
-    browserInstance = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--disable-gpu'
-      ]
-    });
-  }
-  return browserInstance;
-};
+const axios = require('axios');
 
 const closeBrowser = async () => {
-  if (browserInstance) {
-    console.log('[Scraper] Closing Browser instance...');
-    await browserInstance.close();
-    browserInstance = null;
-  }
+  // No-op for backward compatibility with priceScraperJob.js
 };
 
 
@@ -187,61 +159,7 @@ const getONPrice = (html) => {
   return result;
 };
 
-const getFlipkartPrice = (html) => {
-  const result = getUniversalData(html);
-  const $ = cheerio.load(html);
-  
-  // Try Desktop Classes first
-  let priceText = $('.Nx9bqj.CrvlNf').first().text().trim() || $('._30jeq3').first().text().trim();
-  let mrpText = $('.yRaY8j').first().text().trim() || $('._3I9_wc').first().text().trim();
-  let discountText = $('.UkUFwK').first().text().trim() || $('._3Ay6Sb').first().text().trim();
-  let ratingText = $('div.XQDdHH').first().text().trim();
-  let reviewsText = $('span.Wphh3N').first().text().trim();
 
-  // If no desktop classes, try Mobile Web (React Native Web) classes
-  if (!priceText) {
-    const potentialPrices = [];
-    $('*').not('script, style, svg, noscript').each((i, el) => {
-      const txt = $(el).text().trim();
-      if (txt.startsWith('₹') && txt.length < 15 && $(el).children().length === 0) {
-         potentialPrices.push(cleanPrice(txt));
-      }
-    });
-    
-    // Try specific Mobile MRP class provided by user
-    let mobileMrpText = $('.css-146c3p1.r-11wrixw').first().text().trim();
-    if (mobileMrpText) {
-      result.mrp = cleanPrice(mobileMrpText);
-    } else if (result.price) {
-      // Find the first MRP that is greater than the JSON-LD price (but not astronomically higher)
-      const higherPrices = potentialPrices.filter(p => p > result.price && p < result.price * 3);
-      if (higherPrices.length > 0) {
-        result.mrp = higherPrices[0]; // First higher price found in DOM
-      } else {
-        result.mrp = result.price; // No higher MRP found
-      }
-    } else {
-      // Fallback if no JSON-LD
-      if (potentialPrices.length >= 2) {
-         const p1 = potentialPrices[0];
-         const p2 = potentialPrices[1];
-         result.price = Math.min(p1, p2);
-         result.mrp = Math.max(p1, p2);
-      } else if (potentialPrices.length === 1) {
-         result.price = potentialPrices[0];
-      }
-    }
-  } else {
-    if (priceText) result.price = cleanPrice(priceText);
-    if (mrpText) result.mrp = cleanPrice(mrpText);
-  }
-
-  if (discountText) result.discount = discountText.replace(/[^0-9%]/g, '');
-  if (ratingText) result.rating = parseFloat(ratingText);
-  if (reviewsText) result.reviewsCount = reviewsText.split(' ')[0].replace(/[^0-9,]/g, '');
-
-  return result;
-};
 
 
 const getCromaPrice = (html) => {
@@ -270,84 +188,7 @@ const getCromaPrice = (html) => {
   return result;
 };
 
-const getAmazonPrice = (html) => {
 
-  const result = { price: null, mrp: null, discount: null, rating: null, reviewsCount: null };
-  const $ = cheerio.load(html);
-  
-  if (!result.price) {
-    let priceText = $('.a-price-whole').first().text().trim() || $('#priceblock_ourprice').text().trim() || $('.a-price .a-offscreen').first().text().trim();
-    if (priceText) result.price = cleanPrice(priceText);
-  }
-  
-  if (!result.mrp) {
-    let mrpText = $('.a-text-price[data-a-strike="true"] .a-offscreen').first().text().trim() || $('.priceBlockStrikePriceString').text().trim();
-    if (mrpText) result.mrp = cleanPrice(mrpText);
-  }
-  
-  if (!result.discount) {
-    let discountText = $('.savingsPercentage').first().text().trim();
-    if (discountText) result.discount = discountText.replace(/[^0-9%]/g, '');
-  }
-  
-  if (!result.rating) {
-    let ratingText = $('#acrPopover').attr('title') || $('.a-icon-star .a-icon-alt').first().text().trim();
-    if (ratingText) {
-      const rating = parseFloat(ratingText.split(' ')[0]);
-      if (!isNaN(rating)) result.rating = rating;
-    }
-  }
-  
-  if (!result.reviewsCount) {
-    let reviewsText = $('#acrCustomerReviewText').first().text().trim();
-    if (reviewsText) {
-      result.reviewsCount = reviewsText.split(' ')[0].replace(/[^0-9]/g, '');
-    }
-  }
-  
-  return result;
-};
-
-const getZeptoPrice = (html) => {
-  const result = getUniversalData(html);
-  const $ = cheerio.load(html);
-
-  $('span').each((i, el) => {
-    const text = $(el).text().trim().toUpperCase();
-    if (text === 'MRP') {
-      const parent = $(el).parent();
-      
-      const mrpText = parent.text().replace(/\u00A0/g, ' ');
-      const mrpMatch = mrpText.match(/MRP\s*(?:₹|Rs\.?)\s*([0-9,.]+)/i);
-      
-      if (mrpMatch) {
-         result.mrp = cleanPrice(mrpMatch[1]);
-      } else {
-         const nextSpan = $(el).nextAll('span').filter((i, e) => $(e).text().includes('₹')).first();
-         if (nextSpan.length) {
-            result.mrp = cleanPrice(nextSpan.text());
-         }
-      }
-
-      const priceContainer = parent.prev('div');
-      if (priceContainer.length) {
-         const priceText = priceContainer.text().replace(/\u00A0/g, ' ');
-         const price = cleanPrice(priceText);
-         if (price) {
-            result.price = price;
-         }
-      }
-    }
-  });
-
-  if (result.price && result.mrp && result.mrp > result.price) {
-    const diff = result.mrp - result.price;
-    const pct = Math.round((diff / result.mrp) * 100);
-    result.discount = pct + '%';
-  }
-
-  return result;
-};
 
 const getBlinkitPrice = (html) => {
   const result = getUniversalData(html);
@@ -484,33 +325,199 @@ const getJioMartPrice = (html) => {
 const scrapeProductPrice = async (rawUrl) => {
   if (!rawUrl) return null;
   const url = rawUrl.split(' ')[0].trim();
-  let page;
+  
   try {
-    const browser = await getBrowser();
-    page = await browser.newPage();
-    
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36');
-    page.setDefaultNavigationTimeout(30000);
-
-    await page.goto(url, { waitUntil: 'networkidle2' });
-    
-    await new Promise(resolve => setTimeout(resolve, 2000)); // wait for dynamic scripts
-    
-    const html = await page.content();
-    
     const lowerUrl = url.toLowerCase();
+    
+    // Delegate Amazon URLs
+    if (lowerUrl.includes('amazon.in') || lowerUrl.includes('amzn.in')) {
+      const { getAmazonData } = require('./price_scrapers/amazonScraper');
+      const result = await getAmazonData(url);
+      if (result && !result.siteImage) {
+        result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${new URL(url).origin}&size=128`;
+      }
+      return result;
+    }
+    
+    // Delegate Flipkart URLs
+    if (lowerUrl.includes('flipkart.com')) {
+      const { getFlipkartData } = require('./price_scrapers/flipkartScraper');
+      const result = await getFlipkartData(url);
+      if (result && !result.siteImage) {
+        result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${new URL(url).origin}&size=128`;
+      }
+      return result;
+    }
+
+    // Delegate Zepto URLs
+    if (lowerUrl.includes('zepto.com')) {
+      const { getZeptoData } = require('./price_scrapers/zeptoScraper');
+      const result = await getZeptoData(url);
+      if (result && !result.siteImage) {
+        result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${new URL(url).origin}&size=128`;
+      }
+      return result;
+    }
+
+    // Delegate Blinkit URLs
+    if (lowerUrl.includes('blinkit.com')) {
+      const { getBlinkitData } = require('./price_scrapers/blinkitScraper');
+      const result = await getBlinkitData(url);
+      if (result && !result.siteImage) {
+        result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${new URL(url).origin}&size=128`;
+      }
+      return result;
+    }
+
+    // Delegate Myntra URLs
+    if (lowerUrl.includes('myntra.com')) {
+      const { getMyntraData } = require('./price_scrapers/myntraScraper');
+      const result = await getMyntraData(url);
+      if (result && !result.siteImage) {
+        result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${new URL(url).origin}&size=128`;
+      }
+      return result;
+    }
+
+    // Delegate Nykaa URLs
+    if (lowerUrl.includes('nykaa.com')) {
+      const { getNykaaData } = require('./price_scrapers/nykaaScraper');
+      const result = await getNykaaData(url);
+      if (result && !result.siteImage) {
+        result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${new URL(url).origin}&size=128`;
+      }
+      return result;
+    }
+
+    // Delegate Meesho URLs
+    if (lowerUrl.includes('meesho.com')) {
+      const { getMeeshoData } = require('./price_scrapers/meeshoScraper');
+      const result = await getMeeshoData(url);
+      if (result && !result.siteImage) {
+        result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${new URL(url).origin}&size=128`;
+      }
+      return result;
+    }
+
+    // Delegate Instamart URLs
+    if (lowerUrl.includes('swiggy.com/instamart')) {
+      const { getInstamartData } = require('./price_scrapers/instamartScraper');
+      const result = await getInstamartData(url);
+      if (result && !result.siteImage) {
+        result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${new URL(url).origin}&size=128`;
+      }
+      return result;
+    }
+
+    // Delegate Ajio URLs
+    if (lowerUrl.includes('ajio.com')) {
+      const { getAjioData } = require('./price_scrapers/ajioScraper');
+      const result = await getAjioData(url);
+      if (result && !result.siteImage) result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${new URL(url).origin}&size=128`;
+      return result;
+    }
+
+    // Delegate BigBasket URLs
+    if (lowerUrl.includes('bigbasket.com')) {
+      const { getBigbasketData } = require('./price_scrapers/bigbasketScraper');
+      const result = await getBigbasketData(url);
+      if (result && !result.siteImage) result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${new URL(url).origin}&size=128`;
+      return result;
+    }
+
+    // Delegate JioMart URLs
+    if (lowerUrl.includes('jiomart.com')) {
+      const { getJiomartData } = require('./price_scrapers/jiomartScraper');
+      const result = await getJiomartData(url);
+      if (result && !result.siteImage) result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${new URL(url).origin}&size=128`;
+      return result;
+    }
+
+    // Delegate FirstCry URLs
+    if (lowerUrl.includes('firstcry.com')) {
+      const { getFirstcryData } = require('./price_scrapers/firstcryScraper');
+      const result = await getFirstcryData(url);
+      if (result && !result.siteImage) result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${new URL(url).origin}&size=128`;
+      return result;
+    }
+
+    // Delegate Purplle URLs
+    if (lowerUrl.includes('purplle.com')) {
+      const { getPurplleData } = require('./price_scrapers/purplleScraper');
+      const result = await getPurplleData(url);
+      if (result && !result.siteImage) result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${new URL(url).origin}&size=128`;
+      return result;
+    }
+
+    // Delegate Tata CLiQ URLs
+    if (lowerUrl.includes('tatacliq.com')) {
+      const { getTatacliqData } = require('./price_scrapers/tatacliqScraper');
+      const result = await getTatacliqData(url);
+      if (result && !result.siteImage) result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${new URL(url).origin}&size=128`;
+      return result;
+    }
+
+    // Delegate Snapdeal URLs
+    if (lowerUrl.includes('snapdeal.com')) {
+      const { getSnapdealData } = require('./price_scrapers/snapdealScraper');
+      const result = await getSnapdealData(url);
+      if (result && !result.siteImage) result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${new URL(url).origin}&size=128`;
+      return result;
+    }
+
+    // Delegate PharmEasy URLs
+    if (lowerUrl.includes('pharmeasy.in')) {
+      const { getPharmeasyData } = require('./price_scrapers/pharmeasyScraper');
+      const result = await getPharmeasyData(url);
+      if (result && !result.siteImage) result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${new URL(url).origin}&size=128`;
+      return result;
+    }
+
+    // Delegate Apollo 24/7 URLs
+    if (lowerUrl.includes('apollopharmacy.in')) {
+      const { getApollo247Data } = require('./price_scrapers/apollo247Scraper');
+      const result = await getApollo247Data(url);
+      if (result && !result.siteImage) result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${new URL(url).origin}&size=128`;
+      return result;
+    }
+
+    // Delegate Croma URLs
+    if (lowerUrl.includes('croma.com')) {
+      const { getCromaData } = require('./price_scrapers/cromaScraper');
+      const result = await getCromaData(url);
+      if (result && !result.siteImage) result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${new URL(url).origin}&size=128`;
+      return result;
+    }
+
+    // Delegate Reliance Digital URLs
+    if (lowerUrl.includes('reliancedigital.in')) {
+      const { getReliancedigitalData } = require('./price_scrapers/reliancedigitalScraper');
+      const result = await getReliancedigitalData(url);
+      if (result && !result.siteImage) result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${new URL(url).origin}&size=128`;
+      return result;
+    }
+
+    // Delegate Pepperfry URLs
+    if (lowerUrl.includes('pepperfry.com')) {
+      const { getPepperfryData } = require('./price_scrapers/pepperfryScraper');
+      const result = await getPepperfryData(url);
+      if (result && !result.siteImage) result.siteImage = `https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${new URL(url).origin}&size=128`;
+      return result;
+    }
+
+    // Pure Axios for other retailers (NO scrape.do)
+    const response = await axios.get(url, { 
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+      timeout: 10000 
+    });
+    const html = response.data;
+    
     let result = null;
     
-    if (lowerUrl.includes('amazon.in') || lowerUrl.includes('amzn.in')) {
-      result = getAmazonPrice(html);
-    } else if (lowerUrl.includes('flipkart.com')) {
-      result = getFlipkartPrice(html);
-    } else if (lowerUrl.includes('croma.com')) {
+    if (lowerUrl.includes('croma.com')) {
       result = getCromaPrice(html);
     } else if (lowerUrl.includes('optimumnutrition.co.in')) {
       result = getONPrice(html);
-    } else if (lowerUrl.includes('zeptonow.com') || lowerUrl.includes('zepto.com')) {
-      result = getZeptoPrice(html);
     } else if (lowerUrl.includes('blinkit.com')) {
       result = getBlinkitPrice(html);
     } else if (lowerUrl.includes('swiggy.com')) {
@@ -535,15 +542,12 @@ const scrapeProductPrice = async (rawUrl) => {
         }
       } catch(e) {}
       
-      // We return the result even if price is missing so we can at least save the logo/rating if found
       return result;
     }
     return null;
   } catch (err) {
     console.error('Scraping error for', url, ':', err.message);
     return null;
-  } finally {
-    if (page) await page.close();
   }
 };
 

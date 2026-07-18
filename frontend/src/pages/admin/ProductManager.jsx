@@ -3,6 +3,27 @@ import API_BASE_URL, { getProductTemplates, createProductTemplate, authorizeProd
 import { Package, Plus, CheckCircle, Clock, Trash2, Search, Filter, ShieldCheck, Info, Image as ImageIcon, Edit, ShoppingCart, BookOpen, GripVertical } from 'lucide-react';
 import { useConfirm } from '../../components/ConfirmModal';
 
+const SUPPORTED_PLATFORMS = [
+  'Amazon', 'Flipkart', 'Nykaa', 'Myntra', 'Meesho', 
+  'Zepto', 'Swiggy Instamart', 'Blinkit', 'Ajio', 'BigBasket', 
+  'JioMart', 'FirstCry', 'Purplle', 'Tata CLiQ', 'Snapdeal', 
+  'PharmEasy', 'Apollo 24/7', 'Croma', 'Reliance Digital', 'Pepperfry'
+];
+
+const PLATFORM_DOMAINS = {
+  'Amazon': 'amazon', 'Flipkart': 'flipkart', 'Nykaa': 'nykaa', 'Myntra': 'myntra',
+  'Meesho': 'meesho', 'Zepto': 'zepto', 'Swiggy Instamart': 'swiggy', 'Blinkit': 'blinkit',
+  'Ajio': 'ajio', 'BigBasket': 'bigbasket', 'JioMart': 'jiomart', 'FirstCry': 'firstcry',
+  'Purplle': 'purplle', 'Tata CLiQ': 'tatacliq', 'Snapdeal': 'snapdeal', 'PharmEasy': 'pharmeasy',
+  'Apollo 24/7': 'apollo', 'Croma': 'croma', 'Reliance Digital': 'reliancedigital', 'Pepperfry': 'pepperfry'
+};
+
+const isValidUrlForPlatform = (url, platform) => {
+  if (!url || !platform) return true;
+  const domain = PLATFORM_DOMAINS[platform];
+  return url.toLowerCase().includes(domain.toLowerCase());
+};
+
 const ProductManager = () => {
   const [activeTab, setActiveTab] = useState('list'); // 'list' or 'create'
   const [products, setProducts] = useState([]);
@@ -776,18 +797,43 @@ const ProductManager = () => {
                           <div className="mt-2 text-gray-400 cursor-grab active:cursor-grabbing hover:text-blue-500">
                             <GripVertical size={20} />
                           </div>
-                          <div className="flex-1 space-y-3">
-                            <input
-                              type="url"
-                              placeholder="https://..."
-                              value={link.url}
+                          <div className="flex-1 flex gap-3">
+                            <select
+                              value={link.title || ''}
                               onChange={(e) => {
                                 const newLinks = [...formData.orderLinks];
-                                newLinks[index].url = e.target.value;
+                                newLinks[index].title = e.target.value;
                                 setFormData({ ...formData, orderLinks: newLinks });
                               }}
-                              className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-500"
-                            />
+                              className="w-1/3 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:border-blue-500 appearance-none"
+                            >
+                              <option value="" disabled>Select Platform</option>
+                              {SUPPORTED_PLATFORMS.map(platform => (
+                                <option key={platform} value={platform}>{platform}</option>
+                              ))}
+                            </select>
+                            <div className="flex-1 flex flex-col gap-1">
+                              <input
+                                type="url"
+                                placeholder="Product URL (https://...)"
+                                value={link.url}
+                                onChange={(e) => {
+                                  const newLinks = [...formData.orderLinks];
+                                  newLinks[index].url = e.target.value;
+                                  setFormData({ ...formData, orderLinks: newLinks });
+                                }}
+                                className={`w-full px-4 py-2 bg-gray-50 border rounded-xl text-sm focus:outline-none ${
+                                  link.url && !isValidUrlForPlatform(link.url, link.title)
+                                    ? 'border-red-300 focus:border-red-500 text-red-900 bg-red-50/30'
+                                    : 'border-gray-200 focus:border-blue-500'
+                                }`}
+                              />
+                              {link.url && !isValidUrlForPlatform(link.url, link.title) && (
+                                <span className="text-[11px] text-red-500 font-medium ml-1">
+                                  URL does not appear to be from {link.title}.
+                                </span>
+                              )}
+                            </div>
                           </div>
                           <button
                             type="button"
@@ -808,8 +854,12 @@ const ProductManager = () => {
 
                 <div className="pt-4">
                   <button 
-                    disabled={submitting || (formData.productInfo.trim().split(/\s+/).filter(Boolean).length > 250)}
-                    className="w-full bg-gradient-to-r from-gray-900 to-indigo-900 text-white font-black py-4 rounded-[1.5rem] hover:shadow-2xl hover:shadow-indigo-900/40 active:scale-[0.98] transition-all uppercase tracking-widest text-sm flex items-center justify-center gap-3 disabled:opacity-50"
+                    disabled={
+                      submitting || 
+                      (formData.productInfo.trim().split(/\s+/).filter(Boolean).length > 250) || 
+                      (formData.orderLinks?.some(link => link.url && !isValidUrlForPlatform(link.url, link.title)))
+                    }
+                    className="w-full bg-gradient-to-r from-gray-900 to-indigo-900 text-white font-black py-4 rounded-[1.5rem] hover:shadow-2xl hover:shadow-indigo-900/40 active:scale-[0.98] transition-all uppercase tracking-widest text-sm flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submitting ? (editProductId ? 'Updating...' : 'Creating Product...') : (editProductId ? 'Update Product' : 'Add to Catalog')}
                     <Package className="w-5 h-5" />

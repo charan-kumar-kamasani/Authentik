@@ -5,7 +5,6 @@ const { protect, authorize } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-
 const syncScrapeTemplate = async (templateId) => {
   try {
     const template = await ProductTemplate.findById(templateId);
@@ -46,7 +45,6 @@ const syncScrapeTemplate = async (templateId) => {
     return null;
   }
 };
-
 
 
 // @desc    Get all product templates for a brand or company
@@ -151,7 +149,10 @@ router.post('/', protect, async (req, res) => {
     });
 
     const savedTemplate = await template.save();
+    
+    // As requested: Run immediately once on product creation
     const finalTemplate = await syncScrapeTemplate(savedTemplate._id);
+    
     res.status(201).json(finalTemplate || savedTemplate);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -219,12 +220,7 @@ router.patch('/:id', protect, async (req, res) => {
       await Product.updateMany({ templateId: template._id }, { $set: cascadeUpdates });
     }
 
-    let finalTemplate = updatedTemplate;
-    // Only scrape if orderLinks were updated
-    if (updates.orderLinks !== undefined) {
-      finalTemplate = await syncScrapeTemplate(updatedTemplate._id) || updatedTemplate;
-    }
-    res.json(finalTemplate);
+    res.json(updatedTemplate);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

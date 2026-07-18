@@ -67,8 +67,8 @@ const runScraper = async () => {
 };
 
 const startPriceScraperJob = () => {
-  // Run based on cron schedule in env, default to every hour
-  const scheduleTime = process.env.SCRAPER_CRON_SCHEDULE || '0 * * * *';
+  // Run based on cron schedule in env, default to 12 AM every night
+  const scheduleTime = process.env.SCRAPER_CRON_SCHEDULE || '0 0 * * *';
   console.log(`[PriceScraper] Scheduled to run with cron expression: ${scheduleTime}`);
   cron.schedule(scheduleTime, runScraper);
 };

@@ -1,0 +1,15 @@
+                                                    
+
+    {
+        "ASIN" : "B0DBL1T67V",
+        "Type" : "JSON",
+        "sortOfferInfo" : "",
+        "isPrimeEligible" : "false",
+        "Value" :
+        {
+            "content" :
+            {"twisterSlotJson":{"isAvailable":true,"isFOD":false,"price":925},"twisterSlotDiv":"<div data-csa-c-type=\"widget\" data-csa-c-slot-id=\"apex_dp_twister\" data-csa-c-content-id=\"apex\" >\n                  <div data-csa-c-type=\"widget\" data-csa-c-slot-id=\"apex_dp_twister\" data-csa-c-content-id=\"apex_with_rio_cx\" >\n                        <div id=\"apex_price\" class=\"a-section a-spacing-none apex_on_twister_price\">                                                                                                                                             <style>\n\t\t/* Temporary CSS overrides for savings. Sim: https://sim.amazon.com/issues/DPOffersDev-11797 */\n\t\t.centralizedApexPriceSavingsOverrides {\n\t\t\tcolor: #CC0C39!important;\n\t\t\tfont-weight: 300!important;\n\t\t}\n\t<\/style>\n\t   <style>\n\t\t\t\t.centralizedApexPriceSavingsPercentageMargin,\n\t\t\t\t.centralizedApexPricePriceToPayMargin {\n\t\t\t\t\tmargin-right: 3px;\n\t\t\t\t}\n\t\t\t<\/style> <div class=\"a-section a-spacing-none apex-core-price-identifier\"> <div class=\"a-section a-spacing-none aok-align-center aok-relative\">      <span data-pricetopay-label=\"{priceToPay}\" data-pricetopay-savings-label=\"{priceToPay} with {savings} percent savings\" class=\"aok-offscreen apex-pricetopay-accessibility-label\"> \u20b9925.00 with 11 percent savings <\/span>           <span class=\"a-price a-text-price aok-align-center centralizedApexPricePriceToPayMargin apex-pricetopay-value\" data-a-size=\"s\" data-a-color=\"base\"><span class=\"a-offscreen\"> <\/span><span aria-hidden=\"true\">\u20b9925.00<\/span><\/span>            <\/div>       <div class=\"a-section a-spacing-none aok-align-center centralizedApexPricePerUnitCSS\"> <span class=\"aok-relative\"><span id=\"{unitPrice} per {baseUnit}\" class=\"a-size-mini aok-offscreen apex-priceperunit-accessibility-label\">\u20b9370.00 per g<\/span><span aria-hidden=\"true\" class=\"a-size-mini a-color-base aok-align-center\">(<span class=\"a-price a-text-price apex-priceperunit-value\" data-a-size=\"mini\" data-a-color=\"base\"><span class=\"a-offscreen\">\u20b9370.00<\/span><span aria-hidden=\"true\">\u20b9370.00<\/span><\/span> /100 g)<\/span><\/span> <\/div>      <div class=\"a-section a-spacing-small aok-align-center centralizedApexBasisPriceCSS\">  <span class=\"apex-basisprice-feature\">        <span class=\"a-price a-text-price apex-basisprice-value\" data-a-size=\"mini\" data-a-strike=\"true\" data-a-color=\"secondary\"><span class=\"a-offscreen\">\u20b91,039.00<\/span><span aria-hidden=\"true\">\u20b91,039.00<\/span><\/span>       <\/span> <\/div>    <\/div>         <\/div> <\/div>\n                      <\/div>\n                            <div>\n    <span id=\"twisterAvailability\" class=\"a-size-small a-color-success\"> In stock <\/span> <\/div>"}
+
+        }
+    }
+             

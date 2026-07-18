@@ -56,8 +56,9 @@ export default function ScanHistory() {
             let statusIcon = "verified";
             let ribbonColor = "#10B981";
 
-            // Extract brand logo from populated brandId or company
+            // Extract image (product image preferred)
             let brandLogo = item.brandId?.brandLogo || null;
+            let productImage = item.productImage || item.productId?.productImage || (item.images && item.images.length > 0 ? item.images[0] : null);
 
             if (item.status === "FAKE" || item.status === "INACTIVE") {
               type = "Counterfeit";
@@ -98,6 +99,7 @@ export default function ScanHistory() {
               scannedDate: `${day} ${monthName} ${year}`,
               scannedTime: timeStr,
               brandLogo,
+              productImage,
               statusLabel,
               statusText,
               badgeColor,
@@ -186,12 +188,12 @@ export default function ScanHistory() {
         />
 
         <div className="flex items-center gap-3 p-3.5 flex-1 min-w-0">
-          {/* Brand Logo Container */}
-          <div className="w-[52px] h-[52px] rounded-[12px] border border-[#F1F5F9] flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm p-1.5"
-            style={{ backgroundColor: item.brandLogo ? '#FFFFFF' : item.ribbonColor + '15' }}
+          {/* Image Container */}
+          <div className="w-[64px] h-[64px] rounded-[12px] flex items-center justify-center flex-shrink-0 overflow-hidden p-1"
+            style={{ backgroundColor: item.productImage ? '#FFFFFF' : item.ribbonColor + '15' }}
           >
-            {item.brandLogo ? (
-              <img src={item.brandLogo} alt={item.cardTitle} className="w-full h-full object-contain" />
+            {item.productImage ? (
+              <img src={item.productImage} alt={item.cardTitle} className="w-full h-full object-contain" />
             ) : (
               <span className="text-[18px] font-black" style={{ color: item.ribbonColor }}>
                 {(item.brandName || item.productName || 'P').charAt(0).toUpperCase()}

@@ -118,6 +118,7 @@ export default function Home() {
             let ribbonColor = "#10B981"; // Green for verified
 
             let brandLogo = item.brandId?.brandLogo || null;
+            let productImage = item.productImage || item.productId?.productImage || (item.images && item.images.length > 0 ? item.images[0] : null);
 
             if (item.status === "FAKE" || item.status === "INACTIVE") {
               type = "Counterfeit";
@@ -157,6 +158,7 @@ export default function Home() {
               scannedDate: `${day} ${monthName} ${year}`,
               scannedTime: timeStr,
               brandLogo,
+              productImage,
               statusLabel,
               statusText,
               badgeColor,
@@ -340,12 +342,12 @@ export default function Home() {
                     />
 
                     <div className="flex items-center gap-3 p-3.5 flex-1 min-w-0">
-                      {/* Brand Logo Container */}
-                      <div className="w-[52px] h-[52px] rounded-[12px] border border-[#F1F5F9] flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm p-1.5"
-                        style={{ backgroundColor: scan.brandLogo ? '#FFFFFF' : scan.ribbonColor + '15' }}
+                      {/* Image Container */}
+                      <div className="w-[64px] h-[64px] rounded-[12px] flex items-center justify-center flex-shrink-0 overflow-hidden p-1"
+                        style={{ backgroundColor: scan.productImage ? '#FFFFFF' : scan.ribbonColor + '15' }}
                       >
-                        {scan.brandLogo ? (
-                          <img src={scan.brandLogo} alt={scan.cardTitle} className="w-full h-full object-contain" />
+                        {scan.productImage ? (
+                          <img src={scan.productImage} alt={scan.cardTitle} className="w-full h-full object-contain" />
                         ) : (
                           <span className="text-[18px] font-black" style={{ color: scan.ribbonColor }}>
                             {(scan.brandName || scan.productName || 'P').charAt(0).toUpperCase()}
