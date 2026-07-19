@@ -16,7 +16,9 @@ import {
   HeartHandshake,
   Menu,
   Clock,
-  CheckCircle2
+  CheckCircle2,
+  Star,
+  Gift
 } from "lucide-react";
 
 
@@ -60,6 +62,13 @@ export default function Home() {
     authentiks: 0,
     counterfeit: 0,
     alert: 0,
+    activeWarranties: 0,
+    rewardsData: {
+      totalRewardValue: 0,
+      reviews: { submitted: 0, pending: 0 },
+      coupons: { unlocked: 0, available: 0 },
+      warranty: { active: 0, inactive: 0 }
+    }
   });
 
   useEffect(() => {
@@ -87,6 +96,13 @@ export default function Home() {
             authentiks: data.authentiks || 0,
             counterfeit: data.counterfeit || 0,
             alert: data.alert || 0,
+            activeWarranties: data.activeWarranties || 0,
+            rewardsData: data.rewardsData || {
+              totalRewardValue: 0,
+              reviews: { submitted: 0, pending: 0 },
+              coupons: { unlocked: 0, available: 0 },
+              warranty: { active: 0, inactive: 0 }
+            }
           };
           cachedStats = newStats;
           setStats(newStats);
@@ -263,48 +279,149 @@ export default function Home() {
         </div>
 
         {/* Stats Grid - One White Card Container */}
-        <div className="w-full bg-white rounded-[24px] py-[18px] px-2 mb-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#F1F5F9]">
+        {/* <div className="w-full bg-white rounded-[24px] py-[18px] px-2 mb-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#F1F5F9]">
           <div className="flex items-center justify-between w-full">
-            {/* Stat: Total Scans */}
+
             <div className="flex flex-col items-center flex-1">
               <div className="w-[46px] h-[46px] rounded-full flex items-center justify-center mb-1.5 bg-[#F0F5FF]">
                 <ScanLine className="w-[20px] h-[20px] text-[#105DE4]" />
               </div>
               <span className="text-[#0B1E36] font-extrabold text-[22px] leading-none mb-[3px]">{stats.totalScans}</span>
-              <span className="text-[#5A7184] text-[10.5px] font-medium text-center">Total Scans</span>
+              <span className="text-[#5A7184] text-[10.5px] font-medium text-center leading-tight">Total Scans</span>
             </div>
             
             <div className="w-[1px] h-[55px] bg-[#F1F5F9] mx-1"></div>
 
-            {/* Stat: Verified */}
+
             <div className="flex flex-col items-center flex-1">
               <div className="w-[46px] h-[46px] rounded-full flex items-center justify-center mb-1.5 bg-[#ECFDF5]">
                 <ShieldCheck className="w-[20px] h-[20px] text-[#10B981]" />
               </div>
               <span className="text-[#0B1E36] font-extrabold text-[22px] leading-none mb-[3px]">{stats.authentiks}</span>
-              <span className="text-[#5A7184] text-[10.5px] font-medium text-center">Verified</span>
+              <span className="text-[#5A7184] text-[10.5px] font-medium text-center leading-tight">Verified</span>
             </div>
 
             <div className="w-[1px] h-[55px] bg-[#F1F5F9] mx-1"></div>
 
-            {/* Stat: Alert */}
+ 
             <div className="flex flex-col items-center flex-1">
               <div className="w-[46px] h-[46px] rounded-full flex items-center justify-center mb-1.5 bg-[#FFFBEB]">
                 <AlertTriangle className="w-[20px] h-[20px] text-[#F59E0B]" />
               </div>
               <span className="text-[#0B1E36] font-extrabold text-[22px] leading-none mb-[3px]">{stats.alert}</span>
-              <span className="text-[#5A7184] text-[10.5px] font-medium text-center">Alert</span>
+              <span className="text-[#5A7184] text-[10.5px] font-medium text-center leading-tight">Alert</span>
             </div>
 
             <div className="w-[1px] h-[55px] bg-[#F1F5F9] mx-1"></div>
 
-            {/* Stat: Counterfeit */}
+         
             <div className="flex flex-col items-center flex-1">
               <div className="w-[46px] h-[46px] rounded-full flex items-center justify-center mb-1.5 bg-[#FEF2F2]">
                 <ShieldX className="w-[20px] h-[20px] text-[#EF4444]" />
               </div>
               <span className="text-[#0B1E36] font-extrabold text-[22px] leading-none mb-[3px]">{stats.counterfeit}</span>
-              <span className="text-[#5A7184] text-[10.5px] font-medium text-center">Counterfeit</span>
+              <span className="text-[#5A7184] text-[10.5px] font-medium text-center leading-tight">Counterfeit</span>
+            </div>
+
+            <div className="w-[1px] h-[55px] bg-[#F1F5F9] mx-1"></div>
+          </div>
+        </div> */}
+
+        {/* Rewards & Engagement Section */}
+        <div className="w-full mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-[#0B1E36] text-[16px] font-bold">Rewards & Engagement</h3>
+            <button onClick={() => navigate('/rewards')} className="text-[#105DE4] text-[13px] font-bold flex items-center gap-0.5 hover:underline">
+              View All <ChevronRight className="w-[14px] h-[14px]" />
+            </button>
+          </div>
+
+          {/* Banner */}
+          <div className="w-full bg-gradient-to-r from-[#D6C1FF] to-[#EBE4FF] rounded-[20px] p-4 relative overflow-hidden mb-3 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E9D5FF]">
+            <div className="flex items-center w-full relative z-10 gap-3">
+              
+              {/* Gift Box */}
+              <div className="flex-shrink-0 flex items-center justify-center">
+                <div className="text-[52px] leading-none drop-shadow-xl">🎁</div>
+              </div>
+              
+              {/* Content */}
+              <div className="flex-1 min-w-0 flex flex-col justify-center">
+                <div className="flex items-center gap-1 mb-0.5">
+                  <span className="text-[#4C1D95] font-bold text-[12px] whitespace-nowrap">Rewards Available</span>
+                  <div className="w-[14px] h-[14px] rounded-full border border-[#4C1D95] flex items-center justify-center text-[#4C1D95] text-[9px] font-bold shrink-0">i</div>
+                </div>
+                <h2 className="text-[#3B0764] font-black text-[28px] leading-none mb-1 tracking-tight">₹{stats.rewardsData.totalRewardValue.toLocaleString('en-IN')}</h2>
+                <span className="text-[#6B21A8] font-semibold text-[10px] whitespace-nowrap">Total Reward Value</span>
+              </div>
+              
+              {/* Button */}
+              <div className="flex-shrink-0 flex items-center">
+                <button className="bg-white text-[#4C1D95] rounded-full px-3 py-2 flex items-center gap-0.5 font-bold text-[11px] shadow-sm active:scale-95 transition-transform whitespace-nowrap">
+                  Claim Rewards <ChevronRight className="w-[14px] h-[14px] stroke-[3]" />
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Grid of 3 Cards */}
+          <div className="grid grid-cols-3 gap-2">
+            {/* Reviews Card */}
+            <div className="bg-gradient-to-b from-[#F0FDF4] to-[#FFFFFF] rounded-[16px] p-3 flex flex-col items-center border border-[#BBF7D0] shadow-[0_2px_8px_rgba(16,185,129,0.05)]">
+              <div className="w-[32px] h-[32px] rounded-full bg-white border border-[#BBF7D0] flex items-center justify-center mb-1 shadow-sm text-[#10B981]">
+                 <Star className="w-[16px] h-[16px] fill-[#10B981] stroke-[#10B981]" />
+              </div>
+              <span className="text-[#0F172A] font-bold text-[12px] mb-2">Reviews</span>
+              <div className="flex w-full items-center justify-between px-1">
+                <div className="flex flex-col items-center flex-1">
+                  <span className="text-[#10B981] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.reviews.submitted}</span>
+                  <span className="text-[#0F172A] text-[9px] font-semibold">Submitted</span>
+                </div>
+                <div className="w-[1px] h-[20px] bg-[#BBF7D0]"></div>
+                <div className="flex flex-col items-center flex-1">
+                  <span className="text-[#F59E0B] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.reviews.pending}</span>
+                  <span className="text-[#0F172A] text-[9px] font-semibold">Pending</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Coupons Card */}
+            <div className="bg-gradient-to-b from-[#FAF5FF] to-[#FFFFFF] rounded-[16px] p-3 flex flex-col items-center border border-[#E9D5FF] shadow-[0_2px_8px_rgba(147,51,234,0.05)]">
+              <div className="w-[32px] h-[32px] rounded-full bg-white border border-[#E9D5FF] flex items-center justify-center mb-1 shadow-sm text-[#9333EA]">
+                 <Gift className="w-[16px] h-[16px] stroke-[2]" />
+              </div>
+              <span className="text-[#0F172A] font-bold text-[12px] mb-2">Coupons</span>
+              <div className="flex w-full items-center justify-between px-1">
+                <div className="flex flex-col items-center flex-1">
+                  <span className="text-[#9333EA] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.coupons.unlocked}</span>
+                  <span className="text-[#0F172A] text-[9px] font-semibold">Unlocked</span>
+                </div>
+                <div className="w-[1px] h-[20px] bg-[#E9D5FF]"></div>
+                <div className="flex flex-col items-center flex-1">
+                  <span className="text-[#F59E0B] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.coupons.available}</span>
+                  <span className="text-[#0F172A] text-[9px] font-semibold">Available</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Warranty Card */}
+            <div className="bg-gradient-to-b from-[#EFF6FF] to-[#FFFFFF] rounded-[16px] p-3 flex flex-col items-center border border-[#BFDBFE] shadow-[0_2px_8px_rgba(59,130,246,0.05)]">
+              <div className="w-[32px] h-[32px] rounded-full bg-white border border-[#BFDBFE] flex items-center justify-center mb-1 shadow-sm text-[#3B82F6]">
+                 <ShieldCheck className="w-[16px] h-[16px] stroke-[2]" />
+              </div>
+              <span className="text-[#0F172A] font-bold text-[12px] mb-2">Warranty</span>
+              <div className="flex w-full items-center justify-between px-1">
+                <div className="flex flex-col items-center flex-1">
+                  <span className="text-[#3B82F6] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.warranty.active}</span>
+                  <span className="text-[#0F172A] text-[9px] font-semibold">Active</span>
+                </div>
+                <div className="w-[1px] h-[20px] bg-[#BFDBFE]"></div>
+                <div className="flex flex-col items-center flex-1">
+                  <span className="text-[#105DE4] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.warranty.inactive}</span>
+                  <span className="text-[#0F172A] text-[9px] font-semibold">Inactive</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -341,52 +458,83 @@ export default function Home() {
                       style={{ backgroundColor: scan.ribbonColor }}
                     />
 
-                    <div className="flex items-center gap-3 p-3.5 flex-1 min-w-0">
-                      {/* Image Container */}
-                      <div className="w-[64px] h-[64px] rounded-[12px] flex items-center justify-center flex-shrink-0 overflow-hidden p-1"
-                        style={{ backgroundColor: scan.productImage ? '#FFFFFF' : scan.ribbonColor + '15' }}
-                      >
-                        {scan.productImage ? (
-                          <img src={scan.productImage} alt={scan.cardTitle} className="w-full h-full object-contain" />
-                        ) : (
-                          <span className="text-[18px] font-black" style={{ color: scan.ribbonColor }}>
-                            {(scan.brandName || scan.productName || 'P').charAt(0).toUpperCase()}
-                          </span>
-                        )}
-                      </div>
+                    <div className="flex flex-col w-full">
+                      {/* Top Row: Image, Text, Chevron */}
+                      <div className="flex items-center gap-3 p-3.5 pb-2">
+                        {/* Image Container */}
+                        <div className="w-[64px] h-[64px] rounded-[12px] flex items-center justify-center flex-shrink-0 overflow-hidden p-1"
+                          style={{ backgroundColor: scan.productImage ? '#FFFFFF' : scan.ribbonColor + '15' }}
+                        >
+                          {scan.productImage ? (
+                            <img src={scan.productImage} alt={scan.cardTitle} className="w-full h-full object-contain" />
+                          ) : (
+                            <span className="text-[18px] font-black" style={{ color: scan.ribbonColor }}>
+                              {(scan.brandName || scan.productName || 'P').charAt(0).toUpperCase()}
+                            </span>
+                          )}
+                        </div>
 
-                      {/* Text Content */}
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-extrabold text-[15px] text-[#0F172A] leading-tight flex items-center gap-1.5 min-w-0">
-                          <span className="truncate">{scan.productName}</span>
-                        </h4>
-                        <p className="text-[12px] text-[#64748B] truncate mt-0.5 font-medium">{scan.brandName || "Unknown Brand"}</p>
-                        <div className="flex items-center gap-2 mt-1.5 w-full">
-                          <div className="flex items-center gap-1 text-[#94A3B8] text-[10px] font-semibold shrink-0">
+                        {/* Text Content */}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-extrabold text-[14px] text-[#1E293B] leading-tight mb-1 truncate">
+                            {scan.productName}
+                          </h4>
+                          <p className="text-[12px] text-[#64748B] truncate mt-0.5 font-medium mb-1.5">{scan.brandName || "Unknown Brand"}</p>
+                          <div className="flex items-center gap-1.5 text-[#94A3B8] text-[10px] font-semibold">
                             <Calendar className="w-3 h-3 shrink-0" strokeWidth={2} />
                             <span>{scan.scannedDate}, {scan.scannedTime}</span>
                           </div>
-                          {scan.status === "ORIGINAL" && (
-                            <>
-                              <div className="w-1 h-1 rounded-full bg-[#E2E8F0] shrink-0"></div>
-                              {scan.alreadyReviewed ? (
-                                <div className="flex items-center gap-1 text-[#10B981] text-[10px] font-bold shrink-0">
-                                  <CheckCircle2 className="w-3 h-3" strokeWidth={2.5} />
-                                  <span>Reviewed</span>
-                                </div>
-                              ) : (
-                                <div className="flex items-center gap-1 text-[#F59E0B] text-[10px] font-bold shrink-0">
-                                  <Clock className="w-3 h-3" strokeWidth={2.5} />
-                                  <span>Pending</span>
-                                </div>
-                              )}
-                            </>
-                          )}
                         </div>
+
+                        {/* Chevron */}
+                        <ChevronRight className="w-5 h-5 text-[#CBD5E1] flex-shrink-0" strokeWidth={2.5} />
                       </div>
 
-                      {/* Chevron */}
-                      <ChevronRight className="w-5 h-5 text-[#CBD5E1] flex-shrink-0" strokeWidth={2.5} />
+                      {/* Bottom Row: Badges */}
+                      {scan.status === "ORIGINAL" && (
+                        <div className="mx-3.5 mb-3.5 mt-1 border border-[#F1F5F9] rounded-[8px] bg-[#F8FAFC] py-1.5 px-0.5 flex items-center divide-x divide-[#E2E8F0]">
+                          
+                          {/* Reviewed */}
+                          <div className="flex-1 flex flex-col justify-center items-center px-0.5 text-center min-w-0 overflow-hidden">
+                            <div className="flex items-center justify-center gap-0.5 mb-[1px] w-full">
+                              <Star className={`w-[9px] h-[9px] shrink-0 ${scan.alreadyReviewed ? 'text-[#10B981]' : 'text-[#94A3B8]'}`} strokeWidth={2.5} />
+                              <span className={`text-[7.5px] font-bold truncate ${scan.alreadyReviewed ? 'text-[#10B981]' : 'text-[#94A3B8]'}`}>
+                                {scan.alreadyReviewed ? 'Reviewed' : 'Review'}
+                              </span>
+                            </div>
+                            <span className="text-[6.5px] text-[#64748B] font-semibold truncate w-full">
+                              {scan.alreadyReviewed ? 'Thank you for your review!' : 'Share your feedback'}
+                            </span>
+                          </div>
+
+                          {/* Reward */}
+                          <div className="flex-1 flex flex-col justify-center items-center px-0.5 text-center min-w-0 overflow-hidden">
+                            <div className="flex items-center justify-center gap-0.5 mb-[1px] w-full">
+                              <Gift className={`w-[9px] h-[9px] shrink-0 ${scan.alreadyReviewed ? 'text-[#8B5CF6]' : 'text-[#94A3B8]'}`} strokeWidth={2.5} />
+                              <span className={`text-[7.5px] font-bold truncate ${scan.alreadyReviewed ? 'text-[#8B5CF6]' : 'text-[#94A3B8]'}`}>
+                                {scan.alreadyReviewed ? 'Reward Claimed' : 'No Reward'}
+                              </span>
+                            </div>
+                            <span className="text-[6.5px] text-[#64748B] font-semibold truncate w-full">
+                              {scan.alreadyReviewed ? 'You saved ₹200' : 'Not claimed'}
+                            </span>
+                          </div>
+
+                          {/* Warranty */}
+                          <div className="flex-1 flex flex-col justify-center items-center px-0.5 text-center min-w-0 overflow-hidden">
+                            <div className="flex items-center justify-center gap-0.5 mb-[1px] w-full">
+                              <ShieldCheck className={`w-[9px] h-[9px] shrink-0 ${scan.alreadyReviewed ? 'text-[#105DE4]' : 'text-[#94A3B8]'}`} strokeWidth={2.5} />
+                              <span className={`text-[7.5px] font-bold truncate ${scan.alreadyReviewed ? 'text-[#105DE4]' : 'text-[#94A3B8]'}`}>
+                                {scan.alreadyReviewed ? 'Warranty Activated' : 'No Warranty'}
+                              </span>
+                            </div>
+                            <span className="text-[6.5px] text-[#64748B] font-semibold truncate w-full">
+                              {scan.alreadyReviewed ? 'Valid till 12 Jul 2027' : 'Not applicable'}
+                            </span>
+                          </div>
+
+                        </div>
+                      )}
                     </div>
                   </div>
                 );

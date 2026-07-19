@@ -1,67 +1,176 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Megaphone, ShieldAlert, HeartHandshake, Truck, ShoppingBag, ArrowRight, CheckCircle2, Factory, ShieldCheck, Dumbbell, Sparkles, Coffee, Laptop, Gem, BarChart3, Package, Users, QrCode, Settings, Globe } from "lucide-react";
+import { 
+  ShieldCheck, Users, QrCode, ShieldAlert, 
+  Gem, ShoppingBag, Globe, Megaphone, 
+  BarChart3, Laptop, CheckCircle2
+} from "lucide-react";
 import WebHeader from "../../components/WebHeader";
 import WebFooter from "../../components/WebFooter";
 import DemoModal from "../../components/DemoModal";
-import logoShield from "../../assets/logo-shield.png";
-import solutionsHeroImage from "../../assets/banners/new_banners/solutions.png";
+import solutionsHeroImage from "../../assets/web/solutions_web_banner.png";
 
 export default function WebSolutions() {
-  const [activeTab, setActiveTab] = useState("marketing");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const personas = {
-    marketing: {
-      title: "Marketing Teams",
-      icon: <Megaphone className="w-8 h-8" />,
-      desc: "Drive growth with data-driven marketing.",
-      benefits: [
-        "Know your consumers.",
-        "Create personalized campaigns.",
-        "Increase loyalty.",
-        "Measure engagement."
+  const capabilities = [
+    {
+      title: "Product Authentication",
+      subtitle: "Protect Every Product with Confidence",
+      icon: <ShieldCheck className="w-8 h-8 text-blue-600" />,
+      desc: "Give every product a unique digital identity that enables consumers to instantly verify authenticity while helping your brand detect duplicate and suspicious scans.",
+      whatYouCanDo: [
+        "Verify genuine products",
+        "Prevent counterfeits",
+        "Detect duplicate scans",
+        "Build consumer trust",
+        "Monitor authentication activity"
       ]
     },
-    sales: {
-      title: "Sales Teams",
-      icon: <ShoppingBag className="w-8 h-8" />,
-      desc: "Turn products into repeat purchase channels.",
-      benefits: [
-        "Increase repeat purchases.",
-        "Drive customer lifetime value.",
-        "Build stronger customer relationships."
+    {
+      title: "Consumer Registration",
+      subtitle: "Know Who Buys Your Products",
+      icon: <Users className="w-8 h-8 text-blue-600" />,
+      desc: "Transform anonymous purchases into verified consumer relationships through secure product registration.",
+      whatYouCanDo: [
+        "Register product owners",
+        "Build first-party consumer database",
+        "Capture purchase information",
+        "Understand customer demographics",
+        "Create direct brand relationships"
       ]
     },
-    cx: {
-      title: "Customer Experience",
-      icon: <HeartHandshake className="w-8 h-8" />,
-      desc: "Deliver post-purchase experiences that delight.",
-      benefits: [
-        "Simplify support.",
-        "Manage warranties.",
-        "Deliver exceptional post-purchase experiences."
+    {
+      title: "Digital Product Passport",
+      subtitle: "Deliver Complete Product Transparency",
+      icon: <QrCode className="w-8 h-8 text-blue-600" />,
+      desc: "Provide consumers instant access to everything about a product—from ingredients and certifications to user manuals and sustainability information.",
+      whatYouCanDo: [
+        "Product information",
+        "Ingredients & composition",
+        "Certifications",
+        "Lab reports",
+        "User manuals",
+        "Product specifications"
       ]
     },
-    protection: {
-      title: "Brand Protection",
-      icon: <ShieldAlert className="w-8 h-8" />,
-      desc: "Secure your products and revenue.",
-      benefits: [
-        "Protect your products.",
-        "Detect counterfeits.",
-        "Monitor unauthorized distribution."
+    {
+      title: "Digital Warranty Management",
+      subtitle: "Make Warranty Registration Effortless",
+      icon: <ShieldAlert className="w-8 h-8 text-blue-600" />,
+      desc: "Replace paper warranty cards with a seamless digital experience that improves customer satisfaction and simplifies warranty management.",
+      whatYouCanDo: [
+        "Instant warranty activation",
+        "Extended warranty programs",
+        "Warranty status",
+        "Service history",
+        "Digital proof of ownership"
       ]
     },
-    leadership: {
-      title: "Leadership",
-      icon: <BarChart3 className="w-8 h-8" />,
-      desc: "Data to drive the whole business forward.",
-      benefits: [
-        "Gain real-time visibility into consumers, products, and business performance."
+    {
+      title: "Rewards & Loyalty",
+      subtitle: "Turn Every Purchase Into Long-Term Loyalty",
+      icon: <Gem className="w-8 h-8 text-blue-600" />,
+      desc: "Reward verified customers with personalized loyalty experiences that encourage repeat engagement and brand advocacy.",
+      whatYouCanDo: [
+        "Reward points",
+        "Cashback campaigns",
+        "Referral programs",
+        "Exclusive offers",
+        "Consumer engagement"
+      ]
+    },
+    {
+      title: "Smart Reorder",
+      subtitle: "Bring Customers Back at the Right Time",
+      icon: <ShoppingBag className="w-8 h-8 text-blue-600" />,
+      desc: "Help consumers repurchase products effortlessly through intelligent reminders and preferred buying links.",
+      whatYouCanDo: [
+        "Automated reorder reminders",
+        "Purchase links",
+        "Personalized recommendations",
+        "Repeat purchase campaigns",
+        "Consumer retention"
+      ]
+    },
+    {
+      title: "Marketplace Intelligence",
+      subtitle: "Guide Consumers to the Right Purchase Channels",
+      icon: <Globe className="w-8 h-8 text-blue-600" />,
+      desc: "Direct consumers to your preferred marketplaces while understanding where your products are available online.",
+      whatYouCanDo: [
+        "Marketplace buying links",
+        "Preferred seller recommendations",
+        "Marketplace visibility",
+        "Better buying experience"
+      ],
+      exclusive: true
+    },
+    {
+      title: "Price Alerts",
+      subtitle: "Engage Consumers When They're Ready to Buy",
+      icon: <Megaphone className="w-8 h-8 text-blue-600" />,
+      desc: "Notify interested consumers about price drops, exclusive offers, and promotional campaigns to maximize conversions.",
+      whatYouCanDo: [
+        "Price drop notifications",
+        "Promotional campaigns",
+        "Personalized offers",
+        "Better conversion opportunities"
+      ],
+      exclusive: true
+    },
+    {
+      title: "Consumer Intelligence",
+      subtitle: "Understand Every Consumer Interaction",
+      icon: <BarChart3 className="w-8 h-8 text-blue-600" />,
+      desc: "Every scan becomes valuable business intelligence that helps you understand your consumers better.",
+      whatYouCanDo: [
+        "Consumer demographics",
+        "Geographic insights",
+        "Product engagement",
+        "Scan analytics",
+        "Behaviour trends",
+        "Consumer segmentation"
+      ]
+    },
+    {
+      title: "Analytics Dashboard",
+      subtitle: "Make Better Business Decisions",
+      icon: <Laptop className="w-8 h-8 text-blue-600" />,
+      desc: "Track performance across your products, consumers, and engagement through one centralized dashboard.",
+      whatYouCanDo: [
+        "Authentication reports",
+        "Consumer analytics",
+        "Product performance",
+        "Engagement trends",
+        "Business insights",
+        "Executive dashboards"
       ]
     }
-  };
+  ];
+
+  const outcomes = [
+    "Protect your brand from counterfeits",
+    "Build direct consumer relationships",
+    "Collect first-party consumer intelligence",
+    "Increase repeat purchases",
+    "Improve customer engagement",
+    "Simplify warranty management",
+    "Deliver digital product experiences",
+    "Make smarter business decisions"
+  ];
+
+  const industries = [
+    "Nutraceuticals & Supplements",
+    "Cosmetics & Personal Care",
+    "Consumer Electronics",
+    "Pharmaceuticals",
+    "Food & Beverage",
+    "Home & Lifestyle",
+    "Fashion & Accessories",
+    "Appliances",
+    "Luxury Goods"
+  ];
 
   return (
     <div className="min-h-screen bg-white font-sans text-slate-800">
@@ -78,114 +187,128 @@ export default function WebSolutions() {
         </div>
       </section>
 
-      {/* Who benefits Section */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6 md:px-12">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Who benefits from Authentiks?</h2>
-            <p className="text-slate-600 max-w-2xl mx-auto">Our platform provides specialized capabilities for different teams across your organization, ensuring a unified approach to connected products.</p>
+      {/* Hero Section with Text */}
+      <section className="pt-20 pb-16 px-6 md:px-12 bg-slate-50">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="inline-block px-4 py-1.5 rounded-full bg-blue-100 text-blue-800 font-semibold text-sm mb-6">
+            INTRODUCTION
           </div>
-
-          <div className="grid lg:grid-cols-12 gap-8 items-start">
-             {/* Tabs Sidebar */}
-             <div className="lg:col-span-4 flex flex-col gap-2">
-                {Object.keys(personas).map((key) => (
-                   <button 
-                     key={key}
-                     onClick={() => setActiveTab(key)}
-                     className={`flex items-center gap-4 px-6 py-4 rounded-xl text-left transition-all ${activeTab === key ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
-                   >
-                     <div className={`${activeTab === key ? 'text-white' : 'text-blue-600'}`}>
-                        {personas[key].icon}
-                     </div>
-                     <span className="font-bold text-lg">{personas[key].title}</span>
-                   </button>
-                ))}
-             </div>
-             
-             {/* Tab Content */}
-             <div className="lg:col-span-8 bg-slate-50 rounded-3xl p-8 md:p-12 border border-slate-100 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-100 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-50 pointer-events-none"></div>
-                
-                <div className="relative z-10 flex flex-col gap-8">
-                   <div className="flex items-center gap-4 text-blue-600">
-                      <div className="p-3 bg-white rounded-xl shadow-sm border border-slate-100">
-                         {personas[activeTab].icon}
-                      </div>
-                      <h3 className="text-3xl font-bold text-slate-900">{personas[activeTab].title}</h3>
-                   </div>
-                   
-                   <p className="text-lg text-slate-700 leading-relaxed border-b border-slate-200 pb-8">
-                      {personas[activeTab].desc}
-                   </p>
-                   
-                   <div>
-                      <h4 className="font-bold text-slate-900 mb-6 flex items-center gap-2">
-                        <CheckCircle2 size={20} className="text-green-500" /> Key Benefits
-                      </h4>
-                      <ul className="grid sm:grid-cols-2 gap-y-4 gap-x-8">
-                         {personas[activeTab].benefits.map((benefit, idx) => (
-                            <li key={idx} className="flex items-start gap-3">
-                               <div className="mt-1 w-2 h-2 rounded-full bg-blue-600 shrink-0"></div>
-                               <span className="text-slate-700 font-medium">{benefit}</span>
-                            </li>
-                         ))}
-                      </ul>
-                   </div>
-                   
-                   <div className="mt-4 pt-8 border-t border-slate-200">
-                      <Link to="/contact-us" className="inline-flex items-center gap-2 text-blue-600 font-bold hover:text-blue-800 transition-colors">
-                         Discuss your specific use case <ArrowRight size={18} />
-                      </Link>
-                   </div>
-                </div>
-             </div>
-          </div>
+          <h1 className="text-4xl md:text-6xl font-bold text-slate-900 mb-6 tracking-tight">
+            One Platform. <br className="hidden md:block" />
+            <span className="text-blue-600">Endless Possibilities.</span>
+          </h1>
+          <p className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto mb-8 leading-relaxed">
+            Every product is an opportunity to build trust, collect valuable consumer insights, increase repeat purchases, and strengthen your brand.
+          </p>
+          <p className="text-lg text-slate-600 max-w-4xl mx-auto leading-relaxed">
+            Authentiks brings together every post-purchase capability into one intelligent platform, helping brands create exceptional consumer experiences while unlocking measurable business value.
+          </p>
         </div>
       </section>
 
-      {/* Business Outcomes */}
+      {/* Capabilities Section */}
       <section className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
-          <h2 className="text-3xl font-bold text-slate-900 mb-16 text-center">Business Outcomes</h2>
-          
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-8">
-            {[
-              "Consumer Trust",
-              "Revenue Growth",
-              "Repeat Purchases",
-              "Counterfeit Reduction",
-              "Better Decision Making",
-              "Stronger Consumer Relationships"
-            ].map((outcome, idx) => (
-              <div key={idx} className="flex items-center gap-4 bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-sm">
-                <CheckCircle2 className="text-green-500 shrink-0" size={28} />
-                <h4 className="text-lg font-bold text-slate-900">{outcome}</h4>
+          <div className="text-center mb-20">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Complete Post-Purchase Platform</h2>
+            <p className="text-slate-600 max-w-2xl mx-auto">Everything you need to transform your physical products into intelligent business assets.</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-10">
+            {capabilities.map((cap, idx) => (
+              <div key={idx} className="bg-slate-50 rounded-3xl p-8 md:p-10 border border-slate-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                {cap.exclusive && (
+                  <div className="absolute top-6 right-6 px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-full shadow-sm z-10">
+                    Exclusive Authentiks Capability
+                  </div>
+                )}
+                <div className="w-16 h-16 rounded-2xl bg-white flex items-center justify-center shadow-sm mb-6 border border-slate-100 group-hover:scale-110 transition-transform z-10 relative">
+                  {cap.icon}
+                </div>
+                
+                <h3 className="text-2xl font-bold text-slate-900 mb-2 relative z-10">{cap.title}</h3>
+                <h4 className="text-blue-600 font-semibold mb-4 relative z-10">{cap.subtitle}</h4>
+                <p className="text-slate-600 mb-8 leading-relaxed h-auto md:h-[80px] relative z-10">
+                  {cap.desc}
+                </p>
+
+                <div className="bg-white rounded-2xl p-6 border border-slate-100 relative z-10">
+                  <h5 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <CheckCircle2 size={18} className="text-green-500" /> What You Can Do
+                  </h5>
+                  <ul className="space-y-3">
+                    {cap.whatYouCanDo.map((item, i) => (
+                      <li key={i} className="flex items-start gap-3 text-slate-700">
+                        <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0"></div>
+                        <span className="text-sm font-medium">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                {/* Decorative background element */}
+                <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-blue-100 rounded-full blur-3xl opacity-50 group-hover:opacity-70 transition-opacity"></div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 px-6 md:px-12 bg-slate-50 border-t border-slate-100">
-         <div className="max-w-5xl mx-auto bg-gradient-to-r from-blue-700 to-blue-900 rounded-3xl p-10 md:p-16 flex flex-col md:flex-row items-center justify-between text-left shadow-2xl relative overflow-hidden gap-10">
+      {/* Why Brands Choose Authentiks */}
+      <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-blue-900/30 rounded-full blur-[120px] pointer-events-none"></div>
+        
+        <div className="max-w-7xl mx-auto px-6 md:px-12 text-center relative z-10">
+          <div className="inline-block px-4 py-1.5 rounded-full bg-blue-900/50 text-blue-300 font-semibold text-sm mb-6 border border-blue-800">
+            WHY BRANDS CHOOSE AUTHENTIKS
+          </div>
+          <h2 className="text-3xl md:text-5xl font-bold mb-16">One Platform. Multiple Business Outcomes.</h2>
+          
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            {outcomes.map((outcome, idx) => (
+              <div key={idx} className="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 flex items-start gap-4 text-left hover:bg-slate-800 transition-colors shadow-lg">
+                <CheckCircle2 className="text-green-400 shrink-0 mt-0.5" size={24} />
+                <span className="font-semibold text-slate-200">{outcome}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Industries Section */}
+      <section className="py-24 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 text-center">
+          <div className="inline-block px-4 py-1.5 rounded-full bg-white text-slate-600 font-semibold text-sm mb-6 border border-slate-200">
+            INDUSTRIES
+          </div>
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6">Built for Every Consumer Brand</h2>
+          <p className="text-xl text-slate-600 max-w-2xl mx-auto mb-16">
+            Whether you manufacture or sell products, Authentiks adapts to your business.
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-4 max-w-5xl mx-auto">
+            {industries.map((industry, idx) => (
+              <div key={idx} className="px-6 py-3 bg-white border border-slate-200 rounded-full text-slate-700 font-semibold shadow-sm hover:border-blue-300 hover:bg-blue-50 transition-colors cursor-default">
+                {industry}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-20 px-6 md:px-12 bg-white">
+         <div className="max-w-5xl mx-auto bg-gradient-to-br from-blue-700 to-blue-900 rounded-[2.5rem] p-12 md:p-20 text-center shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 blur-3xl rounded-full -translate-y-1/2 translate-x-1/3"></div>
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/20 blur-3xl rounded-full translate-y-1/2 -translate-x-1/3"></div>
             
-            <div className="relative z-10 text-white max-w-xl">
-               <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to solve your toughest challenges?</h2>
-               <p className="text-blue-100 text-lg">See how Authentiks can be tailored to your specific business needs.</p>
-            </div>
-            
-            <div className="relative z-10 flex flex-col gap-4 w-full md:w-auto">
-              <button onClick={() => setIsDialogOpen(true)} className="w-full bg-white text-blue-800 px-8 py-3.5 rounded-lg font-bold hover:bg-slate-100 transition-colors shadow-lg flex items-center justify-center gap-2">
-                Book a Demo
-              </button>
-              <Link to="/contact-us">
-                <button className="w-full bg-transparent border border-white text-white px-8 py-3.5 rounded-lg font-bold hover:bg-white/10 transition-colors flex items-center justify-center">
-                  Contact Sales
-                </button>
-              </Link>
+            <div className="relative z-10 text-white flex flex-col items-center">
+               <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight max-w-3xl">Transform Every Product Into a Connected Business Asset.</h2>
+               <p className="text-blue-100 text-lg md:text-xl mb-10 max-w-2xl">Protect your products. Know your consumers. Build lasting relationships.</p>
+               
+               <button onClick={() => setIsDialogOpen(true)} className="bg-white text-blue-800 px-10 py-4 rounded-xl font-bold text-lg hover:bg-slate-50 transition-colors shadow-lg hover:scale-105 transform duration-200">
+                 Book a Demo
+               </button>
             </div>
          </div>
       </section>

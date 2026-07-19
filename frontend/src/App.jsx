@@ -24,6 +24,7 @@ import WebProblem from "./pages/web/WebProblem";
 import WebVerified from "./pages/web/WebVerified";
 import WebPlatform from "./pages/web/WebPlatform";
 import WebSolutions from "./pages/web/WebSolutions";
+import WebWhyAuthentiks from "./pages/web/WebWhyAuthentiks";
 import Scan from "./pages/mobile/scan";
 import Result from "./pages/mobile/Result";
 import ConsumerSupport from "./pages/mobile/ConsumerSupport";
@@ -270,6 +271,7 @@ export default function App() {
             <Route path="/platform" element={<WebPlatform />} />
             <Route path="/solutions" element={<WebSolutions />} />
             <Route path="/about-us" element={<WebAboutUs />} />
+            <Route path="/why-authentiks" element={<WebWhyAuthentiks />} />
             <Route path="/faqs" element={<WebFAQs />} />
             <Route path="/contact-us" element={<WebContactUs />} />
             <Route path="/privacy-policy" element={<WebPrivacyPolicy />} />

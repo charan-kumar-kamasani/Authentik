@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Search, Filter, ShieldCheck, AlertTriangle, XCircle, HelpCircle, Calendar, Clock, CheckCircle2, ChevronRight, ArrowLeft, ScanLine } from "lucide-react";
+import { Search, Filter, ShieldCheck, AlertTriangle, XCircle, HelpCircle, Calendar, Clock, CheckCircle2, ChevronRight, ArrowLeft, ScanLine, Star, Gift } from "lucide-react";
 import API_BASE_URL from "../../config/api";
 import MobileNavbar from "../../components/MobileNavbar";
 
@@ -187,52 +187,83 @@ export default function ScanHistory() {
           style={{ backgroundColor: item.ribbonColor }}
         />
 
-        <div className="flex items-center gap-3 p-3.5 flex-1 min-w-0">
-          {/* Image Container */}
-          <div className="w-[64px] h-[64px] rounded-[12px] flex items-center justify-center flex-shrink-0 overflow-hidden p-1"
-            style={{ backgroundColor: item.productImage ? '#FFFFFF' : item.ribbonColor + '15' }}
-          >
-            {item.productImage ? (
-              <img src={item.productImage} alt={item.cardTitle} className="w-full h-full object-contain" />
-            ) : (
-              <span className="text-[18px] font-black" style={{ color: item.ribbonColor }}>
-                {(item.brandName || item.productName || 'P').charAt(0).toUpperCase()}
-              </span>
-            )}
-          </div>
+        <div className="flex flex-col w-full">
+          {/* Top Row: Image, Text, Chevron */}
+          <div className="flex items-center gap-3 p-3.5 pb-2">
+            {/* Image Container */}
+            <div className="w-[64px] h-[64px] rounded-[12px] flex items-center justify-center flex-shrink-0 overflow-hidden p-1"
+              style={{ backgroundColor: item.productImage ? '#FFFFFF' : item.ribbonColor + '15' }}
+            >
+              {item.productImage ? (
+                <img src={item.productImage} alt={item.cardTitle} className="w-full h-full object-contain" />
+              ) : (
+                <span className="text-[18px] font-black" style={{ color: item.ribbonColor }}>
+                  {(item.brandName || item.productName || 'P').charAt(0).toUpperCase()}
+                </span>
+              )}
+            </div>
 
-          {/* Text Content */}
-          <div className="flex-1 min-w-0">
-            <h4 className="font-extrabold text-[15px] text-[#0F172A] leading-tight flex items-center gap-1.5 min-w-0">
-              <span className="truncate">{item.productName}</span>
-            </h4>
-            <p className="text-[12px] text-[#64748B] truncate mt-0.5 font-medium">{item.brandName || "Unknown Brand"}</p>
-            <div className="flex items-center gap-2 mt-1.5 w-full">
-              <div className="flex items-center gap-1 text-[#94A3B8] text-[10px] font-semibold shrink-0">
+            {/* Text Content */}
+            <div className="flex-1 min-w-0">
+              <h4 className="font-extrabold text-[14px] text-[#1E293B] leading-tight mb-1 truncate">
+                {item.productName}
+              </h4>
+              <p className="text-[12px] text-[#64748B] truncate mt-0.5 font-medium mb-1.5">{item.brandName || "Unknown Brand"}</p>
+              <div className="flex items-center gap-1.5 text-[#94A3B8] text-[10px] font-semibold">
                 <Calendar className="w-3 h-3 shrink-0" strokeWidth={2} />
                 <span>{item.scannedDate}, {item.scannedTime}</span>
               </div>
-              {item.status === "ORIGINAL" && (
-                <>
-                  <div className="w-1 h-1 rounded-full bg-[#E2E8F0] shrink-0"></div>
-                  {item.alreadyReviewed ? (
-                    <div className="flex items-center gap-1 text-[#10B981] text-[10px] font-bold shrink-0">
-                      <CheckCircle2 className="w-3 h-3" strokeWidth={2.5} />
-                      <span>Reviewed</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1 text-[#F59E0B] text-[10px] font-bold shrink-0">
-                      <Clock className="w-3 h-3" strokeWidth={2.5} />
-                      <span>Pending</span>
-                    </div>
-                  )}
-                </>
-              )}
             </div>
+
+            {/* Chevron */}
+            <ChevronRight className="w-5 h-5 text-[#CBD5E1] flex-shrink-0" strokeWidth={2.5} />
           </div>
 
-          {/* Chevron */}
-          <ChevronRight className="w-5 h-5 text-[#CBD5E1] flex-shrink-0" strokeWidth={2.5} />
+          {/* Bottom Row: Badges */}
+          {item.status === "ORIGINAL" && (
+            <div className="mx-3.5 mb-3.5 mt-1 border border-[#F1F5F9] rounded-[8px] bg-[#F8FAFC] py-1.5 px-0.5 flex items-center divide-x divide-[#E2E8F0]">
+              
+              {/* Reviewed */}
+              <div className="flex-1 flex flex-col justify-center items-center px-0.5 text-center min-w-0 overflow-hidden">
+                <div className="flex items-center justify-center gap-0.5 mb-[1px] w-full">
+                  <Star className={`w-[9px] h-[9px] shrink-0 ${item.alreadyReviewed ? 'text-[#10B981]' : 'text-[#94A3B8]'}`} strokeWidth={2.5} />
+                  <span className={`text-[7.5px] font-bold truncate ${item.alreadyReviewed ? 'text-[#10B981]' : 'text-[#94A3B8]'}`}>
+                    {item.alreadyReviewed ? 'Reviewed' : 'Review'}
+                  </span>
+                </div>
+                <span className="text-[6.5px] text-[#64748B] font-semibold truncate w-full">
+                  {item.alreadyReviewed ? 'Thank you for your review!' : 'Share your feedback'}
+                </span>
+              </div>
+
+              {/* Reward */}
+              <div className="flex-1 flex flex-col justify-center items-center px-0.5 text-center min-w-0 overflow-hidden">
+                <div className="flex items-center justify-center gap-0.5 mb-[1px] w-full">
+                  <Gift className={`w-[9px] h-[9px] shrink-0 ${item.alreadyReviewed ? 'text-[#8B5CF6]' : 'text-[#94A3B8]'}`} strokeWidth={2.5} />
+                  <span className={`text-[7.5px] font-bold truncate ${item.alreadyReviewed ? 'text-[#8B5CF6]' : 'text-[#94A3B8]'}`}>
+                    {item.alreadyReviewed ? 'Reward Claimed' : 'No Reward'}
+                  </span>
+                </div>
+                <span className="text-[6.5px] text-[#64748B] font-semibold truncate w-full">
+                  {item.alreadyReviewed ? 'You saved ₹200' : 'Not claimed'}
+                </span>
+              </div>
+
+              {/* Warranty */}
+              <div className="flex-1 flex flex-col justify-center items-center px-0.5 text-center min-w-0 overflow-hidden">
+                <div className="flex items-center justify-center gap-0.5 mb-[1px] w-full">
+                  <ShieldCheck className={`w-[9px] h-[9px] shrink-0 ${item.alreadyReviewed ? 'text-[#105DE4]' : 'text-[#94A3B8]'}`} strokeWidth={2.5} />
+                  <span className={`text-[7.5px] font-bold truncate ${item.alreadyReviewed ? 'text-[#105DE4]' : 'text-[#94A3B8]'}`}>
+                    {item.alreadyReviewed ? 'Warranty Activated' : 'No Warranty'}
+                  </span>
+                </div>
+                <span className="text-[6.5px] text-[#64748B] font-semibold truncate w-full">
+                  {item.alreadyReviewed ? 'Valid till 12 Jul 2027' : 'Not applicable'}
+                </span>
+              </div>
+
+            </div>
+          )}
         </div>
       </div>
     );

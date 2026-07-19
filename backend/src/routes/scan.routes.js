@@ -7,6 +7,7 @@ const User = require("../models/User");
 const FormConfig = require("../models/FormConfig");
 const Review = require("../models/Review");
 const ProductCoupon = require("../models/ProductCoupon");
+const UserReward = require("../models/UserReward");
 const WarrantyClaim = require("../models/WarrantyClaim");
 const jwt = require("jsonwebtoken");
 const { protect } = require("../middleware/authMiddleware");
@@ -73,6 +74,20 @@ router.get("/stats", protect, async (req, res) => {
       }
     ]);
 
+    const [
+      reviewsCount,
+      couponsUnlocked,
+      couponsAvailable,
+      warrantyActive,
+      warrantyInactive
+    ] = await Promise.all([
+      Review.countDocuments({ userId }),
+      UserReward.countDocuments({ userId }),
+      UserReward.countDocuments({ userId, isRedeemed: false }),
+      WarrantyClaim.countDocuments({ userId, status: { $ne: 'Rejected' } }),
+      WarrantyClaim.countDocuments({ userId, status: 'Rejected' })
+    ]);
+
     const stats = statsArray[0] || {};
 
     res.json({
@@ -80,6 +95,23 @@ router.get("/stats", protect, async (req, res) => {
       authentiks: stats.original?.[0]?.count || 0,
       counterfeit: stats.fake?.[0]?.count || 0,
       alert: stats.alert?.[0]?.count || 0,
+      activeWarranties: warrantyActive,
+      
+      rewardsData: {
+        totalRewardValue: req.user.walletBalance || 0, // Using user's wallet balance
+        reviews: {
+          submitted: reviewsCount,
+          pending: 0
+        },
+        coupons: {
+          unlocked: couponsUnlocked,
+          available: couponsAvailable
+        },
+        warranty: {
+          active: warrantyActive,
+          inactive: warrantyInactive
+        }
+      }
     });
   } catch (err) {
     console.error("Error fetching scan stats:", err);

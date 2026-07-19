@@ -28,6 +28,7 @@ export default function WebFooter() {
             <Link to="/" className="text-gray-400 hover:text-white transition-colors text-[14px]">Home</Link>
             <Link to="/solutions" className="text-gray-400 hover:text-white transition-colors text-[14px]">Solutions</Link>
             <Link to="/about-us" className="text-gray-400 hover:text-white transition-colors text-[14px]">About Us</Link>
+            <Link to="/why-authentiks" className="text-gray-400 hover:text-white transition-colors text-[14px]">Why Authentiks</Link>
             <Link to="/pricing" className="text-gray-400 hover:text-white transition-colors text-[14px]">Plans</Link>
             <Link to="/platform" className="text-gray-400 hover:text-white transition-colors text-[14px]">Platform</Link>
             <Link to="/faqs" className="text-gray-400 hover:text-white transition-colors text-[14px]">FAQ</Link>
