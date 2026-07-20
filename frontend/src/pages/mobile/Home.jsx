@@ -18,7 +18,8 @@ import {
   Clock,
   CheckCircle2,
   Star,
-  Gift
+  Gift,
+  Lock
 } from "lucide-react";
 
 
@@ -65,8 +66,9 @@ export default function Home() {
     activeWarranties: 0,
     rewardsData: {
       totalRewardValue: 0,
+      pendingRewardValue: 0,
       reviews: { submitted: 0, pending: 0 },
-      coupons: { unlocked: 0, available: 0 },
+      coupons: { unlocked: 1, available: 1 },
       warranty: { active: 0, inactive: 0 }
     }
   });
@@ -100,7 +102,7 @@ export default function Home() {
             rewardsData: data.rewardsData || {
               totalRewardValue: 0,
               reviews: { submitted: 0, pending: 0 },
-              coupons: { unlocked: 0, available: 0 },
+              coupons: { unlocked: 1, available: 1 },
               warranty: { active: 0, inactive: 0 }
             }
           };
@@ -342,7 +344,7 @@ export default function Home() {
               
               {/* Gift Box */}
               <div className="flex-shrink-0 flex items-center justify-center">
-                <div className="text-[52px] leading-none drop-shadow-xl">🎁</div>
+                <div className="text-[52px] leading-none drop-shadow-xl" style={{ animation: 'gift-shake 2.5s ease-in-out infinite' }}>🎁</div>
               </div>
               
               {/* Content */}
@@ -363,6 +365,20 @@ export default function Home() {
               </div>
 
             </div>
+          </div>
+
+          {/* Pending Rewards Banner */}
+          <div className="w-full bg-gradient-to-r from-[#5B21B6] to-[#4C1D95] rounded-[20px] p-4 relative overflow-hidden mb-4 shadow-[0_4px_15px_rgba(76,29,149,0.15)] border border-[#6D28D9] flex items-center justify-between">
+            <div className="flex flex-col justify-center relative z-10">
+              <h2 className="text-white font-black text-[24px] leading-none mb-1 tracking-tight">₹{stats.rewardsData.pendingRewardValue?.toLocaleString('en-IN') ?? '0'}</h2>
+              <span className="text-[#E9D5FF] font-medium text-[12px] mb-0.5">Pending Rewards</span>
+              <span className="text-[#D8B4FE] font-medium text-[10px] leading-tight">Complete actions to unlock</span>
+            </div>
+            <div className="flex-shrink-0 relative z-10 opacity-90 mr-1 bg-[#4C1D95] w-10 h-10 flex items-center justify-center rounded-full border border-[#7C3AED] shadow-inner">
+               <Lock className="w-[18px] h-[18px] text-[#C4B5FD]" strokeWidth={2.5} />
+            </div>
+            {/* Background design elements */}
+            <div className="absolute right-[-20%] top-[-50%] w-[100px] h-[100px] bg-[#6D28D9] rounded-full blur-2xl opacity-50 pointer-events-none"></div>
           </div>
 
           {/* Grid of 3 Cards */}
@@ -389,7 +405,7 @@ export default function Home() {
             {/* Coupons Card */}
             <div className="bg-gradient-to-b from-[#FAF5FF] to-[#FFFFFF] rounded-[16px] p-3 flex flex-col items-center border border-[#E9D5FF] shadow-[0_2px_8px_rgba(147,51,234,0.05)]">
               <div className="w-[32px] h-[32px] rounded-full bg-white border border-[#E9D5FF] flex items-center justify-center mb-1 shadow-sm text-[#9333EA]">
-                 <Gift className="w-[16px] h-[16px] stroke-[2]" />
+                 <Gift className="w-[16px] h-[16px] stroke-[2]" style={{ animation: 'nod 2s ease-in-out infinite' }} />
               </div>
               <span className="text-[#0F172A] font-bold text-[12px] mb-2">Coupons</span>
               <div className="flex w-full items-center justify-between px-1">
@@ -400,7 +416,7 @@ export default function Home() {
                 <div className="w-[1px] h-[20px] bg-[#E9D5FF]"></div>
                 <div className="flex flex-col items-center flex-1">
                   <span className="text-[#F59E0B] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.coupons.available}</span>
-                  <span className="text-[#0F172A] text-[9px] font-semibold">Available</span>
+                  <span className="text-[#0F172A] text-[9px] font-semibold">Pending</span>
                 </div>
               </div>
             </div>
@@ -567,6 +583,23 @@ export default function Home() {
           @keyframes float {
             0%, 100% { transform: translateY(-50%) translateY(0); }
             50% { transform: translateY(-50%) translateY(-6px); }
+          }
+          @keyframes nod {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-15deg); }
+            75% { transform: rotate(15deg); }
+          }
+          @keyframes gift-shake {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            10% { transform: rotate(15deg) scale(1.1); }
+            20% { transform: rotate(-15deg) scale(1.1); }
+            30% { transform: rotate(15deg) scale(1.1); }
+            40% { transform: rotate(-15deg) scale(1.1); }
+            50% { transform: rotate(0deg) scale(1.1); }
+            60% { transform: rotate(0deg) scale(1) translateY(-10px); }
+            70% { transform: rotate(0deg) scale(1) translateY(0px); }
+            80% { transform: rotate(0deg) scale(1) translateY(-5px); }
+            90% { transform: rotate(0deg) scale(1) translateY(0px); }
           }
         `}
       </style>

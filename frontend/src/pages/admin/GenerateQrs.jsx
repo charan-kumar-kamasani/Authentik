@@ -23,7 +23,7 @@ export default function GenerateQrs() {
   const [calculatedExpiry, setCalculatedExpiry] = useState('');
 
   // Coupon fields
-  const [coupon, setCoupon] = useState({ title: '', code: '', description: '', websiteLink: '', expiryDate: '' });
+  const [coupon, setCoupon] = useState({ title: '', code: '', description: '', websiteLink: '', expiryDate: '', discountType: 'percentage', discountValue: '', mrp: '' });
 
   // Warranty fields
   const [warranty, setWarranty] = useState({ duration: '', durationUnit: 'months', warrantyType: '', description: '', customerCare: '', supportEmail: '' });
@@ -591,6 +591,9 @@ export default function GenerateQrs() {
           description: coupon.description,
           websiteLink: coupon.websiteLink,
           expiryDate: coupon.expiryDate || null,
+          discountType: coupon.discountType || 'percentage',
+          discountValue: coupon.discountValue ? Number(coupon.discountValue) : null,
+          mrp: coupon.mrp ? Number(coupon.mrp) : null,
         } : undefined,
         // Warranty (if provided)
         warranty: (warranty.duration || warranty.warrantyType || warranty.customerCare || warranty.supportEmail || warranty.description) ? {
@@ -1501,6 +1504,83 @@ export default function GenerateQrs() {
             onChange={(e) => setCoupon({ ...coupon, code: e.target.value.toUpperCase() })}
             className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all font-medium uppercase"
           />
+        </div>
+
+        <div className="col-span-1 md:col-span-2 flex flex-col gap-3 mt-2">
+          <label className="text-sm font-medium text-slate-700 ml-1">
+            Discount Type
+          </label>
+          <div className="flex gap-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input 
+                type="radio" 
+                name="discountType" 
+                value="percentage"
+                checked={coupon.discountType === 'percentage'}
+                onChange={() => setCoupon({ ...coupon, discountType: 'percentage' })}
+                className="w-4 h-4 text-purple-600 focus:ring-purple-500"
+              />
+              <span className="text-sm text-slate-700 font-medium">% Discount</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input 
+                type="radio" 
+                name="discountType" 
+                value="flat"
+                checked={coupon.discountType === 'flat'}
+                onChange={() => setCoupon({ ...coupon, discountType: 'flat' })}
+                className="w-4 h-4 text-purple-600 focus:ring-purple-500"
+              />
+              <span className="text-sm text-slate-700 font-medium">Flat Amount (INR)</span>
+            </label>
+          </div>
+
+          <div className="flex gap-4 mt-1">
+            {coupon.discountType === 'percentage' ? (
+              <>
+                <div className="flex-1 flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-slate-500 ml-1">Discount %</label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      placeholder="e.g. 20"
+                      value={coupon.discountValue}
+                      onChange={(e) => setCoupon({ ...coupon, discountValue: e.target.value })}
+                      className="w-full pl-4 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all font-medium"
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">%</span>
+                  </div>
+                </div>
+                <div className="flex-1 flex flex-col gap-1.5">
+                  <label className="text-xs font-semibold text-slate-500 ml-1">MRP</label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">₹</span>
+                    <input
+                      type="number"
+                      placeholder="e.g. 1000"
+                      value={coupon.mrp}
+                      onChange={(e) => setCoupon({ ...coupon, mrp: e.target.value })}
+                      className="w-full pl-8 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all font-medium"
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="w-1/2 flex flex-col gap-1.5">
+                <label className="text-xs font-semibold text-slate-500 ml-1">Discount Amount</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">₹</span>
+                  <input
+                    type="number"
+                    placeholder="e.g. 200"
+                    value={coupon.discountValue}
+                    onChange={(e) => setCoupon({ ...coupon, discountValue: e.target.value })}
+                    className="w-full pl-8 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all font-medium"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex flex-col gap-1.5">

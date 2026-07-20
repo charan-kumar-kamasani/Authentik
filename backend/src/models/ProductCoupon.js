@@ -6,6 +6,9 @@ const productCouponSchema = new mongoose.Schema({
   description: { type: String, default: '' },
   websiteLink: { type: String, trim: true },
   expiryDate:  { type: Date, default: null },
+  discountType:{ type: String, enum: ['percentage', 'flat'], default: 'percentage' },
+  discountValue:{ type: Number, default: null },
+  mrp:         { type: Number, default: null },
   // Links
   productId:   { type: mongoose.Schema.Types.ObjectId, ref: 'Product', default: null },
   orderId:     { type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: null },

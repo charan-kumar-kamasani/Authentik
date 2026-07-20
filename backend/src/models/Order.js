@@ -115,6 +115,9 @@ const orderSchema = new mongoose.Schema({
     description: { type: String, trim: true },
     websiteLink: { type: String, trim: true },
     expiryDate: { type: Date, default: null },
+    discountType: { type: String, enum: ['percentage', 'flat'], default: 'percentage' },
+    discountValue: { type: Number, default: null },
+    mrp: { type: Number, default: null },
   },
 
   // Warranty information attached to this order's products

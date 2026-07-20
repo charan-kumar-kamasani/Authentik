@@ -957,7 +957,10 @@ const ProductManager = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-1">
-                          <h4 className="font-black text-gray-900 truncate" title={product.productName}>{product.productName}</h4>
+                          <h4 className="font-black text-gray-900 truncate flex items-center gap-1.5" title={product.productName}>
+                            <Package size={16} className="text-blue-500 shrink-0" />
+                            <span className="truncate">{product.productName}</span>
+                          </h4>
                            <span className="flex-shrink-0 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider bg-blue-100 text-blue-700">
                             Verified Entry
                           </span>

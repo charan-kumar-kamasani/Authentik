@@ -79,14 +79,50 @@ router.get("/stats", protect, async (req, res) => {
       couponsUnlocked,
       couponsAvailable,
       warrantyActive,
-      warrantyInactive
+      warrantyInactive,
+      originalScans,
+      userReviews
     ] = await Promise.all([
       Review.countDocuments({ userId }),
       UserReward.countDocuments({ userId }),
-      UserReward.countDocuments({ userId, isRedeemed: false }),
+      UserReward.find({ userId, isRedeemed: false }).populate('productCouponId', 'discountType discountValue mrp').lean(),
       WarrantyClaim.countDocuments({ userId, status: { $ne: 'Rejected' } }),
-      WarrantyClaim.countDocuments({ userId, status: 'Rejected' })
+      WarrantyClaim.countDocuments({ userId, status: 'Rejected' }),
+      Scan.find({ userId, status: 'ORIGINAL' }).select('productId').lean(),
+      Review.find({ userId }).select('productId').lean()
     ]);
+
+    const productIds = originalScans.map(s => s.productId);
+    const reviewedProductIds = new Set(userReviews.map(r => r.productId?.toString()));
+    const unreviewedProductIds = productIds.filter(pid => pid && !reviewedProductIds.has(pid.toString()));
+
+    let pendingRewardValue = 0;
+    if (unreviewedProductIds.length > 0) {
+      const pendingCoupons = await ProductCoupon.find({ productId: { $in: unreviewedProductIds }, isActive: true }).lean();
+      pendingCoupons.forEach(coupon => {
+         let value = 0;
+         if (coupon.discountType === 'flat' && coupon.discountValue) {
+            value = Number(coupon.discountValue);
+         } else if (coupon.discountType === 'percentage' && coupon.discountValue && coupon.mrp) {
+            value = (Number(coupon.mrp) * Number(coupon.discountValue)) / 100;
+         }
+         pendingRewardValue += value;
+      });
+    }
+
+    // Add value of rewards that have been unlocked (reviewed) but not yet redeemed
+    unredeemedRewards.forEach(reward => {
+       const coupon = reward.productCouponId;
+       if (coupon) {
+         let value = 0;
+         if (coupon.discountType === 'flat' && coupon.discountValue) {
+            value = Number(coupon.discountValue);
+         } else if (coupon.discountType === 'percentage' && coupon.discountValue && coupon.mrp) {
+            value = (Number(coupon.mrp) * Number(coupon.discountValue)) / 100;
+         }
+         pendingRewardValue += value;
+       }
+    });
 
     const stats = statsArray[0] || {};
 
@@ -99,13 +135,14 @@ router.get("/stats", protect, async (req, res) => {
       
       rewardsData: {
         totalRewardValue: req.user.walletBalance || 0, // Using user's wallet balance
+        pendingRewardValue,
         reviews: {
           submitted: reviewsCount,
-          pending: 0
+          pending: unreviewedProductIds.length
         },
         coupons: {
           unlocked: couponsUnlocked,
-          available: couponsAvailable
+          available: unredeemedRewards.length
         },
         warranty: {
           active: warrantyActive,
