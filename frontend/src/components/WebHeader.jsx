@@ -23,7 +23,7 @@ export default function WebHeader() {
     { name: "Home", path: "/" },
     { name: "About Us", path: "/about-us" },
     { name: "Why Authentiks", path: "/why-authentiks" },
-    { name: "Platform", path: "/platform" },
+    //{ name: "Platform", path: "/platform" },
     { name: "Solutions", path: "/solutions" },
     { name: "Plans", path: "/pricing" },
     { name: "FAQ", path: "/faqs" },
