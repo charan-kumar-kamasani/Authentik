@@ -21,6 +21,9 @@ import {
   Gift,
   Lock
 } from "lucide-react";
+import Lottie from "lottie-react";
+import coinAnimationData from "../../assets/gold_coin.json";
+
 
 
 
@@ -338,47 +341,51 @@ export default function Home() {
             </button>
           </div>
 
-          {/* Banner */}
-          <div className="w-full bg-gradient-to-r from-[#D6C1FF] to-[#EBE4FF] rounded-[20px] p-4 relative overflow-hidden mb-3 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#E9D5FF]">
-            <div className="flex items-center w-full relative z-10 gap-3">
-              
-              {/* Gift Box */}
-              <div className="flex-shrink-0 flex items-center justify-center">
-                <div className="text-[52px] leading-none drop-shadow-xl" style={{ animation: 'gift-shake 2.5s ease-in-out infinite' }}>🎁</div>
+          {/* Unified Rewards Banner */}
+          <div className="w-full bg-gradient-to-r from-[#EBE0FF] to-[#F5F0FF] rounded-[24px] p-4 relative overflow-visible mb-5 shadow-[0_4px_14px_rgba(76,29,149,0.06)] border border-[#EBE0FF] flex items-stretch">
+            <div className="flex-shrink-0 relative z-10 flex items-center pr-1">
+              {/* Ultra Realistic 3D Gold Coin (Lottie) */}
+              <div className="flex items-center justify-center relative w-[44px] h-[44px]">
+                <Lottie 
+                  animationData={coinAnimationData} 
+                  loop={true} 
+                  className="w-[44px] h-[44px] drop-shadow-md scale-[1.2]"
+                />
               </div>
+            </div>
               
-              {/* Content */}
-              <div className="flex-1 min-w-0 flex flex-col justify-center">
-                <div className="flex items-center gap-1 mb-0.5">
-                  <span className="text-[#4C1D95] font-bold text-[12px] whitespace-nowrap">Rewards Available</span>
-                  <div className="w-[14px] h-[14px] rounded-full border border-[#4C1D95] flex items-center justify-center text-[#4C1D95] text-[9px] font-bold shrink-0">i</div>
+            {/* Content Area */}
+            <div className="flex flex-1 relative z-10 pl-3">
+              
+              {/* Left Column */}
+              <div className="flex flex-col flex-1 min-w-0 justify-start">
+                {/* Fixed height header to force alignment */}
+                <div className="h-[14px] flex items-center gap-1 mb-1">
+                  <span className="text-[#5B21B6] font-semibold text-[10px] whitespace-nowrap">Rewards Overview</span>
+                  <div className="w-[11px] h-[11px] rounded-full border border-[#5B21B6] flex items-center justify-center text-[#5B21B6] text-[7.5px] font-bold shrink-0">i</div>
                 </div>
-                <h2 className="text-[#3B0764] font-black text-[28px] leading-none mb-1 tracking-tight">₹{stats.rewardsData.totalRewardValue.toLocaleString('en-IN')}</h2>
-                <span className="text-[#6B21A8] font-semibold text-[10px] whitespace-nowrap">Total Reward Value</span>
-              </div>
-              
-              {/* Button */}
-              <div className="flex-shrink-0 flex items-center">
-                <button className="bg-white text-[#4C1D95] rounded-full px-3 py-2 flex items-center gap-0.5 font-bold text-[11px] shadow-sm active:scale-95 transition-transform whitespace-nowrap">
-                  Claim Rewards <ChevronRight className="w-[14px] h-[14px] stroke-[3]" />
-                </button>
+                <h2 className="text-[#2E1065] font-black text-[22px] leading-none mb-1 tracking-tight">₹{stats.rewardsData.totalRewardValue.toLocaleString('en-IN')}</h2>
+                <span className="text-[#4C1D95] font-bold text-[10px] whitespace-nowrap">Rewards Unlocked</span>
+                <span className="text-[#6B21A8] font-medium text-[9px] whitespace-nowrap mt-0.5">Available to use</span>
               </div>
 
-            </div>
-          </div>
+              {/* Vertical Divider */}
+              <div className="w-[1px] bg-[#D4C3ED] mx-3 my-1"></div>
 
-          {/* Pending Rewards Banner */}
-          <div className="w-full bg-gradient-to-r from-[#5B21B6] to-[#4C1D95] rounded-[20px] p-4 relative overflow-hidden mb-4 shadow-[0_4px_15px_rgba(76,29,149,0.15)] border border-[#6D28D9] flex items-center justify-between">
-            <div className="flex flex-col justify-center relative z-10">
-              <h2 className="text-white font-black text-[24px] leading-none mb-1 tracking-tight">₹{stats.rewardsData.pendingRewardValue?.toLocaleString('en-IN') ?? '0'}</h2>
-              <span className="text-[#E9D5FF] font-medium text-[12px] mb-0.5">Pending Rewards</span>
-              <span className="text-[#D8B4FE] font-medium text-[10px] leading-tight">Complete actions to unlock</span>
+              {/* Right Column */}
+              <div className="flex flex-col flex-1 min-w-0 justify-start pr-8">
+                {/* Empty spacer exactly matching the left header height */}
+                <div className="h-[14px] mb-1"></div>
+                <h2 className="text-[#2E1065] font-black text-[22px] leading-none mb-1 tracking-tight">₹{stats.rewardsData.pendingRewardValue?.toLocaleString('en-IN') ?? '0'}</h2>
+                <span className="text-[#4C1D95] font-bold text-[10px] whitespace-nowrap">Rewards Unclaimed</span>
+                <span className="text-[#6B21A8] font-medium text-[9px] mt-0.5 leading-[1.25]">Complete actions<br/>to unlock</span>
+              </div>
             </div>
-            <div className="flex-shrink-0 relative z-10 opacity-90 mr-1 bg-[#4C1D95] w-10 h-10 flex items-center justify-center rounded-full border border-[#7C3AED] shadow-inner">
-               <Lock className="w-[18px] h-[18px] text-[#C4B5FD]" strokeWidth={2.5} />
-            </div>
-            {/* Background design elements */}
-            <div className="absolute right-[-20%] top-[-50%] w-[100px] h-[100px] bg-[#6D28D9] rounded-full blur-2xl opacity-50 pointer-events-none"></div>
+            
+            {/* Arrow Button - Absolutely Positioned to never overlap */}
+            <button className="absolute right-3 top-3 w-[34px] h-[34px] rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.12)] flex items-center justify-center active:scale-95 transition-transform z-20">
+              <ChevronRight className="w-[20px] h-[20px] text-[#5B21B6] stroke-[3]" />
+            </button>
           </div>
 
           {/* Grid of 3 Cards */}
@@ -600,6 +607,63 @@ export default function Home() {
             70% { transform: rotate(0deg) scale(1) translateY(0px); }
             80% { transform: rotate(0deg) scale(1) translateY(-5px); }
             90% { transform: rotate(0deg) scale(1) translateY(0px); }
+          }
+          .coin-3d-container {
+            perspective: 1000px;
+            width: 52px;
+            height: 52px;
+          }
+          .coin-3d {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: spin-coin-3d 3s linear infinite;
+          }
+          .coin-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #B45309; /* Darker edge color */
+          }
+          .coin-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #FDE68A, #D97706 85%);
+            border: 3px solid #F59E0B;
+            box-shadow: inset 0 0 15px rgba(255,255,255,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backface-visibility: hidden;
+          }
+          .coin-inner {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1.5px solid #D97706;
+            box-shadow: inset 0 0 5px rgba(217,119,6,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #92400E;
+            font-size: 22px;
+            font-weight: 900;
+            text-shadow: 1px 1px 0px rgba(253,230,138,0.8);
+          }
+          .coin-front {
+            transform: translateZ(6px);
+          }
+          .coin-back {
+            transform: rotateY(180deg) translateZ(0px); /* Adjusting Z to touch edge */
+          }
+          @keyframes float-tilt {
+            0% { transform: translateY(0px) rotate(0deg) scale(1); }
+            50% { transform: translateY(-6px) rotate(5deg) scale(1.05); }
+            100% { transform: translateY(0px) rotate(0deg) scale(1); }
           }
         `}
       </style>

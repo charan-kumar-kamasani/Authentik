@@ -77,7 +77,7 @@ router.get("/stats", protect, async (req, res) => {
     const [
       reviewsCount,
       couponsUnlocked,
-      couponsAvailable,
+      unredeemedRewards,
       warrantyActive,
       warrantyInactive,
       originalScans,
