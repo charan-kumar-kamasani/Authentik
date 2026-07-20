@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import API_BASE_URL, { getProductTemplates, createProductTemplate, authorizeProductTemplate, deleteProductTemplate, getBrands, updateProductTemplate, reorderProductTemplates } from '../../config/api';
-import { Package, Plus, CheckCircle, Clock, Trash2, Search, Filter, ShieldCheck, Info, Image as ImageIcon, Edit, ShoppingCart, BookOpen, GripVertical } from 'lucide-react';
+import { Package, Plus, CheckCircle, Clock, Trash2, Search, Filter, ShieldCheck, Info, Image as ImageIcon, Edit, ShoppingCart, BookOpen, GripVertical, Globe, Link as LinkIcon } from 'lucide-react';
 import { useConfirm } from '../../components/ConfirmModal';
 
 const SUPPORTED_PLATFORMS = [
@@ -21,8 +21,22 @@ const PLATFORM_DOMAINS = {
 const isValidUrlForPlatform = (url, platform) => {
   if (!url || !platform) return true;
   const domain = PLATFORM_DOMAINS[platform];
+  if (!domain) return true;
   return url.toLowerCase().includes(domain.toLowerCase());
 };
+
+const getPlatformIconUrl = (platform) => {
+  const customDomains = {
+    'Amazon': 'amazon.in',
+    'PharmEasy': 'pharmeasy.in',
+    'Reliance Digital': 'reliancedigital.in',
+    'Apollo 24/7': 'apollo247.com',
+    'Zepto': 'zeptonow.com'
+  };
+  const domain = customDomains[platform] || (PLATFORM_DOMAINS[platform] ? PLATFORM_DOMAINS[platform] + '.com' : 'example.com');
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+};
+
 
 const ProductManager = () => {
   const [activeTab, setActiveTab] = useState('list'); // 'list' or 'create'
@@ -767,15 +781,36 @@ const ProductManager = () => {
                       <ShoppingCart size={18} className="text-blue-600" />
                       <h4 className="text-lg font-bold text-gray-800">Purchase / Reorder Links</h4>
                     </div>
+                  </div>
+                  <p className="text-sm text-gray-500 mb-4">Click a platform below to add a reorder link.</p>
+                  
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    {SUPPORTED_PLATFORMS.map(platform => {
+                      const isAdded = (formData.orderLinks || []).some(link => link.title === platform);
+                      return (
+                        <button
+                          key={platform}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, orderLinks: [...(formData.orderLinks || []), { title: platform, url: '' }] })}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors shadow-sm border ${
+                            isAdded 
+                              ? 'bg-blue-50 border-blue-300 text-blue-700' 
+                              : 'bg-white border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700'
+                          }`}
+                        >
+                          <img src={getPlatformIconUrl(platform)} alt={platform} className="w-4 h-4 rounded-full" />
+                          {platform}
+                        </button>
+                      );
+                    })}
                     <button
                       type="button"
                       onClick={() => setFormData({ ...formData, orderLinks: [...(formData.orderLinks || []), { title: '', url: '' }] })}
-                      className="text-blue-600 text-sm font-bold flex items-center gap-1 hover:text-blue-700 bg-blue-100/50 px-3 py-1.5 rounded-lg"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors shadow-sm border bg-white border-dashed border-gray-300 text-gray-600 hover:bg-gray-50 hover:text-gray-800"
                     >
-                      <Plus size={16} /> Add Link
+                      <Plus size={14} /> Custom Link
                     </button>
                   </div>
-                  <p className="text-sm text-gray-500 mb-6">Add links to Amazon, Flipkart, or your own website so customers can reorder.</p>
                   
                   <div className="space-y-4">
                     {!(formData.orderLinks && formData.orderLinks.length > 0) ? (
@@ -798,20 +833,29 @@ const ProductManager = () => {
                             <GripVertical size={20} />
                           </div>
                           <div className="flex-1 flex gap-3">
-                            <select
-                              value={link.title || ''}
-                              onChange={(e) => {
-                                const newLinks = [...formData.orderLinks];
-                                newLinks[index].title = e.target.value;
-                                setFormData({ ...formData, orderLinks: newLinks });
-                              }}
-                              className="w-1/3 px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:outline-none focus:border-blue-500 appearance-none"
-                            >
-                              <option value="" disabled>Select Platform</option>
-                              {SUPPORTED_PLATFORMS.map(platform => (
-                                <option key={platform} value={platform}>{platform}</option>
-                              ))}
-                            </select>
+                            <div className={`w-1/3 flex items-center gap-2 px-4 py-2 border rounded-xl text-sm font-medium h-[38px] ${!SUPPORTED_PLATFORMS.includes(link.title) && link.title !== undefined ? 'bg-white border-gray-300 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500' : 'bg-gray-50 border-gray-200 text-gray-700'}`}>
+                              {!SUPPORTED_PLATFORMS.includes(link.title) && link.title !== undefined ? (
+                                <>
+                                  <LinkIcon size={16} className="text-gray-400 shrink-0" />
+                                  <input
+                                    type="text"
+                                    placeholder="Store / Website Name"
+                                    value={link.title}
+                                    onChange={(e) => {
+                                      const newLinks = [...formData.orderLinks];
+                                      newLinks[index].title = e.target.value;
+                                      setFormData({ ...formData, orderLinks: newLinks });
+                                    }}
+                                    className="w-full bg-transparent focus:outline-none text-gray-800"
+                                  />
+                                </>
+                              ) : (
+                                <>
+                                  <img src={getPlatformIconUrl(link.title)} alt={link.title} className="w-5 h-5 rounded-full shrink-0" />
+                                  <span className="truncate">{link.title}</span>
+                                </>
+                              )}
+                            </div>
                             <div className="flex-1 flex flex-col gap-1">
                               <input
                                 type="url"

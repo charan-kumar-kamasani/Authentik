@@ -103,7 +103,7 @@ export default function LandingPage() {
       </section>
 
       {/* Metrics Section */}
-      <section className="py-16 border-y border-slate-100 bg-slate-50/50">
+      {/* <section className="py-16 border-y border-slate-100 bg-slate-50/50">
         <div className="max-w-7xl mx-auto px-6 md:px-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div className="flex flex-col items-center">
@@ -124,7 +124,7 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* The Challenge */}
       <section className="py-24 bg-slate-900 text-white">
