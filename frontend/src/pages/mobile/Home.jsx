@@ -283,55 +283,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Stats Grid - One White Card Container */}
-        {/* <div className="w-full bg-white rounded-[24px] py-[18px] px-2 mb-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#F1F5F9]">
-          <div className="flex items-center justify-between w-full">
-
-            <div className="flex flex-col items-center flex-1">
-              <div className="w-[46px] h-[46px] rounded-full flex items-center justify-center mb-1.5 bg-[#F0F5FF]">
-                <ScanLine className="w-[20px] h-[20px] text-[#105DE4]" />
-              </div>
-              <span className="text-[#0B1E36] font-extrabold text-[22px] leading-none mb-[3px]">{stats.totalScans}</span>
-              <span className="text-[#5A7184] text-[10.5px] font-medium text-center leading-tight">Total Scans</span>
-            </div>
-            
-            <div className="w-[1px] h-[55px] bg-[#F1F5F9] mx-1"></div>
-
-
-            <div className="flex flex-col items-center flex-1">
-              <div className="w-[46px] h-[46px] rounded-full flex items-center justify-center mb-1.5 bg-[#ECFDF5]">
-                <ShieldCheck className="w-[20px] h-[20px] text-[#10B981]" />
-              </div>
-              <span className="text-[#0B1E36] font-extrabold text-[22px] leading-none mb-[3px]">{stats.authentiks}</span>
-              <span className="text-[#5A7184] text-[10.5px] font-medium text-center leading-tight">Verified</span>
-            </div>
-
-            <div className="w-[1px] h-[55px] bg-[#F1F5F9] mx-1"></div>
-
- 
-            <div className="flex flex-col items-center flex-1">
-              <div className="w-[46px] h-[46px] rounded-full flex items-center justify-center mb-1.5 bg-[#FFFBEB]">
-                <AlertTriangle className="w-[20px] h-[20px] text-[#F59E0B]" />
-              </div>
-              <span className="text-[#0B1E36] font-extrabold text-[22px] leading-none mb-[3px]">{stats.alert}</span>
-              <span className="text-[#5A7184] text-[10.5px] font-medium text-center leading-tight">Alert</span>
-            </div>
-
-            <div className="w-[1px] h-[55px] bg-[#F1F5F9] mx-1"></div>
-
-         
-            <div className="flex flex-col items-center flex-1">
-              <div className="w-[46px] h-[46px] rounded-full flex items-center justify-center mb-1.5 bg-[#FEF2F2]">
-                <ShieldX className="w-[20px] h-[20px] text-[#EF4444]" />
-              </div>
-              <span className="text-[#0B1E36] font-extrabold text-[22px] leading-none mb-[3px]">{stats.counterfeit}</span>
-              <span className="text-[#5A7184] text-[10.5px] font-medium text-center leading-tight">Counterfeit</span>
-            </div>
-
-            <div className="w-[1px] h-[55px] bg-[#F1F5F9] mx-1"></div>
-          </div>
-        </div> */}
-
         {/* Rewards & Engagement Section */}
         <div className="w-full mb-6">
           <div className="flex items-center justify-between mb-3">
@@ -411,7 +362,112 @@ export default function Home() {
             </div>
 
           </div>
+
+          {/* Grid of 3 Cards (Reviews, Coupons, Warranty) */}
+          <div className="grid grid-cols-3 gap-2 mt-3">
+            {/* Reviews Card */}
+            <div className="bg-gradient-to-b from-[#F0FDF4] to-[#FFFFFF] rounded-[16px] p-3 flex flex-col items-center border border-[#BBF7D0] shadow-[0_2px_8px_rgba(16,185,129,0.05)]">
+              <div className="w-[32px] h-[32px] rounded-full bg-white border border-[#BBF7D0] flex items-center justify-center mb-1 shadow-sm text-[#10B981]">
+                 <Star className="w-[16px] h-[16px] fill-[#10B981] stroke-[#10B981]" />
+              </div>
+              <span className="text-[#0F172A] font-bold text-[12px] mb-2">Reviews</span>
+              <div className="flex w-full items-center justify-between px-1">
+                <div className="flex flex-col items-center flex-1">
+                  <span className="text-[#10B981] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.reviews.submitted}</span>
+                  <span className="text-[#0F172A] text-[9px] font-semibold">Submitted</span>
+                </div>
+                <div className="w-[1px] h-[20px] bg-[#BBF7D0]"></div>
+                <div className="flex flex-col items-center flex-1">
+                  <span className="text-[#F59E0B] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.reviews.pending}</span>
+                  <span className="text-[#0F172A] text-[9px] font-semibold">Pending</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Coupons Card */}
+            <div className="bg-gradient-to-b from-[#FAF5FF] to-[#FFFFFF] rounded-[16px] p-3 flex flex-col items-center border border-[#E9D5FF] shadow-[0_2px_8px_rgba(147,51,234,0.05)]">
+              <div className="w-[32px] h-[32px] rounded-full bg-white border border-[#E9D5FF] flex items-center justify-center mb-1 shadow-sm text-[#9333EA]">
+                 <Gift className="w-[16px] h-[16px] stroke-[2]" style={{ animation: 'nod 2s ease-in-out infinite' }} />
+              </div>
+              <span className="text-[#0F172A] font-bold text-[12px] mb-2">Coupons</span>
+              <div className="flex w-full items-center justify-between px-1">
+                <div className="flex flex-col items-center flex-1">
+                  <span className="text-[#9333EA] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.coupons.unlocked}</span>
+                  <span className="text-[#0F172A] text-[9px] font-semibold">Unlocked</span>
+                </div>
+                <div className="w-[1px] h-[20px] bg-[#E9D5FF]"></div>
+                <div className="flex flex-col items-center flex-1">
+                  <span className="text-[#F59E0B] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.coupons.available}</span>
+                  <span className="text-[#0F172A] text-[9px] font-semibold">Pending</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Warranty Card */}
+            <div className="bg-gradient-to-b from-[#EFF6FF] to-[#FFFFFF] rounded-[16px] p-3 flex flex-col items-center border border-[#BFDBFE] shadow-[0_2px_8px_rgba(59,130,246,0.05)]">
+              <div className="w-[32px] h-[32px] rounded-full bg-white border border-[#BFDBFE] flex items-center justify-center mb-1 shadow-sm text-[#3B82F6]">
+                 <ShieldCheck className="w-[16px] h-[16px] stroke-[2]" />
+              </div>
+              <span className="text-[#0F172A] font-bold text-[12px] mb-2">Warranty</span>
+              <div className="flex w-full items-center justify-between px-1">
+                <div className="flex flex-col items-center flex-1">
+                  <span className="text-[#3B82F6] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.warranty.active}</span>
+                  <span className="text-[#0F172A] text-[9px] font-semibold">Active</span>
+                </div>
+                <div className="w-[1px] h-[20px] bg-[#BFDBFE]"></div>
+                <div className="flex flex-col items-center flex-1">
+                  <span className="text-[#105DE4] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.warranty.inactive}</span>
+                  <span className="text-[#0F172A] text-[9px] font-semibold">Inactive</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* Stats Grid - One White Card Container */}
+        {/* <div className="w-full bg-white rounded-[24px] py-[18px] px-2 mb-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#F1F5F9]">
+          <div className="flex items-center justify-between w-full">
+
+            <div className="flex flex-col items-center flex-1">
+              <div className="w-[46px] h-[46px] rounded-full flex items-center justify-center mb-1.5 bg-[#F0F5FF]">
+                <ScanLine className="w-[20px] h-[20px] text-[#105DE4]" />
+              </div>
+              <span className="text-[#0B1E36] font-extrabold text-[22px] leading-none mb-[3px]">{stats.totalScans}</span>
+              <span className="text-[#5A7184] text-[10.5px] font-medium text-center leading-tight">Total Scans</span>
+            </div>
+            
+            <div className="w-[1px] h-[55px] bg-[#F1F5F9] mx-1"></div>
+
+            <div className="flex flex-col items-center flex-1">
+              <div className="w-[46px] h-[46px] rounded-full flex items-center justify-center mb-1.5 bg-[#ECFDF5]">
+                <ShieldCheck className="w-[20px] h-[20px] text-[#10B981]" />
+              </div>
+              <span className="text-[#0B1E36] font-extrabold text-[22px] leading-none mb-[3px]">{stats.authentiks}</span>
+              <span className="text-[#5A7184] text-[10.5px] font-medium text-center leading-tight">Verified</span>
+            </div>
+
+            <div className="w-[1px] h-[55px] bg-[#F1F5F9] mx-1"></div>
+
+            <div className="flex flex-col items-center flex-1">
+              <div className="w-[46px] h-[46px] rounded-full flex items-center justify-center mb-1.5 bg-[#FFFBEB]">
+                <AlertTriangle className="w-[20px] h-[20px] text-[#F59E0B]" />
+              </div>
+              <span className="text-[#0B1E36] font-extrabold text-[22px] leading-none mb-[3px]">{stats.alert}</span>
+              <span className="text-[#5A7184] text-[10.5px] font-medium text-center leading-tight">Alert</span>
+            </div>
+
+            <div className="w-[1px] h-[55px] bg-[#F1F5F9] mx-1"></div>
+
+            <div className="flex flex-col items-center flex-1">
+              <div className="w-[46px] h-[46px] rounded-full flex items-center justify-center mb-1.5 bg-[#FEF2F2]">
+                <ShieldX className="w-[20px] h-[20px] text-[#EF4444]" />
+              </div>
+              <span className="text-[#0B1E36] font-extrabold text-[22px] leading-none mb-[3px]">{stats.counterfeit}</span>
+              <span className="text-[#5A7184] text-[10.5px] font-medium text-center leading-tight">Counterfeit</span>
+            </div>
+
+          </div>
+        </div> */}
 
         {/* Recent Scans Card */}
         <div className="w-full bg-white rounded-[24px] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#F1F5F9]">
