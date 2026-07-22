@@ -11,30 +11,82 @@ const SUPPORTED_PLATFORMS = [
 ];
 
 const PLATFORM_DOMAINS = {
-  'Amazon': 'amazon', 'Flipkart': 'flipkart', 'Nykaa': 'nykaa', 'Myntra': 'myntra',
-  'Meesho': 'meesho', 'Zepto': 'zepto', 'Swiggy Instamart': 'swiggy', 'Blinkit': 'blinkit',
-  'Ajio': 'ajio', 'BigBasket': 'bigbasket', 'JioMart': 'jiomart', 'FirstCry': 'firstcry',
-  'Purplle': 'purplle', 'Tata CLiQ': 'tatacliq', 'Snapdeal': 'snapdeal', 'PharmEasy': 'pharmeasy',
-  'Apollo 24/7': 'apollo', 'Croma': 'croma', 'Reliance Digital': 'reliancedigital', 'Pepperfry': 'pepperfry'
+  'Amazon': 'amazon.in',
+  'Flipkart': 'flipkart.com',
+  'Nykaa': 'nykaa.com',
+  'Myntra': 'myntra.com',
+  'Meesho': 'meesho.com',
+  'Zepto': 'zepto.com',
+  'Swiggy Instamart': 'swiggy.com',
+  'Swiggy': 'swiggy.com',
+  'Blinkit': 'blinkit.com',
+  'Ajio': 'ajio.com',
+  'BigBasket': 'bigbasket.com',
+  'JioMart': 'jiomart.com',
+  'FirstCry': 'firstcry.com',
+  'Purplle': 'purplle.com',
+  'Tata CLiQ': 'tatacliq.com',
+  'Snapdeal': 'snapdeal.com',
+  'PharmEasy': 'pharmeasy.in',
+  'Apollo 24/7': 'apollo247.com',
+  'Croma': 'croma.com',
+  'Reliance Digital': 'reliancedigital.in',
+  'Pepperfry': 'pepperfry.com'
 };
 
 const isValidUrlForPlatform = (url, platform) => {
   if (!url || !platform) return true;
-  const domain = PLATFORM_DOMAINS[platform];
-  if (!domain) return true;
-  return url.toLowerCase().includes(domain.toLowerCase());
+  const domain = PLATFORM_DOMAINS[platform] || platform.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const cleanDomain = domain.replace('.com', '').replace('.in', '');
+  return url.toLowerCase().includes(cleanDomain);
 };
 
-const getPlatformIconUrl = (platform) => {
-  const customDomains = {
-    'Amazon': 'amazon.in',
-    'PharmEasy': 'pharmeasy.in',
-    'Reliance Digital': 'reliancedigital.in',
-    'Apollo 24/7': 'apollo247.com',
-    'Zepto': 'zeptonow.com'
+const getPlatformIconUrl = (platformOrTitle, url = '') => {
+  const directOverrides = {
+    'BigBasket': 'https://icons.duckduckgo.com/ip3/www.bigbasket.com.ico',
+    'bigbasket': 'https://icons.duckduckgo.com/ip3/www.bigbasket.com.ico',
   };
-  const domain = customDomains[platform] || (PLATFORM_DOMAINS[platform] ? PLATFORM_DOMAINS[platform] + '.com' : 'example.com');
-  return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+
+  if (platformOrTitle && directOverrides[platformOrTitle.trim()]) {
+    return directOverrides[platformOrTitle.trim()];
+  }
+
+  if (url) {
+    try {
+      const hostname = new URL(url.startsWith('http') ? url : `https://${url}`).hostname.replace(/^www\./, '');
+      if (hostname) {
+        if (hostname.includes('bigbasket')) {
+          return 'https://icons.duckduckgo.com/ip3/www.bigbasket.com.ico';
+        }
+        return `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
+      }
+    } catch (e) {}
+  }
+
+  if (platformOrTitle) {
+    const cleanTitle = platformOrTitle.trim();
+    const lower = cleanTitle.toLowerCase();
+    if (lower.includes('bigbasket') || lower.includes('big basket')) {
+      return 'https://icons.duckduckgo.com/ip3/www.bigbasket.com.ico';
+    }
+
+    if (PLATFORM_DOMAINS[cleanTitle]) {
+      return `https://www.google.com/s2/favicons?domain=${PLATFORM_DOMAINS[cleanTitle]}&sz=64`;
+    }
+
+    for (const [key, domain] of Object.entries(PLATFORM_DOMAINS)) {
+      if (lower.includes(key.toLowerCase()) || key.toLowerCase().includes(lower)) {
+        return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+      }
+    }
+
+    const safe = lower.replace(/[^a-z0-9]/g, '');
+    if (safe) {
+      return `https://www.google.com/s2/favicons?domain=${safe}.com&sz=64`;
+    }
+  }
+
+  return `https://www.google.com/s2/favicons?domain=example.com&sz=64`;
 };
 
 
@@ -785,20 +837,29 @@ const ProductManager = () => {
                   <p className="text-sm text-gray-500 mb-4">Click a platform below to add a reorder link.</p>
                   
                   <div className="flex flex-wrap gap-2 mb-6">
-                    {SUPPORTED_PLATFORMS.map(platform => {
-                      const isAdded = (formData.orderLinks || []).some(link => link.title === platform);
+                    {SUPPORTED_PLATFORMS.filter(platform => {
+                      return !(formData.orderLinks || []).some(link => 
+                        link.title === platform || 
+                        (platform === 'Swiggy Instamart' && (link.title === 'Swiggy' || link.title === 'Swiggy Instamart'))
+                      );
+                    }).map(platform => {
                       return (
                         <button
                           key={platform}
                           type="button"
                           onClick={() => setFormData({ ...formData, orderLinks: [...(formData.orderLinks || []), { title: platform, url: '' }] })}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors shadow-sm border ${
-                            isAdded 
-                              ? 'bg-blue-50 border-blue-300 text-blue-700' 
-                              : 'bg-white border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700'
-                          }`}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors shadow-sm border bg-white border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700"
                         >
-                          <img src={getPlatformIconUrl(platform)} alt={platform} className="w-4 h-4 rounded-full" />
+                          <img 
+                            src={getPlatformIconUrl(platform)} 
+                            alt={platform} 
+                            className="w-4 h-4 rounded-full object-contain"
+                            onError={(e) => {
+                              e.currentTarget.onerror = null;
+                              const domain = PLATFORM_DOMAINS[platform] || 'bigbasket.com';
+                              e.currentTarget.src = `https://icons.duckduckgo.com/ip3/www.${domain}.ico`;
+                            }}
+                          />
                           {platform}
                         </button>
                       );
@@ -833,28 +894,27 @@ const ProductManager = () => {
                             <GripVertical size={20} />
                           </div>
                           <div className="flex-1 flex gap-3">
-                            <div className={`w-1/3 flex items-center gap-2 px-4 py-2 border rounded-xl text-sm font-medium h-[38px] ${!SUPPORTED_PLATFORMS.includes(link.title) && link.title !== undefined ? 'bg-white border-gray-300 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500' : 'bg-gray-50 border-gray-200 text-gray-700'}`}>
-                              {!SUPPORTED_PLATFORMS.includes(link.title) && link.title !== undefined ? (
-                                <>
-                                  <LinkIcon size={16} className="text-gray-400 shrink-0" />
-                                  <input
-                                    type="text"
-                                    placeholder="Store / Website Name"
-                                    value={link.title}
-                                    onChange={(e) => {
-                                      const newLinks = [...formData.orderLinks];
-                                      newLinks[index].title = e.target.value;
-                                      setFormData({ ...formData, orderLinks: newLinks });
-                                    }}
-                                    className="w-full bg-transparent focus:outline-none text-gray-800"
-                                  />
-                                </>
-                              ) : (
-                                <>
-                                  <img src={getPlatformIconUrl(link.title)} alt={link.title} className="w-5 h-5 rounded-full shrink-0" />
-                                  <span className="truncate">{link.title}</span>
-                                </>
-                              )}
+                            <div className="w-1/3 flex items-center gap-2 px-3 py-2 border rounded-xl text-sm font-medium h-[38px] bg-gray-50 border-gray-200 text-gray-700 focus-within:bg-white focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500">
+                              <img 
+                                src={getPlatformIconUrl(link.title, link.url)} 
+                                alt={link.title || 'Store'} 
+                                className="w-5 h-5 rounded-full shrink-0 object-contain"
+                                onError={(e) => {
+                                  e.currentTarget.onerror = null;
+                                  e.currentTarget.src = `https://icons.duckduckgo.com/ip3/www.bigbasket.com.ico`;
+                                }}
+                              />
+                              <input
+                                type="text"
+                                placeholder="Store Name"
+                                value={link.title || ''}
+                                onChange={(e) => {
+                                  const newLinks = [...formData.orderLinks];
+                                  newLinks[index].title = e.target.value;
+                                  setFormData({ ...formData, orderLinks: newLinks });
+                                }}
+                                className="w-full bg-transparent focus:outline-none text-gray-800 text-sm font-semibold truncate"
+                              />
                             </div>
                             <div className="flex-1 flex flex-col gap-1">
                               <input

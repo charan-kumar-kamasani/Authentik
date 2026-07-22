@@ -341,111 +341,75 @@ export default function Home() {
             </button>
           </div>
 
-          {/* Unified Rewards Banner */}
-          <div className="w-full bg-gradient-to-r from-[#EBE0FF] to-[#F5F0FF] rounded-[24px] p-4 relative overflow-visible mb-5 shadow-[0_4px_14px_rgba(76,29,149,0.06)] border border-[#EBE0FF] flex items-stretch">
-            <div className="flex-shrink-0 relative z-10 flex items-center pr-1">
-              {/* Ultra Realistic 3D Gold Coin (Lottie) */}
-              <div className="flex items-center justify-center relative w-[44px] h-[44px]">
-                <Lottie 
-                  animationData={coinAnimationData} 
-                  loop={true} 
-                  className="w-[44px] h-[44px] drop-shadow-md scale-[1.2]"
-                />
-              </div>
-            </div>
-              
-            {/* Content Area */}
-            <div className="flex flex-1 relative z-10 pl-3">
-              
-              {/* Left Column */}
-              <div className="flex flex-col flex-1 min-w-0 justify-start">
-                {/* Fixed height header to force alignment */}
-                <div className="h-[14px] flex items-center gap-1 mb-1">
-                  <span className="text-[#5B21B6] font-semibold text-[10px] whitespace-nowrap">Rewards Overview</span>
-                  <div className="w-[11px] h-[11px] rounded-full border border-[#5B21B6] flex items-center justify-center text-[#5B21B6] text-[7.5px] font-bold shrink-0">i</div>
-                </div>
-                <h2 className="text-[#2E1065] font-black text-[22px] leading-none mb-1 tracking-tight">₹{stats.rewardsData.totalRewardValue.toLocaleString('en-IN')}</h2>
-                <span className="text-[#4C1D95] font-bold text-[10px] whitespace-nowrap">Rewards Unlocked</span>
-                <span className="text-[#6B21A8] font-medium text-[9px] whitespace-nowrap mt-0.5">Available to use</span>
-              </div>
-
-              {/* Vertical Divider */}
-              <div className="w-[1px] bg-[#D4C3ED] mx-3 my-1"></div>
-
-              {/* Right Column */}
-              <div className="flex flex-col flex-1 min-w-0 justify-start pr-8">
-                {/* Empty spacer exactly matching the left header height */}
-                <div className="h-[14px] mb-1"></div>
-                <h2 className="text-[#2E1065] font-black text-[22px] leading-none mb-1 tracking-tight">₹{stats.rewardsData.pendingRewardValue?.toLocaleString('en-IN') ?? '0'}</h2>
-                <span className="text-[#4C1D95] font-bold text-[10px] whitespace-nowrap">Rewards Unclaimed</span>
-                <span className="text-[#6B21A8] font-medium text-[9px] mt-0.5 leading-[1.25]">Complete actions<br/>to unlock</span>
-              </div>
-            </div>
+          {/* Two Cards Side by Side */}
+          <div className="grid grid-cols-2 gap-2.5">
             
-            {/* Arrow Button - Absolutely Positioned to never overlap */}
-            <button className="absolute right-3 top-3 w-[34px] h-[34px] rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.12)] flex items-center justify-center active:scale-95 transition-transform z-20">
-              <ChevronRight className="w-[20px] h-[20px] text-[#5B21B6] stroke-[3]" />
-            </button>
-          </div>
+            {/* Rewards Unlocked Card */}
+            <div className="bg-[#F4FAF6] rounded-[18px] p-2.5 sm:p-3 border border-[#E3F2E9] flex flex-col justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
+              {/* Top Section: Icon + Text Stack */}
+              <div className="flex items-center gap-1.5 mb-2.5">
+                {/* 3D Coin Icon */}
+                <div className="w-[42px] h-[42px] shrink-0 flex items-center justify-center relative">
+                  <Lottie 
+                    animationData={coinAnimationData} 
+                    loop={true} 
+                    className="w-[42px] h-[42px] drop-shadow-[0_3px_5px_rgba(0,0,0,0.12)]"
+                  />
+                </div>
+                {/* Info & Amount */}
+                <div className="flex flex-col min-w-0 flex-1 justify-center">
+                  <div className="flex items-center gap-0.5">
+                    <span className="text-[#0B1E36] font-bold text-[8px] sm:text-[10px] leading-tight whitespace-nowrap">Rewards Unlocked</span>
+                    <div className="w-[12px] h-[12px] rounded-full border border-[#64748B] flex items-center justify-center text-[#64748B] text-[7px] font-bold shrink-0">i</div>
+                  </div>
+                  <h2 className="text-[#00A859] font-extrabold text-[20px] sm:text-[22px] leading-tight tracking-tight mt-0.5">
+                    ₹{stats.rewardsData.totalRewardValue.toLocaleString('en-IN')}
+                  </h2>
+                </div>
+              </div>
 
-          {/* Grid of 3 Cards */}
-          <div className="grid grid-cols-3 gap-2">
-            {/* Reviews Card */}
-            <div className="bg-gradient-to-b from-[#F0FDF4] to-[#FFFFFF] rounded-[16px] p-3 flex flex-col items-center border border-[#BBF7D0] shadow-[0_2px_8px_rgba(16,185,129,0.05)]">
-              <div className="w-[32px] h-[32px] rounded-full bg-white border border-[#BBF7D0] flex items-center justify-center mb-1 shadow-sm text-[#10B981]">
-                 <Star className="w-[16px] h-[16px] fill-[#10B981] stroke-[#10B981]" />
-              </div>
-              <span className="text-[#0F172A] font-bold text-[12px] mb-2">Reviews</span>
-              <div className="flex w-full items-center justify-between px-1">
-                <div className="flex flex-col items-center flex-1">
-                  <span className="text-[#10B981] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.reviews.submitted}</span>
-                  <span className="text-[#0F172A] text-[9px] font-semibold">Submitted</span>
-                </div>
-                <div className="w-[1px] h-[20px] bg-[#BBF7D0]"></div>
-                <div className="flex flex-col items-center flex-1">
-                  <span className="text-[#F59E0B] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.reviews.pending}</span>
-                  <span className="text-[#0F172A] text-[9px] font-semibold">Pending</span>
-                </div>
-              </div>
+              {/* CTA Button - Rounded Pill */}
+              <button 
+                onClick={() => navigate('/rewards')} 
+                className="w-full bg-[#009944] hover:bg-[#00853B] text-white font-bold text-[10px] sm:text-[11px] py-1.5 px-2.5 rounded-full flex items-center justify-between active:scale-[0.97] transition-all shadow-[0_2px_6px_rgba(0,153,68,0.2)]"
+              >
+                <span className="whitespace-nowrap">Redeem Rewards</span>
+                <ChevronRight className="w-[12px] h-[12px] shrink-0 stroke-[3]" />
+              </button>
             </div>
 
-            {/* Coupons Card */}
-            <div className="bg-gradient-to-b from-[#FAF5FF] to-[#FFFFFF] rounded-[16px] p-3 flex flex-col items-center border border-[#E9D5FF] shadow-[0_2px_8px_rgba(147,51,234,0.05)]">
-              <div className="w-[32px] h-[32px] rounded-full bg-white border border-[#E9D5FF] flex items-center justify-center mb-1 shadow-sm text-[#9333EA]">
-                 <Gift className="w-[16px] h-[16px] stroke-[2]" style={{ animation: 'nod 2s ease-in-out infinite' }} />
-              </div>
-              <span className="text-[#0F172A] font-bold text-[12px] mb-2">Coupons</span>
-              <div className="flex w-full items-center justify-between px-1">
-                <div className="flex flex-col items-center flex-1">
-                  <span className="text-[#9333EA] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.coupons.unlocked}</span>
-                  <span className="text-[#0F172A] text-[9px] font-semibold">Unlocked</span>
+            {/* Rewards Unclaimed Card */}
+            <div className="bg-[#F8F6FE] rounded-[18px] p-2.5 sm:p-3 border border-[#EBE7FE] flex flex-col justify-between shadow-[0_2px_8px_rgba(0,0,0,0.03)]">
+              {/* Top Section: Lock Icon + Text Stack */}
+              <div className="flex items-center gap-1.5 mb-2.5">
+                {/* 3D Lock Icon */}
+                <div className="w-[42px] h-[42px] shrink-0 flex items-center justify-center">
+                  <div className="w-[38px] h-[38px] rounded-full bg-gradient-to-br from-[#7C3AED] to-[#582CFF] flex items-center justify-center shadow-[0_3px_8px_rgba(88,44,255,0.25)] border-[1.5px] border-[#A78BFA]/40">
+                    <Lock className="w-[16px] h-[16px] text-white" strokeWidth={2.5} />
+                  </div>
                 </div>
-                <div className="w-[1px] h-[20px] bg-[#E9D5FF]"></div>
-                <div className="flex flex-col items-center flex-1">
-                  <span className="text-[#F59E0B] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.coupons.available}</span>
-                  <span className="text-[#0F172A] text-[9px] font-semibold">Pending</span>
+                {/* Info & Amount */}
+                <div className="flex flex-col min-w-0 flex-1 justify-center">
+                  <div className="flex items-center gap-0.5">
+                    <span className="text-[#0B1E36] font-bold text-[8px] sm:text-[10px] leading-tight whitespace-nowrap">Rewards Unclaimed</span>
+                    <div className="w-[12px] h-[12px] rounded-full border border-[#64748B] flex items-center justify-center text-[#64748B] text-[7px] font-bold shrink-0">i</div>
+                  </div>
+                  <h2 className="text-[#4318FF] font-extrabold text-[20px] sm:text-[22px] leading-tight tracking-tight mt-0.5">
+                    ₹{stats.rewardsData.pendingRewardValue?.toLocaleString('en-IN') ?? '0'}
+                  </h2>
                 </div>
               </div>
+
+              {/* CTA Button - Rounded Pill */}
+              <button 
+                onClick={() => navigate('/rewards')} 
+                className="w-full bg-[#4F2DED] hover:bg-[#4323D6] text-white font-bold text-[9.5px] sm:text-[10.5px] py-1.5 px-2 rounded-full flex items-center justify-between active:scale-[0.97] transition-all shadow-[0_2px_6px_rgba(79,45,237,0.2)]"
+              >
+                <span className="whitespace-nowrap">Review & Claim Now</span>
+                <ChevronRight className="w-[12px] h-[12px] shrink-0 stroke-[3]" />
+              </button>
             </div>
 
-            {/* Warranty Card */}
-            <div className="bg-gradient-to-b from-[#EFF6FF] to-[#FFFFFF] rounded-[16px] p-3 flex flex-col items-center border border-[#BFDBFE] shadow-[0_2px_8px_rgba(59,130,246,0.05)]">
-              <div className="w-[32px] h-[32px] rounded-full bg-white border border-[#BFDBFE] flex items-center justify-center mb-1 shadow-sm text-[#3B82F6]">
-                 <ShieldCheck className="w-[16px] h-[16px] stroke-[2]" />
-              </div>
-              <span className="text-[#0F172A] font-bold text-[12px] mb-2">Warranty</span>
-              <div className="flex w-full items-center justify-between px-1">
-                <div className="flex flex-col items-center flex-1">
-                  <span className="text-[#3B82F6] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.warranty.active}</span>
-                  <span className="text-[#0F172A] text-[9px] font-semibold">Active</span>
-                </div>
-                <div className="w-[1px] h-[20px] bg-[#BFDBFE]"></div>
-                <div className="flex flex-col items-center flex-1">
-                  <span className="text-[#105DE4] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.warranty.inactive}</span>
-                  <span className="text-[#0F172A] text-[9px] font-semibold">Inactive</span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
