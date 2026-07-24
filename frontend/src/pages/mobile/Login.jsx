@@ -5,7 +5,7 @@ import indianIcon from "../../assets/v2/login/indian_icon.png";
 import logo from "../../assets/logo-text.png";
 import logoShield from "../../assets/logo-shield.png";
 import { useConfirm } from "../../components/ConfirmModal";
-import { ShieldCheck, Lock, User, Users, ChevronDown, MessageCircleMore, Award, Package, Gift } from "lucide-react";
+import { ShieldCheck, Lock, User, Users, ChevronDown, MessageCircleMore, Award, Package, Gift, ChevronLeft } from "lucide-react";
 
 export default function Login() {
   const [mobile, setMobile] = useState("");
@@ -78,7 +78,10 @@ export default function Login() {
       <div className="relative z-10 w-full max-w-[400px] px-5 pt-8 flex flex-col items-center">
 
         {/* Header Logo & Tagline (Top Left aligned) */}
-        <div className="flex items-end self-end mb-6">
+        <div className="flex items-center justify-between w-full mb-6">
+          <button onClick={() => nav(-1)} className="w-[38px] h-[38px] rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white shadow-sm active:scale-95 transition-transform">
+            <ChevronLeft className="w-[20px] h-[20px] stroke-[2.5]" />
+          </button>
           <div className="w-[170px] h-[54px] relative flex items-center justify-center mr-2">
             <img src={logo} alt="Shield" className="w-full h-full object-contain" />
           </div>

@@ -189,7 +189,9 @@ export default function Home() {
               ribbonColor,
               fullData: item,
               status: item.status,
-              alreadyReviewed: item.alreadyReviewed
+              alreadyReviewed: item.alreadyReviewed,
+              hasWarranty: !!(prod.warranty && (prod.warranty.duration || prod.warranty.warrantyType)),
+              hasCoupon: !!item.hasCoupon
             };
           });
 
@@ -322,10 +324,11 @@ export default function Home() {
               {/* CTA Button - Rounded Pill */}
               <button 
                 onClick={() => navigate('/rewards')} 
-                className="w-full bg-[#009944] hover:bg-[#00853B] text-white font-bold text-[10px] sm:text-[11px] py-1.5 px-2.5 rounded-full flex items-center justify-between active:scale-[0.97] transition-all shadow-[0_2px_6px_rgba(0,153,68,0.2)]"
+                className="relative overflow-hidden w-full bg-[#009944] hover:bg-[#00853B] text-white font-bold text-[10px] sm:text-[11px] py-1.5 px-2.5 rounded-full flex items-center justify-between active:scale-[0.97] transition-all shadow-[0_2px_6px_rgba(0,153,68,0.2)]"
               >
-                <span className="whitespace-nowrap">Redeem Rewards</span>
-                <ChevronRight className="w-[12px] h-[12px] shrink-0 stroke-[3]" />
+                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-flash-shimmer" style={{ animationDelay: '2s' }} />
+                <span className="relative z-10 whitespace-nowrap">Redeem Rewards</span>
+                <ChevronRight className="relative z-10 w-[12px] h-[12px] shrink-0 stroke-[3]" />
               </button>
             </div>
 
@@ -335,7 +338,7 @@ export default function Home() {
               <div className="flex items-center gap-1.5 mb-2.5">
                 {/* 3D Lock Icon */}
                 <div className="w-[42px] h-[42px] shrink-0 flex items-center justify-center">
-                  <div className="w-[38px] h-[38px] rounded-full bg-gradient-to-br from-[#7C3AED] to-[#582CFF] flex items-center justify-center shadow-[0_3px_8px_rgba(88,44,255,0.25)] border-[1.5px] border-[#A78BFA]/40">
+                  <div className="w-[38px] h-[38px] rounded-full bg-gradient-to-br from-[#7C3AED] to-[#582CFF] flex items-center justify-center shadow-[0_3px_8px_rgba(88,44,255,0.25)] border-[1.5px] border-[#A78BFA]/40 animate-spin-y-slow">
                     <Lock className="w-[16px] h-[16px] text-white" strokeWidth={2.5} />
                   </div>
                 </div>
@@ -354,10 +357,11 @@ export default function Home() {
               {/* CTA Button - Rounded Pill */}
               <button 
                 onClick={() => navigate('/rewards')} 
-                className="w-full bg-[#4F2DED] hover:bg-[#4323D6] text-white font-bold text-[9.5px] sm:text-[10.5px] py-1.5 px-2 rounded-full flex items-center justify-between active:scale-[0.97] transition-all shadow-[0_2px_6px_rgba(79,45,237,0.2)]"
+                className="relative overflow-hidden w-full bg-[#4F2DED] hover:bg-[#4323D6] text-white font-bold text-[9.5px] sm:text-[10.5px] py-1.5 px-2 rounded-full flex items-center justify-between active:scale-[0.97] transition-all shadow-[0_2px_6px_rgba(79,45,237,0.2)]"
               >
-                <span className="whitespace-nowrap">Review & Claim Now</span>
-                <ChevronRight className="w-[12px] h-[12px] shrink-0 stroke-[3]" />
+                <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-flash-shimmer" style={{ animationDelay: '1s' }} />
+                <span className="relative z-10 whitespace-nowrap">Review & Claim Now</span>
+                <ChevronRight className="relative z-10 w-[12px] h-[12px] shrink-0 stroke-[3]" />
               </button>
             </div>
 
@@ -397,7 +401,7 @@ export default function Home() {
                 </div>
                 <div className="w-[1px] h-[20px] bg-[#E9D5FF]"></div>
                 <div className="flex flex-col items-center flex-1">
-                  <span className="text-[#F59E0B] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.coupons.available}</span>
+                  <span className="text-[#F59E0B] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.coupons.pending}</span>
                   <span className="text-[#0F172A] text-[9px] font-semibold">Pending</span>
                 </div>
               </div>
@@ -551,31 +555,34 @@ export default function Home() {
                           </div>
 
                           {/* Reward */}
-                          <div className="flex-1 flex flex-col justify-center items-center px-0.5 text-center min-w-0 overflow-hidden">
-                            <div className="flex items-center justify-center gap-0.5 mb-[1px] w-full">
-                              <Gift className={`w-[9px] h-[9px] shrink-0 ${scan.alreadyReviewed ? 'text-[#8B5CF6]' : 'text-[#94A3B8]'}`} strokeWidth={2.5} />
-                              <span className={`text-[7.5px] font-bold truncate ${scan.alreadyReviewed ? 'text-[#8B5CF6]' : 'text-[#94A3B8]'}`}>
-                                {scan.alreadyReviewed ? 'Reward Claimed' : 'No Reward'}
+                          {scan.hasCoupon && (
+                            <div className="flex-1 flex flex-col justify-center items-center px-0.5 text-center min-w-0 overflow-hidden">
+                              <div className="flex items-center justify-center gap-0.5 mb-[1px] w-full">
+                                <Gift className={`w-[9px] h-[9px] shrink-0 ${scan.alreadyReviewed ? 'text-[#8B5CF6]' : 'text-[#94A3B8]'}`} strokeWidth={2.5} />
+                                <span className={`text-[7.5px] font-bold truncate ${scan.alreadyReviewed ? 'text-[#8B5CF6]' : 'text-[#94A3B8]'}`}>
+                                  {scan.alreadyReviewed ? 'Reward Claimed' : 'No Reward'}
+                                </span>
+                              </div>
+                              <span className="text-[6.5px] text-[#64748B] font-semibold truncate w-full">
+                                {scan.alreadyReviewed ? 'You saved ₹200' : 'Not claimed'}
                               </span>
                             </div>
-                            <span className="text-[6.5px] text-[#64748B] font-semibold truncate w-full">
-                              {scan.alreadyReviewed ? 'You saved ₹200' : 'Not claimed'}
-                            </span>
-                          </div>
+                          )}
 
                           {/* Warranty */}
-                          <div className="flex-1 flex flex-col justify-center items-center px-0.5 text-center min-w-0 overflow-hidden">
-                            <div className="flex items-center justify-center gap-0.5 mb-[1px] w-full">
-                              <ShieldCheck className={`w-[9px] h-[9px] shrink-0 ${scan.alreadyReviewed ? 'text-[#105DE4]' : 'text-[#94A3B8]'}`} strokeWidth={2.5} />
-                              <span className={`text-[7.5px] font-bold truncate ${scan.alreadyReviewed ? 'text-[#105DE4]' : 'text-[#94A3B8]'}`}>
-                                {scan.alreadyReviewed ? 'Warranty Activated' : 'No Warranty'}
+                          {scan.hasWarranty && (
+                            <div className="flex-1 flex flex-col justify-center items-center px-0.5 text-center min-w-0 overflow-hidden border-l border-[#E2E8F0]">
+                              <div className="flex items-center justify-center gap-0.5 mb-[1px] w-full">
+                                <ShieldCheck className={`w-[9px] h-[9px] shrink-0 ${scan.fullData?.warrantyClaimStatus ? 'text-[#105DE4]' : 'text-[#94A3B8]'}`} strokeWidth={2.5} />
+                                <span className={`text-[7.5px] font-bold truncate ${scan.fullData?.warrantyClaimStatus ? 'text-[#105DE4]' : 'text-[#94A3B8]'}`}>
+                                  {scan.fullData?.warrantyClaimStatus ? 'Warranty Activated' : 'No Warranty'}
+                                </span>
+                              </div>
+                              <span className="text-[6.5px] text-[#64748B] font-semibold truncate w-full">
+                                {scan.fullData?.warrantyClaimStatus ? 'Active' : 'Not applicable'}
                               </span>
                             </div>
-                            <span className="text-[6.5px] text-[#64748B] font-semibold truncate w-full">
-                              {scan.alreadyReviewed ? 'Valid till 12 Jul 2027' : 'Not applicable'}
-                            </span>
-                          </div>
-
+                          )}
                         </div>
                       )}
                     </div>

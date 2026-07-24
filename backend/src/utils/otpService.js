@@ -35,7 +35,7 @@ const sendOTP = async (countryCode, phoneNumber) => {
 
       const json = await response.json().catch(() => ({}));
 
-      if (response.ok) {
+      if (response.ok && json.type !== "error") {
         return { success: true, message: "OTP sent successfully" };
       }
 
@@ -60,7 +60,7 @@ const verifyOTP = async (countryCode, phoneNumber, code) => {
     console.log("__________", phoneNumber);
     if (phoneNumber !== TEST_PHONENUMBER) {
       const sessionResponse = await fetch(
-        `${msg91_api}/verify?otp=${code}&mobile=+91${phoneNumber}`,
+        `${msg91_api}/verify?otp=${code}&mobile=${countryCode}${phoneNumber}`,
         {
           headers: {
             Accept: "application/json",
@@ -76,9 +76,12 @@ const verifyOTP = async (countryCode, phoneNumber, code) => {
         sessionResponse.status,
         sessionResponse.statusText,
       );
-      if ((sessionResponse.status == 200, sessionResponse.statusText == "OK"))
+      
+      const json = await sessionResponse.json().catch(() => ({}));
+      if (sessionResponse.ok && json.type !== "error") {
         return { success: true, message: "OTP verified successfully" };
-      return { success: false, message: "Invalid OTP" };
+      }
+      return { success: false, message: json?.message || "Invalid OTP" };
     }
 
     // test number bypass

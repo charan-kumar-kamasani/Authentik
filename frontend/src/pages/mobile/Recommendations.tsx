@@ -220,7 +220,7 @@ export default function Recommendations() {
                           {displayPrice ? `₹${displayPrice}` : ''}
                         </span>
                      </div>
-                     <button onClick={() => navigate(`/product/${item._id}`)} className="bg-[#105DE4] text-white text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-sm">
+                     <button onClick={() => navigate('/product-details', { state: { ...item, productName: item.title || item.productName, productImage: item.image || item.productImage } })} className="bg-[#105DE4] text-white text-[11px] font-bold px-3 py-1.5 rounded-lg shadow-sm">
                        View
                      </button>
                   </div>

@@ -109,7 +109,9 @@ export default function ScanHistory() {
               ribbonColor,
               fullData: item,
               status: item.status,
-              alreadyReviewed: item.alreadyReviewed
+              alreadyReviewed: item.alreadyReviewed,
+              hasWarranty: !!(prod.warranty && (prod.warranty.duration || prod.warranty.warrantyType)),
+              hasCoupon: !!item.hasCoupon
             };
           });
           cachedHistory = mappedData;
@@ -237,30 +239,34 @@ export default function ScanHistory() {
               </div>
 
               {/* Reward */}
-              <div className="flex-1 flex flex-col justify-center items-center px-0.5 text-center min-w-0 overflow-hidden">
-                <div className="flex items-center justify-center gap-0.5 mb-[1px] w-full">
-                  <Gift className={`w-[9px] h-[9px] shrink-0 ${item.alreadyReviewed ? 'text-[#8B5CF6]' : 'text-[#94A3B8]'}`} strokeWidth={2.5} />
-                  <span className={`text-[7.5px] font-bold truncate ${item.alreadyReviewed ? 'text-[#8B5CF6]' : 'text-[#94A3B8]'}`}>
-                    {item.alreadyReviewed ? 'Reward Claimed' : 'No Reward'}
+              {item.hasCoupon && (
+                <div className="flex-1 flex flex-col justify-center items-center px-0.5 text-center min-w-0 overflow-hidden">
+                  <div className="flex items-center justify-center gap-0.5 mb-[1px] w-full">
+                    <Gift className={`w-[9px] h-[9px] shrink-0 ${item.alreadyReviewed ? 'text-[#8B5CF6]' : 'text-[#94A3B8]'}`} strokeWidth={2.5} />
+                    <span className={`text-[7.5px] font-bold truncate ${item.alreadyReviewed ? 'text-[#8B5CF6]' : 'text-[#94A3B8]'}`}>
+                      {item.alreadyReviewed ? 'Reward Claimed' : 'No Reward'}
+                    </span>
+                  </div>
+                  <span className="text-[6.5px] text-[#64748B] font-semibold truncate w-full">
+                    {item.alreadyReviewed ? 'You saved ₹200' : 'Not claimed'}
                   </span>
                 </div>
-                <span className="text-[6.5px] text-[#64748B] font-semibold truncate w-full">
-                  {item.alreadyReviewed ? 'You saved ₹200' : 'Not claimed'}
-                </span>
-              </div>
+              )}
 
               {/* Warranty */}
-              <div className="flex-1 flex flex-col justify-center items-center px-0.5 text-center min-w-0 overflow-hidden">
-                <div className="flex items-center justify-center gap-0.5 mb-[1px] w-full">
-                  <ShieldCheck className={`w-[9px] h-[9px] shrink-0 ${item.alreadyReviewed ? 'text-[#105DE4]' : 'text-[#94A3B8]'}`} strokeWidth={2.5} />
-                  <span className={`text-[7.5px] font-bold truncate ${item.alreadyReviewed ? 'text-[#105DE4]' : 'text-[#94A3B8]'}`}>
-                    {item.alreadyReviewed ? 'Warranty Activated' : 'No Warranty'}
+              {item.hasWarranty && (
+                <div className="flex-1 flex flex-col justify-center items-center px-0.5 text-center min-w-0 overflow-hidden">
+                  <div className="flex items-center justify-center gap-0.5 mb-[1px] w-full">
+                    <ShieldCheck className={`w-[9px] h-[9px] shrink-0 ${item.alreadyReviewed ? 'text-[#105DE4]' : 'text-[#94A3B8]'}`} strokeWidth={2.5} />
+                    <span className={`text-[7.5px] font-bold truncate ${item.alreadyReviewed ? 'text-[#105DE4]' : 'text-[#94A3B8]'}`}>
+                      {item.alreadyReviewed ? 'Warranty Activated' : 'No Warranty'}
+                    </span>
+                  </div>
+                  <span className="text-[6.5px] text-[#64748B] font-semibold truncate w-full">
+                    {item.alreadyReviewed ? 'Valid till 12 Jul 2027' : 'Not applicable'}
                   </span>
                 </div>
-                <span className="text-[6.5px] text-[#64748B] font-semibold truncate w-full">
-                  {item.alreadyReviewed ? 'Valid till 12 Jul 2027' : 'Not applicable'}
-                </span>
-              </div>
+              )}
 
             </div>
           )}

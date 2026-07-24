@@ -97,8 +97,10 @@ router.get("/stats", protect, async (req, res) => {
     const unreviewedProductIds = productIds.filter(pid => pid && !reviewedProductIds.has(pid.toString()));
 
     let pendingRewardValue = 0;
+    let pendingCouponsCount = 0;
     if (unreviewedProductIds.length > 0) {
       const pendingCoupons = await ProductCoupon.find({ productId: { $in: unreviewedProductIds }, isActive: true }).lean();
+      pendingCouponsCount = pendingCoupons.length;
       pendingCoupons.forEach(coupon => {
          let value = 0;
          if (coupon.discountType === 'flat' && coupon.discountValue) {
@@ -142,6 +144,7 @@ router.get("/stats", protect, async (req, res) => {
         },
         coupons: {
           unlocked: couponsUnlocked,
+          pending: pendingCouponsCount,
           available: unredeemedRewards.length
         },
         warranty: {
@@ -228,6 +231,11 @@ router.get("/history", protect, async (req, res) => {
     const templateMap = new Map();
     templates.forEach(t => templateMap.set(t._id.toString(), t));
 
+    // Fetch ProductCoupons
+    const ProductCoupon = require("../models/ProductCoupon");
+    const activeCoupons = await ProductCoupon.find({ productId: { $in: allProductIds }, isActive: true }).lean();
+    const activeCouponProductIds = new Set(activeCoupons.map(c => c.productId.toString()));
+
     // 3. Process scans with pre-fetched data
     const scans = rawScans.map(s => {
       const obj = s;
@@ -243,6 +251,9 @@ router.get("/history", protect, async (req, res) => {
         if (tId) {
           obj.templateData = templateMap.get(tId.toString()) || null;
         }
+        
+        // Expose hasCoupon
+        obj.hasCoupon = activeCouponProductIds.has(obj.productId._id.toString());
       }
       
       // Inject companyName
