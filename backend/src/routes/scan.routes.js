@@ -112,6 +112,7 @@ router.get("/stats", protect, async (req, res) => {
       });
     }
 
+    let unlockedRewardValue = req.user.walletBalance || 0;
     // Add value of rewards that have been unlocked (reviewed) but not yet redeemed
     unredeemedRewards.forEach(reward => {
        const coupon = reward.productCouponId;
@@ -122,7 +123,7 @@ router.get("/stats", protect, async (req, res) => {
          } else if (coupon.discountType === 'percentage' && coupon.discountValue && coupon.mrp) {
             value = (Number(coupon.mrp) * Number(coupon.discountValue)) / 100;
          }
-         pendingRewardValue += value;
+         unlockedRewardValue += value;
        }
     });
 
@@ -136,7 +137,7 @@ router.get("/stats", protect, async (req, res) => {
       activeWarranties: warrantyActive,
       
       rewardsData: {
-        totalRewardValue: req.user.walletBalance || 0, // Using user's wallet balance
+        totalRewardValue: unlockedRewardValue,
         pendingRewardValue,
         reviews: {
           submitted: reviewsCount,
@@ -223,13 +224,18 @@ router.get("/history", protect, async (req, res) => {
     userClaims.forEach(c => claimStatusMap.set(c.productId.toString(), c.status));
 
     // Fetch ProductTemplates
-    const allTemplateIds = rawScans
-      .filter(s => s.productId && (s.productId.templateId || s.productId.orderId?.templateId))
-      .map(s => s.productId.templateId || s.productId.orderId?.templateId);
-    
-    const ProductTemplate = require("../models/ProductTemplate"); const templates = await ProductTemplate.find({ _id: { $in: allTemplateIds } }).lean();
+    const ProductTemplate = require("../models/ProductTemplate");
+    const brandIds = [...new Set(rawScans.filter(s => s.brandId).map(s => (s.brandId._id || s.brandId).toString()))];
+    const activeTemplates = await ProductTemplate.find({ brandId: { $in: brandIds }, status: 'active' }).lean();
+
     const templateMap = new Map();
-    templates.forEach(t => templateMap.set(t._id.toString(), t));
+    const templateByNameAndBrand = new Map();
+    activeTemplates.forEach(t => {
+      templateMap.set(t._id.toString(), t);
+      if (t.productName && t.brandId) {
+        templateByNameAndBrand.set(`${t.brandId.toString()}_${t.productName.toLowerCase()}`, t);
+      }
+    });
 
     // Fetch ProductCoupons
     const ProductCoupon = require("../models/ProductCoupon");
@@ -243,14 +249,18 @@ router.get("/history", protect, async (req, res) => {
       // Expose warranty and links at the root level for frontend consistency
       if (obj.productId) {
         obj.warranty = obj.productId.warranty || obj.productId.orderId?.warranty || null;
-        obj.orderLinks = obj.productId.orderLinks || obj.productId.orderId?.orderLinks || [];
         obj.alreadyReviewed = reviewedProductIds.has(obj.productId._id.toString());
         obj.warrantyClaimStatus = claimStatusMap.get(obj.productId._id.toString()) || null;
         
         const tId = obj.productId.templateId || obj.productId.orderId?.templateId;
         if (tId) {
           obj.templateData = templateMap.get(tId.toString()) || null;
+        } else if (obj.productId.productName && (obj.brandId?._id || obj.brandId)) {
+          const bId = (obj.brandId?._id || obj.brandId).toString();
+          obj.templateData = templateByNameAndBrand.get(`${bId}_${obj.productId.productName.toLowerCase()}`) || null;
         }
+        
+        obj.orderLinks = (obj.productId.orderLinks && obj.productId.orderLinks.length > 0) ? obj.productId.orderLinks : ((obj.productId.orderId?.orderLinks && obj.productId.orderId.orderLinks.length > 0) ? obj.productId.orderId.orderLinks : (obj.templateData?.orderLinks || []));
         
         // Expose hasCoupon
         obj.hasCoupon = activeCouponProductIds.has(obj.productId._id.toString());
