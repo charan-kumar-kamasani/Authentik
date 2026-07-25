@@ -147,7 +147,13 @@ function ResultAuthentic({ data }: { data: any }) {
   const extractedCertificates = (productObj.certificates && productObj.certificates.length > 0) ? productObj.certificates : ((orderObj.certificates && orderObj.certificates.length > 0) ? orderObj.certificates : (templateObj.certificates || data.certificates || []));
   const edu = data.educationContent || productObj.educationContent || orderObj.educationContent || templateObj.educationContent;
   const hasEducation = Array.isArray(edu) ? edu.length > 0 : !!edu;
-  const hasSupport = !!(data.customerCare || productObj.customerCare || orderObj.customerCare || templateObj.customerCare || data.supportEmail || productObj.supportEmail || orderObj.supportEmail || templateObj.supportEmail || data.website || productObj.website || orderObj.website || templateObj.website);
+  const dynFields = data.dynamicFields || productObj.dynamicFields || orderObj.dynamicFields || templateObj.dynamicFields || {};
+  const descText = data.productInfo || data.description || dynFields.description || templateObj.description || templateObj.productInfo;
+  const additionalText = data.additionalInfo || dynFields.additionalInfo || dynFields['Additional Info'];
+  const webLink = data.website || productObj.website || orderObj.website || templateObj.website || dynFields.website;
+  const custCare = data.customerCare || productObj.customerCare || orderObj.customerCare || templateObj.customerCare || dynFields.customerCare;
+  const supEmail = data.supportEmail || productObj.supportEmail || orderObj.supportEmail || templateObj.supportEmail || dynFields.supportEmail;
+  const hasSupport = !!(custCare || supEmail);
 
   const technicalFields = [
     { key: "brand", label: "Brand" },
@@ -580,9 +586,9 @@ function ResultAuthentic({ data }: { data: any }) {
 
           {/* 2. Description */}
           <AccordionItem title="Description" subtitle="About this product" icon={Info} isOpen={openSection === 'Description'} onToggle={() => setOpenSection(openSection === 'Description' ? '' : 'Description')}>
-            {data.productInfo || data.description ? (
+            {descText ? (
               <>
-                <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">{data.productInfo || data.description}</p>
+                <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">{descText}</p>
                 {data.keyBenefits && (
                   <>
                     <h4 className="text-[13px] font-bold text-[#0B1E36] mt-4 mb-2">Key Benefits</h4>
@@ -613,9 +619,9 @@ function ResultAuthentic({ data }: { data: any }) {
 
           {/* 4. Additional Details */}
           <AccordionItem title="Additional Details" subtitle="Manufacturing and other info" icon={FileText} isOpen={openSection === 'Additional Details'} onToggle={() => setOpenSection(openSection === 'Additional Details' ? '' : 'Additional Details')}>
-            {data.additionalInfo ? (
+            {additionalText ? (
               <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">
-                {data.additionalInfo}
+                {additionalText}
               </p>
             ) : (
               <p className="text-[13px] text-slate-400 italic">No additional details available.</p>
@@ -669,10 +675,10 @@ function ResultAuthentic({ data }: { data: any }) {
 
           {/* 7. Website */}
           <AccordionItem title="Website" subtitle="Visit our official store" icon={Globe} isOpen={openSection === 'Website'} onToggle={() => setOpenSection(openSection === 'Website' ? '' : 'Website')}>
-            {data.website ? (
+            {webLink ? (
               <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100">
-                <span className="text-[13px] font-medium text-slate-700">{data.website}</span>
-                <a href={data.website.startsWith('http') ? data.website : `https://${data.website}`} target="_blank" rel="noreferrer" className="text-[#105DE4]">
+                <span className="text-[13px] font-medium text-slate-700">{webLink}</span>
+                <a href={webLink.startsWith('http') ? webLink : `https://${webLink}`} target="_blank" rel="noreferrer" className="text-[#105DE4]">
                   <ExternalLink size={18} />
                 </a>
               </div>
@@ -685,25 +691,25 @@ function ResultAuthentic({ data }: { data: any }) {
           <AccordionItem title="Consumer Support" subtitle="Get in touch with us" icon={HeadphonesIcon} isOpen={openSection === 'Consumer Support'} onToggle={() => setOpenSection(openSection === 'Consumer Support' ? '' : 'Consumer Support')}>
             {hasSupport ? (
               <div className="flex flex-col gap-3">
-                {data.customerCare && (
-                  <a href={`tel:${data.customerCare.replace(/[^0-9]/g, '')}`} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-[#F8FAFC]">
+                {custCare && (
+                  <a href={`tel:${custCare.replace(/[^0-9]/g, '')}`} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-[#F8FAFC]">
                      <div className="w-10 h-10 rounded-full bg-blue-100 text-[#105DE4] flex items-center justify-center shrink-0">
                        <Phone size={18} />
                      </div>
                      <div>
                        <h4 className="text-[13px] font-bold text-[#0B1E36]">Call Us</h4>
-                       <p className="text-[12px] text-slate-500 font-medium">{data.customerCare}</p>
+                       <p className="text-[12px] text-slate-500 font-medium">{custCare}</p>
                      </div>
                   </a>
                 )}
-                {data.supportEmail && (
-                  <a href={`mailto:${data.supportEmail}`} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-[#F8FAFC]">
+                {supEmail && (
+                  <a href={`mailto:${supEmail}`} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-[#F8FAFC]">
                      <div className="w-10 h-10 rounded-full bg-red-100 text-red-500 flex items-center justify-center shrink-0">
                        <Mail size={18} />
                      </div>
                      <div>
                        <h4 className="text-[13px] font-bold text-[#0B1E36]">Email Support</h4>
-                       <p className="text-[12px] text-slate-500 font-medium">{data.supportEmail}</p>
+                       <p className="text-[12px] text-slate-500 font-medium">{supEmail}</p>
                      </div>
                   </a>
                 )}

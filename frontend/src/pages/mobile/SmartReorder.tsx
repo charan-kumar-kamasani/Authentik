@@ -165,6 +165,17 @@ const SmartReorder = () => {
                 const allPrices = orderLinks.map((l: any) => Number(l.price || defaultPrice)).filter((p: number) => !isNaN(p) && p > 0);
                 const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : null;
                 
+                const getStaticLogo = (title: string) => {
+                  if (!title) return null;
+                  const lower = title.toLowerCase();
+                  if (lower.includes('amazon')) return 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg';
+                  if (lower.includes('zepto')) return 'https://play-lh.googleusercontent.com/9nFkQZ6w0-4R_r6Iub9z6p6x_E2V0w1mP6s5Lw4HlH8Vf9XgW-HhO0f-uF_22_19jXU';
+                  if (lower.includes('blinkit')) return 'https://play-lh.googleusercontent.com/1-LUVdM5Ww-6qY9U0t6lDvw2V2E2H_0hS8O0QxO-6M9j0T5fW6pE5e6V6_0g5S0eBw';
+                  if (lower.includes('flipkart')) return 'https://vectorseek.com/wp-content/uploads/2021/01/Flipkart-Logo-Vector.png';
+                  if (lower.includes('myntra')) return 'https://vectorseek.com/wp-content/uploads/2021/01/Myntra-Logo-Vector.png';
+                  return null;
+                };
+
                 return orderLinks.map((link: any, idx: number) => {
                   const displayPrice = link.price || defaultPrice;
                   const displayMrp = link.price ? link.mrp : defaultMrp;
@@ -185,8 +196,8 @@ const SmartReorder = () => {
                     <div className="p-3.5 flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-11 h-11 shrink-0 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100/50 p-1.5">
-                          {link.siteImage ? (
-                            <img src={link.siteImage} alt={link.title} className="w-full h-full object-contain mix-blend-multiply" />
+                          {(link.siteImage || getStaticLogo(link.title)) ? (
+                            <img src={link.siteImage || getStaticLogo(link.title) || undefined} alt={link.title} className="w-full h-full object-contain mix-blend-multiply" />
                           ) : (
                             <div className="w-full h-full rounded-lg flex items-center justify-center text-slate-400 font-black text-[14px]">
                               {link.title?.charAt(0) || 'S'}
