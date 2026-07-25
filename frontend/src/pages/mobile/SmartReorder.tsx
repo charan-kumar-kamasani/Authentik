@@ -18,7 +18,7 @@ const SmartReorder = () => {
   // Allow passing state directly via location, otherwise fetch
   const location = useLocation();
   const stateData = location.state as any;
-
+console.log("______test",productId, stateData)
   useEffect(() => {
     if (stateData) {
       setRawData(stateData);
@@ -30,6 +30,7 @@ const SmartReorder = () => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/scan/smart-reorder/${productId}`);
         const result = await response.json();
+        console.log("______raw data_______",result)
         if (response.ok) {
           setRawData(result);
         }
@@ -48,7 +49,30 @@ const SmartReorder = () => {
     const product = (d.productId && typeof d.productId === 'object') ? d.productId : d;
     const order = product.orderId || {};
     const template = d.templateData || {};
-    const orderLinks = (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((order.orderLinks && order.orderLinks.length > 0) ? order.orderLinks : template.orderLinks);
+    console.log("SMART_REORDER_DEBUG_PRODUCT_LINKS", product.orderLinks);
+    console.log("SMART_REORDER_DEBUG_TEMPLATE_LINKS", template.orderLinks);
+    let orderLinks = (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((order.orderLinks && order.orderLinks.length > 0) ? order.orderLinks : template.orderLinks);
+    
+    // Merge latest prices from template if missing (handles cases where Product snapshot was taken before prices were scraped)
+    if (orderLinks && template.orderLinks) {
+      orderLinks = orderLinks.map((link: any) => {
+        if (!link.price || !link.siteImage) {
+          const tLink = template.orderLinks.find((t: any) => t.title === link.title || t.url === link.url);
+          if (tLink) {
+            return {
+              ...link,
+              price: link.price || tLink.price,
+              mrp: link.mrp || tLink.mrp,
+              discount: link.discount || tLink.discount,
+              siteImage: link.siteImage || tLink.siteImage,
+              rating: link.rating || tLink.rating,
+              reviewsCount: link.reviewsCount || tLink.reviewsCount
+            };
+          }
+        }
+        return link;
+      });
+    }
     const topLinkWithRating = (orderLinks || []).find((l: any) => l.rating);
 
     return {
@@ -60,13 +84,7 @@ const SmartReorder = () => {
       category: product.category || order.category || template.category || d.category,
       productImage: product.productImage || order.productImage || template.productImage || d.productImage,
       variants: (product.variants && product.variants.length > 0) ? product.variants : ((order.variants && order.variants.length > 0) ? order.variants : template.variants),
-      orderLinks: orderLinks.map((link: any) => {
-        if (!link.siteImage && template.orderLinks) {
-          const tLink = template.orderLinks.find((t: any) => t.title === link.title);
-          if (tLink && tLink.siteImage) return { ...link, siteImage: tLink.siteImage };
-        }
-        return link;
-      }),
+      orderLinks,
       rating: product.rating || order.rating || template.rating || d.rating || topLinkWithRating?.rating,
       reviewsCount: product.reviewsCount || order.reviewsCount || template.reviewsCount || d.reviewsCount || topLinkWithRating?.reviewsCount,
     };
@@ -96,9 +114,14 @@ const SmartReorder = () => {
   const rating = data.rating;
   const reviews = data.reviewsCount;
   const orderLinks = data.orderLinks && data.orderLinks.length > 0 ? data.orderLinks : [];
-  const defaultPrice = orderLinks.find((l: any) => l.price)?.price;
-  const defaultMrp = orderLinks.find((l: any) => l.mrp)?.mrp;
-  const defaultDiscount = orderLinks.find((l: any) => l.discount)?.discount;
+  const validLinks = orderLinks.filter((l: any) => l.price && !isNaN(Number(l.price)));
+  const lowestPriceLink = validLinks.length > 0 ? validLinks.reduce((min: any, link: any) => Number(link.price) < Number(min.price) ? link : min) : null;
+  const defaultPrice = lowestPriceLink ? lowestPriceLink.price : undefined;
+  const defaultMrp = lowestPriceLink ? lowestPriceLink.mrp : undefined;
+  const defaultDiscount = lowestPriceLink ? lowestPriceLink.discount : undefined;
+
+  console.log("SMART_REORDER_DEBUG_LINKS", orderLinks);
+  console.log("SMART_REORDER_DEBUG_DEFAULT_PRICE", defaultPrice);
 
   return (
     <div className="min-h-screen bg-[#001466] font-sans overflow-x-hidden pb-20">
@@ -164,12 +187,13 @@ const SmartReorder = () => {
               {(() => {
                 const allPrices = orderLinks.map((l: any) => Number(l.price || defaultPrice)).filter((p: number) => !isNaN(p) && p > 0);
                 const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : null;
+                const firstLowestPriceIndex = minPrice !== null ? orderLinks.findIndex((link: any) => Number(link.price || defaultPrice) === minPrice) : -1;
                 
                 const getStaticLogo = (title: string) => {
                   if (!title) return null;
                   const lower = title.toLowerCase();
                   if (lower.includes('amazon')) return 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg';
-                  if (lower.includes('zepto')) return 'https://play-lh.googleusercontent.com/9nFkQZ6w0-4R_r6Iub9z6p6x_E2V0w1mP6s5Lw4HlH8Vf9XgW-HhO0f-uF_22_19jXU';
+                  if (lower.includes('zepto')) return 'https://cdn.zeptonow.com/web-static-assets-prod/artifacts/16.12.0/images/header/primary-logo.svg';
                   if (lower.includes('blinkit')) return 'https://play-lh.googleusercontent.com/1-LUVdM5Ww-6qY9U0t6lDvw2V2E2H_0hS8O0QxO-6M9j0T5fW6pE5e6V6_0g5S0eBw';
                   if (lower.includes('flipkart')) return 'https://vectorseek.com/wp-content/uploads/2021/01/Flipkart-Logo-Vector.png';
                   if (lower.includes('myntra')) return 'https://vectorseek.com/wp-content/uploads/2021/01/Myntra-Logo-Vector.png';
@@ -180,7 +204,7 @@ const SmartReorder = () => {
                   const displayPrice = link.price || defaultPrice;
                   const displayMrp = link.price ? link.mrp : defaultMrp;
                   const displayDiscount = link.price ? link.discount : defaultDiscount;
-                  const isLowestPrice = minPrice !== null && Number(displayPrice) === minPrice;
+                  const isLowestPrice = idx === firstLowestPriceIndex;
                   
                   return (
                   <div key={idx} className={`bg-white rounded-2xl flex flex-col shadow-[0_2px_10px_rgba(0,0,0,0.02)] border overflow-hidden transition-all relative ${isLowestPrice ? 'border-[#059669]/40 ring-1 ring-[#059669]/10 shadow-[0_4px_15px_rgba(5,150,105,0.08)]' : 'border-slate-50'}`}>

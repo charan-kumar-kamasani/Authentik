@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Search, Filter, ShieldCheck, AlertTriangle, XCircle, HelpCircle, Calendar, Clock, CheckCircle2, ChevronRight, ArrowLeft, ScanLine, Star, Gift } from "lucide-react";
+import { Search, Filter, ShieldCheck, AlertTriangle, XCircle, HelpCircle, Calendar, Clock, CheckCircle2, ChevronRight, ArrowLeft, ScanLine, Star, Gift, Ticket } from "lucide-react";
 import API_BASE_URL from "../../config/api";
 import MobileNavbar from "../../components/MobileNavbar";
 
@@ -223,48 +223,48 @@ export default function ScanHistory() {
 
           {/* Bottom Row: Badges */}
           {item.status === "ORIGINAL" && (
-            <div className="mx-3.5 mb-3.5 mt-1 border border-[#F1F5F9] rounded-[8px] bg-[#F8FAFC] py-1.5 px-0.5 flex items-center divide-x divide-[#E2E8F0]">
+            <div className="mx-3.5 mb-3.5 mt-1 border border-[#F1F5F9] rounded-[12px] bg-[#F8FAFC] py-2 px-1 flex items-center divide-x divide-[#E2E8F0]">
               
-              {/* Reviewed */}
-              <div className="flex-1 flex flex-col justify-center items-center px-0.5 text-center min-w-0 overflow-hidden">
-                <div className="flex items-center justify-center gap-0.5 mb-[1px] w-full">
-                  <Star className={`w-[9px] h-[9px] shrink-0 ${item.alreadyReviewed ? 'text-[#10B981]' : 'text-[#94A3B8]'}`} strokeWidth={2.5} />
-                  <span className={`text-[7.5px] font-bold truncate ${item.alreadyReviewed ? 'text-[#10B981]' : 'text-[#94A3B8]'}`}>
-                    {item.alreadyReviewed ? 'Reviewed' : 'Review'}
+              {/* Review */}
+              <div className="flex-1 flex items-center justify-center gap-1.5 px-1 min-w-0">
+                <div className="w-[26px] h-[26px] rounded-full bg-[#F59E0B] flex items-center justify-center shrink-0">
+                  <Star className="w-[13px] h-[13px] text-white fill-white" />
+                </div>
+                <div className="flex flex-col items-start justify-center min-w-0">
+                  <span className="text-[10px] font-extrabold text-[#F59E0B] leading-tight truncate w-full">Review</span>
+                  <span className="text-[9px] font-semibold text-[#64748B] leading-tight truncate w-full">
+                    {item.alreadyReviewed ? 'Submitted' : 'Pending'}
                   </span>
                 </div>
-                <span className="text-[6.5px] text-[#64748B] font-semibold truncate w-full">
-                  {item.alreadyReviewed ? 'Thank you for your review!' : 'Share your feedback'}
-                </span>
               </div>
 
               {/* Reward */}
               {item.hasCoupon && (
-                <div className="flex-1 flex flex-col justify-center items-center px-0.5 text-center min-w-0 overflow-hidden">
-                  <div className="flex items-center justify-center gap-0.5 mb-[1px] w-full">
-                    <Gift className={`w-[9px] h-[9px] shrink-0 ${item.alreadyReviewed ? 'text-[#8B5CF6]' : 'text-[#94A3B8]'}`} strokeWidth={2.5} />
-                    <span className={`text-[7.5px] font-bold truncate ${item.alreadyReviewed ? 'text-[#8B5CF6]' : 'text-[#94A3B8]'}`}>
-                      {item.alreadyReviewed ? 'Reward Claimed' : 'No Reward'}
+                <div className="flex-1 flex items-center justify-center gap-1.5 px-1 min-w-0">
+                  <div className="w-[26px] h-[26px] rounded-full bg-[#10B981] flex items-center justify-center shrink-0">
+                    <Ticket className="w-[13px] h-[13px] text-white fill-white" />
+                  </div>
+                  <div className="flex flex-col items-start justify-center min-w-0">
+                    <span className="text-[10px] font-extrabold text-[#10B981] leading-tight truncate w-full">Coupon</span>
+                    <span className="text-[9px] font-semibold text-[#64748B] leading-tight truncate w-full">
+                      {item.alreadyReviewed ? 'Redeemed' : 'Available'}
                     </span>
                   </div>
-                  <span className="text-[6.5px] text-[#64748B] font-semibold truncate w-full">
-                    {item.alreadyReviewed ? 'You saved ₹200' : 'Not claimed'}
-                  </span>
                 </div>
               )}
 
               {/* Warranty */}
               {item.hasWarranty && (
-                <div className="flex-1 flex flex-col justify-center items-center px-0.5 text-center min-w-0 overflow-hidden">
-                  <div className="flex items-center justify-center gap-0.5 mb-[1px] w-full">
-                    <ShieldCheck className={`w-[9px] h-[9px] shrink-0 ${item.alreadyReviewed ? 'text-[#105DE4]' : 'text-[#94A3B8]'}`} strokeWidth={2.5} />
-                    <span className={`text-[7.5px] font-bold truncate ${item.alreadyReviewed ? 'text-[#105DE4]' : 'text-[#94A3B8]'}`}>
-                      {item.alreadyReviewed ? 'Warranty Activated' : 'No Warranty'}
+                <div className="flex-1 flex items-center justify-center gap-1.5 px-1 min-w-0">
+                  <div className="w-[26px] h-[26px] rounded-full bg-[#105DE4] flex items-center justify-center shrink-0">
+                    <ShieldCheck className="w-[13px] h-[13px] text-white" strokeWidth={2.5} />
+                  </div>
+                  <div className="flex flex-col items-start justify-center min-w-0">
+                    <span className="text-[10px] font-extrabold text-[#105DE4] leading-tight truncate w-full">Warranty</span>
+                    <span className="text-[9px] font-semibold text-[#64748B] leading-tight truncate w-full">
+                      {item.fullData?.warrantyClaimStatus ? 'Activated' : 'Pending'}
                     </span>
                   </div>
-                  <span className="text-[6.5px] text-[#64748B] font-semibold truncate w-full">
-                    {item.alreadyReviewed ? 'Valid till 12 Jul 2027' : 'Not applicable'}
-                  </span>
                 </div>
               )}
 

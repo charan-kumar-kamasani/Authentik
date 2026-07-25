@@ -19,7 +19,8 @@ import {
   CheckCircle2,
   Star,
   Gift,
-  Lock
+  Lock,
+  Ticket
 } from "lucide-react";
 import Lottie from "lottie-react";
 import coinAnimationData from "../../assets/gold_coin.json";
@@ -360,7 +361,7 @@ export default function Home() {
                 className="relative overflow-hidden w-full bg-[#4F2DED] hover:bg-[#4323D6] text-white font-bold text-[9.5px] sm:text-[10.5px] py-1.5 px-2 rounded-full flex items-center justify-between active:scale-[0.97] transition-all shadow-[0_2px_6px_rgba(79,45,237,0.2)]"
               >
                 <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-flash-shimmer" style={{ animationDelay: '1s' }} />
-                <span className="relative z-10 whitespace-nowrap">Review & Claim Now</span>
+                <span className="relative z-10 whitespace-nowrap">View Pending</span>
                 <ChevronRight className="relative z-10 w-[12px] h-[12px] shrink-0 stroke-[3]" />
               </button>
             </div>
@@ -539,48 +540,48 @@ export default function Home() {
 
                       {/* Bottom Row: Badges */}
                       {scan.status === "ORIGINAL" && (
-                        <div className="mx-3.5 mb-3.5 mt-1 border border-[#F1F5F9] rounded-[8px] bg-[#F8FAFC] py-1.5 px-0.5 flex items-center divide-x divide-[#E2E8F0]">
+                        <div className="mx-3.5 mb-3.5 mt-1 border border-[#F1F5F9] rounded-[12px] bg-[#F8FAFC] py-2 px-1 flex items-center divide-x divide-[#E2E8F0]">
                           
-                          {/* Reviewed */}
-                          <div className="flex-1 flex flex-col justify-center items-center px-0.5 text-center min-w-0 overflow-hidden">
-                            <div className="flex items-center justify-center gap-0.5 mb-[1px] w-full">
-                              <Star className={`w-[9px] h-[9px] shrink-0 ${scan.alreadyReviewed ? 'text-[#10B981]' : 'text-[#F59E0B]'}`} strokeWidth={2.5} />
-                              <span className={`text-[7.5px] font-bold truncate ${scan.alreadyReviewed ? 'text-[#10B981]' : 'text-[#F59E0B]'}`}>
+                          {/* Review */}
+                          <div className="flex-1 flex items-center justify-center gap-1.5 px-1 min-w-0">
+                            <div className="w-[26px] h-[26px] rounded-full bg-[#F59E0B] flex items-center justify-center shrink-0">
+                              <Star className="w-[13px] h-[13px] text-white fill-white" />
+                            </div>
+                            <div className="flex flex-col items-start justify-center min-w-0">
+                              <span className="text-[10px] font-extrabold text-[#F59E0B] leading-tight truncate w-full">Review</span>
+                              <span className="text-[9px] font-semibold text-[#64748B] leading-tight truncate w-full">
                                 {scan.alreadyReviewed ? 'Submitted' : 'Pending'}
                               </span>
                             </div>
-                            <span className="text-[6.5px] text-[#64748B] font-semibold truncate w-full">
-                              {scan.alreadyReviewed ? 'Thank you for your review!' : 'Share your feedback'}
-                            </span>
                           </div>
 
                           {/* Reward */}
                           {scan.hasCoupon && (
-                            <div className="flex-1 flex flex-col justify-center items-center px-0.5 text-center min-w-0 overflow-hidden">
-                              <div className="flex items-center justify-center gap-0.5 mb-[1px] w-full">
-                                <Gift className={`w-[9px] h-[9px] shrink-0 ${scan.alreadyReviewed ? 'text-[#8B5CF6]' : 'text-[#F59E0B]'}`} strokeWidth={2.5} />
-                                <span className={`text-[7.5px] font-bold truncate ${scan.alreadyReviewed ? 'text-[#8B5CF6]' : 'text-[#F59E0B]'}`}>
+                            <div className="flex-1 flex items-center justify-center gap-1.5 px-1 min-w-0">
+                              <div className="w-[26px] h-[26px] rounded-full bg-[#10B981] flex items-center justify-center shrink-0">
+                                <Ticket className="w-[13px] h-[13px] text-white fill-white" />
+                              </div>
+                              <div className="flex flex-col items-start justify-center min-w-0">
+                                <span className="text-[10px] font-extrabold text-[#10B981] leading-tight truncate w-full">Coupon</span>
+                                <span className="text-[9px] font-semibold text-[#64748B] leading-tight truncate w-full">
                                   {scan.alreadyReviewed ? 'Redeemed' : 'Available'}
                                 </span>
                               </div>
-                              <span className="text-[6.5px] text-[#64748B] font-semibold truncate w-full">
-                                {scan.alreadyReviewed ? 'You saved ₹200' : 'Not claimed'}
-                              </span>
                             </div>
                           )}
 
                           {/* Warranty */}
                           {scan.hasWarranty && (
-                            <div className="flex-1 flex flex-col justify-center items-center px-0.5 text-center min-w-0 overflow-hidden border-l border-[#E2E8F0]">
-                              <div className="flex items-center justify-center gap-0.5 mb-[1px] w-full">
-                                <ShieldCheck className={`w-[9px] h-[9px] shrink-0 ${scan.fullData?.warrantyClaimStatus ? 'text-[#105DE4]' : 'text-[#F59E0B]'}`} strokeWidth={2.5} />
-                                <span className={`text-[7.5px] font-bold truncate ${scan.fullData?.warrantyClaimStatus ? 'text-[#105DE4]' : 'text-[#F59E0B]'}`}>
+                            <div className="flex-1 flex items-center justify-center gap-1.5 px-1 min-w-0">
+                              <div className="w-[26px] h-[26px] rounded-full bg-[#105DE4] flex items-center justify-center shrink-0">
+                                <ShieldCheck className="w-[13px] h-[13px] text-white" strokeWidth={2.5} />
+                              </div>
+                              <div className="flex flex-col items-start justify-center min-w-0">
+                                <span className="text-[10px] font-extrabold text-[#105DE4] leading-tight truncate w-full">Warranty</span>
+                                <span className="text-[9px] font-semibold text-[#64748B] leading-tight truncate w-full">
                                   {scan.fullData?.warrantyClaimStatus ? 'Activated' : 'Pending'}
                                 </span>
                               </div>
-                              <span className="text-[6.5px] text-[#64748B] font-semibold truncate w-full">
-                                {scan.fullData?.warrantyClaimStatus ? 'Active' : 'Not applicable'}
-                              </span>
                             </div>
                           )}
                         </div>

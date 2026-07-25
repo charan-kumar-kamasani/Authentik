@@ -16,7 +16,28 @@ const ProductDetails = () => {
     const product = (d.productId && typeof d.productId === 'object') ? d.productId : d;
     const order = product.orderId || {};
     const template = d.templateData || {};
-    const orderLinks = (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((order.orderLinks && order.orderLinks.length > 0) ? order.orderLinks : template.orderLinks);
+    let orderLinks = (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((order.orderLinks && order.orderLinks.length > 0) ? order.orderLinks : template.orderLinks);
+    
+    // Merge latest prices from template if missing (handles cases where Product snapshot was taken before prices were scraped)
+    if (orderLinks && template.orderLinks) {
+      orderLinks = orderLinks.map((link: any) => {
+        if (!link.price || !link.siteImage) {
+          const tLink = template.orderLinks.find((t: any) => t.title === link.title || t.url === link.url);
+          if (tLink) {
+            return {
+              ...link,
+              price: link.price || tLink.price,
+              mrp: link.mrp || tLink.mrp,
+              discount: link.discount || tLink.discount,
+              siteImage: link.siteImage || tLink.siteImage,
+              rating: link.rating || tLink.rating,
+              reviewsCount: link.reviewsCount || tLink.reviewsCount
+            };
+          }
+        }
+        return link;
+      });
+    }
     const topLinkWithRating = (orderLinks || []).find((l: any) => l.rating);
 
     return {
@@ -59,6 +80,9 @@ const ProductDetails = () => {
   const desc = data.productInfo || data.description;
   const orderLinks = data.orderLinks && data.orderLinks.length > 0 ? data.orderLinks : [];
   const benefitsList = data.keyBenefits ? data.keyBenefits.split(/[\n,]+/).map((b: string) => b.trim()).filter(Boolean) : [];
+
+  console.log("PRODUCT_DETAILS_DEBUG_RAW_DATA", rawData);
+  console.log("PRODUCT_DETAILS_DEBUG_LINKS", orderLinks);
 
   const validLinks = orderLinks.filter((l: any) => l.price && !isNaN(Number(l.price)));
   const lowestPriceLink = validLinks.length > 0 ? validLinks.reduce((min: any, link: any) => Number(link.price) < Number(min.price) ? link : min) : null;
@@ -198,12 +222,20 @@ const ProductDetails = () => {
               {(() => {
                 const allPrices = orderLinks.map((l: any) => Number(l.price || defaultPrice)).filter((p: number) => !isNaN(p) && p > 0);
                 const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : null;
+                const firstLowestPriceIndex = minPrice !== null ? orderLinks.findIndex((link: any) => Number(link.price || defaultPrice) === minPrice) : -1;
                 
                 return orderLinks.map((link: any, idx: number) => {
+                  const lower = (link.title || '').toLowerCase();
+                  const getStaticLogo = () => {
+                    if (lower.includes('amazon')) return 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg';
+                    if (lower.includes('zepto')) return 'https://cdn.zeptonow.com/web-static-assets-prod/artifacts/16.12.0/images/header/primary-logo.svg';
+                    if (lower.includes('blinkit')) return 'https://play-lh.googleusercontent.com/1-LUVdM5Ww-6qY9U0t6lDvw2V2E2H_0hS8O0QxO-6M9j0T5fW6pE5e6V6_0g5S0eBw';
+                    return null;
+                  };
                   const displayPrice = link.price || defaultPrice;
                   const displayMrp = link.price ? link.mrp : defaultMrp;
                   const displayDiscount = link.price ? link.discount : defaultDiscount;
-                  const isLowestPrice = minPrice !== null && Number(displayPrice) === minPrice;
+                  const isLowestPrice = idx === firstLowestPriceIndex;
                   
                   return (
                   <div key={idx} className={`bg-white rounded-2xl flex flex-col shadow-[0_2px_10px_rgba(0,0,0,0.02)] border overflow-hidden transition-all relative ${isLowestPrice ? 'border-[#059669]/40 ring-1 ring-[#059669]/10 shadow-[0_4px_15px_rgba(5,150,105,0.08)]' : 'border-slate-50'}`}>
@@ -219,8 +251,8 @@ const ProductDetails = () => {
                     <div className="p-3 flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100/50 p-1">
-                          {link.siteImage ? (
-                            <img src={link.siteImage} alt={link.title} className="w-full h-full object-contain mix-blend-multiply" />
+                          {(link.siteImage || getStaticLogo()) ? (
+                            <img src={link.siteImage || getStaticLogo() || undefined} alt={link.title} className="w-full h-full object-contain mix-blend-multiply" />
                           ) : (
                             <div className="w-full h-full rounded-lg flex items-center justify-center text-slate-400 font-black text-[12px]">
                               {link.title?.charAt(0) || 'S'}
