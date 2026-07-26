@@ -194,7 +194,7 @@ console.log("______test",productId, stateData)
                   const lower = title.toLowerCase();
                   if (lower.includes('amazon')) return 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg';
                   if (lower.includes('zepto')) return 'https://cdn.zeptonow.com/web-static-assets-prod/artifacts/16.12.0/images/header/primary-logo.svg';
-                  if (lower.includes('blinkit')) return 'https://play-lh.googleusercontent.com/1-LUVdM5Ww-6qY9U0t6lDvw2V2E2H_0hS8O0QxO-6M9j0T5fW6pE5e6V6_0g5S0eBw';
+                  if (lower.includes('blinkit')) return 'https://upload.wikimedia.org/wikipedia/commons/2/2a/Blinkit-yellow-rounded.svg';
                   if (lower.includes('flipkart')) return 'https://vectorseek.com/wp-content/uploads/2021/01/Flipkart-Logo-Vector.png';
                   if (lower.includes('myntra')) return 'https://vectorseek.com/wp-content/uploads/2021/01/Myntra-Logo-Vector.png';
                   return null;
@@ -220,8 +220,8 @@ console.log("______test",productId, stateData)
                     <div className="p-3.5 flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-11 h-11 shrink-0 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100/50 p-1.5">
-                          {(link.siteImage || getStaticLogo(link.title)) ? (
-                            <img src={link.siteImage || getStaticLogo(link.title) || undefined} alt={link.title} className="w-full h-full object-contain mix-blend-multiply" />
+                          {(getStaticLogo(link.title) || link.siteImage) ? (
+                            <img src={getStaticLogo(link.title) || link.siteImage || undefined} alt={link.title} className="w-full h-full object-contain mix-blend-multiply" />
                           ) : (
                             <div className="w-full h-full rounded-lg flex items-center justify-center text-slate-400 font-black text-[14px]">
                               {link.title?.charAt(0) || 'S'}
