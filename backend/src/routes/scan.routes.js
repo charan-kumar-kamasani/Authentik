@@ -435,7 +435,7 @@ console.log(qrCode)
           productInfo: product.productInfo || product.orderId?.productInfo,
           bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
           calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
-          dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
+          dynamicFields: (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
           variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
           warranty: product.warranty || product.orderId?.warranty || null,
           coupon: product.coupon || product.orderId?.coupon || null,
@@ -472,7 +472,7 @@ console.log(qrCode)
         productInfo: product.productInfo || product.orderId?.productInfo,
         bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
         calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
-        dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
+        dynamicFields: (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
         variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
         warranty: product.warranty || product.orderId?.warranty || null,
           coupon: product.coupon || product.orderId?.coupon || null,
@@ -631,6 +631,7 @@ router.post("/", async (req, res, next) => {
 
     let recommendations = [];
     let templateData = { orderLinks: [], price: null, productInfo: null, description: null, keyBenefits: null, educationContent: [], supportEmail: null, customerCare: null };
+    let fullTemplate = null;
     if (finalBrandId) {
       try {
         const ProductTemplate = require("../models/ProductTemplate");
@@ -658,6 +659,7 @@ router.post("/", async (req, res, next) => {
            const template = await ProductTemplate.findOne(query).lean();
            console.log("Found template?", !!template);
            if (template) {
+              fullTemplate = template;
               templateData.orderLinks = template.orderLinks || [];
               templateData.price = template.price || null;
               templateData.mrp = template.mrp || null;
@@ -702,7 +704,8 @@ router.post("/", async (req, res, next) => {
         data: {
           recommendations,
           qrCode,
-          productId: product._id,
+          productId: product,
+          templateData: fullTemplate,
           brandId: finalBrandId,
           companyName: product.brandId?.companyId?.companyName || null,
           productName: product.productName || product.orderId?.productName,
@@ -725,7 +728,7 @@ router.post("/", async (req, res, next) => {
           productInfo: product.productInfo || product.orderId?.productInfo || templateData.productInfo,
           bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
           calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
-          dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
+          dynamicFields: (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
           variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
           warranty: product.warranty || product.orderId?.warranty || null,
           coupon: product.coupon || product.orderId?.coupon || null,
@@ -751,12 +754,14 @@ router.post("/", async (req, res, next) => {
     ======================= */
     if (myPreviousScan) {
       // Don't create another record — just return ORIGINAL for their own product
-      return res.json({
-        status: "ORIGINAL",
+      console.log("DEBUG DYNAMIC FIELDS BEFORE SEND:", product.dynamicFields);
+    return res.json({
+      status: "ORIGINAL",
         data: {
           recommendations,
           qrCode,
-          productId: product._id,
+          productId: product,
+          templateData: fullTemplate,
           companyName: product.brandId?.companyId?.companyName || null,
           productName: product.productName || product.orderId?.productName,
           brand: product.brand || finalBrandName,
@@ -780,7 +785,7 @@ router.post("/", async (req, res, next) => {
           productInfo: product.productInfo || product.orderId?.productInfo || templateData.productInfo,
           bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
           calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
-          dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && product.orderId.dynamicFields.size > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
+          dynamicFields: (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && Object.keys(product.orderId.dynamicFields).length > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
           variants: (product.variants && product.variants.length > 0) ? product.variants : ((product.orderId?.variants && product.orderId.variants.length > 0) ? product.orderId.variants : templateData.variants),
           warranty: product.warranty || product.orderId?.warranty || null,
           coupon: product.coupon || product.orderId?.coupon || null,
@@ -843,7 +848,8 @@ router.post("/", async (req, res, next) => {
           ],
           recommendations,
           qrCode,
-          productId: product._id,
+          productId: product,
+          templateData: fullTemplate,
           brandId: finalBrandId,
           companyName: product.brandId?.companyId?.companyName || null,
           productName: product.productName || product.orderId?.productName,
@@ -868,7 +874,7 @@ router.post("/", async (req, res, next) => {
           productInfo: product.productInfo || product.orderId?.productInfo || templateData.productInfo,
           bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
           calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
-          dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && product.orderId.dynamicFields.size > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
+          dynamicFields: (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && Object.keys(product.orderId.dynamicFields).length > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
           variants: (product.variants && product.variants.length > 0) ? product.variants : ((product.orderId?.variants && product.orderId.variants.length > 0) ? product.orderId.variants : templateData.variants),
           warranty: product.warranty || product.orderId?.warranty || null,
           coupon: product.coupon || product.orderId?.coupon || null,
@@ -982,12 +988,14 @@ router.post("/", async (req, res, next) => {
     }
 
 
+    console.log("DEBUG DYNAMIC FIELDS BEFORE SEND:", product.dynamicFields);
     return res.json({
       status: "ORIGINAL",
       data: {
         recommendations,
         qrCode,
-        productId: product._id,
+        productId: product,
+        templateData: fullTemplate,
         brandId: finalBrandId,
         companyName: product.brandId?.companyId?.companyName || null,
         productName: product.productName || product.orderId?.productName,
@@ -1011,7 +1019,7 @@ router.post("/", async (req, res, next) => {
         productInfo: product.productInfo || product.orderId?.productInfo || templateData.productInfo,
         bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
         calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
-        dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && product.orderId.dynamicFields.size > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
+        dynamicFields: (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && Object.keys(product.orderId.dynamicFields).length > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
         variants: (product.variants && product.variants.length > 0) ? product.variants : ((product.orderId?.variants && product.orderId.variants.length > 0) ? product.orderId.variants : templateData.variants),
         warranty: product.warranty || product.orderId?.warranty || null,
           coupon: product.coupon || product.orderId?.coupon || null,
@@ -1436,7 +1444,7 @@ router.get("/smart-reorder/:productId", async (req, res) => {
     const mrp = product.mrp || templateData?.mrp || null;
 
     // We can extract custom 'usage' related dynamic fields
-    const dynamicFields = (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : (templateData?.dynamicFields || {});
+    const dynamicFields = (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : (templateData?.dynamicFields || {});
 
     // You can also check if the user is authenticated and get their purchase history for this product
     // For now, return standard product stats

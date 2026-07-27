@@ -54,39 +54,6 @@ const RedShieldX = () => (
   </svg>
 );
 
-const PendingIndicator = ({ pendingTypes }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(() => {
-    if (pendingTypes.length <= 1) return;
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % pendingTypes.length);
-    }, 1500);
-    return () => clearInterval(interval);
-  }, [pendingTypes.length]);
-
-  if (pendingTypes.length === 0) return null;
-
-  const type = pendingTypes[currentIndex];
-  let color = '#F59E0B';
-  
-  if (type === 'review') color = '#F59E0B';
-  else if (type === 'coupon') color = '#10B981';
-  else if (type === 'warranty') color = '#105DE4';
-
-  return (
-    <div className="flex items-center justify-center mr-2 relative w-3 h-3 shrink-0">
-      <div 
-        className="absolute w-full h-full rounded-full animate-ping opacity-75"
-        style={{ backgroundColor: color, transition: 'background-color 0.3s ease' }}
-      ></div>
-      <div 
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] rounded-full z-10"
-        style={{ backgroundColor: color, transition: 'background-color 0.3s ease' }}
-      ></div>
-    </div>
-  );
-};
 
 let cachedStats = null;
 let cachedRecentScans = null;
@@ -568,16 +535,6 @@ export default function Home() {
                           </div>
                         </div>
 
-                        {/* Pending Indicator */}
-                        {(() => {
-                          const pendingTypes = [];
-                          if (scan.status === "ORIGINAL") {
-                            if (!scan.alreadyReviewed) pendingTypes.push('review');
-                            if (scan.hasCoupon && !scan.alreadyReviewed) pendingTypes.push('coupon');
-                            if (scan.hasWarranty && !scan.fullData?.warrantyClaimStatus) pendingTypes.push('warranty');
-                          }
-                          return <PendingIndicator pendingTypes={pendingTypes} />;
-                        })()}
 
                         {/* Chevron */}
                         <ChevronRight className="w-5 h-5 text-[#CBD5E1] flex-shrink-0" strokeWidth={2.5} />
@@ -588,45 +545,63 @@ export default function Home() {
                         <div className="mx-3.5 mb-3.5 mt-1 border border-[#F1F5F9] rounded-[12px] bg-[#F8FAFC] py-2 px-1 flex items-center divide-x divide-[#E2E8F0]">
                           
                           {/* Review */}
-                          <div className="flex-1 flex items-center justify-center gap-1.5 px-1 min-w-0">
+                          <div className="flex-1 flex items-center justify-center gap-1.5 px-1 min-w-0 relative">
                             <div className="w-[26px] h-[26px] rounded-full bg-[#F59E0B] flex items-center justify-center shrink-0">
                               <Star className="w-[13px] h-[13px] text-white fill-white" />
                             </div>
-                            <div className="flex flex-col items-start justify-center min-w-0">
+                            <div className="flex flex-col items-start justify-center min-w-0 pr-3">
                               <span className="text-[10px] font-extrabold text-[#F59E0B] leading-tight truncate w-full">Review</span>
                               <span className="text-[9px] font-semibold text-[#64748B] leading-tight truncate w-full">
                                 {scan.alreadyReviewed ? 'Submitted' : 'Pending'}
                               </span>
                             </div>
+                            {!scan.alreadyReviewed && (
+                              <div className="absolute top-1/2 right-1.5 -translate-y-1/2 w-[8px] h-[8px]">
+                                <div className="absolute w-full h-full rounded-full bg-[#10B981] animate-ping opacity-75"></div>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] rounded-full bg-[#10B981] z-10"></div>
+                              </div>
+                            )}
                           </div>
 
                           {/* Reward */}
                           {scan.hasCoupon && (
-                            <div className="flex-1 flex items-center justify-center gap-1.5 px-1 min-w-0">
+                            <div className="flex-1 flex items-center justify-center gap-1.5 px-1 min-w-0 relative">
                               <div className="w-[26px] h-[26px] rounded-full bg-[#10B981] flex items-center justify-center shrink-0">
                                 <Ticket className="w-[13px] h-[13px] text-white fill-white" />
                               </div>
-                              <div className="flex flex-col items-start justify-center min-w-0">
+                              <div className="flex flex-col items-start justify-center min-w-0 pr-3">
                                 <span className="text-[10px] font-extrabold text-[#10B981] leading-tight truncate w-full">Coupon</span>
                                 <span className="text-[9px] font-semibold text-[#64748B] leading-tight truncate w-full">
                                   {scan.alreadyReviewed ? 'Redeemed' : 'Available'}
                                 </span>
                               </div>
+                              {!scan.alreadyReviewed && (
+                                <div className="absolute top-1/2 right-1.5 -translate-y-1/2 w-[8px] h-[8px]">
+                                  <div className="absolute w-full h-full rounded-full bg-[#10B981] animate-ping opacity-75"></div>
+                                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] rounded-full bg-[#10B981] z-10"></div>
+                                </div>
+                              )}
                             </div>
                           )}
 
                           {/* Warranty */}
                           {scan.hasWarranty && (
-                            <div className="flex-1 flex items-center justify-center gap-1.5 px-1 min-w-0">
+                            <div className="flex-1 flex items-center justify-center gap-1.5 px-1 min-w-0 relative">
                               <div className="w-[26px] h-[26px] rounded-full bg-[#105DE4] flex items-center justify-center shrink-0">
                                 <ShieldCheck className="w-[13px] h-[13px] text-white" strokeWidth={2.5} />
                               </div>
-                              <div className="flex flex-col items-start justify-center min-w-0">
+                              <div className="flex flex-col items-start justify-center min-w-0 pr-3">
                                 <span className="text-[10px] font-extrabold text-[#105DE4] leading-tight truncate w-full">Warranty</span>
                                 <span className="text-[9px] font-semibold text-[#64748B] leading-tight truncate w-full">
                                   {scan.fullData?.warrantyClaimStatus ? 'Activated' : 'Pending'}
                                 </span>
                               </div>
+                              {!scan.fullData?.warrantyClaimStatus && (
+                                <div className="absolute top-1/2 right-1.5 -translate-y-1/2 w-[8px] h-[8px]">
+                                  <div className="absolute w-full h-full rounded-full bg-[#10B981] animate-ping opacity-75"></div>
+                                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] rounded-full bg-[#10B981] z-10"></div>
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>

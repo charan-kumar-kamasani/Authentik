@@ -92,7 +92,12 @@ function ResultAuthentic({ data }: { data: any }) {
 
   const productObj = data.productId || {};
   const orderObj = productObj.orderId || data.orderId || {};
-  const templateObj = productObj.templateId || data.templateData || {};
+  const templateObj = (productObj.templateId && typeof productObj.templateId === 'object' && !Array.isArray(productObj.templateId)) ? productObj.templateId : (data.templateData || {});
+
+  console.log("[DEBUG] data from scan:", data);
+  console.log("[DEBUG] productObj:", productObj);
+  console.log("[DEBUG] templateObj:", templateObj);
+  console.log("[DEBUG] orderObj:", orderObj);
 
   const scanDate = data.scannedAt || data.scanDate || data.createdAt ? new Date(data.scannedAt || data.scanDate || data.createdAt) : null;
   const scanDateStr = scanDate ? `${scanDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}\n${scanDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}` : 'N/A';
@@ -295,12 +300,11 @@ function ResultAuthentic({ data }: { data: any }) {
 
   // 1. Add fields from hardcoded additionalInfoFields
   additionalInfoFields.forEach(({ key, label }) => {
-    let val = data[key] || data.productId?.[key];
+    let val = data[key] || productObj[key] || orderObj[key] || templateObj[key];
     if (!val && data.dynamicFields) val = data.dynamicFields[key];
-    if (!val && data.productId?.dynamicFields) val = data.productId?.dynamicFields[key];
-
-
-
+    if (!val && productObj.dynamicFields) val = productObj.dynamicFields[key];
+    if (!val && orderObj.dynamicFields) val = orderObj.dynamicFields[key];
+    if (!val && templateObj.dynamicFields) val = templateObj.dynamicFields[key];
     if (val && val !== "-" && !handledKeys.has(key)) {
       grayFields.push({ label, value: String(val) });
       handledKeys.add(key);
@@ -308,7 +312,12 @@ function ResultAuthentic({ data }: { data: any }) {
   });
 
   // 2. Add all other dynamic fields that haven't been handled yet
-  const combinedDynamicFields = { ...(data.productId?.dynamicFields || {}), ...(data.dynamicFields || {}) };
+  const combinedDynamicFields = { 
+    ...(templateObj.dynamicFields || {}), 
+    ...(orderObj.dynamicFields || {}), 
+    ...(productObj.dynamicFields || {}), 
+    ...(data.dynamicFields || {}) 
+  };
   Object.keys(combinedDynamicFields).forEach(key => {
     if (!handledKeys.has(key)) {
       // Skip quantity and SKU fields from display as per user request
