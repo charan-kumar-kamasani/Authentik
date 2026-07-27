@@ -1095,9 +1095,16 @@ function ResultAuthentic({ data }: { data: any }) {
                       <Info size={16} strokeWidth={2} />
                       <span className="text-[13px] font-medium">Description</span>
                     </div>
-                    <span className="text-[10px] font-bold text-[#1F2642] leading-relaxed">
-                      {awardedCoupon.description}
-                    </span>
+                    <div className="flex flex-col gap-1.5 mt-1">
+                      {awardedCoupon.description.split('\n').filter(Boolean).map((bullet, idx) => (
+                        <div key={idx} className="flex items-start gap-2">
+                          <div className="w-1 h-1 rounded-full bg-[#1F2642] mt-1.5 shrink-0" />
+                          <span className="text-[10px] font-bold text-[#1F2642] leading-relaxed flex-1">
+                            {bullet}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>

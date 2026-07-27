@@ -147,9 +147,16 @@ export default function RewardDetail() {
             )}
 
             {reward.couponDescription && (
-              <p className="text-[#1e3a5f]/80 text-[15px] text-center mt-6 font-medium leading-relaxed px-2 break-all whitespace-pre-wrap">
-                {reward.couponDescription}
-              </p>
+              <div className="flex flex-col gap-2 mt-6 px-2">
+                {reward.couponDescription.split('\n').filter(Boolean).map((bullet, idx) => (
+                  <div key={idx} className="flex items-start gap-3">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#2CA4D6] mt-2 shrink-0 opacity-80" />
+                    <p className="text-[#1e3a5f]/80 text-[14px] font-medium leading-relaxed flex-1 break-words text-left">
+                      {bullet}
+                    </p>
+                  </div>
+                ))}
+              </div>
             )}
 
             {reward.couponExpiry && (

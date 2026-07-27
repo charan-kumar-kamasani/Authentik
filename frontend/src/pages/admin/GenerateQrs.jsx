@@ -1624,13 +1624,56 @@ export default function GenerateQrs() {
           <label className="text-sm font-medium text-slate-700 ml-1">
             Coupon Description {coupon.title && <span className="text-red-500">*</span>}
           </label>
-          <textarea
-            placeholder="e.g. Get 20% off on your next purchase..."
-            value={coupon.description}
-            onChange={(e) => setCoupon({ ...coupon, description: e.target.value })}
-            rows={2}
-            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all font-medium resize-none"
-          />
+          <div className="flex flex-col gap-2">
+            {(typeof coupon.description === 'string' ? coupon.description.split('\n') : []).length === 0 ? (
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0" />
+                <input
+                  type="text"
+                  placeholder="e.g. Valid on all plant protein products"
+                  value=""
+                  onChange={(e) => setCoupon({ ...coupon, description: e.target.value })}
+                  className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all font-medium"
+                />
+              </div>
+            ) : (typeof coupon.description === 'string' ? coupon.description.split('\n') : ['']).map((bullet, idx, arr) => (
+              <div key={idx} className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0" />
+                <input
+                  type="text"
+                  placeholder="e.g. Valid on all plant protein products"
+                  value={bullet}
+                  onChange={(e) => {
+                    const newArr = [...arr];
+                    newArr[idx] = e.target.value;
+                    setCoupon({ ...coupon, description: newArr.join('\n') });
+                  }}
+                  className="flex-1 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all font-medium"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newArr = arr.filter((_, i) => i !== idx);
+                    setCoupon({ ...coupon, description: newArr.join('\n') });
+                  }}
+                  className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => {
+                const arr = typeof coupon.description === 'string' && coupon.description ? coupon.description.split('\n') : [];
+                setCoupon({ ...coupon, description: [...arr, ''].join('\n') });
+              }}
+              className="flex items-center justify-center gap-1.5 w-full py-2.5 mt-1 border-2 border-dashed border-slate-200 rounded-xl text-slate-500 font-medium hover:border-purple-400 hover:text-purple-600 hover:bg-purple-50 transition-all text-sm"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
+              Add Bullet Point
+            </button>
+          </div>
           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest ml-1 mt-1">
             If provided, users who scan &amp; review this product will receive this coupon as a reward.
           </p>

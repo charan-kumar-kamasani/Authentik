@@ -358,7 +358,7 @@ export default function Home() {
 
               {/* CTA Button - Rounded Pill */}
               <button 
-                onClick={() => navigate('/rewards')} 
+                onClick={() => navigate('/scan-history')} 
                 className="relative overflow-hidden w-full bg-[#4F2DED] hover:bg-[#4323D6] text-white font-bold text-[9.5px] sm:text-[10.5px] py-1.5 px-2 rounded-full flex items-center justify-between active:scale-[0.97] transition-all shadow-[0_2px_6px_rgba(79,45,237,0.2)]"
               >
                 <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-flash-shimmer" style={{ animationDelay: '1s' }} />
