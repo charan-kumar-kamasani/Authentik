@@ -383,7 +383,10 @@ export default function Home() {
                   <span className="text-[#0F172A] text-[9px] font-semibold">Submitted</span>
                 </div>
                 <div className="w-[1px] h-[20px] bg-[#BBF7D0]"></div>
-                <div className="flex flex-col items-center flex-1">
+                <div 
+                  className="flex flex-col items-center flex-1 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => navigate('/rewards')}
+                >
                   <span className="text-[#F59E0B] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.reviews.pending}</span>
                   <span className="text-[#0F172A] text-[9px] font-semibold">Pending</span>
                 </div>
@@ -402,7 +405,10 @@ export default function Home() {
                   <span className="text-[#0F172A] text-[9px] font-semibold">Unlocked</span>
                 </div>
                 <div className="w-[1px] h-[20px] bg-[#E9D5FF]"></div>
-                <div className="flex flex-col items-center flex-1">
+                <div 
+                  className="flex flex-col items-center flex-1 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => navigate('/rewards')}
+                >
                   <span className="text-[#F59E0B] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.coupons.pending}</span>
                   <span className="text-[#0F172A] text-[9px] font-semibold">Pending</span>
                 </div>
@@ -421,9 +427,12 @@ export default function Home() {
                   <span className="text-[#0F172A] text-[9px] font-semibold">Active</span>
                 </div>
                 <div className="w-[1px] h-[20px] bg-[#BFDBFE]"></div>
-                <div className="flex flex-col items-center flex-1">
-                  <span className="text-[#105DE4] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.warranty.inactive}</span>
-                  <span className="text-[#0F172A] text-[9px] font-semibold">Inactive</span>
+                <div 
+                  className="flex flex-col items-center flex-1 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => navigate('/rewards')}
+                >
+                  <span className="text-[#F59E0B] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.warranty.inactive}</span>
+                  <span className="text-[#0F172A] text-[9px] font-semibold">Pending</span>
                 </div>
               </div>
             </div>
@@ -557,8 +566,8 @@ export default function Home() {
                             </div>
                             {!scan.alreadyReviewed && (
                               <div className="absolute top-1/2 right-1.5 -translate-y-1/2 w-[8px] h-[8px]">
-                                <div className="absolute w-full h-full rounded-full bg-[#10B981] animate-ping opacity-75"></div>
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] rounded-full bg-[#10B981] z-10"></div>
+                                <div className="absolute w-full h-full rounded-full bg-[#F59E0B] animate-ping opacity-75"></div>
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] rounded-full bg-[#F59E0B] z-10"></div>
                               </div>
                             )}
                           </div>
@@ -577,8 +586,8 @@ export default function Home() {
                               </div>
                               {!scan.alreadyReviewed && (
                                 <div className="absolute top-1/2 right-1.5 -translate-y-1/2 w-[8px] h-[8px]">
-                                  <div className="absolute w-full h-full rounded-full bg-[#10B981] animate-ping opacity-75"></div>
-                                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] rounded-full bg-[#10B981] z-10"></div>
+                                  <div className="absolute w-full h-full rounded-full bg-[#F59E0B] animate-ping opacity-75"></div>
+                                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] rounded-full bg-[#F59E0B] z-10"></div>
                                 </div>
                               )}
                             </div>
@@ -598,8 +607,8 @@ export default function Home() {
                               </div>
                               {!scan.fullData?.warrantyClaimStatus && (
                                 <div className="absolute top-1/2 right-1.5 -translate-y-1/2 w-[8px] h-[8px]">
-                                  <div className="absolute w-full h-full rounded-full bg-[#10B981] animate-ping opacity-75"></div>
-                                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] rounded-full bg-[#10B981] z-10"></div>
+                                  <div className="absolute w-full h-full rounded-full bg-[#F59E0B] animate-ping opacity-75"></div>
+                                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] rounded-full bg-[#F59E0B] z-10"></div>
                                 </div>
                               )}
                             </div>

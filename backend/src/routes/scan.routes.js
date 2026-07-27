@@ -79,27 +79,40 @@ router.get("/stats", protect, async (req, res) => {
       couponsUnlocked,
       unredeemedRewards,
       warrantyActive,
-      warrantyInactive,
       originalScans,
-      userReviews
+      userReviews,
+      userClaims
     ] = await Promise.all([
       Review.countDocuments({ userId }),
       UserReward.countDocuments({ userId }),
       UserReward.find({ userId, isRedeemed: false }).populate('productCouponId', 'discountType discountValue mrp').lean(),
       WarrantyClaim.countDocuments({ userId, status: { $ne: 'Rejected' } }),
-      WarrantyClaim.countDocuments({ userId, status: 'Rejected' }),
       Scan.find({ userId, status: 'ORIGINAL' }).select('productId').lean(),
-      Review.find({ userId }).select('productId').lean()
+      Review.find({ userId }).select('productId').lean(),
+      WarrantyClaim.find({ userId, status: { $ne: 'Rejected' } }).select('productId').lean()
     ]);
 
     const productIds = originalScans.map(s => s.productId);
+    const uniqueProductIdsStr = [...new Set(productIds.map(pid => pid?.toString()).filter(Boolean))];
+    
     const reviewedProductIds = new Set(userReviews.map(r => r.productId?.toString()));
-    const unreviewedProductIds = productIds.filter(pid => pid && !reviewedProductIds.has(pid.toString()));
+    const unreviewedUniqueProductIds = uniqueProductIdsStr.filter(pid => !reviewedProductIds.has(pid));
+
+    const claimedProductIds = new Set(userClaims.map(c => c.productId?.toString()));
+    const productsWithWarranty = await Product.find({
+      _id: { $in: uniqueProductIdsStr },
+      $or: [
+        { 'warranty.duration': { $exists: true, $ne: null } },
+        { 'warranty.warrantyType': { $exists: true, $ne: '' } }
+      ]
+    }).select('_id').lean();
+    
+    const warrantyInactive = productsWithWarranty.filter(p => !claimedProductIds.has(p._id.toString())).length;
 
     let pendingRewardValue = 0;
     let pendingCouponsCount = 0;
-    if (unreviewedProductIds.length > 0) {
-      const pendingCoupons = await ProductCoupon.find({ productId: { $in: unreviewedProductIds }, isActive: true }).lean();
+    if (unreviewedUniqueProductIds.length > 0) {
+      const pendingCoupons = await ProductCoupon.find({ productId: { $in: unreviewedUniqueProductIds }, isActive: true }).lean();
       pendingCouponsCount = pendingCoupons.length;
       pendingCoupons.forEach(coupon => {
          let value = 0;
@@ -141,7 +154,7 @@ router.get("/stats", protect, async (req, res) => {
         pendingRewardValue,
         reviews: {
           submitted: reviewsCount,
-          pending: unreviewedProductIds.length
+          pending: unreviewedUniqueProductIds.length
         },
         coupons: {
           unlocked: couponsUnlocked,

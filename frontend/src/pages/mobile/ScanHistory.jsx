@@ -226,45 +226,63 @@ export default function ScanHistory() {
             <div className="mx-3.5 mb-3.5 mt-1 border border-[#F1F5F9] rounded-[12px] bg-[#F8FAFC] py-2 px-1 flex items-center divide-x divide-[#E2E8F0]">
               
               {/* Review */}
-              <div className="flex-1 flex items-center justify-center gap-1.5 px-1 min-w-0">
+              <div className="flex-1 flex items-center justify-center gap-1.5 px-1 min-w-0 relative">
                 <div className="w-[26px] h-[26px] rounded-full bg-[#F59E0B] flex items-center justify-center shrink-0">
                   <Star className="w-[13px] h-[13px] text-white fill-white" />
                 </div>
-                <div className="flex flex-col items-start justify-center min-w-0">
+                <div className="flex flex-col items-start justify-center min-w-0 pr-3">
                   <span className="text-[10px] font-extrabold text-[#F59E0B] leading-tight truncate w-full">Review</span>
                   <span className="text-[9px] font-semibold text-[#64748B] leading-tight truncate w-full">
                     {item.alreadyReviewed ? 'Submitted' : 'Pending'}
                   </span>
                 </div>
+                {!item.alreadyReviewed && (
+                  <div className="absolute top-1/2 right-1.5 -translate-y-1/2 w-[8px] h-[8px]">
+                    <div className="absolute w-full h-full rounded-full bg-[#F59E0B] animate-ping opacity-75"></div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] rounded-full bg-[#F59E0B] z-10"></div>
+                  </div>
+                )}
               </div>
 
               {/* Reward */}
               {item.hasCoupon && (
-                <div className="flex-1 flex items-center justify-center gap-1.5 px-1 min-w-0">
+                <div className="flex-1 flex items-center justify-center gap-1.5 px-1 min-w-0 relative">
                   <div className="w-[26px] h-[26px] rounded-full bg-[#10B981] flex items-center justify-center shrink-0">
                     <Ticket className="w-[13px] h-[13px] text-white fill-white" />
                   </div>
-                  <div className="flex flex-col items-start justify-center min-w-0">
+                  <div className="flex flex-col items-start justify-center min-w-0 pr-3">
                     <span className="text-[10px] font-extrabold text-[#10B981] leading-tight truncate w-full">Coupon</span>
                     <span className="text-[9px] font-semibold text-[#64748B] leading-tight truncate w-full">
                       {item.alreadyReviewed ? 'Redeemed' : 'Available'}
                     </span>
                   </div>
+                  {!item.alreadyReviewed && (
+                    <div className="absolute top-1/2 right-1.5 -translate-y-1/2 w-[8px] h-[8px]">
+                      <div className="absolute w-full h-full rounded-full bg-[#F59E0B] animate-ping opacity-75"></div>
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] rounded-full bg-[#F59E0B] z-10"></div>
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* Warranty */}
               {item.hasWarranty && (
-                <div className="flex-1 flex items-center justify-center gap-1.5 px-1 min-w-0">
+                <div className="flex-1 flex items-center justify-center gap-1.5 px-1 min-w-0 relative">
                   <div className="w-[26px] h-[26px] rounded-full bg-[#105DE4] flex items-center justify-center shrink-0">
                     <ShieldCheck className="w-[13px] h-[13px] text-white" strokeWidth={2.5} />
                   </div>
-                  <div className="flex flex-col items-start justify-center min-w-0">
+                  <div className="flex flex-col items-start justify-center min-w-0 pr-3">
                     <span className="text-[10px] font-extrabold text-[#105DE4] leading-tight truncate w-full">Warranty</span>
                     <span className="text-[9px] font-semibold text-[#64748B] leading-tight truncate w-full">
                       {item.fullData?.warrantyClaimStatus ? 'Activated' : 'Pending'}
                     </span>
                   </div>
+                  {!item.fullData?.warrantyClaimStatus && (
+                    <div className="absolute top-1/2 right-1.5 -translate-y-1/2 w-[8px] h-[8px]">
+                      <div className="absolute w-full h-full rounded-full bg-[#F59E0B] animate-ping opacity-75"></div>
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[70%] h-[70%] rounded-full bg-[#F59E0B] z-10"></div>
+                    </div>
+                  )}
                 </div>
               )}
 
