@@ -599,35 +599,33 @@ function ResultAuthentic({ data }) {
             </div>
 
             {/* Text Header */}
-            <div className="text-center relative z-10 mb-4">
-              <h2 className="text-[22px] font-black text-[#1F2642] mb-1.5 flex items-center justify-center gap-2">
-                <span className="text-xl">🎉</span> Congratulations!
+            <div className="text-center relative z-10 mb-2">
+              <h2 className="text-[20px] font-black text-[#1F2642] mb-1 flex items-center justify-center gap-2">
+                <span className="text-lg">🎉</span> Congratulations!
               </h2>
-              <p className="text-[13px] text-slate-600 font-medium leading-tight">Thank you for your review.</p>
-              <p className="text-[13px] text-slate-600 font-medium leading-tight">You've earned an exclusive coupon.</p>
+              <p className="text-[12px] text-slate-600 font-medium leading-tight">Thank you for your review. You've earned an exclusive coupon.</p>
             </div>
 
             {/* Gift Image */}
-            <div className="relative z-10 w-48 h-40 mb-4 flex items-center justify-center">
-              <div className="text-[110px] drop-shadow-2xl animate-bounce" style={{ animationDuration: '2s' }}>🎁</div>
+            <div className="relative z-10 w-full h-24 mb-2 flex items-center justify-center">
+              <div className="text-[80px] drop-shadow-2xl animate-bounce" style={{ animationDuration: '2s' }}>🎁</div>
             </div>
 
             {/* Ticket Card */}
-            <div className="w-full relative z-10 mb-6 drop-shadow-xl flex h-[140px]">
+            <div className="w-full relative z-10 mb-4 drop-shadow-xl flex h-[110px]">
               {/* Left Side */}
               <div className="flex-1 bg-gradient-to-r from-[#4A3AFF] to-[#2B1EB1] rounded-l-[16px] p-5 flex flex-col justify-center relative overflow-hidden">
                 <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full z-10" />
-                <span className="text-[#FFD700] text-[10px] font-bold tracking-widest uppercase mb-1 drop-shadow-sm">YOU WON</span>
-                <h3 className="text-white text-[32px] font-black leading-none mb-1.5 drop-shadow-sm">{awardedCoupon.title}</h3>
-                <p className="text-white/80 text-[11px] font-bold uppercase tracking-wide leading-tight line-clamp-2">{awardedCoupon.description}</p>
+                <span className="text-[#FFD700] text-[9px] font-bold tracking-widest uppercase mb-1 drop-shadow-sm">YOU WON</span>
+                <h3 className="text-white text-[24px] font-black leading-none mb-1 drop-shadow-sm">{awardedCoupon.title}</h3>
               </div>
               
               {/* Right Side */}
               <div className="w-[130px] bg-gradient-to-r from-[#2B1EB1] to-[#1E1683] rounded-r-[16px] p-4 flex flex-col items-center justify-center relative overflow-hidden border-l-[3px] border-dashed border-white/20">
                 <div className="absolute -right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full z-10" />
-                <span className="text-white/90 text-[10px] font-bold tracking-wider mb-2 flex items-center gap-1 text-center">COUPON CODE <span className="text-[#FFD700] text-[12px] -mt-0.5">★</span></span>
-                <div className="bg-white rounded-lg py-2 px-2 w-full text-center mb-3 shadow-inner">
-                  <span className="text-[#251C9B] font-black text-[15px]">{awardedCoupon.code}</span>
+                <span className="text-white/90 text-[9px] font-bold tracking-wider mb-1 flex items-center gap-1 text-center">COUPON CODE <span className="text-[#FFD700] text-[10px] -mt-0.5">★</span></span>
+                <div className="bg-white rounded-lg py-1.5 px-2 w-full text-center mb-2 shadow-inner">
+                  <span className="text-[#251C9B] font-black text-[14px]">{awardedCoupon.code}</span>
                 </div>
                 <button 
                   onClick={() => {
@@ -644,29 +642,9 @@ function ResultAuthentic({ data }) {
             </div>
 
             {/* Details List */}
-            <div className="w-full bg-white border border-slate-100 rounded-[16px] p-4 mb-6 shadow-sm">
-              {awardedCoupon.expiryDate && (
-                <div className="flex items-center justify-between py-3 border-b border-slate-50">
-                  <div className="flex items-center gap-2.5 text-slate-500">
-                    <Calendar size={16} strokeWidth={2} />
-                    <span className="text-[13px] font-medium">Valid Till</span>
-                  </div>
-                  <span className="text-[13px] font-bold text-[#1F2642]">
-                    {new Date(awardedCoupon.expiryDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
-                  </span>
-                </div>
-              )}
-              <div className="flex items-center justify-between py-3 border-b border-slate-50">
-                <div className="flex items-center gap-2.5 text-slate-500">
-                  <Info size={16} strokeWidth={2} />
-                  <span className="text-[13px] font-medium">Applicable On</span>
-                </div>
-                <span className="text-[13px] font-bold text-[#1F2642] text-right max-w-[50%] line-clamp-2 leading-tight">
-                  {awardedCoupon.description}
-                </span>
-              </div>
+            <div className="w-full bg-white border border-slate-100 rounded-[14px] p-3 mb-4 shadow-sm">
               {awardedCoupon.websiteLink && (
-                <div className="flex items-center justify-between py-3">
+                <div className="flex items-center justify-between py-2 border-b border-slate-50">
                   <div className="flex items-center gap-2.5 text-slate-500">
                     <Globe size={16} strokeWidth={2} />
                     <span className="text-[13px] font-medium">Website</span>
@@ -676,18 +654,40 @@ function ResultAuthentic({ data }) {
                   </a>
                 </div>
               )}
+              {awardedCoupon.expiryDate && (
+                <div className="flex items-center justify-between py-2 border-b border-slate-50">
+                  <div className="flex items-center gap-2.5 text-slate-500">
+                    <Calendar size={16} strokeWidth={2} />
+                    <span className="text-[13px] font-medium">Valid Till</span>
+                  </div>
+                  <span className="text-[13px] font-bold text-[#1F2642]">
+                    {new Date(awardedCoupon.expiryDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </span>
+                </div>
+              )}
+              {awardedCoupon.description && (
+                <div className="flex flex-col gap-1 py-2">
+                  <div className="flex items-center gap-2.5 text-slate-500">
+                    <Info size={16} strokeWidth={2} />
+                    <span className="text-[13px] font-medium">Description</span>
+                  </div>
+                  <span className="text-[13px] font-bold text-[#1F2642] leading-relaxed">
+                    {awardedCoupon.description}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Shop Now Button */}
             <button
               onClick={() => window.open(awardedCoupon.websiteLink, '_blank')}
-              className="w-full bg-[#059669] text-white font-bold text-[16px] py-4 rounded-[14px] shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all mb-6 flex items-center justify-center gap-2"
+              className="w-full bg-[#059669] text-white font-bold text-[15px] py-3 rounded-[12px] shadow-lg shadow-emerald-500/20 active:scale-[0.98] transition-all mb-4 flex items-center justify-center gap-2"
             >
               <span className="text-xl -mt-1">🛍️</span> Shop Now
             </button>
 
             {/* Want Another Reward Banner */}
-            <div className="w-full bg-[#F0FDF4] border border-[#DCFCE7] rounded-[16px] p-4 flex items-center justify-between mb-8 cursor-pointer active:scale-[0.98] transition-all" onClick={() => navigate('/')}>
+            <div className="w-full bg-[#F0FDF4] border border-[#DCFCE7] rounded-[14px] p-3 flex items-center justify-between mb-4 cursor-pointer active:scale-[0.98] transition-all" onClick={() => navigate('/')}>
               <div className="flex items-start gap-3">
                 <div className="w-10 h-10 rounded-full bg-[#059669] text-white flex items-center justify-center shrink-0 shadow-sm">
                   <Star size={20} fill="white" stroke="white" strokeWidth={1} />

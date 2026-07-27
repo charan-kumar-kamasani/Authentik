@@ -385,7 +385,7 @@ export default function Home() {
                 <div className="w-[1px] h-[20px] bg-[#BBF7D0]"></div>
                 <div 
                   className="flex flex-col items-center flex-1 cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => navigate('/rewards')}
+                  onClick={() => navigate('/scan-history')}
                 >
                   <span className="text-[#F59E0B] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.reviews.pending}</span>
                   <span className="text-[#0F172A] text-[9px] font-semibold">Pending</span>
@@ -400,14 +400,17 @@ export default function Home() {
               </div>
               <span className="text-[#0F172A] font-bold text-[12px] mb-2">Coupons</span>
               <div className="flex w-full items-center justify-between px-1">
-                <div className="flex flex-col items-center flex-1">
+                <div 
+                  className="flex flex-col items-center flex-1 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => navigate('/rewards')}
+                >
                   <span className="text-[#9333EA] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.coupons.unlocked}</span>
                   <span className="text-[#0F172A] text-[9px] font-semibold">Unlocked</span>
                 </div>
                 <div className="w-[1px] h-[20px] bg-[#E9D5FF]"></div>
                 <div 
                   className="flex flex-col items-center flex-1 cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => navigate('/rewards')}
+                  onClick={() => navigate('/scan-history')}
                 >
                   <span className="text-[#F59E0B] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.coupons.pending}</span>
                   <span className="text-[#0F172A] text-[9px] font-semibold">Pending</span>
@@ -422,14 +425,17 @@ export default function Home() {
               </div>
               <span className="text-[#0F172A] font-bold text-[12px] mb-2">Warranty</span>
               <div className="flex w-full items-center justify-between px-1">
-                <div className="flex flex-col items-center flex-1">
+                <div 
+                  className="flex flex-col items-center flex-1 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => navigate('/warranty')}
+                >
                   <span className="text-[#3B82F6] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.warranty.active}</span>
                   <span className="text-[#0F172A] text-[9px] font-semibold">Active</span>
                 </div>
                 <div className="w-[1px] h-[20px] bg-[#BFDBFE]"></div>
                 <div 
                   className="flex flex-col items-center flex-1 cursor-pointer hover:opacity-80 transition-opacity"
-                  onClick={() => navigate('/rewards')}
+                  onClick={() => navigate('/scan-history')}
                 >
                   <span className="text-[#F59E0B] font-black text-[16px] leading-none mb-0.5">{stats.rewardsData.warranty.inactive}</span>
                   <span className="text-[#0F172A] text-[9px] font-semibold">Pending</span>
