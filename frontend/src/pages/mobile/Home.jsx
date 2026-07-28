@@ -366,7 +366,6 @@ export default function Home() {
                 <ChevronRight className="relative z-10 w-[12px] h-[12px] shrink-0 stroke-[3]" />
               </button>
             </div>
-
           </div>
 
           {/* Grid of 3 Cards (Reviews, Coupons, Warranty) */}
