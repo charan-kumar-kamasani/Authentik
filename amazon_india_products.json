@@ -1,0 +1,5346 @@
+[
+  {
+    "category": "Proteins",
+    "brand": "MuscleBlaze",
+    "product_name": "MuscleBlaze Biozyme Performance Whey Protein",
+    "seller": "KAYKAY RETAIL",
+    "price_inr": 2399,
+    "rating": 4.3,
+    "review_count": 45120,
+    "contact_info": {
+      "official_email": "info@muscleblaze.com",
+      "support_email": "support@muscleblaze.com"
+    },
+    "details": {
+      "flavor": "Rich Chocolate",
+      "weight": "1 kg",
+      "protein_per_serving": "25g",
+      "bcaa_per_serving": "5.51g",
+      "description": "India's first clinically tested Whey Protein product for Indian bodies. Enhanced absorption formulation (EAF)."
+    },
+    "url": "https://www.amazon.in/dp/B07R7Q21L3"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Nutrition Whey Protein Concentrate 80% Unflavoured",
+    "seller": "Medizen Labs",
+    "price_inr": 1698,
+    "rating": 4.1,
+    "review_count": 67300,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com",
+      "support_email": "customercare@asitisnutrition.com"
+    },
+    "details": {
+      "flavor": "Unflavoured",
+      "weight": "1 kg",
+      "protein_per_serving": "24g",
+      "bcaa_per_serving": "5.4g",
+      "description": "Raw and natural whey protein concentrate. Promotes muscle building, free from any doping ingredients."
+    },
+    "url": "https://www.amazon.in/dp/B077YWQ1X9"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Nutrition Premium Gold Whey",
+    "seller": "Bigmuscles Nutrition Direct",
+    "price_inr": 1599,
+    "rating": 3.9,
+    "review_count": 32100,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com",
+      "support_email": "support@bigmusclesnutrition.com"
+    },
+    "details": {
+      "flavor": "Belgian Chocolate",
+      "weight": "1 kg",
+      "protein_per_serving": "25g",
+      "bcaa_per_serving": "5.5g",
+      "description": "Advanced whey protein blend of whey isolate and whey concentrate. Zero sugar added."
+    },
+    "url": "https://www.amazon.in/dp/B07WZXQQM8"
+  },
+  {
+    "category": "Proteins",
+    "brand": "Nakpro",
+    "product_name": "Nakpro Platinum Whey Protein Isolate",
+    "seller": "NAKPRO NUTRITION",
+    "price_inr": 2199,
+    "rating": 4.2,
+    "review_count": 12500,
+    "contact_info": {
+      "official_email": "info@nakpro.com",
+      "support_email": "customercare@nakpro.com"
+    },
+    "details": {
+      "flavor": "Double Rich Chocolate",
+      "weight": "1 kg",
+      "protein_per_serving": "28g",
+      "bcaa_per_serving": "6.3g",
+      "description": "Imported whey protein isolate. Fast digesting and optimal for muscle recovery."
+    },
+    "url": "https://www.amazon.in/dp/B0855Q9MKS"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "HealthKart",
+    "product_name": "HealthKart HK Vitals Multivitamin for Men and Women",
+    "seller": "HealthKart Direct",
+    "price_inr": 449,
+    "rating": 4.2,
+    "review_count": 48900,
+    "contact_info": {
+      "official_email": "care@healthkart.com",
+      "support_email": "info@healthkart.com"
+    },
+    "details": {
+      "form": "Tablet",
+      "count": 90,
+      "key_ingredients": "Zinc, Vitamin C, Vitamin D3, Multiminerals, Ginseng Extract",
+      "description": "Daily multivitamin tablet for immunity, energy, and stamina."
+    },
+    "url": "https://www.amazon.in/dp/B07B4VFBZ4"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Himalaya",
+    "product_name": "Himalaya Ashwagandha",
+    "seller": "Himalaya Wellness",
+    "price_inr": 180,
+    "rating": 4.4,
+    "review_count": 61200,
+    "contact_info": {
+      "official_email": "contactus@himalayawellness.com",
+      "support_email": "care@himalayawellness.com"
+    },
+    "details": {
+      "form": "Tablet",
+      "count": 60,
+      "key_ingredients": "Ashwagandha Extract",
+      "description": "General wellness tablet for stress relief and energy rejuvenation."
+    },
+    "url": "https://www.amazon.in/dp/B01F3B90B2"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Carbamide Forte",
+    "product_name": "Carbamide Forte Chelated Magnesium Glycinate",
+    "seller": "Novus Life Sciences",
+    "price_inr": 699,
+    "rating": 4.5,
+    "review_count": 14500,
+    "contact_info": {
+      "official_email": "info@novuslifesciences.com",
+      "support_email": "inquiry@novuslifesciences.com"
+    },
+    "details": {
+      "form": "Tablet",
+      "count": 120,
+      "key_ingredients": "Magnesium Glycinate",
+      "description": "High absorption magnesium supplement for muscle recovery, bone health, and sleep."
+    },
+    "url": "https://www.amazon.in/dp/B08P1QJ9C2"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Neuherbs",
+    "product_name": "Neuherbs Deep Sea Fish Oil",
+    "seller": "Global Health Fit",
+    "price_inr": 899,
+    "rating": 4.3,
+    "review_count": 22100,
+    "contact_info": {
+      "official_email": "wecare@neuherbs.com",
+      "support_email": "info@neuherbs.com"
+    },
+    "details": {
+      "form": "Softgel",
+      "count": 60,
+      "key_ingredients": "Omega-3 (1000mg), EPA (360mg), DHA (240mg), Vitamin E, D3",
+      "description": "Purified fish oil with added Lemon flavor to avoid fishy burps. Good for heart, brain, and joints."
+    },
+    "url": "https://www.amazon.in/dp/B07T43ZQBN"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Sun Pharma Consumer Healthcare",
+    "price_inr": 450,
+    "rating": 4.4,
+    "review_count": 31000,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com",
+      "support_email": "customer.care@sunpharma.com"
+    },
+    "details": {
+      "form": "Capsule",
+      "count": 60,
+      "key_ingredients": "Ginseng, 10 Vitamins, 9 Minerals",
+      "description": "Daily health supplement for men to help increase physical stamina and improve immunity."
+    },
+    "url": "https://www.amazon.in/dp/B07K64KMBY"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt, Regular",
+    "seller": "GlaxoSmithKline",
+    "price_inr": 140,
+    "rating": 4.6,
+    "review_count": 18200,
+    "contact_info": {
+      "official_email": "askus@gsk.com",
+      "support_email": "customer.relations@gsk.com"
+    },
+    "details": {
+      "form": "Powder",
+      "weight": "100g",
+      "key_ingredients": "Svarjiksara, Nimbukamlam",
+      "description": "Fast cooling relief from acidity in 6 seconds."
+    },
+    "url": "https://www.amazon.in/dp/B00V4S4F82"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Chewing Gum",
+    "seller": "Cipla Health Ltd",
+    "price_inr": 295,
+    "rating": 4.0,
+    "review_count": 9400,
+    "contact_info": {
+      "official_email": "contactus@cipla.com",
+      "support_email": "info.india@cipla.com"
+    },
+    "details": {
+      "form": "Gum",
+      "strength": "2mg",
+      "flavor": "Mint Plus",
+      "description": "Helps you quit smoking by providing a controlled amount of nicotine to reduce withdrawal symptoms."
+    },
+    "url": "https://www.amazon.in/dp/B01N2H81C8"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Zandu",
+    "product_name": "Zandu Balm",
+    "seller": "Emami Limited",
+    "price_inr": 120,
+    "rating": 4.5,
+    "review_count": 15600,
+    "contact_info": {
+      "official_email": "customercare@emamigroup.com",
+      "support_email": "contact@emamigroup.com"
+    },
+    "details": {
+      "form": "Balm",
+      "weight": "25ml",
+      "key_ingredients": "Mentha satva, Gaultheria oil, Eucalyptus oil",
+      "description": "India's No 1 pain relief balm for headache, body ache, and cold."
+    },
+    "url": "https://www.amazon.in/dp/B00V6YF2H8"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Vanilla Cr\u00e8me)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1490,
+    "rating": 4.0,
+    "review_count": 6438,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Vanilla Cr\u00e8me"
+    },
+    "url": "https://www.amazon.in/dp/B010360784"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Vanilla Cr\u00e8me)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1453,
+    "rating": 4.7,
+    "review_count": 31174,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Vanilla Cr\u00e8me"
+    },
+    "url": "https://www.amazon.in/dp/B010801977"
+  },
+  {
+    "category": "Proteins",
+    "brand": "Optimum Nutrition India",
+    "product_name": "ON Gold Standard 100% Whey Protein (Double Rich Chocolate)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3394,
+    "rating": 4.2,
+    "review_count": 40083,
+    "contact_info": {
+      "official_email": "consumer@optimumnutrition.com"
+    },
+    "details": {
+      "description": "World's Best Selling Whey Protein Powder. 24g Protein, 5.5g BCAAs.",
+      "flavor_or_form": "Double Rich Chocolate"
+    },
+    "url": "https://www.amazon.in/dp/B097977682"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Cinnamon)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 270,
+    "rating": 4.7,
+    "review_count": 3716,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Cinnamon"
+    },
+    "url": "https://www.amazon.in/dp/B098372103"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Mint Plus)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 290,
+    "rating": 4.1,
+    "review_count": 19513,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Mint Plus"
+    },
+    "url": "https://www.amazon.in/dp/B062558747"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MyProtein",
+    "product_name": "MyProtein Impact Whey Isolate (Chocolate Smooth)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3043,
+    "rating": 4.2,
+    "review_count": 49352,
+    "contact_info": {
+      "official_email": "feedback@myprotein.co.in"
+    },
+    "details": {
+      "description": "Premium whey packed with 21g of protein per serving, for the everyday protein you need.",
+      "flavor_or_form": "Chocolate Smooth"
+    },
+    "url": "https://www.amazon.in/dp/B033787565"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MuscleBlaze",
+    "product_name": "MuscleBlaze Biozyme Performance Whey (Magical Mango)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2399,
+    "rating": 4.6,
+    "review_count": 46468,
+    "contact_info": {
+      "official_email": "info@muscleblaze.com"
+    },
+    "details": {
+      "description": "Clinically tested Whey Protein for Indian bodies with Enhanced Absorption Formula (EAF).",
+      "flavor_or_form": "Magical Mango"
+    },
+    "url": "https://www.amazon.in/dp/B096104702"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MyProtein",
+    "product_name": "MyProtein Impact Whey Isolate (Keventers Coffee)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3136,
+    "rating": 4.5,
+    "review_count": 2372,
+    "contact_info": {
+      "official_email": "feedback@myprotein.co.in"
+    },
+    "details": {
+      "description": "Premium whey packed with 21g of protein per serving, for the everyday protein you need.",
+      "flavor_or_form": "Keventers Coffee"
+    },
+    "url": "https://www.amazon.in/dp/B064095769"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Caffe Latte)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1528,
+    "rating": 4.7,
+    "review_count": 4687,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Caffe Latte"
+    },
+    "url": "https://www.amazon.in/dp/B090213504"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Regular)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 130,
+    "rating": 4.6,
+    "review_count": 31203,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Regular"
+    },
+    "url": "https://www.amazon.in/dp/B059139673"
+  },
+  {
+    "category": "Proteins",
+    "brand": "Optimum Nutrition India",
+    "product_name": "ON Gold Standard 100% Whey Protein (Vanilla Ice Cream)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3241,
+    "rating": 4.3,
+    "review_count": 42361,
+    "contact_info": {
+      "official_email": "consumer@optimumnutrition.com"
+    },
+    "details": {
+      "description": "World's Best Selling Whey Protein Powder. 24g Protein, 5.5g BCAAs.",
+      "flavor_or_form": "Vanilla Ice Cream"
+    },
+    "url": "https://www.amazon.in/dp/B024460446"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Zandu",
+    "product_name": "Zandu Balm Ultra Power",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 130,
+    "rating": 4.7,
+    "review_count": 18453,
+    "contact_info": {
+      "official_email": "customercare@emamigroup.com"
+    },
+    "details": {
+      "description": "Strong pain relief balm for severe headache, body ache and cold.",
+      "flavor_or_form": "Balm"
+    },
+    "url": "https://www.amazon.in/dp/B046017387"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 443,
+    "rating": 4.0,
+    "review_count": 39701,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B091674814"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "WOW Life Science",
+    "product_name": "WOW Omega-3 Fish Oil 1000mg",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 753,
+    "rating": 4.8,
+    "review_count": 37600,
+    "contact_info": {
+      "official_email": "support@buywow.in"
+    },
+    "details": {
+      "description": "Triple Strength Fish Oil containing 550mg EPA & 350mg DHA for Heart & Joint Health.",
+      "flavor_or_form": "Enteric Coated Softgel"
+    },
+    "url": "https://www.amazon.in/dp/B058677844"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1554,
+    "rating": 4.1,
+    "review_count": 5288,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B068868476"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Carbamide Forte",
+    "product_name": "Carbamide Forte Chelated Magnesium",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 746,
+    "rating": 4.6,
+    "review_count": 36653,
+    "contact_info": {
+      "official_email": "info@novuslifesciences.com"
+    },
+    "details": {
+      "description": "High absorption magnesium glycinate for sleep and muscle recovery. 120 Veg Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B026762830"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MyProtein",
+    "product_name": "MyProtein Impact Whey Isolate (Keventers Coffee)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2647,
+    "rating": 4.5,
+    "review_count": 29611,
+    "contact_info": {
+      "official_email": "feedback@myprotein.co.in"
+    },
+    "details": {
+      "description": "Premium whey packed with 21g of protein per serving, for the everyday protein you need.",
+      "flavor_or_form": "Keventers Coffee"
+    },
+    "url": "https://www.amazon.in/dp/B056023406"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "HealthKart",
+    "product_name": "HK Vitals Multivitamin for Men & Women",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 491,
+    "rating": 4.6,
+    "review_count": 49258,
+    "contact_info": {
+      "official_email": "care@healthkart.com"
+    },
+    "details": {
+      "description": "Daily Multivitamin with Zinc, Vitamin C, Vitamin D3 & Ginseng for Immunity.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B049572227"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MyProtein",
+    "product_name": "MyProtein Impact Whey Isolate (Keventers Coffee)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2635,
+    "rating": 4.4,
+    "review_count": 26101,
+    "contact_info": {
+      "official_email": "feedback@myprotein.co.in"
+    },
+    "details": {
+      "description": "Premium whey packed with 21g of protein per serving, for the everyday protein you need.",
+      "flavor_or_form": "Keventers Coffee"
+    },
+    "url": "https://www.amazon.in/dp/B046798884"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Himalaya",
+    "product_name": "Himalaya Ashwagandha",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 188,
+    "rating": 4.6,
+    "review_count": 16776,
+    "contact_info": {
+      "official_email": "contactus@himalayawellness.com"
+    },
+    "details": {
+      "description": "Pure Ashwagandha extract for stress relief and energy rejuvenation. 60 Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B075379281"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "WOW Life Science",
+    "product_name": "WOW Omega-3 Fish Oil 1000mg",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 737,
+    "rating": 4.3,
+    "review_count": 28561,
+    "contact_info": {
+      "official_email": "support@buywow.in"
+    },
+    "details": {
+      "description": "Triple Strength Fish Oil containing 550mg EPA & 350mg DHA for Heart & Joint Health.",
+      "flavor_or_form": "Enteric Coated Softgel"
+    },
+    "url": "https://www.amazon.in/dp/B070634519"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Vanilla Cr\u00e8me)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1494,
+    "rating": 4.3,
+    "review_count": 40615,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Vanilla Cr\u00e8me"
+    },
+    "url": "https://www.amazon.in/dp/B025783031"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Fruity Mint)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 257,
+    "rating": 4.7,
+    "review_count": 14024,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Fruity Mint"
+    },
+    "url": "https://www.amazon.in/dp/B031468541"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Vanilla Cr\u00e8me)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1670,
+    "rating": 4.5,
+    "review_count": 8144,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Vanilla Cr\u00e8me"
+    },
+    "url": "https://www.amazon.in/dp/B040527900"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Dr. Reddy's",
+    "product_name": "Econorm Sachet",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 381,
+    "rating": 4.6,
+    "review_count": 31326,
+    "contact_info": {
+      "official_email": "customerservices@drreddys.com"
+    },
+    "details": {
+      "description": "Probiotic sachet containing Saccharomyces boulardii for gut health and diarrhea.",
+      "flavor_or_form": "Unflavoured Powder"
+    },
+    "url": "https://www.amazon.in/dp/B072374075"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Dr. Reddy's",
+    "product_name": "Econorm Sachet",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 309,
+    "rating": 4.3,
+    "review_count": 38300,
+    "contact_info": {
+      "official_email": "customerservices@drreddys.com"
+    },
+    "details": {
+      "description": "Probiotic sachet containing Saccharomyces boulardii for gut health and diarrhea.",
+      "flavor_or_form": "Unflavoured Powder"
+    },
+    "url": "https://www.amazon.in/dp/B084532634"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Mint Plus)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 254,
+    "rating": 4.3,
+    "review_count": 42067,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Mint Plus"
+    },
+    "url": "https://www.amazon.in/dp/B078198248"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Carbamide Forte",
+    "product_name": "Carbamide Forte Chelated Magnesium",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 675,
+    "rating": 4.5,
+    "review_count": 41637,
+    "contact_info": {
+      "official_email": "info@novuslifesciences.com"
+    },
+    "details": {
+      "description": "High absorption magnesium glycinate for sleep and muscle recovery. 120 Veg Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B042746759"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Cinnamon)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 296,
+    "rating": 4.4,
+    "review_count": 32733,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Cinnamon"
+    },
+    "url": "https://www.amazon.in/dp/B012512556"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "WOW Life Science",
+    "product_name": "WOW Omega-3 Fish Oil 1000mg",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 622,
+    "rating": 4.7,
+    "review_count": 11254,
+    "contact_info": {
+      "official_email": "support@buywow.in"
+    },
+    "details": {
+      "description": "Triple Strength Fish Oil containing 550mg EPA & 350mg DHA for Heart & Joint Health.",
+      "flavor_or_form": "Enteric Coated Softgel"
+    },
+    "url": "https://www.amazon.in/dp/B073093426"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1712,
+    "rating": 4.2,
+    "review_count": 33037,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B073866985"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Belgian Chocolate)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1689,
+    "rating": 4.1,
+    "review_count": 7427,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Belgian Chocolate"
+    },
+    "url": "https://www.amazon.in/dp/B095370605"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Caffe Latte)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1506,
+    "rating": 4.5,
+    "review_count": 21175,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Caffe Latte"
+    },
+    "url": "https://www.amazon.in/dp/B090323454"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Mint Plus)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 281,
+    "rating": 4.8,
+    "review_count": 16519,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Mint Plus"
+    },
+    "url": "https://www.amazon.in/dp/B024521535"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Himalaya",
+    "product_name": "Himalaya Ashwagandha",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 168,
+    "rating": 4.4,
+    "review_count": 47600,
+    "contact_info": {
+      "official_email": "contactus@himalayawellness.com"
+    },
+    "details": {
+      "description": "Pure Ashwagandha extract for stress relief and energy rejuvenation. 60 Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B016302907"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Fruity Mint)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 285,
+    "rating": 4.3,
+    "review_count": 12216,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Fruity Mint"
+    },
+    "url": "https://www.amazon.in/dp/B048182317"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1591,
+    "rating": 4.6,
+    "review_count": 34931,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B071698561"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Lemon)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 125,
+    "rating": 4.3,
+    "review_count": 10367,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Lemon"
+    },
+    "url": "https://www.amazon.in/dp/B044471103"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1635,
+    "rating": 4.1,
+    "review_count": 7195,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B027306501"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Dr. Reddy's",
+    "product_name": "Econorm Sachet",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 360,
+    "rating": 4.4,
+    "review_count": 13595,
+    "contact_info": {
+      "official_email": "customerservices@drreddys.com"
+    },
+    "details": {
+      "description": "Probiotic sachet containing Saccharomyces boulardii for gut health and diarrhea.",
+      "flavor_or_form": "Unflavoured Powder"
+    },
+    "url": "https://www.amazon.in/dp/B013280037"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Lemon)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 128,
+    "rating": 4.6,
+    "review_count": 8928,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Lemon"
+    },
+    "url": "https://www.amazon.in/dp/B026429400"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Cola)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 152,
+    "rating": 4.1,
+    "review_count": 32521,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Cola"
+    },
+    "url": "https://www.amazon.in/dp/B092076104"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 447,
+    "rating": 4.6,
+    "review_count": 32616,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B087479913"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Dr. Reddy's",
+    "product_name": "Econorm Sachet",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 338,
+    "rating": 4.1,
+    "review_count": 48596,
+    "contact_info": {
+      "official_email": "customerservices@drreddys.com"
+    },
+    "details": {
+      "description": "Probiotic sachet containing Saccharomyces boulardii for gut health and diarrhea.",
+      "flavor_or_form": "Unflavoured Powder"
+    },
+    "url": "https://www.amazon.in/dp/B079282491"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MuscleBlaze",
+    "product_name": "MuscleBlaze Biozyme Performance Whey (Kesar Thandi)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2170,
+    "rating": 4.1,
+    "review_count": 47036,
+    "contact_info": {
+      "official_email": "info@muscleblaze.com"
+    },
+    "details": {
+      "description": "Clinically tested Whey Protein for Indian bodies with Enhanced Absorption Formula (EAF).",
+      "flavor_or_form": "Kesar Thandi"
+    },
+    "url": "https://www.amazon.in/dp/B084369000"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "HealthKart",
+    "product_name": "HK Vitals Multivitamin for Men & Women",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 426,
+    "rating": 4.1,
+    "review_count": 41951,
+    "contact_info": {
+      "official_email": "care@healthkart.com"
+    },
+    "details": {
+      "description": "Daily Multivitamin with Zinc, Vitamin C, Vitamin D3 & Ginseng for Immunity.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B049220682"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Cinnamon)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 292,
+    "rating": 4.1,
+    "review_count": 8161,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Cinnamon"
+    },
+    "url": "https://www.amazon.in/dp/B083910360"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Dr. Reddy's",
+    "product_name": "Econorm Sachet",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 369,
+    "rating": 4.2,
+    "review_count": 11373,
+    "contact_info": {
+      "official_email": "customerservices@drreddys.com"
+    },
+    "details": {
+      "description": "Probiotic sachet containing Saccharomyces boulardii for gut health and diarrhea.",
+      "flavor_or_form": "Unflavoured Powder"
+    },
+    "url": "https://www.amazon.in/dp/B024160738"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Zandu",
+    "product_name": "Zandu Balm Ultra Power",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 84,
+    "rating": 4.3,
+    "review_count": 47547,
+    "contact_info": {
+      "official_email": "customercare@emamigroup.com"
+    },
+    "details": {
+      "description": "Strong pain relief balm for severe headache, body ache and cold.",
+      "flavor_or_form": "Balm"
+    },
+    "url": "https://www.amazon.in/dp/B087140322"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Carbamide Forte",
+    "product_name": "Carbamide Forte Chelated Magnesium",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 662,
+    "rating": 4.6,
+    "review_count": 45513,
+    "contact_info": {
+      "official_email": "info@novuslifesciences.com"
+    },
+    "details": {
+      "description": "High absorption magnesium glycinate for sleep and muscle recovery. 120 Veg Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B030290783"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Neuherbs",
+    "product_name": "Neuherbs True Vitamin",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 401,
+    "rating": 4.7,
+    "review_count": 9503,
+    "contact_info": {
+      "official_email": "wecare@neuherbs.com"
+    },
+    "details": {
+      "description": "Premium Multivitamin with Antioxidants & Herbs for daily energy.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B053272059"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1623,
+    "rating": 4.4,
+    "review_count": 12864,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B019958855"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 530,
+    "rating": 4.8,
+    "review_count": 29533,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B061879066"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "WOW Life Science",
+    "product_name": "WOW Omega-3 Fish Oil 1000mg",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 860,
+    "rating": 4.2,
+    "review_count": 28385,
+    "contact_info": {
+      "official_email": "support@buywow.in"
+    },
+    "details": {
+      "description": "Triple Strength Fish Oil containing 550mg EPA & 350mg DHA for Heart & Joint Health.",
+      "flavor_or_form": "Enteric Coated Softgel"
+    },
+    "url": "https://www.amazon.in/dp/B082496145"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 436,
+    "rating": 4.0,
+    "review_count": 26009,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B097838584"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 502,
+    "rating": 4.5,
+    "review_count": 7479,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B093589819"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MyProtein",
+    "product_name": "MyProtein Impact Whey Isolate (Keventers Coffee)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2920,
+    "rating": 4.6,
+    "review_count": 13204,
+    "contact_info": {
+      "official_email": "feedback@myprotein.co.in"
+    },
+    "details": {
+      "description": "Premium whey packed with 21g of protein per serving, for the everyday protein you need.",
+      "flavor_or_form": "Keventers Coffee"
+    },
+    "url": "https://www.amazon.in/dp/B043598667"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "WOW Life Science",
+    "product_name": "WOW Omega-3 Fish Oil 1000mg",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 753,
+    "rating": 4.6,
+    "review_count": 7279,
+    "contact_info": {
+      "official_email": "support@buywow.in"
+    },
+    "details": {
+      "description": "Triple Strength Fish Oil containing 550mg EPA & 350mg DHA for Heart & Joint Health.",
+      "flavor_or_form": "Enteric Coated Softgel"
+    },
+    "url": "https://www.amazon.in/dp/B091007132"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MuscleBlaze",
+    "product_name": "MuscleBlaze Biozyme Performance Whey (Magical Mango)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2274,
+    "rating": 4.1,
+    "review_count": 1220,
+    "contact_info": {
+      "official_email": "info@muscleblaze.com"
+    },
+    "details": {
+      "description": "Clinically tested Whey Protein for Indian bodies with Enhanced Absorption Formula (EAF).",
+      "flavor_or_form": "Magical Mango"
+    },
+    "url": "https://www.amazon.in/dp/B026180736"
+  },
+  {
+    "category": "Proteins",
+    "brand": "Optimum Nutrition India",
+    "product_name": "ON Gold Standard 100% Whey Protein (Double Rich Chocolate)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3317,
+    "rating": 4.1,
+    "review_count": 27937,
+    "contact_info": {
+      "official_email": "consumer@optimumnutrition.com"
+    },
+    "details": {
+      "description": "World's Best Selling Whey Protein Powder. 24g Protein, 5.5g BCAAs.",
+      "flavor_or_form": "Double Rich Chocolate"
+    },
+    "url": "https://www.amazon.in/dp/B066501966"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Caffe Latte)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1695,
+    "rating": 4.6,
+    "review_count": 7893,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Caffe Latte"
+    },
+    "url": "https://www.amazon.in/dp/B081759786"
+  },
+  {
+    "category": "Proteins",
+    "brand": "Optimum Nutrition India",
+    "product_name": "ON Gold Standard 100% Whey Protein (Vanilla Ice Cream)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3174,
+    "rating": 4.5,
+    "review_count": 43115,
+    "contact_info": {
+      "official_email": "consumer@optimumnutrition.com"
+    },
+    "details": {
+      "description": "World's Best Selling Whey Protein Powder. 24g Protein, 5.5g BCAAs.",
+      "flavor_or_form": "Vanilla Ice Cream"
+    },
+    "url": "https://www.amazon.in/dp/B057711218"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "WOW Life Science",
+    "product_name": "WOW Omega-3 Fish Oil 1000mg",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 639,
+    "rating": 4.2,
+    "review_count": 24188,
+    "contact_info": {
+      "official_email": "support@buywow.in"
+    },
+    "details": {
+      "description": "Triple Strength Fish Oil containing 550mg EPA & 350mg DHA for Heart & Joint Health.",
+      "flavor_or_form": "Enteric Coated Softgel"
+    },
+    "url": "https://www.amazon.in/dp/B029629728"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "HealthKart",
+    "product_name": "HK Vitals Multivitamin for Men & Women",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 395,
+    "rating": 4.1,
+    "review_count": 8139,
+    "contact_info": {
+      "official_email": "care@healthkart.com"
+    },
+    "details": {
+      "description": "Daily Multivitamin with Zinc, Vitamin C, Vitamin D3 & Ginseng for Immunity.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B085586266"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MyProtein",
+    "product_name": "MyProtein Impact Whey Isolate (Keventers Coffee)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2892,
+    "rating": 4.1,
+    "review_count": 15149,
+    "contact_info": {
+      "official_email": "feedback@myprotein.co.in"
+    },
+    "details": {
+      "description": "Premium whey packed with 21g of protein per serving, for the everyday protein you need.",
+      "flavor_or_form": "Keventers Coffee"
+    },
+    "url": "https://www.amazon.in/dp/B036399590"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Zandu",
+    "product_name": "Zandu Balm Ultra Power",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 85,
+    "rating": 4.1,
+    "review_count": 18552,
+    "contact_info": {
+      "official_email": "customercare@emamigroup.com"
+    },
+    "details": {
+      "description": "Strong pain relief balm for severe headache, body ache and cold.",
+      "flavor_or_form": "Balm"
+    },
+    "url": "https://www.amazon.in/dp/B076561960"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Vanilla Cr\u00e8me)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1439,
+    "rating": 4.3,
+    "review_count": 33587,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Vanilla Cr\u00e8me"
+    },
+    "url": "https://www.amazon.in/dp/B062861288"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Carbamide Forte",
+    "product_name": "Carbamide Forte Chelated Magnesium",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 621,
+    "rating": 4.8,
+    "review_count": 38841,
+    "contact_info": {
+      "official_email": "info@novuslifesciences.com"
+    },
+    "details": {
+      "description": "High absorption magnesium glycinate for sleep and muscle recovery. 120 Veg Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B046920410"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Neuherbs",
+    "product_name": "Neuherbs True Vitamin",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 583,
+    "rating": 4.7,
+    "review_count": 29422,
+    "contact_info": {
+      "official_email": "wecare@neuherbs.com"
+    },
+    "details": {
+      "description": "Premium Multivitamin with Antioxidants & Herbs for daily energy.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B070512868"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Himalaya",
+    "product_name": "Himalaya Ashwagandha",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 189,
+    "rating": 4.0,
+    "review_count": 19017,
+    "contact_info": {
+      "official_email": "contactus@himalayawellness.com"
+    },
+    "details": {
+      "description": "Pure Ashwagandha extract for stress relief and energy rejuvenation. 60 Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B016676285"
+  },
+  {
+    "category": "Proteins",
+    "brand": "Optimum Nutrition India",
+    "product_name": "ON Gold Standard 100% Whey Protein (Vanilla Ice Cream)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3264,
+    "rating": 4.3,
+    "review_count": 6389,
+    "contact_info": {
+      "official_email": "consumer@optimumnutrition.com"
+    },
+    "details": {
+      "description": "World's Best Selling Whey Protein Powder. 24g Protein, 5.5g BCAAs.",
+      "flavor_or_form": "Vanilla Ice Cream"
+    },
+    "url": "https://www.amazon.in/dp/B026169015"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 462,
+    "rating": 4.3,
+    "review_count": 18764,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B038055824"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Regular)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 138,
+    "rating": 4.3,
+    "review_count": 17770,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Regular"
+    },
+    "url": "https://www.amazon.in/dp/B043110902"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Belgian Chocolate)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1549,
+    "rating": 4.5,
+    "review_count": 32748,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Belgian Chocolate"
+    },
+    "url": "https://www.amazon.in/dp/B083288676"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Regular)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 133,
+    "rating": 4.6,
+    "review_count": 5564,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Regular"
+    },
+    "url": "https://www.amazon.in/dp/B055056342"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MuscleBlaze",
+    "product_name": "MuscleBlaze Biozyme Performance Whey (Magical Mango)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2448,
+    "rating": 4.5,
+    "review_count": 37284,
+    "contact_info": {
+      "official_email": "info@muscleblaze.com"
+    },
+    "details": {
+      "description": "Clinically tested Whey Protein for Indian bodies with Enhanced Absorption Formula (EAF).",
+      "flavor_or_form": "Magical Mango"
+    },
+    "url": "https://www.amazon.in/dp/B074683821"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Neuherbs",
+    "product_name": "Neuherbs True Vitamin",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 450,
+    "rating": 4.1,
+    "review_count": 8996,
+    "contact_info": {
+      "official_email": "wecare@neuherbs.com"
+    },
+    "details": {
+      "description": "Premium Multivitamin with Antioxidants & Herbs for daily energy.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B017584343"
+  },
+  {
+    "category": "Proteins",
+    "brand": "Optimum Nutrition India",
+    "product_name": "ON Gold Standard 100% Whey Protein (Vanilla Ice Cream)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3060,
+    "rating": 4.5,
+    "review_count": 10808,
+    "contact_info": {
+      "official_email": "consumer@optimumnutrition.com"
+    },
+    "details": {
+      "description": "World's Best Selling Whey Protein Powder. 24g Protein, 5.5g BCAAs.",
+      "flavor_or_form": "Vanilla Ice Cream"
+    },
+    "url": "https://www.amazon.in/dp/B023771600"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Neuherbs",
+    "product_name": "Neuherbs True Vitamin",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 400,
+    "rating": 4.3,
+    "review_count": 24270,
+    "contact_info": {
+      "official_email": "wecare@neuherbs.com"
+    },
+    "details": {
+      "description": "Premium Multivitamin with Antioxidants & Herbs for daily energy.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B087058377"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "HealthKart",
+    "product_name": "HK Vitals Multivitamin for Men & Women",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 420,
+    "rating": 4.4,
+    "review_count": 36315,
+    "contact_info": {
+      "official_email": "care@healthkart.com"
+    },
+    "details": {
+      "description": "Daily Multivitamin with Zinc, Vitamin C, Vitamin D3 & Ginseng for Immunity.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B077790983"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Dr. Reddy's",
+    "product_name": "Econorm Sachet",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 393,
+    "rating": 4.7,
+    "review_count": 46846,
+    "contact_info": {
+      "official_email": "customerservices@drreddys.com"
+    },
+    "details": {
+      "description": "Probiotic sachet containing Saccharomyces boulardii for gut health and diarrhea.",
+      "flavor_or_form": "Unflavoured Powder"
+    },
+    "url": "https://www.amazon.in/dp/B075638371"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MyProtein",
+    "product_name": "MyProtein Impact Whey Isolate (Keventers Coffee)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2583,
+    "rating": 4.7,
+    "review_count": 12660,
+    "contact_info": {
+      "official_email": "feedback@myprotein.co.in"
+    },
+    "details": {
+      "description": "Premium whey packed with 21g of protein per serving, for the everyday protein you need.",
+      "flavor_or_form": "Keventers Coffee"
+    },
+    "url": "https://www.amazon.in/dp/B074801228"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1650,
+    "rating": 4.8,
+    "review_count": 22366,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B051758360"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Himalaya",
+    "product_name": "Himalaya Ashwagandha",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 158,
+    "rating": 4.2,
+    "review_count": 22764,
+    "contact_info": {
+      "official_email": "contactus@himalayawellness.com"
+    },
+    "details": {
+      "description": "Pure Ashwagandha extract for stress relief and energy rejuvenation. 60 Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B029299523"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Neuherbs",
+    "product_name": "Neuherbs True Vitamin",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 580,
+    "rating": 4.2,
+    "review_count": 36164,
+    "contact_info": {
+      "official_email": "wecare@neuherbs.com"
+    },
+    "details": {
+      "description": "Premium Multivitamin with Antioxidants & Herbs for daily energy.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B014467834"
+  },
+  {
+    "category": "Proteins",
+    "brand": "Optimum Nutrition India",
+    "product_name": "ON Gold Standard 100% Whey Protein (Double Rich Chocolate)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3111,
+    "rating": 4.2,
+    "review_count": 34438,
+    "contact_info": {
+      "official_email": "consumer@optimumnutrition.com"
+    },
+    "details": {
+      "description": "World's Best Selling Whey Protein Powder. 24g Protein, 5.5g BCAAs.",
+      "flavor_or_form": "Double Rich Chocolate"
+    },
+    "url": "https://www.amazon.in/dp/B092274372"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Carbamide Forte",
+    "product_name": "Carbamide Forte Chelated Magnesium",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 666,
+    "rating": 4.7,
+    "review_count": 14935,
+    "contact_info": {
+      "official_email": "info@novuslifesciences.com"
+    },
+    "details": {
+      "description": "High absorption magnesium glycinate for sleep and muscle recovery. 120 Veg Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B018576506"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1605,
+    "rating": 4.5,
+    "review_count": 24857,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B083367212"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Vanilla Cr\u00e8me)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1689,
+    "rating": 4.2,
+    "review_count": 38368,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Vanilla Cr\u00e8me"
+    },
+    "url": "https://www.amazon.in/dp/B036694015"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1649,
+    "rating": 4.3,
+    "review_count": 45384,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B042753614"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Cinnamon)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 288,
+    "rating": 4.1,
+    "review_count": 48383,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Cinnamon"
+    },
+    "url": "https://www.amazon.in/dp/B041418100"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Zandu",
+    "product_name": "Zandu Balm Ultra Power",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 87,
+    "rating": 4.2,
+    "review_count": 25253,
+    "contact_info": {
+      "official_email": "customercare@emamigroup.com"
+    },
+    "details": {
+      "description": "Strong pain relief balm for severe headache, body ache and cold.",
+      "flavor_or_form": "Balm"
+    },
+    "url": "https://www.amazon.in/dp/B041730918"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Vanilla Cr\u00e8me)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1440,
+    "rating": 4.7,
+    "review_count": 9620,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Vanilla Cr\u00e8me"
+    },
+    "url": "https://www.amazon.in/dp/B028991592"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Regular)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 152,
+    "rating": 4.8,
+    "review_count": 8875,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Regular"
+    },
+    "url": "https://www.amazon.in/dp/B013614342"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Carbamide Forte",
+    "product_name": "Carbamide Forte Chelated Magnesium",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 744,
+    "rating": 4.6,
+    "review_count": 33650,
+    "contact_info": {
+      "official_email": "info@novuslifesciences.com"
+    },
+    "details": {
+      "description": "High absorption magnesium glycinate for sleep and muscle recovery. 120 Veg Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B042919070"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Caffe Latte)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1424,
+    "rating": 4.1,
+    "review_count": 33069,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Caffe Latte"
+    },
+    "url": "https://www.amazon.in/dp/B048794017"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Carbamide Forte",
+    "product_name": "Carbamide Forte Chelated Magnesium",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 630,
+    "rating": 4.2,
+    "review_count": 27698,
+    "contact_info": {
+      "official_email": "info@novuslifesciences.com"
+    },
+    "details": {
+      "description": "High absorption magnesium glycinate for sleep and muscle recovery. 120 Veg Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B075246288"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Carbamide Forte",
+    "product_name": "Carbamide Forte Chelated Magnesium",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 672,
+    "rating": 4.4,
+    "review_count": 49358,
+    "contact_info": {
+      "official_email": "info@novuslifesciences.com"
+    },
+    "details": {
+      "description": "High absorption magnesium glycinate for sleep and muscle recovery. 120 Veg Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B086525966"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Regular)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 157,
+    "rating": 4.4,
+    "review_count": 16333,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Regular"
+    },
+    "url": "https://www.amazon.in/dp/B023327655"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "HealthKart",
+    "product_name": "HK Vitals Multivitamin for Men & Women",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 490,
+    "rating": 4.7,
+    "review_count": 28924,
+    "contact_info": {
+      "official_email": "care@healthkart.com"
+    },
+    "details": {
+      "description": "Daily Multivitamin with Zinc, Vitamin C, Vitamin D3 & Ginseng for Immunity.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B098286942"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Zandu",
+    "product_name": "Zandu Balm Ultra Power",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 82,
+    "rating": 4.3,
+    "review_count": 8456,
+    "contact_info": {
+      "official_email": "customercare@emamigroup.com"
+    },
+    "details": {
+      "description": "Strong pain relief balm for severe headache, body ache and cold.",
+      "flavor_or_form": "Balm"
+    },
+    "url": "https://www.amazon.in/dp/B025310021"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "HealthKart",
+    "product_name": "HK Vitals Multivitamin for Men & Women",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 389,
+    "rating": 4.4,
+    "review_count": 7597,
+    "contact_info": {
+      "official_email": "care@healthkart.com"
+    },
+    "details": {
+      "description": "Daily Multivitamin with Zinc, Vitamin C, Vitamin D3 & Ginseng for Immunity.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B082437246"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Cola)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 121,
+    "rating": 4.5,
+    "review_count": 9833,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Cola"
+    },
+    "url": "https://www.amazon.in/dp/B084606436"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 550,
+    "rating": 4.6,
+    "review_count": 12612,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B092284833"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1734,
+    "rating": 4.4,
+    "review_count": 7940,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B091289234"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Zandu",
+    "product_name": "Zandu Balm Ultra Power",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 91,
+    "rating": 4.7,
+    "review_count": 46890,
+    "contact_info": {
+      "official_email": "customercare@emamigroup.com"
+    },
+    "details": {
+      "description": "Strong pain relief balm for severe headache, body ache and cold.",
+      "flavor_or_form": "Balm"
+    },
+    "url": "https://www.amazon.in/dp/B055388418"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Dr. Reddy's",
+    "product_name": "Econorm Sachet",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 364,
+    "rating": 4.3,
+    "review_count": 8376,
+    "contact_info": {
+      "official_email": "customerservices@drreddys.com"
+    },
+    "details": {
+      "description": "Probiotic sachet containing Saccharomyces boulardii for gut health and diarrhea.",
+      "flavor_or_form": "Unflavoured Powder"
+    },
+    "url": "https://www.amazon.in/dp/B060378901"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Neuherbs",
+    "product_name": "Neuherbs True Vitamin",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 409,
+    "rating": 4.8,
+    "review_count": 15584,
+    "contact_info": {
+      "official_email": "wecare@neuherbs.com"
+    },
+    "details": {
+      "description": "Premium Multivitamin with Antioxidants & Herbs for daily energy.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B088296740"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1566,
+    "rating": 4.4,
+    "review_count": 10165,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B079746284"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Fruity Mint)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 261,
+    "rating": 4.7,
+    "review_count": 37311,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Fruity Mint"
+    },
+    "url": "https://www.amazon.in/dp/B084409698"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Cinnamon)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 276,
+    "rating": 4.7,
+    "review_count": 4371,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Cinnamon"
+    },
+    "url": "https://www.amazon.in/dp/B095082416"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Zandu",
+    "product_name": "Zandu Balm Ultra Power",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 103,
+    "rating": 4.6,
+    "review_count": 28544,
+    "contact_info": {
+      "official_email": "customercare@emamigroup.com"
+    },
+    "details": {
+      "description": "Strong pain relief balm for severe headache, body ache and cold.",
+      "flavor_or_form": "Balm"
+    },
+    "url": "https://www.amazon.in/dp/B031256358"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Zandu",
+    "product_name": "Zandu Balm Ultra Power",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 123,
+    "rating": 4.3,
+    "review_count": 8258,
+    "contact_info": {
+      "official_email": "customercare@emamigroup.com"
+    },
+    "details": {
+      "description": "Strong pain relief balm for severe headache, body ache and cold.",
+      "flavor_or_form": "Balm"
+    },
+    "url": "https://www.amazon.in/dp/B020651427"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 550,
+    "rating": 4.5,
+    "review_count": 45425,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B035425590"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Vanilla Cr\u00e8me)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1668,
+    "rating": 4.1,
+    "review_count": 20493,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Vanilla Cr\u00e8me"
+    },
+    "url": "https://www.amazon.in/dp/B026404056"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MuscleBlaze",
+    "product_name": "MuscleBlaze Biozyme Performance Whey (Rich Chocolate)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2154,
+    "rating": 4.4,
+    "review_count": 16673,
+    "contact_info": {
+      "official_email": "info@muscleblaze.com"
+    },
+    "details": {
+      "description": "Clinically tested Whey Protein for Indian bodies with Enhanced Absorption Formula (EAF).",
+      "flavor_or_form": "Rich Chocolate"
+    },
+    "url": "https://www.amazon.in/dp/B079221525"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Himalaya",
+    "product_name": "Himalaya Ashwagandha",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 172,
+    "rating": 4.2,
+    "review_count": 26714,
+    "contact_info": {
+      "official_email": "contactus@himalayawellness.com"
+    },
+    "details": {
+      "description": "Pure Ashwagandha extract for stress relief and energy rejuvenation. 60 Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B029620980"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Mint Plus)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 283,
+    "rating": 4.4,
+    "review_count": 24414,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Mint Plus"
+    },
+    "url": "https://www.amazon.in/dp/B094049728"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Carbamide Forte",
+    "product_name": "Carbamide Forte Chelated Magnesium",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 709,
+    "rating": 4.5,
+    "review_count": 14597,
+    "contact_info": {
+      "official_email": "info@novuslifesciences.com"
+    },
+    "details": {
+      "description": "High absorption magnesium glycinate for sleep and muscle recovery. 120 Veg Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B013888299"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Lemon)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 127,
+    "rating": 4.5,
+    "review_count": 24728,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Lemon"
+    },
+    "url": "https://www.amazon.in/dp/B051099982"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "WOW Life Science",
+    "product_name": "WOW Omega-3 Fish Oil 1000mg",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 621,
+    "rating": 4.1,
+    "review_count": 23769,
+    "contact_info": {
+      "official_email": "support@buywow.in"
+    },
+    "details": {
+      "description": "Triple Strength Fish Oil containing 550mg EPA & 350mg DHA for Heart & Joint Health.",
+      "flavor_or_form": "Enteric Coated Softgel"
+    },
+    "url": "https://www.amazon.in/dp/B073058358"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Himalaya",
+    "product_name": "Himalaya Ashwagandha",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 165,
+    "rating": 4.4,
+    "review_count": 20325,
+    "contact_info": {
+      "official_email": "contactus@himalayawellness.com"
+    },
+    "details": {
+      "description": "Pure Ashwagandha extract for stress relief and energy rejuvenation. 60 Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B082928795"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Dr. Reddy's",
+    "product_name": "Econorm Sachet",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 368,
+    "rating": 4.6,
+    "review_count": 19487,
+    "contact_info": {
+      "official_email": "customerservices@drreddys.com"
+    },
+    "details": {
+      "description": "Probiotic sachet containing Saccharomyces boulardii for gut health and diarrhea.",
+      "flavor_or_form": "Unflavoured Powder"
+    },
+    "url": "https://www.amazon.in/dp/B076462019"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Zandu",
+    "product_name": "Zandu Balm Ultra Power",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 116,
+    "rating": 4.0,
+    "review_count": 32904,
+    "contact_info": {
+      "official_email": "customercare@emamigroup.com"
+    },
+    "details": {
+      "description": "Strong pain relief balm for severe headache, body ache and cold.",
+      "flavor_or_form": "Balm"
+    },
+    "url": "https://www.amazon.in/dp/B017050344"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Neuherbs",
+    "product_name": "Neuherbs True Vitamin",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 494,
+    "rating": 4.1,
+    "review_count": 33978,
+    "contact_info": {
+      "official_email": "wecare@neuherbs.com"
+    },
+    "details": {
+      "description": "Premium Multivitamin with Antioxidants & Herbs for daily energy.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B077998296"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Dr. Reddy's",
+    "product_name": "Econorm Sachet",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 386,
+    "rating": 4.6,
+    "review_count": 49627,
+    "contact_info": {
+      "official_email": "customerservices@drreddys.com"
+    },
+    "details": {
+      "description": "Probiotic sachet containing Saccharomyces boulardii for gut health and diarrhea.",
+      "flavor_or_form": "Unflavoured Powder"
+    },
+    "url": "https://www.amazon.in/dp/B080417127"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 430,
+    "rating": 4.7,
+    "review_count": 14156,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B050992290"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "WOW Life Science",
+    "product_name": "WOW Omega-3 Fish Oil 1000mg",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 853,
+    "rating": 4.5,
+    "review_count": 10275,
+    "contact_info": {
+      "official_email": "support@buywow.in"
+    },
+    "details": {
+      "description": "Triple Strength Fish Oil containing 550mg EPA & 350mg DHA for Heart & Joint Health.",
+      "flavor_or_form": "Enteric Coated Softgel"
+    },
+    "url": "https://www.amazon.in/dp/B084129614"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MyProtein",
+    "product_name": "MyProtein Impact Whey Isolate (Mango)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2803,
+    "rating": 4.2,
+    "review_count": 2875,
+    "contact_info": {
+      "official_email": "feedback@myprotein.co.in"
+    },
+    "details": {
+      "description": "Premium whey packed with 21g of protein per serving, for the everyday protein you need.",
+      "flavor_or_form": "Mango"
+    },
+    "url": "https://www.amazon.in/dp/B051570861"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Zandu",
+    "product_name": "Zandu Balm Ultra Power",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 93,
+    "rating": 4.3,
+    "review_count": 22541,
+    "contact_info": {
+      "official_email": "customercare@emamigroup.com"
+    },
+    "details": {
+      "description": "Strong pain relief balm for severe headache, body ache and cold.",
+      "flavor_or_form": "Balm"
+    },
+    "url": "https://www.amazon.in/dp/B062802054"
+  },
+  {
+    "category": "Proteins",
+    "brand": "Optimum Nutrition India",
+    "product_name": "ON Gold Standard 100% Whey Protein (Delicious Strawberry)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3096,
+    "rating": 4.4,
+    "review_count": 49842,
+    "contact_info": {
+      "official_email": "consumer@optimumnutrition.com"
+    },
+    "details": {
+      "description": "World's Best Selling Whey Protein Powder. 24g Protein, 5.5g BCAAs.",
+      "flavor_or_form": "Delicious Strawberry"
+    },
+    "url": "https://www.amazon.in/dp/B093991335"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Fruity Mint)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 270,
+    "rating": 4.7,
+    "review_count": 46243,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Fruity Mint"
+    },
+    "url": "https://www.amazon.in/dp/B046214408"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1653,
+    "rating": 4.3,
+    "review_count": 49485,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B056075994"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Neuherbs",
+    "product_name": "Neuherbs True Vitamin",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 545,
+    "rating": 4.5,
+    "review_count": 15876,
+    "contact_info": {
+      "official_email": "wecare@neuherbs.com"
+    },
+    "details": {
+      "description": "Premium Multivitamin with Antioxidants & Herbs for daily energy.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B092529516"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Dr. Reddy's",
+    "product_name": "Econorm Sachet",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 381,
+    "rating": 4.7,
+    "review_count": 27011,
+    "contact_info": {
+      "official_email": "customerservices@drreddys.com"
+    },
+    "details": {
+      "description": "Probiotic sachet containing Saccharomyces boulardii for gut health and diarrhea.",
+      "flavor_or_form": "Unflavoured Powder"
+    },
+    "url": "https://www.amazon.in/dp/B093589073"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Belgian Chocolate)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1636,
+    "rating": 4.8,
+    "review_count": 25113,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Belgian Chocolate"
+    },
+    "url": "https://www.amazon.in/dp/B080347911"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 486,
+    "rating": 4.3,
+    "review_count": 32158,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B069844511"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Belgian Chocolate)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1529,
+    "rating": 4.5,
+    "review_count": 32962,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Belgian Chocolate"
+    },
+    "url": "https://www.amazon.in/dp/B072581953"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Cinnamon)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 269,
+    "rating": 4.3,
+    "review_count": 2380,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Cinnamon"
+    },
+    "url": "https://www.amazon.in/dp/B098095685"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MyProtein",
+    "product_name": "MyProtein Impact Whey Isolate (Keventers Coffee)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3180,
+    "rating": 4.2,
+    "review_count": 2416,
+    "contact_info": {
+      "official_email": "feedback@myprotein.co.in"
+    },
+    "details": {
+      "description": "Premium whey packed with 21g of protein per serving, for the everyday protein you need.",
+      "flavor_or_form": "Keventers Coffee"
+    },
+    "url": "https://www.amazon.in/dp/B092911984"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Dr. Reddy's",
+    "product_name": "Econorm Sachet",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 316,
+    "rating": 4.1,
+    "review_count": 30506,
+    "contact_info": {
+      "official_email": "customerservices@drreddys.com"
+    },
+    "details": {
+      "description": "Probiotic sachet containing Saccharomyces boulardii for gut health and diarrhea.",
+      "flavor_or_form": "Unflavoured Powder"
+    },
+    "url": "https://www.amazon.in/dp/B081381821"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Dr. Reddy's",
+    "product_name": "Econorm Sachet",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 374,
+    "rating": 4.4,
+    "review_count": 37601,
+    "contact_info": {
+      "official_email": "customerservices@drreddys.com"
+    },
+    "details": {
+      "description": "Probiotic sachet containing Saccharomyces boulardii for gut health and diarrhea.",
+      "flavor_or_form": "Unflavoured Powder"
+    },
+    "url": "https://www.amazon.in/dp/B044908247"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Mint Plus)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 255,
+    "rating": 4.1,
+    "review_count": 22655,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Mint Plus"
+    },
+    "url": "https://www.amazon.in/dp/B010217863"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Carbamide Forte",
+    "product_name": "Carbamide Forte Chelated Magnesium",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 597,
+    "rating": 4.0,
+    "review_count": 10549,
+    "contact_info": {
+      "official_email": "info@novuslifesciences.com"
+    },
+    "details": {
+      "description": "High absorption magnesium glycinate for sleep and muscle recovery. 120 Veg Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B078793912"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MuscleBlaze",
+    "product_name": "MuscleBlaze Biozyme Performance Whey (Rich Chocolate)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2429,
+    "rating": 4.2,
+    "review_count": 38876,
+    "contact_info": {
+      "official_email": "info@muscleblaze.com"
+    },
+    "details": {
+      "description": "Clinically tested Whey Protein for Indian bodies with Enhanced Absorption Formula (EAF).",
+      "flavor_or_form": "Rich Chocolate"
+    },
+    "url": "https://www.amazon.in/dp/B045122031"
+  },
+  {
+    "category": "Proteins",
+    "brand": "Optimum Nutrition India",
+    "product_name": "ON Gold Standard 100% Whey Protein (Vanilla Ice Cream)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3123,
+    "rating": 4.6,
+    "review_count": 30062,
+    "contact_info": {
+      "official_email": "consumer@optimumnutrition.com"
+    },
+    "details": {
+      "description": "World's Best Selling Whey Protein Powder. 24g Protein, 5.5g BCAAs.",
+      "flavor_or_form": "Vanilla Ice Cream"
+    },
+    "url": "https://www.amazon.in/dp/B071754748"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "WOW Life Science",
+    "product_name": "WOW Omega-3 Fish Oil 1000mg",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 674,
+    "rating": 4.4,
+    "review_count": 44299,
+    "contact_info": {
+      "official_email": "support@buywow.in"
+    },
+    "details": {
+      "description": "Triple Strength Fish Oil containing 550mg EPA & 350mg DHA for Heart & Joint Health.",
+      "flavor_or_form": "Enteric Coated Softgel"
+    },
+    "url": "https://www.amazon.in/dp/B060157540"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 427,
+    "rating": 4.3,
+    "review_count": 39987,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B068912096"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Vanilla Cr\u00e8me)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1435,
+    "rating": 4.6,
+    "review_count": 25515,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Vanilla Cr\u00e8me"
+    },
+    "url": "https://www.amazon.in/dp/B074257687"
+  },
+  {
+    "category": "Proteins",
+    "brand": "Optimum Nutrition India",
+    "product_name": "ON Gold Standard 100% Whey Protein (Vanilla Ice Cream)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3412,
+    "rating": 4.6,
+    "review_count": 35717,
+    "contact_info": {
+      "official_email": "consumer@optimumnutrition.com"
+    },
+    "details": {
+      "description": "World's Best Selling Whey Protein Powder. 24g Protein, 5.5g BCAAs.",
+      "flavor_or_form": "Vanilla Ice Cream"
+    },
+    "url": "https://www.amazon.in/dp/B091224184"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MyProtein",
+    "product_name": "MyProtein Impact Whey Isolate (Mango)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3052,
+    "rating": 4.5,
+    "review_count": 21435,
+    "contact_info": {
+      "official_email": "feedback@myprotein.co.in"
+    },
+    "details": {
+      "description": "Premium whey packed with 21g of protein per serving, for the everyday protein you need.",
+      "flavor_or_form": "Mango"
+    },
+    "url": "https://www.amazon.in/dp/B096937181"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Cinnamon)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 271,
+    "rating": 4.2,
+    "review_count": 10495,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Cinnamon"
+    },
+    "url": "https://www.amazon.in/dp/B083936335"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Fruity Mint)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 274,
+    "rating": 4.4,
+    "review_count": 41744,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Fruity Mint"
+    },
+    "url": "https://www.amazon.in/dp/B097612120"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MuscleBlaze",
+    "product_name": "MuscleBlaze Biozyme Performance Whey (Magical Mango)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2212,
+    "rating": 4.4,
+    "review_count": 2167,
+    "contact_info": {
+      "official_email": "info@muscleblaze.com"
+    },
+    "details": {
+      "description": "Clinically tested Whey Protein for Indian bodies with Enhanced Absorption Formula (EAF).",
+      "flavor_or_form": "Magical Mango"
+    },
+    "url": "https://www.amazon.in/dp/B053318430"
+  },
+  {
+    "category": "Proteins",
+    "brand": "Optimum Nutrition India",
+    "product_name": "ON Gold Standard 100% Whey Protein (Delicious Strawberry)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3155,
+    "rating": 4.1,
+    "review_count": 12433,
+    "contact_info": {
+      "official_email": "consumer@optimumnutrition.com"
+    },
+    "details": {
+      "description": "World's Best Selling Whey Protein Powder. 24g Protein, 5.5g BCAAs.",
+      "flavor_or_form": "Delicious Strawberry"
+    },
+    "url": "https://www.amazon.in/dp/B010642877"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Regular)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 154,
+    "rating": 4.2,
+    "review_count": 19530,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Regular"
+    },
+    "url": "https://www.amazon.in/dp/B047721227"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "WOW Life Science",
+    "product_name": "WOW Omega-3 Fish Oil 1000mg",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 703,
+    "rating": 4.3,
+    "review_count": 31518,
+    "contact_info": {
+      "official_email": "support@buywow.in"
+    },
+    "details": {
+      "description": "Triple Strength Fish Oil containing 550mg EPA & 350mg DHA for Heart & Joint Health.",
+      "flavor_or_form": "Enteric Coated Softgel"
+    },
+    "url": "https://www.amazon.in/dp/B059670650"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Carbamide Forte",
+    "product_name": "Carbamide Forte Chelated Magnesium",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 715,
+    "rating": 4.7,
+    "review_count": 33492,
+    "contact_info": {
+      "official_email": "info@novuslifesciences.com"
+    },
+    "details": {
+      "description": "High absorption magnesium glycinate for sleep and muscle recovery. 120 Veg Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B077335839"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Neuherbs",
+    "product_name": "Neuherbs True Vitamin",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 513,
+    "rating": 4.8,
+    "review_count": 31015,
+    "contact_info": {
+      "official_email": "wecare@neuherbs.com"
+    },
+    "details": {
+      "description": "Premium Multivitamin with Antioxidants & Herbs for daily energy.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B083196386"
+  },
+  {
+    "category": "Proteins",
+    "brand": "Optimum Nutrition India",
+    "product_name": "ON Gold Standard 100% Whey Protein (Delicious Strawberry)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3269,
+    "rating": 4.6,
+    "review_count": 1682,
+    "contact_info": {
+      "official_email": "consumer@optimumnutrition.com"
+    },
+    "details": {
+      "description": "World's Best Selling Whey Protein Powder. 24g Protein, 5.5g BCAAs.",
+      "flavor_or_form": "Delicious Strawberry"
+    },
+    "url": "https://www.amazon.in/dp/B063936226"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1602,
+    "rating": 4.4,
+    "review_count": 34936,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B068234200"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "WOW Life Science",
+    "product_name": "WOW Omega-3 Fish Oil 1000mg",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 890,
+    "rating": 4.7,
+    "review_count": 1167,
+    "contact_info": {
+      "official_email": "support@buywow.in"
+    },
+    "details": {
+      "description": "Triple Strength Fish Oil containing 550mg EPA & 350mg DHA for Heart & Joint Health.",
+      "flavor_or_form": "Enteric Coated Softgel"
+    },
+    "url": "https://www.amazon.in/dp/B029921878"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 539,
+    "rating": 4.7,
+    "review_count": 47111,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B094665755"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Regular)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 139,
+    "rating": 4.5,
+    "review_count": 10891,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Regular"
+    },
+    "url": "https://www.amazon.in/dp/B052370836"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 431,
+    "rating": 4.4,
+    "review_count": 43762,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B097785753"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1504,
+    "rating": 4.3,
+    "review_count": 27916,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B033600196"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "WOW Life Science",
+    "product_name": "WOW Omega-3 Fish Oil 1000mg",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 634,
+    "rating": 4.5,
+    "review_count": 36198,
+    "contact_info": {
+      "official_email": "support@buywow.in"
+    },
+    "details": {
+      "description": "Triple Strength Fish Oil containing 550mg EPA & 350mg DHA for Heart & Joint Health.",
+      "flavor_or_form": "Enteric Coated Softgel"
+    },
+    "url": "https://www.amazon.in/dp/B012962189"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MyProtein",
+    "product_name": "MyProtein Impact Whey Isolate (Keventers Coffee)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2617,
+    "rating": 4.7,
+    "review_count": 26793,
+    "contact_info": {
+      "official_email": "feedback@myprotein.co.in"
+    },
+    "details": {
+      "description": "Premium whey packed with 21g of protein per serving, for the everyday protein you need.",
+      "flavor_or_form": "Keventers Coffee"
+    },
+    "url": "https://www.amazon.in/dp/B096136579"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MyProtein",
+    "product_name": "MyProtein Impact Whey Isolate (Mango)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2842,
+    "rating": 4.3,
+    "review_count": 31438,
+    "contact_info": {
+      "official_email": "feedback@myprotein.co.in"
+    },
+    "details": {
+      "description": "Premium whey packed with 21g of protein per serving, for the everyday protein you need.",
+      "flavor_or_form": "Mango"
+    },
+    "url": "https://www.amazon.in/dp/B011655755"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MuscleBlaze",
+    "product_name": "MuscleBlaze Biozyme Performance Whey (Rich Chocolate)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2408,
+    "rating": 4.8,
+    "review_count": 29535,
+    "contact_info": {
+      "official_email": "info@muscleblaze.com"
+    },
+    "details": {
+      "description": "Clinically tested Whey Protein for Indian bodies with Enhanced Absorption Formula (EAF).",
+      "flavor_or_form": "Rich Chocolate"
+    },
+    "url": "https://www.amazon.in/dp/B071413854"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 416,
+    "rating": 4.3,
+    "review_count": 37727,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B040319660"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 515,
+    "rating": 4.4,
+    "review_count": 47653,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B056919968"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Himalaya",
+    "product_name": "Himalaya Ashwagandha",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 179,
+    "rating": 4.4,
+    "review_count": 13341,
+    "contact_info": {
+      "official_email": "contactus@himalayawellness.com"
+    },
+    "details": {
+      "description": "Pure Ashwagandha extract for stress relief and energy rejuvenation. 60 Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B086458335"
+  },
+  {
+    "category": "Proteins",
+    "brand": "Optimum Nutrition India",
+    "product_name": "ON Gold Standard 100% Whey Protein (Vanilla Ice Cream)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3186,
+    "rating": 4.2,
+    "review_count": 25942,
+    "contact_info": {
+      "official_email": "consumer@optimumnutrition.com"
+    },
+    "details": {
+      "description": "World's Best Selling Whey Protein Powder. 24g Protein, 5.5g BCAAs.",
+      "flavor_or_form": "Vanilla Ice Cream"
+    },
+    "url": "https://www.amazon.in/dp/B068911444"
+  },
+  {
+    "category": "Proteins",
+    "brand": "Optimum Nutrition India",
+    "product_name": "ON Gold Standard 100% Whey Protein (Vanilla Ice Cream)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3103,
+    "rating": 4.4,
+    "review_count": 15436,
+    "contact_info": {
+      "official_email": "consumer@optimumnutrition.com"
+    },
+    "details": {
+      "description": "World's Best Selling Whey Protein Powder. 24g Protein, 5.5g BCAAs.",
+      "flavor_or_form": "Vanilla Ice Cream"
+    },
+    "url": "https://www.amazon.in/dp/B082259927"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Dr. Reddy's",
+    "product_name": "Econorm Sachet",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 387,
+    "rating": 4.5,
+    "review_count": 42572,
+    "contact_info": {
+      "official_email": "customerservices@drreddys.com"
+    },
+    "details": {
+      "description": "Probiotic sachet containing Saccharomyces boulardii for gut health and diarrhea.",
+      "flavor_or_form": "Unflavoured Powder"
+    },
+    "url": "https://www.amazon.in/dp/B023773477"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Zandu",
+    "product_name": "Zandu Balm Ultra Power",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 104,
+    "rating": 4.1,
+    "review_count": 29001,
+    "contact_info": {
+      "official_email": "customercare@emamigroup.com"
+    },
+    "details": {
+      "description": "Strong pain relief balm for severe headache, body ache and cold.",
+      "flavor_or_form": "Balm"
+    },
+    "url": "https://www.amazon.in/dp/B061464429"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Himalaya",
+    "product_name": "Himalaya Ashwagandha",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 182,
+    "rating": 4.3,
+    "review_count": 4835,
+    "contact_info": {
+      "official_email": "contactus@himalayawellness.com"
+    },
+    "details": {
+      "description": "Pure Ashwagandha extract for stress relief and energy rejuvenation. 60 Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B019833389"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "WOW Life Science",
+    "product_name": "WOW Omega-3 Fish Oil 1000mg",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 615,
+    "rating": 4.7,
+    "review_count": 15162,
+    "contact_info": {
+      "official_email": "support@buywow.in"
+    },
+    "details": {
+      "description": "Triple Strength Fish Oil containing 550mg EPA & 350mg DHA for Heart & Joint Health.",
+      "flavor_or_form": "Enteric Coated Softgel"
+    },
+    "url": "https://www.amazon.in/dp/B072069847"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1538,
+    "rating": 4.7,
+    "review_count": 17467,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B060948745"
+  },
+  {
+    "category": "Proteins",
+    "brand": "Optimum Nutrition India",
+    "product_name": "ON Gold Standard 100% Whey Protein (Delicious Strawberry)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3019,
+    "rating": 4.3,
+    "review_count": 49594,
+    "contact_info": {
+      "official_email": "consumer@optimumnutrition.com"
+    },
+    "details": {
+      "description": "World's Best Selling Whey Protein Powder. 24g Protein, 5.5g BCAAs.",
+      "flavor_or_form": "Delicious Strawberry"
+    },
+    "url": "https://www.amazon.in/dp/B048357188"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Neuherbs",
+    "product_name": "Neuherbs True Vitamin",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 491,
+    "rating": 4.3,
+    "review_count": 8314,
+    "contact_info": {
+      "official_email": "wecare@neuherbs.com"
+    },
+    "details": {
+      "description": "Premium Multivitamin with Antioxidants & Herbs for daily energy.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B072508707"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Caffe Latte)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1427,
+    "rating": 4.6,
+    "review_count": 16420,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Caffe Latte"
+    },
+    "url": "https://www.amazon.in/dp/B080786186"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Caffe Latte)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1549,
+    "rating": 4.2,
+    "review_count": 14671,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Caffe Latte"
+    },
+    "url": "https://www.amazon.in/dp/B085285990"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1532,
+    "rating": 4.8,
+    "review_count": 24682,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B017703747"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MuscleBlaze",
+    "product_name": "MuscleBlaze Biozyme Performance Whey (Kesar Thandi)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2308,
+    "rating": 4.5,
+    "review_count": 12191,
+    "contact_info": {
+      "official_email": "info@muscleblaze.com"
+    },
+    "details": {
+      "description": "Clinically tested Whey Protein for Indian bodies with Enhanced Absorption Formula (EAF).",
+      "flavor_or_form": "Kesar Thandi"
+    },
+    "url": "https://www.amazon.in/dp/B043267833"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Belgian Chocolate)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1500,
+    "rating": 4.4,
+    "review_count": 33115,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Belgian Chocolate"
+    },
+    "url": "https://www.amazon.in/dp/B063944985"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "WOW Life Science",
+    "product_name": "WOW Omega-3 Fish Oil 1000mg",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 640,
+    "rating": 4.8,
+    "review_count": 10240,
+    "contact_info": {
+      "official_email": "support@buywow.in"
+    },
+    "details": {
+      "description": "Triple Strength Fish Oil containing 550mg EPA & 350mg DHA for Heart & Joint Health.",
+      "flavor_or_form": "Enteric Coated Softgel"
+    },
+    "url": "https://www.amazon.in/dp/B035178772"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 498,
+    "rating": 4.3,
+    "review_count": 20304,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B079122326"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "HealthKart",
+    "product_name": "HK Vitals Multivitamin for Men & Women",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 462,
+    "rating": 4.7,
+    "review_count": 13247,
+    "contact_info": {
+      "official_email": "care@healthkart.com"
+    },
+    "details": {
+      "description": "Daily Multivitamin with Zinc, Vitamin C, Vitamin D3 & Ginseng for Immunity.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B019472966"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Neuherbs",
+    "product_name": "Neuherbs True Vitamin",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 504,
+    "rating": 4.1,
+    "review_count": 6003,
+    "contact_info": {
+      "official_email": "wecare@neuherbs.com"
+    },
+    "details": {
+      "description": "Premium Multivitamin with Antioxidants & Herbs for daily energy.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B031512108"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Fruity Mint)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 288,
+    "rating": 4.8,
+    "review_count": 36742,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Fruity Mint"
+    },
+    "url": "https://www.amazon.in/dp/B080586751"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Dr. Reddy's",
+    "product_name": "Econorm Sachet",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 354,
+    "rating": 4.7,
+    "review_count": 39890,
+    "contact_info": {
+      "official_email": "customerservices@drreddys.com"
+    },
+    "details": {
+      "description": "Probiotic sachet containing Saccharomyces boulardii for gut health and diarrhea.",
+      "flavor_or_form": "Unflavoured Powder"
+    },
+    "url": "https://www.amazon.in/dp/B025016154"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Carbamide Forte",
+    "product_name": "Carbamide Forte Chelated Magnesium",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 570,
+    "rating": 4.4,
+    "review_count": 45442,
+    "contact_info": {
+      "official_email": "info@novuslifesciences.com"
+    },
+    "details": {
+      "description": "High absorption magnesium glycinate for sleep and muscle recovery. 120 Veg Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B031954309"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Caffe Latte)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1622,
+    "rating": 4.4,
+    "review_count": 15919,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Caffe Latte"
+    },
+    "url": "https://www.amazon.in/dp/B027698587"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 442,
+    "rating": 4.6,
+    "review_count": 32261,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B093204429"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1606,
+    "rating": 4.3,
+    "review_count": 36045,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B087685894"
+  },
+  {
+    "category": "Proteins",
+    "brand": "Optimum Nutrition India",
+    "product_name": "ON Gold Standard 100% Whey Protein (Double Rich Chocolate)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3489,
+    "rating": 4.5,
+    "review_count": 22565,
+    "contact_info": {
+      "official_email": "consumer@optimumnutrition.com"
+    },
+    "details": {
+      "description": "World's Best Selling Whey Protein Powder. 24g Protein, 5.5g BCAAs.",
+      "flavor_or_form": "Double Rich Chocolate"
+    },
+    "url": "https://www.amazon.in/dp/B098553132"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Vanilla Cr\u00e8me)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1658,
+    "rating": 4.7,
+    "review_count": 8449,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Vanilla Cr\u00e8me"
+    },
+    "url": "https://www.amazon.in/dp/B083342953"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MyProtein",
+    "product_name": "MyProtein Impact Whey Isolate (Keventers Coffee)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2941,
+    "rating": 4.7,
+    "review_count": 26436,
+    "contact_info": {
+      "official_email": "feedback@myprotein.co.in"
+    },
+    "details": {
+      "description": "Premium whey packed with 21g of protein per serving, for the everyday protein you need.",
+      "flavor_or_form": "Keventers Coffee"
+    },
+    "url": "https://www.amazon.in/dp/B025412440"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1640,
+    "rating": 4.5,
+    "review_count": 3668,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B026032772"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "WOW Life Science",
+    "product_name": "WOW Omega-3 Fish Oil 1000mg",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 900,
+    "rating": 4.6,
+    "review_count": 37940,
+    "contact_info": {
+      "official_email": "support@buywow.in"
+    },
+    "details": {
+      "description": "Triple Strength Fish Oil containing 550mg EPA & 350mg DHA for Heart & Joint Health.",
+      "flavor_or_form": "Enteric Coated Softgel"
+    },
+    "url": "https://www.amazon.in/dp/B038389231"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Neuherbs",
+    "product_name": "Neuherbs True Vitamin",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 486,
+    "rating": 4.7,
+    "review_count": 35138,
+    "contact_info": {
+      "official_email": "wecare@neuherbs.com"
+    },
+    "details": {
+      "description": "Premium Multivitamin with Antioxidants & Herbs for daily energy.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B080456462"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Cola)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 160,
+    "rating": 4.0,
+    "review_count": 11902,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Cola"
+    },
+    "url": "https://www.amazon.in/dp/B085323635"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Cola)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 135,
+    "rating": 4.6,
+    "review_count": 5591,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Cola"
+    },
+    "url": "https://www.amazon.in/dp/B036526274"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Carbamide Forte",
+    "product_name": "Carbamide Forte Chelated Magnesium",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 621,
+    "rating": 4.7,
+    "review_count": 34649,
+    "contact_info": {
+      "official_email": "info@novuslifesciences.com"
+    },
+    "details": {
+      "description": "High absorption magnesium glycinate for sleep and muscle recovery. 120 Veg Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B097176572"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Zandu",
+    "product_name": "Zandu Balm Ultra Power",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 90,
+    "rating": 4.5,
+    "review_count": 24775,
+    "contact_info": {
+      "official_email": "customercare@emamigroup.com"
+    },
+    "details": {
+      "description": "Strong pain relief balm for severe headache, body ache and cold.",
+      "flavor_or_form": "Balm"
+    },
+    "url": "https://www.amazon.in/dp/B018013425"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Himalaya",
+    "product_name": "Himalaya Ashwagandha",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 157,
+    "rating": 4.3,
+    "review_count": 28640,
+    "contact_info": {
+      "official_email": "contactus@himalayawellness.com"
+    },
+    "details": {
+      "description": "Pure Ashwagandha extract for stress relief and energy rejuvenation. 60 Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B018226245"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Himalaya",
+    "product_name": "Himalaya Ashwagandha",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 157,
+    "rating": 4.5,
+    "review_count": 5970,
+    "contact_info": {
+      "official_email": "contactus@himalayawellness.com"
+    },
+    "details": {
+      "description": "Pure Ashwagandha extract for stress relief and energy rejuvenation. 60 Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B012011139"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Neuherbs",
+    "product_name": "Neuherbs True Vitamin",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 456,
+    "rating": 4.1,
+    "review_count": 3063,
+    "contact_info": {
+      "official_email": "wecare@neuherbs.com"
+    },
+    "details": {
+      "description": "Premium Multivitamin with Antioxidants & Herbs for daily energy.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B071173151"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MyProtein",
+    "product_name": "MyProtein Impact Whey Isolate (Mango)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2949,
+    "rating": 4.6,
+    "review_count": 48347,
+    "contact_info": {
+      "official_email": "feedback@myprotein.co.in"
+    },
+    "details": {
+      "description": "Premium whey packed with 21g of protein per serving, for the everyday protein you need.",
+      "flavor_or_form": "Mango"
+    },
+    "url": "https://www.amazon.in/dp/B065447382"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Himalaya",
+    "product_name": "Himalaya Ashwagandha",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 166,
+    "rating": 4.5,
+    "review_count": 14900,
+    "contact_info": {
+      "official_email": "contactus@himalayawellness.com"
+    },
+    "details": {
+      "description": "Pure Ashwagandha extract for stress relief and energy rejuvenation. 60 Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B074782666"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 436,
+    "rating": 4.5,
+    "review_count": 38167,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B084282135"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Mint Plus)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 263,
+    "rating": 4.7,
+    "review_count": 15946,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Mint Plus"
+    },
+    "url": "https://www.amazon.in/dp/B024917891"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "WOW Life Science",
+    "product_name": "WOW Omega-3 Fish Oil 1000mg",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 653,
+    "rating": 4.3,
+    "review_count": 30437,
+    "contact_info": {
+      "official_email": "support@buywow.in"
+    },
+    "details": {
+      "description": "Triple Strength Fish Oil containing 550mg EPA & 350mg DHA for Heart & Joint Health.",
+      "flavor_or_form": "Enteric Coated Softgel"
+    },
+    "url": "https://www.amazon.in/dp/B084725397"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MyProtein",
+    "product_name": "MyProtein Impact Whey Isolate (Chocolate Smooth)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3151,
+    "rating": 4.0,
+    "review_count": 14923,
+    "contact_info": {
+      "official_email": "feedback@myprotein.co.in"
+    },
+    "details": {
+      "description": "Premium whey packed with 21g of protein per serving, for the everyday protein you need.",
+      "flavor_or_form": "Chocolate Smooth"
+    },
+    "url": "https://www.amazon.in/dp/B087585511"
+  },
+  {
+    "category": "Proteins",
+    "brand": "Optimum Nutrition India",
+    "product_name": "ON Gold Standard 100% Whey Protein (Double Rich Chocolate)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3086,
+    "rating": 4.1,
+    "review_count": 35875,
+    "contact_info": {
+      "official_email": "consumer@optimumnutrition.com"
+    },
+    "details": {
+      "description": "World's Best Selling Whey Protein Powder. 24g Protein, 5.5g BCAAs.",
+      "flavor_or_form": "Double Rich Chocolate"
+    },
+    "url": "https://www.amazon.in/dp/B040021043"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Dr. Reddy's",
+    "product_name": "Econorm Sachet",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 303,
+    "rating": 4.7,
+    "review_count": 37223,
+    "contact_info": {
+      "official_email": "customerservices@drreddys.com"
+    },
+    "details": {
+      "description": "Probiotic sachet containing Saccharomyces boulardii for gut health and diarrhea.",
+      "flavor_or_form": "Unflavoured Powder"
+    },
+    "url": "https://www.amazon.in/dp/B016695995"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MuscleBlaze",
+    "product_name": "MuscleBlaze Biozyme Performance Whey (Magical Mango)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2433,
+    "rating": 4.7,
+    "review_count": 19283,
+    "contact_info": {
+      "official_email": "info@muscleblaze.com"
+    },
+    "details": {
+      "description": "Clinically tested Whey Protein for Indian bodies with Enhanced Absorption Formula (EAF).",
+      "flavor_or_form": "Magical Mango"
+    },
+    "url": "https://www.amazon.in/dp/B099757616"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Lemon)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 147,
+    "rating": 4.4,
+    "review_count": 47231,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Lemon"
+    },
+    "url": "https://www.amazon.in/dp/B064419325"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Regular)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 137,
+    "rating": 4.2,
+    "review_count": 23616,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Regular"
+    },
+    "url": "https://www.amazon.in/dp/B060092498"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "HealthKart",
+    "product_name": "HK Vitals Multivitamin for Men & Women",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 435,
+    "rating": 4.4,
+    "review_count": 1448,
+    "contact_info": {
+      "official_email": "care@healthkart.com"
+    },
+    "details": {
+      "description": "Daily Multivitamin with Zinc, Vitamin C, Vitamin D3 & Ginseng for Immunity.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B013349743"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Zandu",
+    "product_name": "Zandu Balm Ultra Power",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 92,
+    "rating": 4.2,
+    "review_count": 41515,
+    "contact_info": {
+      "official_email": "customercare@emamigroup.com"
+    },
+    "details": {
+      "description": "Strong pain relief balm for severe headache, body ache and cold.",
+      "flavor_or_form": "Balm"
+    },
+    "url": "https://www.amazon.in/dp/B055746603"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Vanilla Cr\u00e8me)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1632,
+    "rating": 4.5,
+    "review_count": 28397,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Vanilla Cr\u00e8me"
+    },
+    "url": "https://www.amazon.in/dp/B055569455"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Dr. Reddy's",
+    "product_name": "Econorm Sachet",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 388,
+    "rating": 4.5,
+    "review_count": 36671,
+    "contact_info": {
+      "official_email": "customerservices@drreddys.com"
+    },
+    "details": {
+      "description": "Probiotic sachet containing Saccharomyces boulardii for gut health and diarrhea.",
+      "flavor_or_form": "Unflavoured Powder"
+    },
+    "url": "https://www.amazon.in/dp/B044596426"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1570,
+    "rating": 4.5,
+    "review_count": 34681,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B011668264"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Zandu",
+    "product_name": "Zandu Balm Ultra Power",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 125,
+    "rating": 4.0,
+    "review_count": 43120,
+    "contact_info": {
+      "official_email": "customercare@emamigroup.com"
+    },
+    "details": {
+      "description": "Strong pain relief balm for severe headache, body ache and cold.",
+      "flavor_or_form": "Balm"
+    },
+    "url": "https://www.amazon.in/dp/B083134863"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Himalaya",
+    "product_name": "Himalaya Ashwagandha",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 163,
+    "rating": 4.4,
+    "review_count": 27508,
+    "contact_info": {
+      "official_email": "contactus@himalayawellness.com"
+    },
+    "details": {
+      "description": "Pure Ashwagandha extract for stress relief and energy rejuvenation. 60 Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B071380912"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 541,
+    "rating": 4.5,
+    "review_count": 48047,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B014627397"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Himalaya",
+    "product_name": "Himalaya Ashwagandha",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 176,
+    "rating": 4.1,
+    "review_count": 23904,
+    "contact_info": {
+      "official_email": "contactus@himalayawellness.com"
+    },
+    "details": {
+      "description": "Pure Ashwagandha extract for stress relief and energy rejuvenation. 60 Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B049982012"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Lemon)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 141,
+    "rating": 4.8,
+    "review_count": 43248,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Lemon"
+    },
+    "url": "https://www.amazon.in/dp/B037051645"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "WOW Life Science",
+    "product_name": "WOW Omega-3 Fish Oil 1000mg",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 856,
+    "rating": 4.6,
+    "review_count": 23488,
+    "contact_info": {
+      "official_email": "support@buywow.in"
+    },
+    "details": {
+      "description": "Triple Strength Fish Oil containing 550mg EPA & 350mg DHA for Heart & Joint Health.",
+      "flavor_or_form": "Enteric Coated Softgel"
+    },
+    "url": "https://www.amazon.in/dp/B088853332"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MuscleBlaze",
+    "product_name": "MuscleBlaze Biozyme Performance Whey (Kesar Thandi)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2142,
+    "rating": 4.7,
+    "review_count": 17826,
+    "contact_info": {
+      "official_email": "info@muscleblaze.com"
+    },
+    "details": {
+      "description": "Clinically tested Whey Protein for Indian bodies with Enhanced Absorption Formula (EAF).",
+      "flavor_or_form": "Kesar Thandi"
+    },
+    "url": "https://www.amazon.in/dp/B055689810"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "HealthKart",
+    "product_name": "HK Vitals Multivitamin for Men & Women",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 491,
+    "rating": 4.2,
+    "review_count": 30268,
+    "contact_info": {
+      "official_email": "care@healthkart.com"
+    },
+    "details": {
+      "description": "Daily Multivitamin with Zinc, Vitamin C, Vitamin D3 & Ginseng for Immunity.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B092859000"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MyProtein",
+    "product_name": "MyProtein Impact Whey Isolate (Mango)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3011,
+    "rating": 4.0,
+    "review_count": 30859,
+    "contact_info": {
+      "official_email": "feedback@myprotein.co.in"
+    },
+    "details": {
+      "description": "Premium whey packed with 21g of protein per serving, for the everyday protein you need.",
+      "flavor_or_form": "Mango"
+    },
+    "url": "https://www.amazon.in/dp/B030664462"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "HealthKart",
+    "product_name": "HK Vitals Multivitamin for Men & Women",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 394,
+    "rating": 4.5,
+    "review_count": 28505,
+    "contact_info": {
+      "official_email": "care@healthkart.com"
+    },
+    "details": {
+      "description": "Daily Multivitamin with Zinc, Vitamin C, Vitamin D3 & Ginseng for Immunity.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B013374498"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Neuherbs",
+    "product_name": "Neuherbs True Vitamin",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 587,
+    "rating": 4.1,
+    "review_count": 26370,
+    "contact_info": {
+      "official_email": "wecare@neuherbs.com"
+    },
+    "details": {
+      "description": "Premium Multivitamin with Antioxidants & Herbs for daily energy.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B050318914"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Himalaya",
+    "product_name": "Himalaya Ashwagandha",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 177,
+    "rating": 4.3,
+    "review_count": 23170,
+    "contact_info": {
+      "official_email": "contactus@himalayawellness.com"
+    },
+    "details": {
+      "description": "Pure Ashwagandha extract for stress relief and energy rejuvenation. 60 Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B068164386"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Mint Plus)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 254,
+    "rating": 4.1,
+    "review_count": 31450,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Mint Plus"
+    },
+    "url": "https://www.amazon.in/dp/B077858221"
+  },
+  {
+    "category": "Proteins",
+    "brand": "Optimum Nutrition India",
+    "product_name": "ON Gold Standard 100% Whey Protein (Delicious Strawberry)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3316,
+    "rating": 4.6,
+    "review_count": 28155,
+    "contact_info": {
+      "official_email": "consumer@optimumnutrition.com"
+    },
+    "details": {
+      "description": "World's Best Selling Whey Protein Powder. 24g Protein, 5.5g BCAAs.",
+      "flavor_or_form": "Delicious Strawberry"
+    },
+    "url": "https://www.amazon.in/dp/B014172968"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Caffe Latte)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1591,
+    "rating": 4.0,
+    "review_count": 49930,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Caffe Latte"
+    },
+    "url": "https://www.amazon.in/dp/B043872416"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 428,
+    "rating": 4.5,
+    "review_count": 7401,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B018406574"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Cinnamon)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 259,
+    "rating": 4.4,
+    "review_count": 17985,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Cinnamon"
+    },
+    "url": "https://www.amazon.in/dp/B017947701"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Carbamide Forte",
+    "product_name": "Carbamide Forte Chelated Magnesium",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 615,
+    "rating": 4.2,
+    "review_count": 35872,
+    "contact_info": {
+      "official_email": "info@novuslifesciences.com"
+    },
+    "details": {
+      "description": "High absorption magnesium glycinate for sleep and muscle recovery. 120 Veg Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B086766492"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 547,
+    "rating": 4.3,
+    "review_count": 7301,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B059763032"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "HealthKart",
+    "product_name": "HK Vitals Multivitamin for Men & Women",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 499,
+    "rating": 4.5,
+    "review_count": 15734,
+    "contact_info": {
+      "official_email": "care@healthkart.com"
+    },
+    "details": {
+      "description": "Daily Multivitamin with Zinc, Vitamin C, Vitamin D3 & Ginseng for Immunity.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B078403271"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Neuherbs",
+    "product_name": "Neuherbs True Vitamin",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 503,
+    "rating": 4.1,
+    "review_count": 38176,
+    "contact_info": {
+      "official_email": "wecare@neuherbs.com"
+    },
+    "details": {
+      "description": "Premium Multivitamin with Antioxidants & Herbs for daily energy.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B028180954"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1710,
+    "rating": 4.5,
+    "review_count": 48594,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B088832175"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Carbamide Forte",
+    "product_name": "Carbamide Forte Chelated Magnesium",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 696,
+    "rating": 4.3,
+    "review_count": 47057,
+    "contact_info": {
+      "official_email": "info@novuslifesciences.com"
+    },
+    "details": {
+      "description": "High absorption magnesium glycinate for sleep and muscle recovery. 120 Veg Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B055376425"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "HealthKart",
+    "product_name": "HK Vitals Multivitamin for Men & Women",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 451,
+    "rating": 4.0,
+    "review_count": 45208,
+    "contact_info": {
+      "official_email": "care@healthkart.com"
+    },
+    "details": {
+      "description": "Daily Multivitamin with Zinc, Vitamin C, Vitamin D3 & Ginseng for Immunity.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B071337285"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "HealthKart",
+    "product_name": "HK Vitals Multivitamin for Men & Women",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 364,
+    "rating": 4.2,
+    "review_count": 48275,
+    "contact_info": {
+      "official_email": "care@healthkart.com"
+    },
+    "details": {
+      "description": "Daily Multivitamin with Zinc, Vitamin C, Vitamin D3 & Ginseng for Immunity.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B097884389"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1644,
+    "rating": 4.2,
+    "review_count": 23958,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B058321792"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Cinnamon)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 257,
+    "rating": 4.4,
+    "review_count": 5278,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Cinnamon"
+    },
+    "url": "https://www.amazon.in/dp/B056605267"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 447,
+    "rating": 4.5,
+    "review_count": 22070,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B033267507"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Belgian Chocolate)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1625,
+    "rating": 4.7,
+    "review_count": 3141,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Belgian Chocolate"
+    },
+    "url": "https://www.amazon.in/dp/B064270752"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Regular)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 138,
+    "rating": 4.7,
+    "review_count": 20108,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Regular"
+    },
+    "url": "https://www.amazon.in/dp/B070003047"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MuscleBlaze",
+    "product_name": "MuscleBlaze Biozyme Performance Whey (Rich Chocolate)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2142,
+    "rating": 4.1,
+    "review_count": 16644,
+    "contact_info": {
+      "official_email": "info@muscleblaze.com"
+    },
+    "details": {
+      "description": "Clinically tested Whey Protein for Indian bodies with Enhanced Absorption Formula (EAF).",
+      "flavor_or_form": "Rich Chocolate"
+    },
+    "url": "https://www.amazon.in/dp/B069129142"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1749,
+    "rating": 4.3,
+    "review_count": 25579,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B052279085"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Neuherbs",
+    "product_name": "Neuherbs True Vitamin",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 569,
+    "rating": 4.2,
+    "review_count": 39892,
+    "contact_info": {
+      "official_email": "wecare@neuherbs.com"
+    },
+    "details": {
+      "description": "Premium Multivitamin with Antioxidants & Herbs for daily energy.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B019950574"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Himalaya",
+    "product_name": "Himalaya Ashwagandha",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 187,
+    "rating": 4.5,
+    "review_count": 40803,
+    "contact_info": {
+      "official_email": "contactus@himalayawellness.com"
+    },
+    "details": {
+      "description": "Pure Ashwagandha extract for stress relief and energy rejuvenation. 60 Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B043640901"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Mint Plus)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 281,
+    "rating": 4.1,
+    "review_count": 31887,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Mint Plus"
+    },
+    "url": "https://www.amazon.in/dp/B066058385"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "HealthKart",
+    "product_name": "HK Vitals Multivitamin for Men & Women",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 407,
+    "rating": 4.3,
+    "review_count": 18005,
+    "contact_info": {
+      "official_email": "care@healthkart.com"
+    },
+    "details": {
+      "description": "Daily Multivitamin with Zinc, Vitamin C, Vitamin D3 & Ginseng for Immunity.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B046402331"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MyProtein",
+    "product_name": "MyProtein Impact Whey Isolate (Chocolate Smooth)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2735,
+    "rating": 4.6,
+    "review_count": 39476,
+    "contact_info": {
+      "official_email": "feedback@myprotein.co.in"
+    },
+    "details": {
+      "description": "Premium whey packed with 21g of protein per serving, for the everyday protein you need.",
+      "flavor_or_form": "Chocolate Smooth"
+    },
+    "url": "https://www.amazon.in/dp/B041273105"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MyProtein",
+    "product_name": "MyProtein Impact Whey Isolate (Keventers Coffee)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3102,
+    "rating": 4.1,
+    "review_count": 3321,
+    "contact_info": {
+      "official_email": "feedback@myprotein.co.in"
+    },
+    "details": {
+      "description": "Premium whey packed with 21g of protein per serving, for the everyday protein you need.",
+      "flavor_or_form": "Keventers Coffee"
+    },
+    "url": "https://www.amazon.in/dp/B096125013"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Carbamide Forte",
+    "product_name": "Carbamide Forte Chelated Magnesium",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 740,
+    "rating": 4.1,
+    "review_count": 49569,
+    "contact_info": {
+      "official_email": "info@novuslifesciences.com"
+    },
+    "details": {
+      "description": "High absorption magnesium glycinate for sleep and muscle recovery. 120 Veg Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B085877760"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Dr. Reddy's",
+    "product_name": "Econorm Sachet",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 369,
+    "rating": 4.4,
+    "review_count": 8853,
+    "contact_info": {
+      "official_email": "customerservices@drreddys.com"
+    },
+    "details": {
+      "description": "Probiotic sachet containing Saccharomyces boulardii for gut health and diarrhea.",
+      "flavor_or_form": "Unflavoured Powder"
+    },
+    "url": "https://www.amazon.in/dp/B057143611"
+  },
+  {
+    "category": "Proteins",
+    "brand": "Optimum Nutrition India",
+    "product_name": "ON Gold Standard 100% Whey Protein (Vanilla Ice Cream)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 3252,
+    "rating": 4.1,
+    "review_count": 42039,
+    "contact_info": {
+      "official_email": "consumer@optimumnutrition.com"
+    },
+    "details": {
+      "description": "World's Best Selling Whey Protein Powder. 24g Protein, 5.5g BCAAs.",
+      "flavor_or_form": "Vanilla Ice Cream"
+    },
+    "url": "https://www.amazon.in/dp/B014994143"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Zandu",
+    "product_name": "Zandu Balm Ultra Power",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 118,
+    "rating": 4.3,
+    "review_count": 47622,
+    "contact_info": {
+      "official_email": "customercare@emamigroup.com"
+    },
+    "details": {
+      "description": "Strong pain relief balm for severe headache, body ache and cold.",
+      "flavor_or_form": "Balm"
+    },
+    "url": "https://www.amazon.in/dp/B037706782"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1744,
+    "rating": 4.1,
+    "review_count": 17482,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B024108816"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Neuherbs",
+    "product_name": "Neuherbs True Vitamin",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 415,
+    "rating": 4.3,
+    "review_count": 7469,
+    "contact_info": {
+      "official_email": "wecare@neuherbs.com"
+    },
+    "details": {
+      "description": "Premium Multivitamin with Antioxidants & Herbs for daily energy.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B085515728"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "WOW Life Science",
+    "product_name": "WOW Omega-3 Fish Oil 1000mg",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 793,
+    "rating": 4.1,
+    "review_count": 15340,
+    "contact_info": {
+      "official_email": "support@buywow.in"
+    },
+    "details": {
+      "description": "Triple Strength Fish Oil containing 550mg EPA & 350mg DHA for Heart & Joint Health.",
+      "flavor_or_form": "Enteric Coated Softgel"
+    },
+    "url": "https://www.amazon.in/dp/B048444496"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MyProtein",
+    "product_name": "MyProtein Impact Whey Isolate (Mango)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2776,
+    "rating": 4.6,
+    "review_count": 32066,
+    "contact_info": {
+      "official_email": "feedback@myprotein.co.in"
+    },
+    "details": {
+      "description": "Premium whey packed with 21g of protein per serving, for the everyday protein you need.",
+      "flavor_or_form": "Mango"
+    },
+    "url": "https://www.amazon.in/dp/B023778502"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Sun Pharma",
+    "product_name": "Revital H for Men",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 513,
+    "rating": 4.4,
+    "review_count": 47534,
+    "contact_info": {
+      "official_email": "secretarial@sunpharma.com"
+    },
+    "details": {
+      "description": "Daily health supplement capsule with Ginseng, Vitamins & Minerals.",
+      "flavor_or_form": "Capsule"
+    },
+    "url": "https://www.amazon.in/dp/B056278990"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Himalaya",
+    "product_name": "Himalaya Ashwagandha",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 188,
+    "rating": 4.2,
+    "review_count": 8424,
+    "contact_info": {
+      "official_email": "contactus@himalayawellness.com"
+    },
+    "details": {
+      "description": "Pure Ashwagandha extract for stress relief and energy rejuvenation. 60 Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B038937731"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MuscleBlaze",
+    "product_name": "MuscleBlaze Biozyme Performance Whey (Magical Mango)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2337,
+    "rating": 4.5,
+    "review_count": 44578,
+    "contact_info": {
+      "official_email": "info@muscleblaze.com"
+    },
+    "details": {
+      "description": "Clinically tested Whey Protein for Indian bodies with Enhanced Absorption Formula (EAF).",
+      "flavor_or_form": "Magical Mango"
+    },
+    "url": "https://www.amazon.in/dp/B030569328"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MuscleBlaze",
+    "product_name": "MuscleBlaze Biozyme Performance Whey (Magical Mango)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2233,
+    "rating": 4.2,
+    "review_count": 31963,
+    "contact_info": {
+      "official_email": "info@muscleblaze.com"
+    },
+    "details": {
+      "description": "Clinically tested Whey Protein for Indian bodies with Enhanced Absorption Formula (EAF).",
+      "flavor_or_form": "Magical Mango"
+    },
+    "url": "https://www.amazon.in/dp/B072812139"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "WOW Life Science",
+    "product_name": "WOW Omega-3 Fish Oil 1000mg",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 754,
+    "rating": 4.6,
+    "review_count": 10723,
+    "contact_info": {
+      "official_email": "support@buywow.in"
+    },
+    "details": {
+      "description": "Triple Strength Fish Oil containing 550mg EPA & 350mg DHA for Heart & Joint Health.",
+      "flavor_or_form": "Enteric Coated Softgel"
+    },
+    "url": "https://www.amazon.in/dp/B066233554"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Dr. Reddy's",
+    "product_name": "Econorm Sachet",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 391,
+    "rating": 4.5,
+    "review_count": 36325,
+    "contact_info": {
+      "official_email": "customerservices@drreddys.com"
+    },
+    "details": {
+      "description": "Probiotic sachet containing Saccharomyces boulardii for gut health and diarrhea.",
+      "flavor_or_form": "Unflavoured Powder"
+    },
+    "url": "https://www.amazon.in/dp/B031254609"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MuscleBlaze",
+    "product_name": "MuscleBlaze Biozyme Performance Whey (Rich Chocolate)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2253,
+    "rating": 4.7,
+    "review_count": 8661,
+    "contact_info": {
+      "official_email": "info@muscleblaze.com"
+    },
+    "details": {
+      "description": "Clinically tested Whey Protein for Indian bodies with Enhanced Absorption Formula (EAF).",
+      "flavor_or_form": "Rich Chocolate"
+    },
+    "url": "https://www.amazon.in/dp/B034185233"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Carbamide Forte",
+    "product_name": "Carbamide Forte Chelated Magnesium",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 731,
+    "rating": 4.2,
+    "review_count": 4066,
+    "contact_info": {
+      "official_email": "info@novuslifesciences.com"
+    },
+    "details": {
+      "description": "High absorption magnesium glycinate for sleep and muscle recovery. 120 Veg Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B034362394"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MyProtein",
+    "product_name": "MyProtein Impact Whey Isolate (Chocolate Smooth)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2711,
+    "rating": 4.2,
+    "review_count": 14030,
+    "contact_info": {
+      "official_email": "feedback@myprotein.co.in"
+    },
+    "details": {
+      "description": "Premium whey packed with 21g of protein per serving, for the everyday protein you need.",
+      "flavor_or_form": "Chocolate Smooth"
+    },
+    "url": "https://www.amazon.in/dp/B012240343"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Zandu",
+    "product_name": "Zandu Balm Ultra Power",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 116,
+    "rating": 4.3,
+    "review_count": 1164,
+    "contact_info": {
+      "official_email": "customercare@emamigroup.com"
+    },
+    "details": {
+      "description": "Strong pain relief balm for severe headache, body ache and cold.",
+      "flavor_or_form": "Balm"
+    },
+    "url": "https://www.amazon.in/dp/B012124518"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Vanilla Cr\u00e8me)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1537,
+    "rating": 4.1,
+    "review_count": 1140,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Vanilla Cr\u00e8me"
+    },
+    "url": "https://www.amazon.in/dp/B061909621"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Cola)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 150,
+    "rating": 4.3,
+    "review_count": 22553,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Cola"
+    },
+    "url": "https://www.amazon.in/dp/B054449594"
+  },
+  {
+    "category": "Proteins",
+    "brand": "MyProtein",
+    "product_name": "MyProtein Impact Whey Isolate (Mango)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 2920,
+    "rating": 4.1,
+    "review_count": 31379,
+    "contact_info": {
+      "official_email": "feedback@myprotein.co.in"
+    },
+    "details": {
+      "description": "Premium whey packed with 21g of protein per serving, for the everyday protein you need.",
+      "flavor_or_form": "Mango"
+    },
+    "url": "https://www.amazon.in/dp/B097860319"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Cola)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 154,
+    "rating": 4.7,
+    "review_count": 26892,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Cola"
+    },
+    "url": "https://www.amazon.in/dp/B028746548"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1714,
+    "rating": 4.4,
+    "review_count": 48811,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B042724873"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Carbamide Forte",
+    "product_name": "Carbamide Forte Chelated Magnesium",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 611,
+    "rating": 4.0,
+    "review_count": 29903,
+    "contact_info": {
+      "official_email": "info@novuslifesciences.com"
+    },
+    "details": {
+      "description": "High absorption magnesium glycinate for sleep and muscle recovery. 120 Veg Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B043839537"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Fruity Mint)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 260,
+    "rating": 4.6,
+    "review_count": 33756,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Fruity Mint"
+    },
+    "url": "https://www.amazon.in/dp/B092302271"
+  },
+  {
+    "category": "Proteins",
+    "brand": "BigMuscles Nutrition",
+    "product_name": "BigMuscles Premium Gold Whey (Caffe Latte)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1420,
+    "rating": 4.5,
+    "review_count": 13465,
+    "contact_info": {
+      "official_email": "info@bigmusclesnutrition.com"
+    },
+    "details": {
+      "description": "Advanced Whey Protein Isolate & Concentrate blend. Zero added sugar.",
+      "flavor_or_form": "Caffe Latte"
+    },
+    "url": "https://www.amazon.in/dp/B014922578"
+  },
+  {
+    "category": "Proteins",
+    "brand": "AS-IT-IS Nutrition",
+    "product_name": "AS-IT-IS Whey Protein Concentrate 80%",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 1539,
+    "rating": 4.4,
+    "review_count": 18252,
+    "contact_info": {
+      "official_email": "info@asitisnutrition.com"
+    },
+    "details": {
+      "description": "100% Pure, Raw, Unflavoured Whey Protein Concentrate for Muscle Building.",
+      "flavor_or_form": "Unflavoured"
+    },
+    "url": "https://www.amazon.in/dp/B031861748"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Zandu",
+    "product_name": "Zandu Balm Ultra Power",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 101,
+    "rating": 4.5,
+    "review_count": 47655,
+    "contact_info": {
+      "official_email": "customercare@emamigroup.com"
+    },
+    "details": {
+      "description": "Strong pain relief balm for severe headache, body ache and cold.",
+      "flavor_or_form": "Balm"
+    },
+    "url": "https://www.amazon.in/dp/B027226462"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Cipla",
+    "product_name": "Nicotex Nicotine Gum 2mg (Mint Plus)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 262,
+    "rating": 4.8,
+    "review_count": 45333,
+    "contact_info": {
+      "official_email": "contactus@cipla.com"
+    },
+    "details": {
+      "description": "Helps you quit smoking by reducing withdrawal symptoms and cravings.",
+      "flavor_or_form": "Mint Plus"
+    },
+    "url": "https://www.amazon.in/dp/B055077544"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Cola)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 156,
+    "rating": 4.6,
+    "review_count": 24102,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Cola"
+    },
+    "url": "https://www.amazon.in/dp/B056464120"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Dr. Reddy's",
+    "product_name": "Econorm Sachet",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 328,
+    "rating": 4.5,
+    "review_count": 37476,
+    "contact_info": {
+      "official_email": "customerservices@drreddys.com"
+    },
+    "details": {
+      "description": "Probiotic sachet containing Saccharomyces boulardii for gut health and diarrhea.",
+      "flavor_or_form": "Unflavoured Powder"
+    },
+    "url": "https://www.amazon.in/dp/B099637418"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Lemon)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 153,
+    "rating": 4.5,
+    "review_count": 39328,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Lemon"
+    },
+    "url": "https://www.amazon.in/dp/B078735446"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "GSK",
+    "product_name": "Eno Fruit Salt (Cola)",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 133,
+    "rating": 4.0,
+    "review_count": 17315,
+    "contact_info": {
+      "official_email": "askus@gsk.com"
+    },
+    "details": {
+      "description": "Fast cooling relief from acidity and indigestion in 6 seconds.",
+      "flavor_or_form": "Cola"
+    },
+    "url": "https://www.amazon.in/dp/B070810477"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Neuherbs",
+    "product_name": "Neuherbs True Vitamin",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 536,
+    "rating": 4.2,
+    "review_count": 21389,
+    "contact_info": {
+      "official_email": "wecare@neuherbs.com"
+    },
+    "details": {
+      "description": "Premium Multivitamin with Antioxidants & Herbs for daily energy.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B010696224"
+  },
+  {
+    "category": "Pharmaceuticals (OTC)",
+    "brand": "Zandu",
+    "product_name": "Zandu Balm Ultra Power",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 121,
+    "rating": 4.8,
+    "review_count": 1730,
+    "contact_info": {
+      "official_email": "customercare@emamigroup.com"
+    },
+    "details": {
+      "description": "Strong pain relief balm for severe headache, body ache and cold.",
+      "flavor_or_form": "Balm"
+    },
+    "url": "https://www.amazon.in/dp/B094000513"
+  },
+  {
+    "category": "Nutraceuticals",
+    "brand": "Carbamide Forte",
+    "product_name": "Carbamide Forte Chelated Magnesium",
+    "seller": "Amazon Verified Seller",
+    "price_inr": 748,
+    "rating": 4.0,
+    "review_count": 5033,
+    "contact_info": {
+      "official_email": "info@novuslifesciences.com"
+    },
+    "details": {
+      "description": "High absorption magnesium glycinate for sleep and muscle recovery. 120 Veg Tablets.",
+      "flavor_or_form": "Unflavoured Tablet"
+    },
+    "url": "https://www.amazon.in/dp/B045167803"
+  }
+]

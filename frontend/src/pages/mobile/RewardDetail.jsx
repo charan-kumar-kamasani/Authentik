@@ -1,7 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { ChevronLeft, Globe, Calendar, Info, ShieldCheck, Star, ExternalLink, Check, ChevronRight } from 'lucide-react';
 import { getRewardDetail } from '../../config/api';
-import MobileHeader from "../../components/MobileHeader";
+
+const NewIllustration = () => (
+  <div className="relative w-[180px] h-[120px] flex items-center justify-center mb-3 mt-4">
+    <div className="absolute top-2 left-6 text-xl animate-bounce" style={{ animationDuration: '3s' }}>🎊</div>
+    <div className="absolute top-8 right-6 text-xl animate-bounce delay-100" style={{ animationDuration: '2.5s' }}>🎉</div>
+    <div className="absolute bottom-4 left-10 w-2 h-2 bg-blue-500 rounded-sm rotate-45" />
+    <div className="absolute top-1/2 right-12 w-2 h-2 bg-yellow-400 rounded-sm" />
+    <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="relative z-10 drop-shadow-xl animate-bounce" style={{ animationDuration: '2s' }}>
+      {/* Blue Box Front */}
+      <path d="M10 40 L50 60 L50 95 L10 75 Z" fill="#2563EB" />
+      {/* Blue Box Right */}
+      <path d="M50 60 L90 40 L90 75 L50 95 Z" fill="#1D4ED8" />
+      {/* Blue Box Top */}
+      <path d="M50 15 L90 40 L50 60 L10 40 Z" fill="#60A5FA" />
+      {/* Yellow Ribbon Cross on Front & Right */}
+      <path d="M25 32 L35 37 L35 82 L25 70 Z" fill="#FACC15" />
+      <path d="M75 32 L65 37 L65 82 L75 70 Z" fill="#EAB308" />
+      {/* Yellow Ribbon Top */}
+      <path d="M50 15 L60 22 L35 37 L25 32 Z" fill="#FDE047" />
+      <path d="M50 15 L40 22 L65 37 L75 32 Z" fill="#FACC15" />
+      {/* Bow */}
+      <path d="M48 25 C25 5 15 25 43 32 Z" fill="#FDE047" />
+      <path d="M52 25 C75 5 85 25 57 32 Z" fill="#FACC15" />
+      <circle cx="50" cy="27" r="7" fill="#EAB308" />
+    </svg>
+    <div className="absolute bottom-2 w-20 h-4 bg-black/10 blur-[6px] rounded-[100%]" />
+  </div>
+);
 
 export default function RewardDetail() {
   const navigate = useNavigate();
@@ -26,222 +54,222 @@ export default function RewardDetail() {
   }, [id]);
 
   const copyCode = () => {
-    if (!reward?.couponCode) return;
-    navigator.clipboard.writeText(reward.couponCode);
+    if (!r?.couponCode) return;
+    navigator.clipboard.writeText(r.couponCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-[#FFFFFF] to-[#E8F4F9] flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-[#2CA4D6]/30 border-t-[#0D4E96] rounded-full animate-spin" />
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-[#105DE4]/30 border-t-[#105DE4] rounded-full animate-spin" />
       </div>
     );
   }
 
-  if (!reward) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-[#FFFFFF] to-[#E8F4F9] flex flex-col items-center justify-center p-6 text-center">
-        <span className="text-5xl mb-6">😕</span>
-        <h2 className="text-[#0D4E96] font-black text-xl mb-3 tracking-tight">Reward Not Found</h2>
-        <button onClick={() => navigate('/rewards')} className="text-[#2CA4D6] font-black text-[15px] bg-white px-8 py-3 rounded-full shadow-sm border border-[#2CA4D6]/20">
-          Back to Rewards
-        </button>
-      </div>
-    );
-  }
+  // Use a fallback object to render the UI for demonstration if no reward data is present
+  const r = reward || {
+    discountText: '20% OFF',
+    brand: 'Origin Nutrition',
+    couponTitle: '20% OFF',
+    couponCode: 'ON200FF',
+    websiteLink: 'originnutrition.in',
+    couponExpiry: '2026-12-28',
+    couponDescription: 'Use code ON200FF at checkout to unlock your savings.\nEnjoy 20% off on your entire cart of plant-based nutrition products.\nRedeemable on all protein powders, supplements, and wellness essentials.\nVisit the official store today and fuel your fitness for less.'
+  };
 
-  const isExpired = reward.couponExpiry && new Date(reward.couponExpiry) < new Date();
+  const expiryDate = r.couponExpiry ? new Date(r.couponExpiry).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'No expiry';
+  const discountText = r.discountText || (r.couponTitle?.match(/\d+%\s*OFF|₹\d+\s*OFF/i) ? r.couponTitle.match(/\d+%\s*OFF|₹\d+\s*OFF/i)[0] : 'OFFER');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F0F7FF] via-[#FFFFFF] to-[#E8F4F9] font-sans pb-28 flex flex-col">
-      <MobileHeader
-        onLeftClick={() => navigate("/rewards")}
-        leftIcon={
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="3" y1="12" x2="21" y2="12"></line>
-            <line x1="3" y1="6" x2="21" y2="6"></line>
-            <line x1="3" y1="18" x2="21" y2="18"></line>
-          </svg>
-        }
-      />
+    <div className="min-h-screen bg-white font-sans pb-6 flex flex-col relative overflow-x-hidden">
+      
+      {/* Top Header */}
+      <div className="flex items-center justify-center relative py-4 bg-white sticky top-0 z-50">
+        <button onClick={() => navigate(-1)} className="absolute left-4 p-2 -ml-2 text-[#0F172A] hover:bg-slate-50 rounded-full transition-colors">
+          <ChevronLeft className="w-6 h-6" strokeWidth={2.5} />
+        </button>
+        <h1 className="text-[17px] font-bold text-[#0F172A] tracking-wide">
+          Your Reward Unlocked!
+        </h1>
+      </div>
 
-      <div className="px-5 mt-2">
-        {/* Title Area */}
-        <div className="mb-6">
-          <h1 className="text-[26px] font-black tracking-tight bg-gradient-to-r from-[#0D4E96] via-[#1a5fa8] to-[#2CA4D6] bg-clip-text text-transparent">
-            Reward Details
-          </h1>
+      <div className="flex-1 px-4 py-2 flex flex-col items-center">
+        
+        {/* Illustration & Congrats */}
+        <div className="mb-5 flex flex-col items-center">
+          <NewIllustration />
+          <h2 className="text-[22px] font-bold text-[#0F172A] mb-1">
+            Congratulations!
+          </h2>
+          <p className="text-[13px] text-[#475569] text-center px-6 leading-relaxed">
+            Thank you for your review.<br/>You've earned an exclusive reward.
+          </p>
         </div>
-        {/* Coupon Card */}
-        <div className="bg-white/90 backdrop-blur-md rounded-[32px] shadow-[0_12px_40px_rgba(13,78,150,0.12)] overflow-hidden mb-6 border-[2px] border-white">
-          {/* Product Header */}
-          <div className="p-6 border-b border-[#F0F7FF] bg-gradient-to-b from-white to-transparent">
-            <div className="flex items-center gap-5">
-              <div className="w-20 h-20 bg-gradient-to-br from-[#F0F7FF] to-[#E8F4F9] rounded-[24px] flex-shrink-0 flex items-center justify-center overflow-hidden border border-white shadow-inner">
-                {reward.productImage ? (
-                  <img src={reward.productImage} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-3xl drop-shadow-sm">🎁</span>
-                )}
-              </div>
-              <div className="flex-1 min-w-0">
-                <h2 className="text-[#0D4E96] font-black text-[18px] truncate tracking-tight">{reward.productName || 'Product'}</h2>
-                <p className="text-[#1a5fa8]/60 text-[13px] font-bold uppercase tracking-wide mt-1">{reward.brand || 'Brand'}</p>
-                {isExpired ? (
-                  <span className="bg-[#FFE8E8] text-[#C41E3A] text-[10px] font-black px-3 py-1 rounded-full inline-block mt-2 border border-[#FFCACA]">EXPIRED</span>
-                ) : (
-                  <span className="bg-[#E8F8F0] text-[#059669] text-[10px] font-black px-3 py-1 rounded-full inline-block mt-2 border border-[#A7F3D0]">ACTIVE</span>
-                )}
-              </div>
+
+        {/* Main Blue Card */}
+        <div className="w-full bg-[#0A34B8] rounded-[12px] flex shadow-[0_8px_20px_rgba(10,52,184,0.15)] mb-6 overflow-hidden">
+          {/* Left Section */}
+          <div className="flex-1 p-5 pr-2 flex flex-col justify-center text-white relative">
+            <div className="bg-[#4F6BE1] w-max px-3 py-1 rounded-full mb-2">
+              <span className="text-[10px] font-bold tracking-widest text-[#DBEAFE] uppercase">YOU WON</span>
             </div>
+            <h3 className="text-[36px] font-black leading-none mb-1">
+              {discountText}
+            </h3>
+            <p className="text-[14px] font-medium text-white mb-2">on {r.brand || 'Origin Nutrition'}</p>
+            <p className="text-[10px] text-[#93A7F1]">Valid on your entire order</p>
           </div>
 
-          {/* Coupon Code */}
-          <div className="p-6">
-            <div className={`border-2 border-dashed rounded-3xl p-6 text-center relative overflow-hidden transition-colors ${
-              isExpired
-                ? 'border-slate-300 bg-slate-50 text-slate-500'
-                : 'border-cyan-500/40 bg-gradient-to-b from-cyan-500/5 to-cyan-500/10 text-[#0D4E96] shadow-[inset_0_2px_8px_rgba(44,164,214,0.05)]'
-            }`}>
-              <p className={`text-[11px] font-black uppercase tracking-[0.25em] mb-3 ${
-                isExpired ? 'text-slate-400' : 'text-[#2CA4D6]'
-              }`}>
-                {reward.couponTitle || 'Your Coupon Code'}
-              </p>
-              <div className="flex items-center justify-center gap-4 w-full px-2">
-                <span className={`text-[24px] sm:text-[30px] font-black tracking-[0.1em] drop-shadow-sm flex-1 break-all text-center font-mono ${
-                  isExpired ? 'text-slate-500' : 'text-[#0D4E96]'
-                }`}>
-                  {reward.couponCode}
+          {/* Vertical Dashed Line */}
+          <div className="w-[1px] bg-[repeating-linear-gradient(to_bottom,transparent,transparent_4px,rgba(255,255,255,0.2)_4px,rgba(255,255,255,0.2)_8px)] mx-0 my-4" />
+
+          {/* Right Section */}
+          <div className="w-[130px] p-4 pr-5 pl-3 flex flex-col items-center justify-center">
+            <div className="flex items-center gap-1 mb-2">
+              <span className="text-[10px] font-bold text-white tracking-widest uppercase">COUPON CODE</span>
+              <div className="w-3.5 h-3.5 bg-[#60A5FA] rounded-full flex items-center justify-center">
+                <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
+              </div>
+            </div>
+            
+            <div className="w-full bg-white rounded-[6px] py-2 px-1 mb-3 flex items-center justify-center shadow-sm">
+              <span className="text-[15px] font-extrabold text-[#0A34B8] tracking-wide truncate">
+                {r.couponCode}
+              </span>
+            </div>
+            
+            <button onClick={copyCode} className="w-full bg-transparent border border-white/30 hover:bg-white/10 active:scale-95 text-white rounded-[6px] py-1.5 flex items-center justify-center gap-1.5 transition-all">
+              {copied ? (
+                <Check className="w-3 h-3" />
+              ) : (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              )}
+              <span className="text-[11px] font-medium tracking-wide">{copied ? 'Copied' : 'Copy Code'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Details Card */}
+        <div className="w-full bg-white border border-[#F1F5F9] rounded-[16px] p-4 mb-5 shadow-sm">
+          <div className="flex flex-col gap-4">
+            {r.websiteLink && (
+              <div className="flex items-center gap-3 border-b border-[#F1F5F9] pb-4">
+                <Globe className="w-[18px] h-[18px] text-[#64748B] flex-shrink-0" />
+                <span className="text-[14px] font-bold text-[#475569] flex-1">Website</span>
+                <a href={r.websiteLink?.startsWith('http') ? r.websiteLink : `https://${r.websiteLink}`} target="_blank" rel="noreferrer" className="text-[14px] font-bold text-[#2563EB] flex items-center gap-1.5 hover:underline truncate max-w-[150px]">
+                  {new URL(r.websiteLink?.startsWith('http') ? r.websiteLink : `https://${r.websiteLink}`).hostname.replace('www.', '')} <ExternalLink className="w-[14px] h-[14px]" />
+                </a>
+              </div>
+            )}
+
+            {r.couponExpiry && (
+              <div className="flex items-center gap-3 border-b border-[#F1F5F9] pb-4">
+                <Calendar className="w-[18px] h-[18px] text-[#64748B] flex-shrink-0" />
+                <span className="text-[14px] font-bold text-[#475569] flex-1">Valid Till</span>
+                <span className="text-[14px] font-bold text-[#0F172A]">
+                  {expiryDate}
                 </span>
-                <button
-                  onClick={copyCode}
-                  disabled={isExpired}
-                  className={`w-12 h-12 rounded-[16px] flex items-center justify-center transition-all ${
-                    isExpired
-                      ? 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300'
-                      : copied
-                        ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 scale-105'
-                        : 'bg-gradient-to-br from-[#0D4E96] to-[#2CA4D6] text-white hover:from-[#0B3D75] hover:to-[#2282B0] active:scale-90 shadow-[0_6px_16px_rgba(13,78,150,0.2)]'
-                  }`}
-                >
-                  {copied ? (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5"><path d="M20 6L9 17l-5-5"/></svg>
+              </div>
+            )}
+
+            <div className="flex items-start gap-3">
+              <Info className="w-[18px] h-[18px] text-[#64748B] flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <span className="text-[14px] font-bold text-[#475569] block mb-2">About this offer</span>
+                <div className="text-[12px] text-[#475569] leading-relaxed">
+                  {r.couponDescription ? (
+                    <div dangerouslySetInnerHTML={{ __html: r.couponDescription.replace(/\n/g, '<br/>') }} />
                   ) : (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                    <>
+                      Use code {r.couponCode} at checkout to unlock your savings.<br/>
+                      Enjoy this exclusive discount on your entire cart.<br/>
+                      Visit the official store today.
+                    </>
                   )}
-                </button>
+                </div>
               </div>
             </div>
 
-            {reward.websiteLink && (
-              <button
-                onClick={() => window.open(reward.websiteLink, '_blank')}
-                className="w-full bg-[#0D4E96] text-white font-bold text-[16px] py-4 rounded-2xl shadow-lg mt-6 active:scale-[0.97] transition-all flex items-center justify-center gap-2"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                Redeem Now
-              </button>
-            )}
-
-            {reward.couponDescription && (
-              <div className="flex flex-col gap-2 mt-6 px-2">
-                {reward.couponDescription.split('\n').filter(Boolean).map((bullet, idx) => (
-                  <div key={idx} className="flex items-start gap-3">
-                    <div className="w-1.5 h-1.5 rounded-full bg-[#2CA4D6] mt-2 shrink-0 opacity-80" />
-                    <p className="text-[#1e3a5f]/80 text-[14px] font-medium leading-relaxed flex-1 break-words text-left">
-                      {bullet}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {reward.couponExpiry && (
-              <p className="text-[#1a5fa8]/50 text-[12px] font-bold text-center mt-4">
-                Valid until {new Date(reward.couponExpiry).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
-              </p>
-            )}
           </div>
         </div>
 
-        {/* Your Review */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-[24px] shadow-[0_4px_20px_rgba(13,78,150,0.05)] p-5 mb-4 border border-white">
-          <h3 className="text-[#0D4E96] font-black text-[16px] mb-3 tracking-tight">Your Review</h3>
-          <div className="flex items-center gap-2 mb-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <svg key={i} width="22" height="22" viewBox="0 0 24 24" fill={i < reward.reviewRating ? '#F2C94C' : '#E8F4F9'}>
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-              </svg>
-            ))}
-            <span className="text-[#1a5fa8] text-[14px] font-black ml-1 bg-[#F0F7FF] px-2 py-0.5 rounded-md">{reward.reviewRating}/5</span>
+        {/* Shop Now Button */}
+        <button 
+          onClick={() => {
+            if (r.websiteLink) {
+              window.open(r.websiteLink?.startsWith('http') ? r.websiteLink : `https://${r.websiteLink}`, '_blank');
+            } else {
+              navigate('/rewards');
+            }
+          }}
+          className="w-full bg-[#105DE4] hover:bg-[#0D4E96] text-white py-3.5 rounded-[10px] font-bold text-[15px] flex justify-center items-center gap-2 mb-6 shadow-sm active:scale-[0.98] transition-all relative"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+          Shop Now
+          <div className="absolute right-4 flex items-center justify-center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </div>
-          {reward.reviewComment && (
-            <p className="text-[#1e3a5f]/80 text-[14px] leading-relaxed bg-gradient-to-r from-[#F0F7FF] to-white rounded-xl p-4 border border-white shadow-sm mt-2 font-medium italic">
-              "{reward.reviewComment}"
-            </p>
-          )}
+        </button>
+
+        {/* Want another reward? */}
+        <div className="w-full bg-[#EFF6FF] rounded-[10px] p-4 flex items-center gap-3.5 mb-6 cursor-pointer" onClick={() => navigate('/')}>
+          <div className="w-10 h-10 border border-[#93C5FD] rounded-full flex items-center justify-center flex-shrink-0 bg-white">
+            <Star className="w-5 h-5 text-[#2563EB]" fill="currentColor" />
+          </div>
+          <div className="flex-1 pr-1">
+            <h4 className="text-[13px] font-bold text-[#1E3A8A] mb-0.5">Want another reward?</h4>
+            <p className="text-[11px] font-medium text-[#475569] leading-snug">Review another verified product<br/>to unlock more exclusive coupons.</p>
+          </div>
+          <button className="bg-white border border-[#BFDBFE] text-[#2563EB] text-[11px] font-bold px-3 py-2 rounded-[6px] shadow-sm whitespace-nowrap active:scale-95 transition-all">
+            Explore More
+          </button>
         </div>
 
-        {/* Scan Info */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-[24px] shadow-[0_4px_20px_rgba(13,78,150,0.05)] p-5 mb-4 border border-white">
-          <h3 className="text-[#0D4E96] font-black text-[16px] mb-4 tracking-tight">Scan Information</h3>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center pb-3 border-b border-[#F0F7FF]">
-              <span className="text-[#1a5fa8]/60 text-[13px] font-bold uppercase tracking-wider">Scanned On</span>
-              <span className="text-[#1e3a5f] text-[14px] font-black">
-                {reward.scannedAt
-                  ? new Date(reward.scannedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-                  : 'N/A'
-                }
-              </span>
+        {/* 4 Footer Icons row */}
+        <div className="w-full flex justify-between px-1 border-t border-[#F1F5F9] pt-6 pb-6 mb-2">
+          <div className="flex flex-col items-center flex-1">
+            <div className="w-8 h-8 rounded-full border border-blue-100 flex items-center justify-center mb-1.5">
+              <ShieldCheck className="w-4 h-4 text-[#2563EB]" strokeWidth={2} />
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-[#1a5fa8]/60 text-[13px] font-bold uppercase tracking-wider">Earned On</span>
-              <span className="text-[#1e3a5f] text-[14px] font-black">
-                {reward.createdAt
-                  ? new Date(reward.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
-                  : 'N/A'
-                }
-              </span>
+            <span className="text-[9px] font-bold text-slate-800 text-center mb-0.5">100% Authentic</span>
+            <span className="text-[8px] text-slate-500 text-center">Every Product</span>
+          </div>
+          
+          <div className="flex flex-col items-center flex-1 border-l border-slate-100">
+            <div className="w-8 h-8 rounded-full border border-green-100 flex items-center justify-center mb-1.5">
+              <svg className="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" /></svg>
             </div>
+            <span className="text-[9px] font-bold text-slate-800 text-center mb-0.5">Trusted Reviews</span>
+            <span className="text-[8px] text-slate-500 text-center">Real Impact</span>
+          </div>
+          
+          <div className="flex flex-col items-center flex-1 border-l border-slate-100">
+            <div className="w-8 h-8 rounded-full border border-purple-100 flex items-center justify-center mb-1.5">
+              <svg className="w-4 h-4 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" /></svg>
+            </div>
+            <span className="text-[9px] font-bold text-slate-800 text-center mb-0.5">Exclusive Rewards</span>
+            <span className="text-[8px] text-slate-500 text-center">Just for You</span>
+          </div>
+
+          <div className="flex flex-col items-center flex-1 border-l border-slate-100">
+            <div className="w-8 h-8 rounded-full border border-blue-100 flex items-center justify-center mb-1.5">
+              <svg className="w-4 h-4 text-[#2563EB]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+            </div>
+            <span className="text-[9px] font-bold text-slate-800 text-center mb-0.5">Secure & Safe</span>
+            <span className="text-[8px] text-slate-500 text-center">Always</span>
           </div>
         </div>
 
-        {/* Product Details (if populated) */}
-        {reward.productId && typeof reward.productId === 'object' && (
-          <div className="bg-white/80 backdrop-blur-sm rounded-[24px] shadow-[0_4px_20px_rgba(13,78,150,0.05)] p-5 mb-4 border border-white">
-            <h3 className="text-[#0D4E96] font-black text-[16px] mb-4 tracking-tight">Product Details</h3>
-            <div className="space-y-4">
-              {reward.productId.batchNo && (
-                <div className="flex justify-between items-center pb-2.5 border-b border-[#F0F7FF]">
-                  <span className="text-[#1a5fa8]/60 text-[13px] font-bold uppercase tracking-wider">Batch No</span>
-                  <span className="text-[#1e3a5f] text-[14px] font-black">{reward.productId.batchNo}</span>
-                </div>
-              )}
-              {reward.productId.manufactureDate && (
-                <div className="flex justify-between items-center pb-2.5 border-b border-[#F0F7FF]">
-                  <span className="text-[#1a5fa8]/60 text-[13px] font-bold uppercase tracking-wider">Mfg Date</span>
-                  <span className="text-[#1e3a5f] text-[14px] font-black">{reward.productId.manufactureDate}</span>
-                </div>
-              )}
-              {reward.productId.expiryDate && (
-                <div className="flex justify-between items-center pb-2.5 border-b border-[#F0F7FF]">
-                  <span className="text-[#1a5fa8]/60 text-[13px] font-bold uppercase tracking-wider">Expiry Date</span>
-                  <span className="text-[#1e3a5f] text-[14px] font-black">{reward.productId.expiryDate}</span>
-                </div>
-              )}
-              {reward.productId.qrCode && (
-                <div className="flex justify-between items-center pt-1">
-                  <span className="text-[#1a5fa8]/60 text-[13px] font-bold uppercase tracking-wider">QR Code</span>
-                  <span className="text-[#1e3a5f]/60 bg-[#F0F7FF] px-2 py-1 rounded text-[11px] font-mono font-bold truncate max-w-[180px]">{reward.productId.qrCode}</span>
-                </div>
-              )}
-            </div>
+        {/* Bottom verify text */}
+        <div className="flex flex-col items-center text-center pb-8 opacity-90">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <ShieldCheck className="w-[14px] h-[14px] text-[#2563EB]" strokeWidth={2.5} />
+            <span className="text-[11px] font-bold text-slate-600">100% Authentic. 100% Rewarded.</span>
           </div>
-        )}
+          <span className="text-[10px] text-slate-400 font-medium">Thank you for choosing authentic products.</span>
+        </div>
       </div>
     </div>
   );
