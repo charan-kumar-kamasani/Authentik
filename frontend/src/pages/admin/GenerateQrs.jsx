@@ -16,6 +16,7 @@ export default function GenerateQrs() {
     quantity: ''
   });
   const [filterBrandId, setFilterBrandId] = useState('');
+  const [qrType, setQrType] = useState('product'); // 'batch' or 'product'
 
   // Static date fields
   const [mfdOn, setMfdOn] = useState({ month: '', year: '' });
@@ -214,6 +215,7 @@ export default function GenerateQrs() {
           totalPointsFund: order.loyalty.totalPointsFund || '',
         });
       }
+      if (order.qrType) setQrType(order.qrType);
       if (order.supplyChain) {
         setSupplyChain(order.supplyChain);
       }
@@ -604,6 +606,7 @@ export default function GenerateQrs() {
         brand: newQr.brand,
         brandId: newQr.brandId,
         batchNo,
+        qrType: qrType,
         quantity,
         productImage,
         productInfo: newQr.productInfo,
@@ -2133,18 +2136,192 @@ export default function GenerateQrs() {
         </div> {/* End Step 5 */}
 
         {/* STEP 7: QR Setup */}
-        <div id="step-7" className={`col-span-2 grid grid-cols-2 gap-6 ${currentStep === 7 ? 'block' : 'hidden'}`}>
-          <div className="col-span-2 border-b border-slate-200 pb-4 mb-4">
-            <h4 className="text-sm font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
-              <Package className="w-4 h-4 text-indigo-500" /> Output Quantity
-            </h4>
-            <p className="text-xs text-slate-500 mt-1">Specify how many QR codes you want to generate for this product.</p>
+        <div id="step-7" className={`col-span-2 flex flex-col gap-6 ${currentStep === 7 ? 'block' : 'hidden'}`}>
+          <div className="mb-2">
+            <h3 className="text-xl font-bold text-slate-900 mb-1">Choose QR Generation Option</h3>
+            <p className="text-sm text-slate-500">Select how you want to generate QR codes for this product.</p>
           </div>
-          
-          {formConfig?.customFields && formConfig.customFields
-            .filter(f => f.isQuantity)
-            .map(field => renderDynamicField(field))}
-        </div> {/* End Step 6 */}
+
+          <div className="grid grid-cols-1 gap-6">
+            {/* Option 1: Batch-level QR Code */}
+            <div 
+              onClick={() => {
+                setQrType('batch');
+                const qtyField = formConfig?.customFields?.find(f => f.isQuantity);
+                if (qtyField) {
+                  setDynamicFieldValues(prev => ({ ...prev, [qtyField.fieldName]: 1 }));
+                }
+              }}
+              className={`relative rounded-2xl p-6 transition-all duration-200 cursor-pointer flex flex-col md:flex-row items-start md:items-center justify-between gap-6 ${
+                qrType === 'batch' 
+                  ? 'bg-white border-2 border-indigo-600 shadow-md ring-4 ring-indigo-50/50' 
+                  : 'bg-white border border-slate-200 hover:border-slate-300 shadow-sm'
+              }`}
+            >
+              <div className="flex items-start gap-4">
+                <div className="pt-1">
+                  <input 
+                    type="radio" 
+                    name="qrType" 
+                    checked={qrType === 'batch'} 
+                    onChange={() => {
+                      setQrType('batch');
+                      const qtyField = formConfig?.customFields?.find(f => f.isQuantity);
+                      if (qtyField) {
+                        setDynamicFieldValues(prev => ({ ...prev, [qtyField.fieldName]: 1 }));
+                      }
+                    }} 
+                    className="w-5 h-5 text-indigo-600 border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                  />
+                </div>
+                <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                  <Package className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="text-base font-bold text-slate-900">Batch-level QR Code</h4>
+                  <p className="text-xs font-semibold text-indigo-600 mb-3">One QR code for the entire batch or lot.</p>
+                  <ul className="space-y-1.5 text-xs text-slate-600 font-medium">
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                      One QR code represents the entire batch or lot
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                      Ideal for products where tracking at batch level is sufficient
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                      Easy to manage and cost-effective
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              {/* Graphic illustration on the right */}
+              <div className="hidden md:flex shrink-0 w-36 h-28 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl border border-indigo-100/80 items-center justify-center relative overflow-hidden">
+                <div className="w-20 h-20 bg-white rounded-lg border border-indigo-100 shadow-sm flex flex-col items-center justify-center p-2 relative">
+                  <div className="w-8 h-8 bg-indigo-600 rounded flex items-center justify-center text-white mb-1">
+                    <Package size={16} />
+                  </div>
+                  <div className="w-10 h-1 bg-slate-200 rounded-full mb-1"></div>
+                  <div className="w-6 h-1 bg-slate-200 rounded-full"></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Option 2: Product-level Multiple QR Codes */}
+            <div 
+              onClick={() => {
+                setQrType('product');
+                const qtyField = formConfig?.customFields?.find(f => f.isQuantity);
+                if (qtyField && (!dynamicFieldValues[qtyField.fieldName] || dynamicFieldValues[qtyField.fieldName] <= 1)) {
+                  setDynamicFieldValues(prev => ({ ...prev, [qtyField.fieldName]: 1000 }));
+                }
+              }}
+              className={`relative rounded-2xl p-6 transition-all duration-200 cursor-pointer flex flex-col gap-6 ${
+                qrType === 'product' 
+                  ? 'bg-white border-2 border-indigo-600 shadow-md ring-4 ring-indigo-50/50' 
+                  : 'bg-white border border-slate-200 hover:border-slate-300 shadow-sm'
+              }`}
+            >
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div className="flex items-start gap-4">
+                  <div className="pt-1">
+                    <input 
+                      type="radio" 
+                      name="qrType" 
+                      checked={qrType === 'product'} 
+                      onChange={() => {
+                        setQrType('product');
+                        const qtyField = formConfig?.customFields?.find(f => f.isQuantity);
+                        if (qtyField && (!dynamicFieldValues[qtyField.fieldName] || dynamicFieldValues[qtyField.fieldName] <= 1)) {
+                          setDynamicFieldValues(prev => ({ ...prev, [qtyField.fieldName]: 1000 }));
+                        }
+                      }} 
+                      className="w-5 h-5 text-indigo-600 border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                    />
+                  </div>
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                    <LayoutGrid className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-bold text-slate-900">Product-level Multiple QR Codes</h4>
+                    <p className="text-xs font-semibold text-indigo-600 mb-3">Unique QR for every individual unit.</p>
+                    <ul className="space-y-1.5 text-xs text-slate-600 font-medium">
+                      <li className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                        Each product unit gets a unique QR code
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                        Track individual product journey and consumer interactions
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                        Ideal for warranty, rewards, and consumer engagement
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Right side: Stepper input when active */}
+                {qrType === 'product' && (
+                  <div className="w-full md:w-80 bg-slate-50/80 rounded-xl p-4 border border-slate-200/80 shrink-0" onClick={(e) => e.stopPropagation()}>
+                    <label className="text-xs font-bold text-slate-800 uppercase tracking-wider block mb-1">
+                      QR Quantity <span className="text-indigo-600">*</span>
+                    </label>
+                    <p className="text-[11px] text-slate-500 mb-3">Specify how many QR codes you want to generate.</p>
+                    
+                    {formConfig?.customFields && formConfig.customFields
+                      .filter(f => f.isQuantity)
+                      .map(field => {
+                        const currentVal = Number(dynamicFieldValues[field.fieldName] || 1000);
+                        return (
+                          <div key={field.fieldName} className="flex flex-col gap-2">
+                            <div className="flex items-center bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                              <button 
+                                type="button"
+                                onClick={() => {
+                                  const newVal = Math.max(1, currentVal - 250);
+                                  setDynamicFieldValues(prev => ({ ...prev, [field.fieldName]: newVal }));
+                                }}
+                                className="w-12 h-11 bg-slate-50 hover:bg-slate-100 text-slate-600 text-lg font-bold transition-colors flex items-center justify-center border-r border-slate-200 active:bg-slate-200"
+                              >
+                                −
+                              </button>
+                              <input 
+                                type="number" 
+                                className="w-full h-11 text-center font-bold text-slate-900 border-none focus:outline-none focus:ring-0 text-base"
+                                value={dynamicFieldValues[field.fieldName] ?? 1000}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  setDynamicFieldValues(prev => ({ ...prev, [field.fieldName]: val }));
+                                }}
+                              />
+                              <button 
+                                type="button"
+                                onClick={() => {
+                                  const newVal = currentVal + 250;
+                                  setDynamicFieldValues(prev => ({ ...prev, [field.fieldName]: newVal }));
+                                }}
+                                className="w-12 h-11 bg-slate-50 hover:bg-slate-100 text-slate-600 text-lg font-bold transition-colors flex items-center justify-center border-l border-slate-200 active:bg-slate-200"
+                              >
+                                +
+                              </button>
+                            </div>
+                            <p className="text-[11px] text-indigo-600 font-medium flex items-center gap-1 mt-1">
+                              <Info size={12} className="shrink-0" />
+                              You have {currentUser?.physicalQrsAvailable ? Number(currentUser.physicalQrsAvailable).toLocaleString() : '4,750'} Physical QRs available. Must be in multiples of 250.
+                            </p>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div> {/* End Step 7 */}
 
         {/* STEP 8: Review */}
         <div id="step-8" className={`col-span-2 flex flex-col gap-6 ${currentStep === 8 ? 'block' : 'hidden'}`}>

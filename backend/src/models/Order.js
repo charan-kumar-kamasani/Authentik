@@ -9,6 +9,7 @@ const orderSchema = new mongoose.Schema({
   manufactureDate: { type: String },
   expiryDate: { type: String },
   quantity: { type: Number, required: true },
+  qrType: { type: String, enum: ['batch', 'product'], default: 'product' },
   description: { type: String },
   productInfo: { type: String },
   productImage: { type: String }, // URL of the product image

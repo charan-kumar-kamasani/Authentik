@@ -744,6 +744,7 @@ router.post("/", async (req, res, next) => {
           dynamicFields: (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
           variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
           warranty: product.warranty || product.orderId?.warranty || null,
+          supplyChain: product.supplyChain || product.orderId?.supplyChain || null,
           coupon: product.coupon || product.orderId?.coupon || null,
           educationContent: product.educationContent || product.orderId?.educationContent || templateData.educationContent || [],
           fieldLabels,
@@ -801,6 +802,7 @@ router.post("/", async (req, res, next) => {
           dynamicFields: (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && Object.keys(product.orderId.dynamicFields).length > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
           variants: (product.variants && product.variants.length > 0) ? product.variants : ((product.orderId?.variants && product.orderId.variants.length > 0) ? product.orderId.variants : templateData.variants),
           warranty: product.warranty || product.orderId?.warranty || null,
+          supplyChain: product.supplyChain || product.orderId?.supplyChain || null,
           coupon: product.coupon || product.orderId?.coupon || null,
           educationContent: product.educationContent || product.orderId?.educationContent || templateData.educationContent || [],
           orderLinks: (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((product.orderId?.orderLinks && product.orderId.orderLinks.length > 0) ? product.orderId.orderLinks : templateData.orderLinks),
@@ -818,11 +820,12 @@ router.post("/", async (req, res, next) => {
     }
 
     // 3️⃣  Has a DIFFERENT user already scanned this product?
-    const alreadyUsed = await Scan.findOne({
+    const isBatchQr = product.qrType === 'batch' || product.orderId?.qrType === 'batch';
+    const alreadyUsed = !isBatchQr ? await Scan.findOne({
       productId: product._id,
       userId: { $ne: userId },
       status: "ORIGINAL",
-    });
+    }) : null;
 
     /* =======================
        ⚠️ ALREADY USED BY ANOTHER USER
@@ -890,6 +893,7 @@ router.post("/", async (req, res, next) => {
           dynamicFields: (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && Object.keys(product.orderId.dynamicFields).length > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
           variants: (product.variants && product.variants.length > 0) ? product.variants : ((product.orderId?.variants && product.orderId.variants.length > 0) ? product.orderId.variants : templateData.variants),
           warranty: product.warranty || product.orderId?.warranty || null,
+          supplyChain: product.supplyChain || product.orderId?.supplyChain || null,
           coupon: product.coupon || product.orderId?.coupon || null,
           educationContent: product.educationContent || product.orderId?.educationContent || templateData.educationContent || [],
           orderLinks: (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((product.orderId?.orderLinks && product.orderId.orderLinks.length > 0) ? product.orderId.orderLinks : templateData.orderLinks),

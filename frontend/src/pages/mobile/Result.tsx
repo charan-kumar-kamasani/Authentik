@@ -1,4 +1,4 @@
-import { ChevronLeft, Share, FileText, BookOpen, MessageSquare, ShieldCheck, Gift, ChevronRight, XCircle, AlertTriangle, Headset, Flag, X, ShieldAlert, Calendar, Phone, MapPin, RefreshCcw, ScanLine, CheckCircle2, FlaskConical, Award, Globe, HeadphonesIcon, Mail, Info, ExternalLink, Check, Star } from "lucide-react";
+import { ChevronLeft, Share, FileText, BookOpen, Layers, MessageSquare, ShieldCheck, Gift, ChevronRight, XCircle, AlertTriangle, Headset, Flag, X, ShieldAlert, Calendar, Phone, MapPin, RefreshCcw, ScanLine, CheckCircle2, FlaskConical, Award, Globe, HeadphonesIcon, Mail, Info, ExternalLink, Check, Star, Truck } from "lucide-react";
 import { AccordionItem, KeyValueRow, CertificateViewer } from '../../components/AccordionComponents';
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
@@ -138,6 +138,7 @@ function ResultAuthentic({ data }: { data: any }) {
   const warrantyFileRef = useRef<HTMLInputElement>(null);
 
   // Determine colors
+  const isBatchQr = data.qrType === "batch" || productObj.qrType === "batch" || orderObj.qrType === "batch";
   const productName = data.productName || data.productId?.productName || "Product Info";
 
   // Check for image in data, then data.productId, then data.images array
@@ -421,16 +422,54 @@ function ResultAuthentic({ data }: { data: any }) {
           </button>
         </div>
 
-        {/* Main Authentic Header Section */}
-        <div className="flex flex-col items-center relative z-10 top-[-50px]  animate-[slide-up_0.5s_ease-out]">
-          <div className="w-20 h-20 animate-bounce" style={{ animationDuration: '2s' }}>
-             <img src={authenticIcon} alt="Authentic" className="w-full h-full object-contain drop-shadow-xl" />
+        {/* Dynamic Header Section (Batch vs Product) */}
+        {isBatchQr ? (
+          <div className="flex flex-col items-center relative z-10 pt-2 pb-6 animate-[slide-up_0.5s_ease-out]">
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-[11px] font-bold uppercase tracking-widest mb-3 backdrop-blur-md shadow-sm">
+              <Layers size={13} className="text-[#4CC9F0]" />
+              BATCH INFORMATION
+            </div>
+            
+            <h2 className="text-white text-[22px] font-black tracking-tight mb-2 text-center leading-tight">
+              Real insights.<br />Every time you scan.
+            </h2>
+            
+            <p className="text-[#B3C8F9] text-[12px] font-medium text-center max-w-[280px] leading-relaxed mb-6">
+              This QR represents a batch/lot. Scan it multiple times to explore product and batch information.
+            </p>
+
+            <div className="grid grid-cols-3 gap-2 w-full max-w-[340px] px-1">
+              <div className="flex flex-col items-center bg-white/10 backdrop-blur-md rounded-2xl p-2.5 border border-white/15 text-center">
+                <div className="w-8 h-8 rounded-full bg-[#105DE4]/50 flex items-center justify-center text-[#4CC9F0] mb-1.5 shadow-sm">
+                  <RefreshCcw size={15} />
+                </div>
+                <span className="text-white text-[10px] font-bold leading-tight">Open for Multiple Scans</span>
+              </div>
+              <div className="flex flex-col items-center bg-white/10 backdrop-blur-md rounded-2xl p-2.5 border border-white/15 text-center">
+                <div className="w-8 h-8 rounded-full bg-[#105DE4]/50 flex items-center justify-center text-[#4CC9F0] mb-1.5 shadow-sm">
+                  <Layers size={15} />
+                </div>
+                <span className="text-white text-[10px] font-bold leading-tight">Complete Batch Info</span>
+              </div>
+              <div className="flex flex-col items-center bg-white/10 backdrop-blur-md rounded-2xl p-2.5 border border-white/15 text-center">
+                <div className="w-8 h-8 rounded-full bg-[#105DE4]/50 flex items-center justify-center text-[#4CC9F0] mb-1.5 shadow-sm">
+                  <ShieldCheck size={15} />
+                </div>
+                <span className="text-white text-[10px] font-bold leading-tight">All Details Included</span>
+              </div>
+            </div>
           </div>
-          <h2 className="text-white text-[24px] font-bold tracking-tight mb-1.5">Authentic Product</h2>
-          <p className="text-[#B3C8F9] text-[13px] font-medium text-center max-w-[240px] leading-relaxed">
-            This product is 100% authentic and verified by Authentiks
-          </p>
-        </div>
+        ) : (
+          <div className="flex flex-col items-center relative z-10 top-[-50px] animate-[slide-up_0.5s_ease-out]">
+            <div className="w-20 h-20 animate-bounce" style={{ animationDuration: '2s' }}>
+               <img src={authenticIcon} alt="Authentic" className="w-full h-full object-contain drop-shadow-xl" />
+            </div>
+            <h2 className="text-white text-[24px] font-bold tracking-tight mb-1.5">Authentic Product</h2>
+            <p className="text-[#B3C8F9] text-[13px] font-medium text-center max-w-[240px] leading-relaxed">
+              This product is 100% authentic and verified by Authentiks
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Main Scrollable Content */}
@@ -474,6 +513,23 @@ function ResultAuthentic({ data }: { data: any }) {
             </div>
           </div>
         </div>
+
+        {/* Batch Info Pill Strip (when isBatchQr or batchNo present) */}
+        {isBatchQr && (
+          <div className="bg-indigo-50/80 border border-indigo-100/80 rounded-2xl px-4 py-3 flex items-center justify-between text-xs font-semibold text-indigo-900 shadow-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0">
+                <Layers size={13} />
+              </div>
+              <span className="font-bold">Batch No. {batchNo}</span>
+            </div>
+            <div className="text-[11px] text-indigo-600/80 font-medium">
+              {mfdDate !== 'N/A' && <span>Mfd: {mfdDate}</span>}
+              {mfdDate !== 'N/A' && expDate !== 'N/A' && <span className="mx-1.5">|</span>}
+              {expDate !== 'N/A' && <span>Exp: {expDate}</span>}
+            </div>
+          </div>
+        )}
 
         {/* Tracking Grid */}
         <div className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex justify-between divide-x divide-slate-100">
@@ -635,6 +691,50 @@ function ResultAuthentic({ data }: { data: any }) {
               <p className="text-[13px] text-slate-400 italic">No additional details available.</p>
             )}
           </AccordionItem>
+
+          {/* 4b. Supply Chain Details */}
+          {(data.supplyChain || productObj.supplyChain || orderObj.supplyChain) && (
+            <AccordionItem 
+              title="Supply Chain Details" 
+              subtitle="Manufacturing, sourcing, and logistics" 
+              icon={Truck} 
+              isOpen={openSection === 'Supply Chain Details'} 
+              onToggle={() => setOpenSection(openSection === 'Supply Chain Details' ? '' : 'Supply Chain Details')}
+            >
+              {(() => {
+                const sc = data.supplyChain || productObj.supplyChain || orderObj.supplyChain;
+                return (
+                  <div className="flex flex-col gap-3">
+                    {sc.manufacturerName && <KeyValueRow label="Manufacturer" value={sc.manufacturerName} />}
+                    {sc.manufacturingUnit && <KeyValueRow label="Manufacturing Unit" value={sc.manufacturingUnit} />}
+                    {sc.manufacturingLocation && <KeyValueRow label="Manufacturing Location" value={sc.manufacturingLocation} />}
+                    {sc.manufacturingDate && <KeyValueRow label="Manufacturing Date" value={sc.manufacturingDate} />}
+                    {sc.batchNumber && <KeyValueRow label="Batch / Lot No." value={sc.batchNumber} />}
+                    {sc.skuCode && <KeyValueRow label="SKU Code" value={sc.skuCode} />}
+                    {sc.productionQuantity && <KeyValueRow label="Production Quantity" value={`${sc.productionQuantity} ${sc.productionQuantityUnit || ''}`} />}
+                    {sc.countryOfManufacture && <KeyValueRow label="Country of Manufacture" value={sc.countryOfManufacture} />}
+                    {sc.rawMaterialSource && <KeyValueRow label="Raw Material Source" value={sc.rawMaterialSource} />}
+                    {sc.countryOfOrigin && <KeyValueRow label="Country of Origin" value={sc.countryOfOrigin} />}
+                    {sc.supplierName && <KeyValueRow label="Supplier" value={sc.supplierName} />}
+                    {sc.certifications && <KeyValueRow label="Certifications" value={sc.certifications} />}
+                    {sc.processingLocation && <KeyValueRow label="Processing Location" value={sc.processingLocation} />}
+                    {sc.packagingUnit && <KeyValueRow label="Packaging Unit" value={sc.packagingUnit} />}
+                    {sc.packagingLocation && <KeyValueRow label="Packaging Location" value={sc.packagingLocation} />}
+                    {sc.packagingDate && <KeyValueRow label="Packaging Date" value={sc.packagingDate} />}
+                    {sc.packagingType && <KeyValueRow label="Packaging Type" value={sc.packagingType} />}
+                    {sc.packSize && <KeyValueRow label="Pack Size" value={sc.packSize} />}
+                    {sc.numberOfUnitsPacked && <KeyValueRow label="Units Packed" value={`${sc.numberOfUnitsPacked} ${sc.numberOfUnitsPackedUnit || ''}`} />}
+                    {sc.dispatchLocation && <KeyValueRow label="Dispatch Location" value={sc.dispatchLocation} />}
+                    {sc.distributorName && <KeyValueRow label="Distributor" value={sc.distributorName} />}
+                    {sc.distributionLocation && <KeyValueRow label="Distribution Region" value={sc.distributionLocation} />}
+                    {sc.modeOfTransport && <KeyValueRow label="Mode of Transport" value={sc.modeOfTransport} />}
+                    {sc.expectedDeliveryDate && <KeyValueRow label="Expected Delivery" value={sc.expectedDeliveryDate} />}
+                    {sc.notes && <KeyValueRow label="Notes" value={sc.notes} />}
+                  </div>
+                );
+              })()}
+            </AccordionItem>
+          )}
 
           {/* 5. Certifications and Lab Tests */}
           <AccordionItem title="Certifications and Lab" subtitle="Verified certificates and lab tests" icon={Award} isOpen={openSection === 'Certifications and Lab'} onToggle={() => setOpenSection(openSection === 'Certifications and Lab' ? '' : 'Certifications and Lab')}>

@@ -173,6 +173,7 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       manufactureDate,
       expiryDate,
       quantity: quantityNumber,
+      qrType: req.body.qrType || 'product',
       description,
       productInfo,
       createdBy: req.user._id,
@@ -535,6 +536,7 @@ router.put('/:id/authorize', protect, authorize('company', 'authorizer'), async 
         description: order.description,
         productInfo: order.productInfo,
         quantity: 1,
+        qrType: order.qrType || 'product',
         sequence: currentSeq,
         orderId: order._id,
         isActive: true, // Physical QRs are instantly active
