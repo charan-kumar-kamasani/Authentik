@@ -175,6 +175,38 @@ const orderSchema = new mongoose.Schema({
     pointsDisbursed: { type: Number, default: 0 }
   },
 
+  // Supply Chain Details attached to this order
+  supplyChain: {
+    manufacturerName: String,
+    manufacturingUnit: String,
+    manufacturingLocation: String,
+    manufacturingDate: String,
+    batchNumber: String,
+    skuCode: String,
+    productionQuantity: String,
+    productionQuantityUnit: String,
+    countryOfManufacture: String,
+    rawMaterialSource: String,
+    countryOfOrigin: String,
+    supplierName: String,
+    certifications: String,
+    processingLocation: String,
+    packagingUnit: String,
+    packagingLocation: String,
+    packagingDate: String,
+    packagingType: String,
+    packSize: String,
+    numberOfUnitsPacked: String,
+    numberOfUnitsPackedUnit: String,
+    dispatchLocation: String,
+    distributorName: String,
+    distributionLocation: String,
+    modeOfTransport: String,
+    expectedDeliveryDate: String,
+    notes: String,
+    supportingDocument: String
+  },
+
 }, { timestamps: true });
 
 // Performance Indexes

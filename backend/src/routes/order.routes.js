@@ -223,6 +223,8 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
         totalPointsFund: Number(req.body.loyalty.totalPointsFund) || 0,
         pointsDisbursed: 0,
       } : undefined,
+      // Supply Chain Details (if provided)
+      supplyChain: req.body.supplyChain ? req.body.supplyChain : undefined,
       // Calculate and save pricing
       amount: (await calculateQrPrice(quantityNumber)).total,
       subtotal: (await calculateQrPrice(quantityNumber)).subtotal,
@@ -1224,6 +1226,10 @@ router.put('/:id', protect, authorize('company', 'authorizer', 'creator', 'admin
         totalPointsFund: Number(req.body.loyalty.totalPointsFund) || 0,
         pointsDisbursed: order.loyalty?.pointsDisbursed || 0,
       } : undefined;
+    }
+    // Update supplyChain if provided
+    if (req.body.supplyChain !== undefined) {
+      order.supplyChain = req.body.supplyChain;
     }
 
     order.history.push({
