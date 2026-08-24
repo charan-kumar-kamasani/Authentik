@@ -414,19 +414,85 @@ function ResultAuthentic({ data }: { data: any }) {
 
         {/* Dynamic Header Section (Batch vs Product) */}
         {isBatchQr ? (
-          <div className="flex flex-col items-center relative z-10 pt-0 pb-8 animate-[slide-up_0.5s_ease-out]">
-            <div className="w-14 h-14 mb-2 flex items-center justify-center">
-              {brandLogo ? (
-                <img src={brandLogo} alt={companyName} className="w-full h-full object-contain drop-shadow-md" />
-              ) : (
-                <img src={authenticIcon} alt="Authentiks Logo" className="w-full h-full object-contain drop-shadow-md" />
-              )}
+          <div className="flex flex-col relative z-10 pt-2 pb-10 animate-[slide-up_0.5s_ease-out]">
+            {/* Main 2-Column Hero Section */}
+            <div className="flex items-center gap-3.5 mb-5">
+              {/* Left Column: 3D Shield Badge with Box & Green Refresh Button */}
+              <div className="relative flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center">
+                {/* Outer Glow */}
+                <div className="absolute inset-0 bg-[#4CC9F0]/20 rounded-full blur-xl animate-pulse" style={{ animationDuration: '3s' }} />
+                
+                {/* Shield Box */}
+                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-b from-[#1E40AF]/90 via-[#0F2B7A] to-[#0A194E] border border-[#38BDF8]/40 shadow-[0_0_20px_rgba(16,93,228,0.5)] flex items-center justify-center p-2.5">
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    {/* Shield outline SVG */}
+                    <svg viewBox="0 0 24 24" fill="none" className="w-full h-full text-[#38BDF8] filter drop-shadow-[0_0_6px_rgba(56,189,248,0.6)]" stroke="currentColor" strokeWidth="1.5">
+                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    </svg>
+                    {/* Box Icon inside Shield */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <svg viewBox="0 0 24 24" fill="none" className="w-8 h-8 sm:w-9 sm:h-9 text-white drop-shadow-md" stroke="currentColor" strokeWidth="1.8">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                        <line x1="12" y1="22.08" x2="12" y2="12" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* Green Circular Refresh Badge */}
+                  <div className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-7 sm:h-7 bg-[#00D66C] rounded-full border-2 border-[#01227E] flex items-center justify-center shadow-lg">
+                    <RefreshCcw className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white" strokeWidth={3} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Information */}
+              <div className="flex flex-col flex-1 pr-1">
+                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#1E40AF]/60 border border-blue-400/30 text-blue-200 text-[10px] font-bold uppercase tracking-wider mb-1.5 self-start backdrop-blur-sm shadow-sm">
+                  BATCH INFORMATION
+                </div>
+                <h2 className="text-white text-[19px] sm:text-[21px] font-extrabold leading-snug tracking-tight mb-1">
+                  Real insights.<br />Every time you scan.
+                </h2>
+                <p className="text-blue-100/80 text-[11px] sm:text-[12px] leading-relaxed font-normal">
+                  This QR represents a batch/lot. Scan it multiple times to explore product and batch information.
+                </p>
+              </div>
             </div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-[10px] font-bold uppercase tracking-wider mb-2 backdrop-blur-md shadow-sm">
-              <Layers size={12} className="text-[#4CC9F0]" />
-              BATCH DETAILS & INFORMATION
+
+            {/* Bottom 3 Feature Pills */}
+            <div className="grid grid-cols-3 gap-2 pt-3.5 border-t border-white/15">
+              <div className="flex flex-col items-center text-center px-1">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-500/20 border border-blue-400/30 flex items-center justify-center mb-1.5 text-[#4CC9F0] shadow-sm">
+                  <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5 sm:w-4 sm:h-4" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                    <line x1="12" y1="22.08" x2="12" y2="12" />
+                  </svg>
+                </div>
+                <span className="text-white text-[10px] sm:text-[11px] font-semibold leading-tight">
+                  Open for<br />Multiple Scans
+                </span>
+              </div>
+
+              <div className="flex flex-col items-center text-center px-1">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-500/20 border border-blue-400/30 flex items-center justify-center mb-1.5 text-[#4CC9F0] shadow-sm">
+                  <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4" strokeWidth={2} />
+                </div>
+                <span className="text-white text-[10px] sm:text-[11px] font-semibold leading-tight">
+                  Complete Batch<br />Information
+                </span>
+              </div>
+
+              <div className="flex flex-col items-center text-center px-1">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-500/20 border border-blue-400/30 flex items-center justify-center mb-1.5 text-[#4CC9F0] shadow-sm">
+                  <ShieldCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" strokeWidth={2} />
+                </div>
+                <span className="text-white text-[10px] sm:text-[11px] font-semibold leading-tight">
+                  All Details<br />Included
+                </span>
+              </div>
             </div>
-            <h2 className="text-white text-[19px] font-extrabold tracking-tight text-center leading-tight">Batch Record Details</h2>
           </div>
         ) : (
           <div className="flex flex-col items-center relative z-10 pt-0 pb-8 animate-[slide-up_0.5s_ease-out]">
