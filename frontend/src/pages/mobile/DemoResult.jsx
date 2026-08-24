@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, Share, FileText, BookOpen, MessageSquare, ShieldCheck, Gift, ChevronRight, XCircle, AlertTriangle, Headset, Flag, X, ShieldAlert, Calendar, Phone, MapPin, RefreshCcw, ScanLine, CheckCircle2, FlaskConical, Award, Star, ChevronDown, Check, Search, CheckCircle, QrCode, ExternalLink, Mail, Clock, Info, Globe } from "lucide-react";
+import { ChevronLeft, Share, FileText, BookOpen, MessageSquare, ShieldCheck, Gift, ChevronRight, XCircle, AlertTriangle, Headset, Flag, X, ShieldAlert, Calendar, Phone, MapPin, RefreshCcw, ScanLine, CheckCircle2, FlaskConical, Award, Star, ChevronDown, Check, Search, CheckCircle, QrCode, ExternalLink, Mail, Clock, Info, Globe, Truck } from "lucide-react";
+import { isSupplyChainEnabled } from "./SupplyChain";
 import authenticIcon from "../../assets/logo-shield.png";
 import fakeIcon from "../../assets/v2/home/header/dangerous.svg";
 
@@ -394,6 +395,36 @@ function ResultAuthentic({ data }) {
             </div>
           </AccordionItem>
         </div>
+
+        {/* Supply Chain Details Button (Shown when TEST_SUPPLY_SHOW is set in .env) */}
+        {isSupplyChainEnabled(data) && (
+          <div className="mt-3.5 mb-2">
+            <button
+              onClick={() => nav('/supply-chain', { state: data })}
+              className="w-full bg-gradient-to-r from-[#0D4E96] via-[#105DE4] to-[#0D4E96] text-white p-3.5 rounded-2xl shadow-md shadow-blue-500/20 hover:shadow-blue-500/30 active:scale-[0.99] transition-all flex items-center justify-between border border-blue-400/30 group text-left"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-md flex items-center justify-center shrink-0 border border-white/20 group-hover:scale-105 transition-transform">
+                  <Truck className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-[13.5px] font-extrabold text-white tracking-wide">Supply Chain Details</h4>
+                    <span className="bg-white/20 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full border border-white/30">
+                      Verified
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-blue-100/80 font-medium mt-0.5">
+                    Complete visibility from source to distribution
+                  </p>
+                </div>
+              </div>
+              <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center shrink-0 group-hover:bg-white/20 transition-colors">
+                <ChevronRight className="w-4 h-4 text-white" />
+              </div>
+            </button>
+          </div>
+        )}
         
         {/* Warranty Claim Banner */}
         <button

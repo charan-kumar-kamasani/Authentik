@@ -28,6 +28,7 @@ import WebWhyAuthentiks from "./pages/web/WebWhyAuthentiks";
 import Scan from "./pages/mobile/scan";
 import Result from "./pages/mobile/Result";
 import ConsumerSupport from "./pages/mobile/ConsumerSupport";
+import SupplyChain from "./pages/mobile/SupplyChain";
 
 import ProductDetails from "./pages/mobile/ProductDetails";
 import BrandPortfolio from "./pages/mobile/BrandPortfolio";
@@ -458,6 +459,7 @@ export default function App() {
           <Route path="/ingredients" element={<Ingredients />} />
           <Route path="/certificates" element={<Certificates />} />
           <Route path="/consumer-support" element={<ConsumerSupport />} />
+          <Route path="/supply-chain" element={<SupplyChain />} />
 
           {/* User Protected with Global Navbar */}
           <Route element={<PrivateRoute><MobileLayout /></PrivateRoute>}>
