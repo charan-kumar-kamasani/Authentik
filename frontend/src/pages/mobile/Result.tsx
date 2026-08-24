@@ -424,39 +424,25 @@ function ResultAuthentic({ data }: { data: any }) {
 
         {/* Dynamic Header Section (Batch vs Product) */}
         {isBatchQr ? (
-          <div className="flex flex-col items-center relative z-10 pt-2 pb-6 animate-[slide-up_0.5s_ease-out]">
-            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-[11px] font-bold uppercase tracking-widest mb-3 backdrop-blur-md shadow-sm">
-              <Layers size={13} className="text-[#4CC9F0]" />
-              BATCH INFORMATION
+          <div className="flex flex-col items-center relative z-10 pt-0 pb-2 animate-[slide-up_0.5s_ease-out]">
+            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-[10px] font-bold uppercase tracking-wider mb-2 backdrop-blur-md shadow-sm">
+              <Layers size={12} className="text-[#4CC9F0]" />
+              BATCH DETAILS & INFORMATION
             </div>
             
-            <h2 className="text-white text-[22px] font-black tracking-tight mb-2 text-center leading-tight">
-              Real insights.<br />Every time you scan.
+            <h2 className="text-white text-[19px] font-extrabold tracking-tight mb-2 text-center leading-tight">
+              Batch Record Details
             </h2>
-            
-            <p className="text-[#B3C8F9] text-[12px] font-medium text-center max-w-[280px] leading-relaxed mb-6">
-              This QR represents a batch/lot. Scan it multiple times to explore product and batch information.
-            </p>
 
-            <div className="grid grid-cols-3 gap-2 w-full max-w-[340px] px-1">
-              <div className="flex flex-col items-center bg-white/10 backdrop-blur-md rounded-2xl p-2.5 border border-white/15 text-center">
-                <div className="w-8 h-8 rounded-full bg-[#105DE4]/50 flex items-center justify-center text-[#4CC9F0] mb-1.5 shadow-sm">
-                  <RefreshCcw size={15} />
-                </div>
-                <span className="text-white text-[10px] font-bold leading-tight">Open for Multiple Scans</span>
-              </div>
-              <div className="flex flex-col items-center bg-white/10 backdrop-blur-md rounded-2xl p-2.5 border border-white/15 text-center">
-                <div className="w-8 h-8 rounded-full bg-[#105DE4]/50 flex items-center justify-center text-[#4CC9F0] mb-1.5 shadow-sm">
-                  <Layers size={15} />
-                </div>
-                <span className="text-white text-[10px] font-bold leading-tight">Complete Batch Info</span>
-              </div>
-              <div className="flex flex-col items-center bg-white/10 backdrop-blur-md rounded-2xl p-2.5 border border-white/15 text-center">
-                <div className="w-8 h-8 rounded-full bg-[#105DE4]/50 flex items-center justify-center text-[#4CC9F0] mb-1.5 shadow-sm">
-                  <ShieldCheck size={15} />
-                </div>
-                <span className="text-white text-[10px] font-bold leading-tight">All Details Included</span>
-              </div>
+            <div className="flex items-center justify-center gap-2 flex-wrap max-w-[340px]">
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 backdrop-blur-md text-white text-[10px] font-semibold">
+                <RefreshCcw size={11} className="text-[#4CC9F0]" />
+                Open for Multiple Scans
+              </span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 backdrop-blur-md text-white text-[10px] font-semibold">
+                <Layers size={11} className="text-[#4CC9F0]" />
+                Complete Batch Info
+              </span>
             </div>
           </div>
         ) : (
@@ -466,14 +452,14 @@ function ResultAuthentic({ data }: { data: any }) {
             </div>
             <h2 className="text-white text-[24px] font-bold tracking-tight mb-1.5">Authentic Product</h2>
             <p className="text-[#B3C8F9] text-[13px] font-medium text-center max-w-[240px] leading-relaxed">
-              This product is 100% authentic and verified by Authentiks
+              This product is verified by Authentiks
             </p>
           </div>
         )}
       </div>
 
       {/* Main Scrollable Content */}
-      <div className="flex-1 px-4 -mt-10 relative z-20 flex flex-col gap-4 pb-10">
+      <div className={`flex-1 px-4 ${isBatchQr ? 'mt-2' : '-mt-10'} relative z-20 flex flex-col gap-4 pb-10`}>
         
         {/* Product Info Card */}
         <div className="bg-white rounded-[24px] p-5 shadow-[0_4px_25px_rgba(0,0,0,0.06)] flex gap-4">
@@ -505,12 +491,14 @@ function ResultAuthentic({ data }: { data: any }) {
               ))}
             </div>
             
-            <div className="mt-auto pt-1 flex items-center gap-1.5">
-              <div className="w-3.5 h-3.5 bg-[#105DE4] rounded-full flex items-center justify-center shadow-[0_2px_4px_rgba(16,93,228,0.2)]">
-                <CheckCircle2 size={9} className="text-white" strokeWidth={3} />
+            {!isBatchQr && (
+              <div className="mt-auto pt-1 flex items-center gap-1.5">
+                <div className="w-3.5 h-3.5 bg-[#105DE4] rounded-full flex items-center justify-center shadow-[0_2px_4px_rgba(16,93,228,0.2)]">
+                  <CheckCircle2 size={9} className="text-white" strokeWidth={3} />
+                </div>
+                <span className="text-[#105DE4] text-[10.5px] font-bold tracking-wide">Verified Product</span>
               </div>
-              <span className="text-[#105DE4] text-[10.5px] font-bold tracking-wide">100% Authentic</span>
-            </div>
+            )}
           </div>
         </div>
 

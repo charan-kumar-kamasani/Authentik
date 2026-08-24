@@ -90,10 +90,140 @@ const formatSN = (num) => {
 };
 
 /**
+ * Dedicated A4 PDF generator for Batch-Level QRs: Displays QR Code on an A4 sheet with product & supply chain specifications.
+ */
+const buildBatchQrPdf = async (products, options = {}) => {
+  const p = products[0] || {};
+  const order = options.orderObj || {};
+  const sc = p.supplyChain || order.supplyChain || {};
+
+  const BOLD_FONT = path.join(__dirname, "../assets/fonts/Roboto-Bold.ttf");
+  const REGULAR_FONT = path.join(__dirname, "../assets/fonts/Roboto-Regular.ttf");
+
+  const doc = new PDFDocument({
+    size: "A4",
+    margin: 0,
+    autoFirstPage: true,
+  });
+
+  const pageWidth = 595.28;
+  const brandColor = "#0b1b36";
+
+  // 1. Top Header Banner
+  doc.rect(0, 0, pageWidth, 75).fill(brandColor);
+
+  const brandTitle = p.brand || options.brand || "AUTHENTIKS";
+  doc.fillColor("#FFFFFF").font(BOLD_FONT).fontSize(20).text(brandTitle.toUpperCase(), 35, 20, { lineBreak: false });
+  doc.fillColor("#8CB4D6").font(REGULAR_FONT).fontSize(9).text("BATCH QR CODE & SPECIFICATION CERTIFICATE", 35, 46, { lineBreak: false });
+
+  // Header Right side: Order ID & Date
+  const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  doc.fillColor("#FFFFFF").font(BOLD_FONT).fontSize(9).text(`ORDER ID: ${options.orderId || order.orderId || 'N/A'}`, 350, 24, { width: 210, align: "right" });
+  doc.fillColor("#94A3B8").font(REGULAR_FONT).fontSize(8.5).text(`Generated: ${dateStr}`, 350, 42, { width: 210, align: "right" });
+
+  // 2. QR CODE CARD (Centered Upper Section - No "VERIFY & WIN" or "Use a Coin")
+  const qrCardX = (pageWidth - 240) / 2;
+  doc.save();
+  doc.roundedRect(qrCardX, 95, 240, 245, 12).fillAndStroke("#FAFAFA", "#E2E8F0");
+  
+  // Generate QR Code image Buffer
+  const baseUrl = process.env.FRONTEND_URL || 'https://authentiks.in';
+  const qrUrl = `${baseUrl}/scan?code=${encodeURIComponent(p.qrCode || "")}`;
+  const qrBuffer = await QRCode.toBuffer(qrUrl, { errorCorrectionLevel: 'H', scale: 10, margin: 1 });
+
+  doc.image(qrBuffer, (pageWidth - 170) / 2, 110, { width: 170, height: 170 });
+
+  // Code string & text below QR
+  doc.fillColor("#0b1b36").font(BOLD_FONT).fontSize(9.5).text(p.qrCode || 'N/A', qrCardX, 290, { width: 240, align: 'center' });
+  doc.fillColor("#64748B").font(REGULAR_FONT).fontSize(8).text("Scan with camera to verify batch authenticity", qrCardX, 308, { width: 240, align: 'center' });
+  doc.restore();
+
+  // 3. PRODUCT & BATCH DETAILS CARD
+  const cardX = 35;
+  let currentY = 355;
+  const cardW = pageWidth - 70;
+
+  // Header Box
+  doc.save();
+  doc.roundedRect(cardX, currentY, cardW, 195, 10).fillAndStroke("#FFFFFF", "#E2E8F0");
+  
+  // Card Section Header
+  doc.rect(cardX, currentY, cardW, 30).fill("#F1F5F9");
+  doc.fillColor("#0F172A").font(BOLD_FONT).fontSize(10).text("BATCH & PRODUCT SPECIFICATIONS", cardX + 15, currentY + 9);
+  
+  // Table Content Inside Card
+  const tableY = currentY + 40;
+  const rowHeight = 35;
+  
+  const drawKvRow = (label1, val1, label2, val2, yPos, isLast = false) => {
+    const col1X = cardX + 15;
+    const col2X = cardX + 265;
+    
+    // Column 1
+    doc.fillColor("#64748B").font(BOLD_FONT).fontSize(7.5).text(label1.toUpperCase(), col1X, yPos);
+    doc.fillColor("#0F172A").font(REGULAR_FONT).fontSize(9).text(String(val1 || 'N/A'), col1X, yPos + 11, { width: 230 });
+    
+    // Column 2
+    doc.fillColor("#64748B").font(BOLD_FONT).fontSize(7.5).text(label2.toUpperCase(), col2X, yPos);
+    doc.fillColor("#0F172A").font(REGULAR_FONT).fontSize(9).text(String(val2 || 'N/A'), col2X, yPos + 11, { width: 230 });
+
+    if (!isLast) {
+      doc.moveTo(cardX + 15, yPos + 28).lineTo(cardX + cardW - 15, yPos + 28).strokeColor("#F1F5F9").lineWidth(0.8).stroke();
+    }
+  };
+
+  const mfdStr = p.mfdOn ? `${p.mfdOn.month || ''}/${p.mfdOn.year || ''}` : (p.manufactureDate || 'N/A');
+  const expStr = p.calculatedExpiryDate || p.expiryDate || (p.bestBefore ? `${p.bestBefore.value} ${p.bestBefore.unit}` : 'N/A');
+
+  drawKvRow("Product Name", p.productName || 'N/A', "Brand / Manufacturer", p.brand || options.brand || 'N/A', tableY);
+  drawKvRow("Batch / Lot Number", p.batchNo || 'N/A', "SKU / Product Code", p.skuNumber || 'N/A', tableY + rowHeight);
+  drawKvRow("Manufacturing Date", mfdStr, "Expiry Date", expStr, tableY + rowHeight * 2);
+  drawKvRow("QR Type", "Batch-Level QR", "Status", "Active & Authenticated", tableY + rowHeight * 3, true);
+
+  doc.restore();
+
+  // 4. SUPPLY CHAIN DETAILS CARD
+  currentY = 565;
+
+  doc.save();
+  doc.roundedRect(cardX, currentY, cardW, 215, 10).fillAndStroke("#FFFFFF", "#E2E8F0");
+  
+  // Section Header
+  doc.rect(cardX, currentY, cardW, 30).fill("#F1F5F9");
+  doc.fillColor("#0F172A").font(BOLD_FONT).fontSize(10).text("SUPPLY CHAIN & TRACEABILITY DETAILS", cardX + 15, currentY + 9);
+  
+  const scTableY = currentY + 40;
+  
+  const manufacturingInfo = [sc.manufacturerName, sc.manufacturingUnit, sc.manufacturingLocation].filter(Boolean).join(" - ") || 'N/A';
+  const rawMaterialInfo = [sc.rawMaterialSource, sc.countryOfOrigin ? `Origin: ${sc.countryOfOrigin}` : ''].filter(Boolean).join(" | ") || 'N/A';
+  const packagingInfo = [sc.packagingUnit, sc.packagingLocation, sc.packagingType].filter(Boolean).join(", ") || 'N/A';
+  const distributionInfo = [sc.dispatchLocation, sc.distributorName ? `Distributor: ${sc.distributorName}` : ''].filter(Boolean).join(" | ") || 'N/A';
+
+  drawKvRow("Manufacturing Unit & Location", manufacturingInfo, "Raw Material Source & Origin", rawMaterialInfo, scTableY);
+  drawKvRow("Packaging Unit & Details", packagingInfo, "Dispatch & Distribution", distributionInfo, scTableY + rowHeight);
+  drawKvRow("Supplier / Manufacturer", sc.supplierName || 'N/A', "Certifications", sc.certifications || 'N/A', scTableY + rowHeight * 2);
+  drawKvRow("Mode of Transport", sc.modeOfTransport || 'N/A', "Expected Delivery", sc.expectedDeliveryDate || 'N/A', scTableY + rowHeight * 3, true);
+
+  doc.restore();
+
+  // 5. FOOTER
+  doc.rect(0, 805, pageWidth, 36.89).fill("#F8FAFC");
+  doc.moveTo(0, 805).lineTo(pageWidth, 805).strokeColor("#E2E8F0").lineWidth(1).stroke();
+  doc.fillColor("#64748B").font(REGULAR_FONT).fontSize(8.5).text("Authentiks Enterprise Product Traceability System  •  Batch QR Code Certificate", 0, 818, { width: pageWidth, align: "center" });
+
+  return doc;
+};
+
+/**
  * Core PDF building logic. Returns a PDFDocument instance.
  * Note: Caller is responsible for calling doc.end() when finished.
  */
 const buildQrPdf = async (products, options = {}) => {
+  const isBatch = options.orderObj?.qrType === 'batch' || products[0]?.qrType === 'batch';
+  if (isBatch) {
+    return await buildBatchQrPdf(products, options);
+  }
+
   /** ─── PAGE SIZE — A3 Plus Horizontal (19 × 13 inches) ─── **/
   const widthPts = 19 * 72; // 1368 pts ≈ 482.6 mm
   const heightPts = 13 * 72; // 936 pts  ≈ 330.2 mm
@@ -208,16 +338,9 @@ const buildQrPdf = async (products, options = {}) => {
       /** ── TOP RIBBON (6mm) ── **/
       doc.rect(x, y, contentWidth, topRibbonH).fill(brandColor);
 
-      const str1 = "VERIFY & ";
-      const str2 = "WIN";
-      doc.font(BOLD_FONT).fontSize(6.5);
-      const w1 = doc.widthOfString(str1);
-      const w2 = doc.widthOfString(str2);
-      const totalW = w1 + w2;
-      const startX = x + (contentWidth - totalW) / 2;
-      
-      doc.fillColor("#FFFFFF").text(str1, startX, y + (topRibbonH - 6.5) / 2 + 0.5, { lineBreak: false });
-      doc.fillColor("#8CB4D6").text(str2, startX + w1, y + (topRibbonH - 6.5) / 2 + 0.5, { lineBreak: false });
+      const headerBrand = products[i].brand ? String(products[i].brand).toUpperCase() : "AUTHENTIKS";
+      doc.font(BOLD_FONT).fontSize(6);
+      doc.fillColor("#FFFFFF").text(headerBrand, x, y + (topRibbonH - 6) / 2 + 0.5, { width: contentWidth, align: "center", lineBreak: false });
 
       /** ── QR CODE SECTION (13mm) ── **/
       const midY = y + topRibbonH;
@@ -225,7 +348,6 @@ const buildQrPdf = async (products, options = {}) => {
 
       const qrBuffer = allQrBuffers[i];
       const qrX = x + (contentWidth - qrSize) / 2;
-      // 1mm gap top and bottom means centering an 11mm QR in a 13mm section = exactly 1mm padding.
       const qrImgY = midY + (midSectionH - qrSize) / 2;
 
       doc.image(qrBuffer, qrX, qrImgY, {
@@ -237,12 +359,12 @@ const buildQrPdf = async (products, options = {}) => {
       const bottomY = midY + midSectionH;
       doc.rect(x, bottomY, contentWidth, bottomRibbonH).fill(brandColor);
 
-      // "Use a Coin"
+      const bottomLabel = products[i].serialNumber !== undefined ? formatSN(products[i].serialNumber) : "AUTHENTIC";
       doc
         .fillColor("#FFFFFF")
         .font(BOLD_FONT)
-        .fontSize(6.5)
-        .text("Use a Coin", x, bottomY + 3.5, {
+        .fontSize(6)
+        .text(bottomLabel, x, bottomY + 3.5, {
           width: contentWidth,
           align: "center",
           lineBreak: false,

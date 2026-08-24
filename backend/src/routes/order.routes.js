@@ -163,6 +163,9 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       if (brandDoc) finalCompanyId = brandDoc.companyId;
     }
 
+    const isBatch = (req.body.qrType === 'batch');
+    const orderStatus = isBatch ? 'Authorized' : 'Pending Authorization';
+
     const order = new Order({
       orderId,
       templateId: templateId || null,
@@ -172,7 +175,7 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       batchNo: batchNo || `BATCH-${orderId}`,
       manufactureDate,
       expiryDate,
-      quantity: quantityNumber,
+      quantity: isBatch ? 1 : quantityNumber,
       qrType: req.body.qrType || 'product',
       description,
       productInfo,
@@ -180,7 +183,9 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       brandId,
       companyId: finalCompanyId,
       company: (req.user.role === 'company') ? req.user._id : (finalCompanyId ? null : null), // legacy
-      status: 'Pending Authorization',
+      status: orderStatus,
+      qrCodesGenerated: isBatch,
+      qrGeneratedCount: isBatch ? 1 : 0,
       // New dynamic fields (sanitize to avoid empty objects)
       mfdOn: (mfdOn && mfdOn.month && mfdOn.year) ? mfdOn : undefined,
       bestBefore: (bestBefore && bestBefore.value) ? bestBefore : undefined,
@@ -227,19 +232,103 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       // Supply Chain Details (if provided)
       supplyChain: req.body.supplyChain ? req.body.supplyChain : undefined,
       // Calculate and save pricing
-      amount: (await calculateQrPrice(quantityNumber)).total,
-      subtotal: (await calculateQrPrice(quantityNumber)).subtotal,
-      tax: (await calculateQrPrice(quantityNumber)).tax,
-      pricePerQr: (await calculateQrPrice(quantityNumber)).pricePerQr,
+      amount: (await calculateQrPrice(isBatch ? 1 : quantityNumber)).total,
+      subtotal: (await calculateQrPrice(isBatch ? 1 : quantityNumber)).subtotal,
+      tax: (await calculateQrPrice(isBatch ? 1 : quantityNumber)).tax,
+      pricePerQr: (await calculateQrPrice(isBatch ? 1 : quantityNumber)).pricePerQr,
       history: [{
-        status: 'Pending Authorization',
+        status: orderStatus,
         changedBy: req.user._id,
         role: req.user.role,
-        comment: 'Order created and awaiting authorization'
+        comment: isBatch ? 'Batch QR order created and auto-authorized (Superadmin approval not required)' : 'Order created and awaiting authorization'
       }]
     });
 
     const createdOrder = await order.save();
+    
+    // Auto-generate Batch QR product if batch level
+    if (isBatch) {
+      try {
+        const BlankQr = require('../models/BlankQr');
+        const Product = require('../models/Product');
+        const ProductCoupon = require('../models/ProductCoupon');
+        const brandDoc = await Brand.findById(brandId);
+
+        let qrCode = '';
+        let assignedBlankQr = null;
+        if (finalCompanyId) {
+          assignedBlankQr = await BlankQr.findOne({
+            assignedToCompany: finalCompanyId,
+            isAssigned: false,
+            isBlocked: false
+          }).sort({ serialNumber: 1 });
+        }
+
+        if (assignedBlankQr) {
+          qrCode = assignedBlankQr.qrCode;
+        } else {
+          const uniqueSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+          qrCode = `${brand || 'BRAND'}-BATCH-${createdOrder.orderId}-${uniqueSuffix}`;
+        }
+
+        const lastProduct = await Product.findOne({ brand: brand || 'Unknown' }).sort({ sequence: -1 });
+        const startSeq = lastProduct && lastProduct.sequence ? lastProduct.sequence + 1 : 1;
+
+        const productObj = new Product({
+          qrCode,
+          productName: createdOrder.productName,
+          skuNumber: createdOrder.skuNumber,
+          brand: brand || 'Unknown',
+          brandId: brandDoc ? brandDoc._id : null,
+          batchNo: createdOrder.batchNo,
+          manufactureDate: createdOrder.manufactureDate,
+          expiryDate: createdOrder.expiryDate,
+          productImage: createdOrder.productImage,
+          mfdOn: createdOrder.mfdOn,
+          bestBefore: createdOrder.bestBefore,
+          calculatedExpiryDate: createdOrder.calculatedExpiryDate,
+          dynamicFields: createdOrder.dynamicFields,
+          variants: createdOrder.variants,
+          warranty: createdOrder.warranty,
+          orderLinks: createdOrder.orderLinks,
+          description: createdOrder.description,
+          productInfo: createdOrder.productInfo,
+          quantity: 1,
+          qrType: 'batch',
+          sequence: startSeq,
+          orderId: createdOrder._id,
+          isActive: true,
+          createdBy: req.user._id
+        });
+
+        const savedProd = await productObj.save();
+
+        if (assignedBlankQr) {
+          assignedBlankQr.isAssigned = true;
+          assignedBlankQr.assignedToProduct = savedProd._id;
+          await assignedBlankQr.save();
+        }
+
+        if (createdOrder.coupon && createdOrder.coupon.title) {
+          await ProductCoupon.create({
+            title: createdOrder.coupon.title,
+            code: createdOrder.coupon.code || '',
+            description: createdOrder.coupon.description || '',
+            websiteLink: createdOrder.coupon.websiteLink || '',
+            expiryDate: createdOrder.coupon.expiryDate || null,
+            discountType: createdOrder.coupon.discountType || 'percentage',
+            discountValue: createdOrder.coupon.discountValue || null,
+            mrp: createdOrder.coupon.mrp || null,
+            productId: savedProd._id,
+            orderId: createdOrder._id,
+            brandId: brandDoc ? brandDoc._id : null,
+            companyId: finalCompanyId,
+          });
+        }
+      } catch (genErr) {
+        console.error('Error auto-generating Batch QR product:', genErr);
+      }
+    }
     
     // Send email notifications
     const recipients = await getNotificationRecipients(createdOrder);
@@ -1267,10 +1356,21 @@ router.get('/:id/download', protect, async (req, res) => {
     }
     
     console.log(`👤 User Role: ${req.user.role}`);
-    // Authorization: Super Admins and Admins can download QR PDFs
-    if (!['superadmin', 'admin'].includes(req.user.role)) {
-      console.log(`🚫 Forbidden: User role is ${req.user.role}, not authorized`);
-      return res.status(403).json({ message: 'You are not authorized to download QR PDFs' });
+    // Authorization: Superadmin, Admin, Authorizer/Company, and Creator can download QR codes for authorized orders
+    const isAdmin = ['superadmin', 'admin'].includes(req.user.role);
+    const userBrandIds = req.user.brandIds && req.user.brandIds.length > 0 
+      ? req.user.brandIds.map(id => id.toString()) 
+      : (req.user.brandId ? [req.user.brandId.toString()] : (req.user.role === 'company' ? [req.user._id.toString()] : []));
+    const companyId = req.user.companyId || (req.user.role === 'company' ? req.user._id : null);
+    
+    const isBrandMatch = order.brandId && userBrandIds.includes(order.brandId.toString());
+    const isCompanyMatch = order.companyId && companyId && order.companyId.toString() === companyId.toString();
+    const isLegacyMatch = order.company && req.user.role === 'company' && order.company.toString() === req.user._id.toString();
+    const isCreatorMatch = order.createdBy && order.createdBy.toString() === req.user._id.toString();
+
+    if (!isAdmin && !isBrandMatch && !isCompanyMatch && !isLegacyMatch && !isCreatorMatch) {
+      console.log(`🚫 Forbidden: User role is ${req.user.role}, not authorized for this order`);
+      return res.status(403).json({ message: 'You are not authorized to download QR PDFs for this order' });
     }
 
     
@@ -1298,7 +1398,8 @@ router.get('/:id/download', protect, async (req, res) => {
       brandId: order.brandId?._id || order.brandId || '',
       brandLogo: brandDoc?.brandLogo || '',
       company: companyDoc?.companyName || 'N/A',
-      companyName: companyDoc?.companyName || 'N/A'
+      companyName: companyDoc?.companyName || 'N/A',
+      orderObj: order.toObject ? order.toObject() : order
     };
     
     console.log(`📐 PDF Options: ${JSON.stringify(pdfOptions, null, 2)}`);
@@ -1327,6 +1428,20 @@ router.get('/:id/download-csv', protect, async (req, res) => {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ message: 'Order not found' });
     
+    const isAdmin = ['superadmin', 'admin'].includes(req.user.role);
+    const userBrandIds = req.user.brandIds && req.user.brandIds.length > 0 
+      ? req.user.brandIds.map(id => id.toString()) 
+      : (req.user.brandId ? [req.user.brandId.toString()] : (req.user.role === 'company' ? [req.user._id.toString()] : []));
+    const companyId = req.user.companyId || (req.user.role === 'company' ? req.user._id : null);
+    const isBrandMatch = order.brandId && userBrandIds.includes(order.brandId.toString());
+    const isCompanyMatch = order.companyId && companyId && order.companyId.toString() === companyId.toString();
+    const isLegacyMatch = order.company && req.user.role === 'company' && order.company.toString() === req.user._id.toString();
+    const isCreatorMatch = order.createdBy && order.createdBy.toString() === req.user._id.toString();
+
+    if (!isAdmin && !isBrandMatch && !isCompanyMatch && !isLegacyMatch && !isCreatorMatch) {
+      return res.status(403).json({ message: 'Not authorized for this order' });
+    }
+
     if (!order.qrCodesGenerated) {
       return res.status(400).json({ message: 'QR codes not generated yet' });
     }
@@ -1338,8 +1453,7 @@ router.get('/:id/download-csv', protect, async (req, res) => {
 
     let csvContent = 'Serial Number,QR Code,Product Name,Batch No\n';
     
-    // We need to find the serial numbers. Wait, Product model doesn't store the physical BlankQr serial number directly!
-    // But we can find the BlankQrs that are assigned to these products.
+    // We need to find the serial numbers.
     const productIds = products.map(p => p._id);
     const BlankQr = require('../models/BlankQr');
     const blankQrs = await BlankQr.find({ assignedToProduct: { $in: productIds } });
@@ -1370,8 +1484,19 @@ router.get('/:id/download-images', protect, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ message: 'Order not found' });
-    if (!['superadmin', 'admin'].includes(req.user.role)) {
-      return res.status(403).json({ message: 'Not authorized' });
+    
+    const isAdmin = ['superadmin', 'admin'].includes(req.user.role);
+    const userBrandIds = req.user.brandIds && req.user.brandIds.length > 0 
+      ? req.user.brandIds.map(id => id.toString()) 
+      : (req.user.brandId ? [req.user.brandId.toString()] : (req.user.role === 'company' ? [req.user._id.toString()] : []));
+    const companyId = req.user.companyId || (req.user.role === 'company' ? req.user._id : null);
+    const isBrandMatch = order.brandId && userBrandIds.includes(order.brandId.toString());
+    const isCompanyMatch = order.companyId && companyId && order.companyId.toString() === companyId.toString();
+    const isLegacyMatch = order.company && req.user.role === 'company' && order.company.toString() === req.user._id.toString();
+    const isCreatorMatch = order.createdBy && order.createdBy.toString() === req.user._id.toString();
+
+    if (!isAdmin && !isBrandMatch && !isCompanyMatch && !isLegacyMatch && !isCreatorMatch) {
+      return res.status(403).json({ message: 'Not authorized for this order' });
     }
     if (!order.qrCodesGenerated) {
       return res.status(400).json({ message: 'QR codes not generated yet' });

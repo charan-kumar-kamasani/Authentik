@@ -389,7 +389,7 @@ export default function GenerateQrs() {
         }
       }
     }
-    setCurrentStep(prev => Math.min(prev + 1, 7));
+    setCurrentStep(prev => Math.min(prev + 1, 8));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -1510,7 +1510,7 @@ export default function GenerateQrs() {
                 <input type="text" className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium" placeholder="Enter manufacturer name" value={supplyChain.manufacturerName} onChange={(e) => setSupplyChain({...supplyChain, manufacturerName: e.target.value})} />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-slate-700 ml-1">Manufacturing Unit / Plant <span className="text-red-500">*</span></label>
+                <label className="text-sm font-bold text-slate-700 ml-1">Manufacturing Unit / Plant</label>
                 <select className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium" value={supplyChain.manufacturingUnit} onChange={(e) => setSupplyChain({...supplyChain, manufacturingUnit: e.target.value})}>
                   <option value="">Select unit / plant</option>
                   <option value="Unit 1">Unit 1</option>
@@ -1518,23 +1518,23 @@ export default function GenerateQrs() {
                 </select>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-slate-700 ml-1">Manufacturing Location <span className="text-red-500">*</span></label>
+                <label className="text-sm font-bold text-slate-700 ml-1">Manufacturing Location</label>
                 <input type="text" className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium" placeholder="Enter city / state" value={supplyChain.manufacturingLocation} onChange={(e) => setSupplyChain({...supplyChain, manufacturingLocation: e.target.value})} />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-slate-700 ml-1">Manufacturing Date <span className="text-red-500">*</span></label>
+                <label className="text-sm font-bold text-slate-700 ml-1">Manufacturing Date</label>
                 <input type="date" className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium" value={supplyChain.manufacturingDate} onChange={(e) => setSupplyChain({...supplyChain, manufacturingDate: e.target.value})} />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-slate-700 ml-1">Batch / Lot Number <span className="text-red-500">*</span></label>
+                <label className="text-sm font-bold text-slate-700 ml-1">Batch / Lot Number</label>
                 <input type="text" className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium" placeholder="Enter batch / lot number" value={supplyChain.batchNumber} onChange={(e) => setSupplyChain({...supplyChain, batchNumber: e.target.value})} />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-slate-700 ml-1">SKU / Product Code <span className="text-red-500">*</span></label>
+                <label className="text-sm font-bold text-slate-700 ml-1">SKU / Product Code</label>
                 <input type="text" className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium" placeholder="Enter SKU / product code" value={supplyChain.skuCode} onChange={(e) => setSupplyChain({...supplyChain, skuCode: e.target.value})} />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-slate-700 ml-1">Production Quantity <span className="text-red-500">*</span></label>
+                <label className="text-sm font-bold text-slate-700 ml-1">Production Quantity</label>
                 <div className="flex gap-2">
                   <input type="number" className="w-2/3 px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium" placeholder="Enter quantity" value={supplyChain.productionQuantity} onChange={(e) => setSupplyChain({...supplyChain, productionQuantity: e.target.value})} />
                   <select className="w-1/3 px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium" value={supplyChain.productionQuantityUnit} onChange={(e) => setSupplyChain({...supplyChain, productionQuantityUnit: e.target.value})}>
@@ -1545,7 +1545,7 @@ export default function GenerateQrs() {
                 </div>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-slate-700 ml-1">Country of Manufacture <span className="text-red-500">*</span></label>
+                <label className="text-sm font-bold text-slate-700 ml-1">Country of Manufacture</label>
                 <select className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium" value={supplyChain.countryOfManufacture} onChange={(e) => setSupplyChain({...supplyChain, countryOfManufacture: e.target.value})}>
                   <option value="">Select country</option>
                   <option value="India">India</option>
@@ -1564,7 +1564,7 @@ export default function GenerateQrs() {
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-slate-700 ml-1">Raw Material Source <span className="text-red-500">*</span></label>
+                <label className="text-sm font-bold text-slate-700 ml-1">Raw Material Source</label>
                 <select className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium" value={supplyChain.rawMaterialSource} onChange={(e) => setSupplyChain({...supplyChain, rawMaterialSource: e.target.value})}>
                   <option value="">Select source</option>
                   <option value="Farm A">Farm A</option>
@@ -1572,7 +1572,7 @@ export default function GenerateQrs() {
                 </select>
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-slate-700 ml-1">Country of Origin <span className="text-red-500">*</span></label>
+                <label className="text-sm font-bold text-slate-700 ml-1">Country of Origin</label>
                 <select className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium" value={supplyChain.countryOfOrigin} onChange={(e) => setSupplyChain({...supplyChain, countryOfOrigin: e.target.value})}>
                   <option value="">Select country</option>
                   <option value="India">India</option>
@@ -1607,15 +1607,15 @@ export default function GenerateQrs() {
                 <input type="text" className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium" placeholder="Enter city / state" value={supplyChain.processingLocation} onChange={(e) => setSupplyChain({...supplyChain, processingLocation: e.target.value})} />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-slate-700 ml-1">Packaging Unit <span className="text-red-500">*</span></label>
+                <label className="text-sm font-bold text-slate-700 ml-1">Packaging Unit</label>
                 <input type="text" className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium" placeholder="Enter packaging unit" value={supplyChain.packagingUnit} onChange={(e) => setSupplyChain({...supplyChain, packagingUnit: e.target.value})} />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-slate-700 ml-1">Packaging Location <span className="text-red-500">*</span></label>
+                <label className="text-sm font-bold text-slate-700 ml-1">Packaging Location</label>
                 <input type="text" className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium" placeholder="Enter city / state" value={supplyChain.packagingLocation} onChange={(e) => setSupplyChain({...supplyChain, packagingLocation: e.target.value})} />
               </div>
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-slate-700 ml-1">Packaging Date <span className="text-red-500">*</span></label>
+                <label className="text-sm font-bold text-slate-700 ml-1">Packaging Date</label>
                 <input type="date" className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium" value={supplyChain.packagingDate} onChange={(e) => setSupplyChain({...supplyChain, packagingDate: e.target.value})} />
               </div>
               <div className="flex flex-col gap-1.5">
@@ -1653,7 +1653,7 @@ export default function GenerateQrs() {
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-bold text-slate-700 ml-1">Dispatch Location <span className="text-red-500">*</span></label>
+                <label className="text-sm font-bold text-slate-700 ml-1">Dispatch Location</label>
                 <input type="text" className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-900 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-medium" placeholder="Enter city / state" value={supplyChain.dispatchLocation} onChange={(e) => setSupplyChain({...supplyChain, dispatchLocation: e.target.value})} />
               </div>
               <div className="flex flex-col gap-1.5">

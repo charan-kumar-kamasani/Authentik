@@ -830,8 +830,8 @@ const OrderManagement = () => {
                       {order.status === 'Pending Authorization' && (role === 'company' || role === 'authorizer') && (
                         <ActionBtn onClick={() => handleAction(order._id, 'authorize')} icon={ShieldCheck} label="Authorize" color="violet" />
                       )}
-                      {/* Process */}
-                      {order.status === 'Authorized' && (role === 'admin' || role === 'superadmin') && (
+                      {/* Process — product-level orders only (batch-level orders skip superadmin approval) */}
+                      {order.status === 'Authorized' && order.qrType !== 'batch' && (role === 'admin' || role === 'superadmin') && (
                         <ActionBtn onClick={() => handleAction(order._id, 'process')} icon={Settings} label="Process & Generate" color="blue" />
                       )}
                       {/* Prepare Dispatch */}
@@ -865,8 +865,8 @@ const OrderManagement = () => {
                           }
                         }} icon={Edit} label="Edit" color="slate" />
                       )}
-                      {/* PDF — visible for superadmin/admin until order is marked Received, and only after authoriser approval */}
-                      {order.status !== 'Received' && !['Pending Authorization', 'Rejected'].includes(order.status) && (role === 'superadmin' || role === 'admin') && (
+                      {/* PDF / QRs Download — visible for superadmin, admin, authorizer, company, and creator once order is authorized/processed or for batch orders */}
+                      {(!['Pending Authorization', 'Rejected'].includes(order.status) || order.qrType === 'batch') && (
                         <ActionBtn onClick={() => setDownloadModal(order._id)} icon={FileDown} label="Download QRs" color="slate" />
                       )}
                       {/* Mobile Preview Action */}
