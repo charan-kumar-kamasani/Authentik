@@ -403,17 +403,10 @@ function ResultAuthentic({ data }: { data: any }) {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full border border-dashed border-white/30 pointer-events-none animate-[spin_15s_linear_infinite]" />
         
         {/* Top Header Row */}
-        <div className="flex items-center justify-between mb-4 relative z-50">
+        <div className="flex items-center justify-between mb-2 relative z-50">
           <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-white hover:opacity-80 transition-opacity">
             <ChevronLeft className="w-7 h-7" strokeWidth={2} />
           </button>
-          <div className="h-7 flex items-center justify-center">
-            {brandLogo ? (
-              <img src={brandLogo} alt={companyName} className="h-6 md:h-7 max-w-[120px] object-contain" />
-            ) : (
-              <img src={authenticIcon} alt="Authentiks Logo" className="h-6 md:h-7 object-contain filter brightness-0 invert" />
-            )}
-          </div>
           <button onClick={handleShare} className="p-1 -mr-1 text-white hover:opacity-80 transition-opacity">
             <Share className="w-6 h-6" strokeWidth={2} />
           </button>
@@ -421,7 +414,7 @@ function ResultAuthentic({ data }: { data: any }) {
 
         {/* Dynamic Header Section (Batch vs Product) */}
         {isBatchQr ? (
-          <div className="flex flex-col items-center relative z-10 pt-0 pb-2 animate-[slide-up_0.5s_ease-out]">
+          <div className="flex flex-col items-center relative z-10 pt-0 pb-8 animate-[slide-up_0.5s_ease-out]">
             <div className="w-14 h-14 mb-2 flex items-center justify-center">
               {brandLogo ? (
                 <img src={brandLogo} alt={companyName} className="w-full h-full object-contain drop-shadow-md" />
@@ -433,10 +426,10 @@ function ResultAuthentic({ data }: { data: any }) {
               <Layers size={12} className="text-[#4CC9F0]" />
               BATCH DETAILS & INFORMATION
             </div>
-            <h2 className="text-white text-[19px] font-extrabold tracking-tight mb-2 text-center leading-tight">Batch Record Details</h2>
+            <h2 className="text-white text-[19px] font-extrabold tracking-tight text-center leading-tight">Batch Record Details</h2>
           </div>
         ) : (
-          <div className="flex flex-col items-center relative z-10 top-[-20px] animate-[slide-up_0.5s_ease-out]">
+          <div className="flex flex-col items-center relative z-10 pt-0 pb-8 animate-[slide-up_0.5s_ease-out]">
             <div className="w-16 h-16 mb-2 flex items-center justify-center">
               {brandLogo ? (
                 <img src={brandLogo} alt={companyName} className="w-full h-full object-contain drop-shadow-xl" />
