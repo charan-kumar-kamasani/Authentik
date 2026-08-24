@@ -148,6 +148,7 @@ function ResultAuthentic({ data }: { data: any }) {
   console.log("[WARRANTY DEBUG FRONTEND] condition check:", !!(data.warranty && (data.warranty.duration || data.warranty.warrantyType)));
 
   const companyName =  data.brand  ||data.companyName || data.company || data.manufacturer || data.productId?.brand || "-";
+  const brandLogo = data.brandLogo || data.logo || data.companyLogo || data.brandId?.logo || data.brandId?.brandLogo || productObj.brandLogo || productObj.logo || productObj.companyLogo || orderObj.brandLogo || orderObj.logo || orderObj.companyLogo;
 
   const extractedIngredients = data.ingredients || productObj.ingredients || orderObj.ingredients || templateObj.ingredients || null;
   const extractedCertificates = (productObj.certificates && productObj.certificates.length > 0) ? productObj.certificates : ((orderObj.certificates && orderObj.certificates.length > 0) ? orderObj.certificates : (templateObj.certificates || data.certificates || []));
@@ -407,7 +408,11 @@ function ResultAuthentic({ data }: { data: any }) {
             <ChevronLeft className="w-7 h-7" strokeWidth={2} />
           </button>
           <div className="h-7 flex items-center justify-center">
-            <img src={authenticIcon} alt="Authentiks Logo" className="h-6 md:h-7 object-contain filter brightness-0 invert" />
+            {brandLogo ? (
+              <img src={brandLogo} alt={companyName} className="h-6 md:h-7 max-w-[120px] object-contain" />
+            ) : (
+              <img src={authenticIcon} alt="Authentiks Logo" className="h-6 md:h-7 object-contain filter brightness-0 invert" />
+            )}
           </div>
           <button onClick={handleShare} className="p-1 -mr-1 text-white hover:opacity-80 transition-opacity">
             <Share className="w-6 h-6" strokeWidth={2} />
@@ -418,7 +423,11 @@ function ResultAuthentic({ data }: { data: any }) {
         {isBatchQr ? (
           <div className="flex flex-col items-center relative z-10 pt-0 pb-2 animate-[slide-up_0.5s_ease-out]">
             <div className="w-14 h-14 mb-2 flex items-center justify-center">
-              <img src={authenticIcon} alt="Authentiks Logo" className="w-full h-full object-contain filter brightness-0 invert drop-shadow-md" />
+              {brandLogo ? (
+                <img src={brandLogo} alt={companyName} className="w-full h-full object-contain drop-shadow-md" />
+              ) : (
+                <img src={authenticIcon} alt="Authentiks Logo" className="w-full h-full object-contain filter brightness-0 invert drop-shadow-md" />
+              )}
             </div>
             <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-[10px] font-bold uppercase tracking-wider mb-2 backdrop-blur-md shadow-sm">
               <Layers size={12} className="text-[#4CC9F0]" />
@@ -429,7 +438,11 @@ function ResultAuthentic({ data }: { data: any }) {
         ) : (
           <div className="flex flex-col items-center relative z-10 top-[-20px] animate-[slide-up_0.5s_ease-out]">
             <div className="w-16 h-16 mb-2 flex items-center justify-center">
-               <img src={authenticIcon} alt="Authentiks" className="w-full h-full object-contain filter brightness-0 invert drop-shadow-xl" />
+              {brandLogo ? (
+                <img src={brandLogo} alt={companyName} className="w-full h-full object-contain drop-shadow-xl" />
+              ) : (
+                <img src={authenticIcon} alt="Authentiks" className="w-full h-full object-contain filter brightness-0 invert drop-shadow-xl" />
+              )}
             </div>
             <h2 className="text-white text-[24px] font-bold tracking-tight mb-1.5">Authentic Product</h2>
             <p className="text-[#B3C8F9] text-[13px] font-medium text-center max-w-[240px] leading-relaxed">
@@ -440,7 +453,7 @@ function ResultAuthentic({ data }: { data: any }) {
       </div>
 
       {/* Main Scrollable Content */}
-      <div className={`flex-1 px-4 ${isBatchQr ? 'mt-2' : '-mt-10'} relative z-20 flex flex-col gap-4 pb-10`}>
+      <div className="flex-1 px-4 -mt-6 relative z-20 flex flex-col gap-4 pb-10">
         
         {/* Product Info Card */}
         <div className="bg-white rounded-[24px] p-5 shadow-[0_4px_25px_rgba(0,0,0,0.06)] flex gap-4">
@@ -482,23 +495,6 @@ function ResultAuthentic({ data }: { data: any }) {
             )}
           </div>
         </div>
-
-        {/* Batch Info Pill Strip (when isBatchQr or batchNo present) */}
-        {isBatchQr && (
-          <div className="bg-indigo-50/80 border border-indigo-100/80 rounded-2xl px-4 py-3 flex items-center justify-between text-xs font-semibold text-indigo-900 shadow-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0">
-                <Layers size={13} />
-              </div>
-              <span className="font-bold">Batch No. {batchNo}</span>
-            </div>
-            <div className="text-[11px] text-indigo-600/80 font-medium">
-              {mfdDate !== 'N/A' && <span>Mfd: {mfdDate}</span>}
-              {mfdDate !== 'N/A' && expDate !== 'N/A' && <span className="mx-1.5">|</span>}
-              {expDate !== 'N/A' && <span>Exp: {expDate}</span>}
-            </div>
-          </div>
-        )}
 
         {/* Tracking Grid */}
         <div className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex justify-between divide-x divide-slate-100">
