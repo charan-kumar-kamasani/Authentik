@@ -397,27 +397,19 @@ function ResultAuthentic({ data }: { data: any }) {
       
       {/* Top Blue Header Section */}
       <div className="bg-[#01227E] pt-4 px-5 relative rounded-b-[40px] overflow-hidden">
-        {/* Subtle glowing effect behind shield */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-[#105DE4] rounded-full opacity-40 blur-[40px] pointer-events-none" />
-        
-        {/* Animated Rings & Expanding Ping */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full border-[3px] border-[#105DE4]/40 pointer-events-none animate-ping" style={{ animationDuration: '3s' }} />
-        
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full border border-dashed border-white/30 pointer-events-none animate-[spin_15s_linear_infinite]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full border border-dashed border-white/20 pointer-events-none animate-[spin_20s_linear_infinite_reverse]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] aspect-square rounded-full border border-dashed border-white/10 pointer-events-none animate-[spin_25s_linear_infinite]" />
-        
-        {/* Floating Sparkles/Particles */}
-        <div className="absolute top-[30%] left-[20%] w-6 h-6 opacity-40 text-[#4CC9F0] animate-pulse" style={{ animationDuration: '2s' }}>✨</div>
-        <div className="absolute top-[20%] right-[25%] w-8 h-8 opacity-40 text-[#4CC9F0] animate-bounce" style={{ animationDuration: '3s' }}>✨</div>
-        <div className="absolute bottom-[40%] right-[15%] w-5 h-5 opacity-40 text-[#4CC9F0] animate-pulse" style={{ animationDuration: '1.5s', animationDelay: '0.5s' }}>✨</div>
         
         {/* Top Header Row */}
-        <div className="flex items-center justify-between mb-6 relative z-50">
-          <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-white">
+        <div className="flex items-center justify-between mb-4 relative z-50">
+          <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-white hover:opacity-80 transition-opacity">
             <ChevronLeft className="w-7 h-7" strokeWidth={2} />
           </button>
-          <button onClick={handleShare} className="p-1 -mr-1 text-white">
+          <div className="h-7 flex items-center justify-center">
+            <img src={authenticIcon} alt="Authentiks Logo" className="h-6 md:h-7 object-contain filter brightness-0 invert" />
+          </div>
+          <button onClick={handleShare} className="p-1 -mr-1 text-white hover:opacity-80 transition-opacity">
             <Share className="w-6 h-6" strokeWidth={2} />
           </button>
         </div>
@@ -425,30 +417,19 @@ function ResultAuthentic({ data }: { data: any }) {
         {/* Dynamic Header Section (Batch vs Product) */}
         {isBatchQr ? (
           <div className="flex flex-col items-center relative z-10 pt-0 pb-2 animate-[slide-up_0.5s_ease-out]">
+            <div className="w-14 h-14 mb-2 flex items-center justify-center">
+              <img src={authenticIcon} alt="Authentiks Logo" className="w-full h-full object-contain filter brightness-0 invert drop-shadow-md" />
+            </div>
             <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-[10px] font-bold uppercase tracking-wider mb-2 backdrop-blur-md shadow-sm">
               <Layers size={12} className="text-[#4CC9F0]" />
               BATCH DETAILS & INFORMATION
             </div>
-            
-            <h2 className="text-white text-[19px] font-extrabold tracking-tight mb-2 text-center leading-tight">
-              Batch Record Details
-            </h2>
-
-            <div className="flex items-center justify-center gap-2 flex-wrap max-w-[340px]">
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 backdrop-blur-md text-white text-[10px] font-semibold">
-                <RefreshCcw size={11} className="text-[#4CC9F0]" />
-                Open for Multiple Scans
-              </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 border border-white/15 backdrop-blur-md text-white text-[10px] font-semibold">
-                <Layers size={11} className="text-[#4CC9F0]" />
-                Complete Batch Info
-              </span>
-            </div>
+            <h2 className="text-white text-[19px] font-extrabold tracking-tight mb-2 text-center leading-tight">Batch Record Details</h2>
           </div>
         ) : (
-          <div className="flex flex-col items-center relative z-10 top-[-50px] animate-[slide-up_0.5s_ease-out]">
-            <div className="w-20 h-20 animate-bounce" style={{ animationDuration: '2s' }}>
-               <img src={authenticIcon} alt="Authentic" className="w-full h-full object-contain drop-shadow-xl" />
+          <div className="flex flex-col items-center relative z-10 top-[-20px] animate-[slide-up_0.5s_ease-out]">
+            <div className="w-16 h-16 mb-2 flex items-center justify-center">
+               <img src={authenticIcon} alt="Authentiks" className="w-full h-full object-contain filter brightness-0 invert drop-shadow-xl" />
             </div>
             <h2 className="text-white text-[24px] font-bold tracking-tight mb-1.5">Authentic Product</h2>
             <p className="text-[#B3C8F9] text-[13px] font-medium text-center max-w-[240px] leading-relaxed">
@@ -680,49 +661,7 @@ function ResultAuthentic({ data }: { data: any }) {
             )}
           </AccordionItem>
 
-          {/* 4b. Supply Chain Details */}
-          {(data.supplyChain || productObj.supplyChain || orderObj.supplyChain) && (
-            <AccordionItem 
-              title="Supply Chain Details" 
-              subtitle="Manufacturing, sourcing, and logistics" 
-              icon={Truck} 
-              isOpen={openSection === 'Supply Chain Details'} 
-              onToggle={() => setOpenSection(openSection === 'Supply Chain Details' ? '' : 'Supply Chain Details')}
-            >
-              {(() => {
-                const sc = data.supplyChain || productObj.supplyChain || orderObj.supplyChain;
-                return (
-                  <div className="flex flex-col gap-3">
-                    {sc.manufacturerName && <KeyValueRow label="Manufacturer" value={sc.manufacturerName} />}
-                    {sc.manufacturingUnit && <KeyValueRow label="Manufacturing Unit" value={sc.manufacturingUnit} />}
-                    {sc.manufacturingLocation && <KeyValueRow label="Manufacturing Location" value={sc.manufacturingLocation} />}
-                    {sc.manufacturingDate && <KeyValueRow label="Manufacturing Date" value={sc.manufacturingDate} />}
-                    {sc.batchNumber && <KeyValueRow label="Batch / Lot No." value={sc.batchNumber} />}
-                    {sc.skuCode && <KeyValueRow label="SKU Code" value={sc.skuCode} />}
-                    {sc.productionQuantity && <KeyValueRow label="Production Quantity" value={`${sc.productionQuantity} ${sc.productionQuantityUnit || ''}`} />}
-                    {sc.countryOfManufacture && <KeyValueRow label="Country of Manufacture" value={sc.countryOfManufacture} />}
-                    {sc.rawMaterialSource && <KeyValueRow label="Raw Material Source" value={sc.rawMaterialSource} />}
-                    {sc.countryOfOrigin && <KeyValueRow label="Country of Origin" value={sc.countryOfOrigin} />}
-                    {sc.supplierName && <KeyValueRow label="Supplier" value={sc.supplierName} />}
-                    {sc.certifications && <KeyValueRow label="Certifications" value={sc.certifications} />}
-                    {sc.processingLocation && <KeyValueRow label="Processing Location" value={sc.processingLocation} />}
-                    {sc.packagingUnit && <KeyValueRow label="Packaging Unit" value={sc.packagingUnit} />}
-                    {sc.packagingLocation && <KeyValueRow label="Packaging Location" value={sc.packagingLocation} />}
-                    {sc.packagingDate && <KeyValueRow label="Packaging Date" value={sc.packagingDate} />}
-                    {sc.packagingType && <KeyValueRow label="Packaging Type" value={sc.packagingType} />}
-                    {sc.packSize && <KeyValueRow label="Pack Size" value={sc.packSize} />}
-                    {sc.numberOfUnitsPacked && <KeyValueRow label="Units Packed" value={`${sc.numberOfUnitsPacked} ${sc.numberOfUnitsPackedUnit || ''}`} />}
-                    {sc.dispatchLocation && <KeyValueRow label="Dispatch Location" value={sc.dispatchLocation} />}
-                    {sc.distributorName && <KeyValueRow label="Distributor" value={sc.distributorName} />}
-                    {sc.distributionLocation && <KeyValueRow label="Distribution Region" value={sc.distributionLocation} />}
-                    {sc.modeOfTransport && <KeyValueRow label="Mode of Transport" value={sc.modeOfTransport} />}
-                    {sc.expectedDeliveryDate && <KeyValueRow label="Expected Delivery" value={sc.expectedDeliveryDate} />}
-                    {sc.notes && <KeyValueRow label="Notes" value={sc.notes} />}
-                  </div>
-                );
-              })()}
-            </AccordionItem>
-          )}
+          {/* 4b. Supply Chain Details - Hidden for public users (internal purpose only) */}
 
           {/* 5. Certifications and Lab Tests */}
           <AccordionItem title="Certifications and Lab" subtitle="Verified certificates and lab tests" icon={Award} isOpen={openSection === 'Certifications and Lab'} onToggle={() => setOpenSection(openSection === 'Certifications and Lab' ? '' : 'Certifications and Lab')}>

@@ -865,8 +865,8 @@ const OrderManagement = () => {
                           }
                         }} icon={Edit} label="Edit" color="slate" />
                       )}
-                      {/* PDF / QRs Download — visible for superadmin, admin, authorizer, company, and creator once order is authorized/processed or for batch orders */}
-                      {(!['Pending Authorization', 'Rejected'].includes(order.status) || order.qrType === 'batch') && (
+                      {/* PDF / QRs Download — visible for superadmin, admin, authorizer, company, and creator once order is authorized/processed */}
+                      {!['Pending Authorization', 'Rejected'].includes(order.status) && (
                         <ActionBtn onClick={() => setDownloadModal(order._id)} icon={FileDown} label="Download QRs" color="slate" />
                       )}
                       {/* Mobile Preview Action */}

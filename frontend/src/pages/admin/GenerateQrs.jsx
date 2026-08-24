@@ -378,6 +378,8 @@ export default function GenerateQrs() {
     }));
   }, [formConfig?.variants]);
 
+  const isInternalUser = ['admin', 'superadmin'].includes(role);
+
   const handleNextStep = () => {
     const stepEl = document.getElementById(`step-${currentStep}`);
     if (stepEl) {
@@ -389,12 +391,20 @@ export default function GenerateQrs() {
         }
       }
     }
-    setCurrentStep(prev => Math.min(prev + 1, 8));
+    let nextStep = currentStep + 1;
+    if (!isInternalUser && nextStep === 4) {
+      nextStep = 5;
+    }
+    setCurrentStep(Math.min(nextStep, 8));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handlePrevStep = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 1));
+    let prevStep = currentStep - 1;
+    if (!isInternalUser && prevStep === 4) {
+      prevStep = 3;
+    }
+    setCurrentStep(Math.max(prevStep, 1));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -1031,7 +1041,7 @@ export default function GenerateQrs() {
     { id: 1, title: 'Product Basics', icon: Package },
     { id: 2, title: 'Variants & Specs', icon: LayoutGrid },
     { id: 3, title: 'Dates & Expiry', icon: Calendar },
-    { id: 4, title: 'Supply Chain', icon: Truck },
+    ...(isInternalUser ? [{ id: 4, title: 'Supply Chain', icon: Truck }] : []),
     { id: 5, title: 'Rewards & Offers', icon: Gift },
     { id: 6, title: 'Warranty', icon: Shield },
     { id: 7, title: 'QR Setup', icon: Package },
@@ -1495,7 +1505,8 @@ export default function GenerateQrs() {
         </div> {/* End Step 3 */}
 
         
-        {/* STEP 4: Supply Chain Details */}
+        {/* STEP 4: Supply Chain Details (Internal Purpose Only) */}
+        {isInternalUser && (
         <div id="step-4" className={`col-span-2 flex flex-col gap-8 ${currentStep === 4 ? 'block' : 'hidden'}`}>
           
           {/* 1. Manufacturing Details */}
@@ -1704,6 +1715,7 @@ export default function GenerateQrs() {
           </div>
 
         </div>
+        )}
 
         {/* STEP 5: Rewards & Offers */}
         <div id="step-5" className={`col-span-2 grid grid-cols-2 gap-6 ${currentStep === 5 ? 'block' : 'hidden'}`}>

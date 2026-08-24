@@ -164,7 +164,7 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
     }
 
     const isBatch = (req.body.qrType === 'batch');
-    const orderStatus = isBatch ? 'Authorized' : 'Pending Authorization';
+    const orderStatus = 'Pending Authorization';
 
     const order = new Order({
       orderId,
@@ -184,8 +184,8 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       companyId: finalCompanyId,
       company: (req.user.role === 'company') ? req.user._id : (finalCompanyId ? null : null), // legacy
       status: orderStatus,
-      qrCodesGenerated: isBatch,
-      qrGeneratedCount: isBatch ? 1 : 0,
+      qrCodesGenerated: false,
+      qrGeneratedCount: 0,
       // New dynamic fields (sanitize to avoid empty objects)
       mfdOn: (mfdOn && mfdOn.month && mfdOn.year) ? mfdOn : undefined,
       bestBefore: (bestBefore && bestBefore.value) ? bestBefore : undefined,
@@ -229,8 +229,8 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
         totalPointsFund: Number(req.body.loyalty.totalPointsFund) || 0,
         pointsDisbursed: 0,
       } : undefined,
-      // Supply Chain Details (if provided)
-      supplyChain: req.body.supplyChain ? req.body.supplyChain : undefined,
+      // Supply Chain Details (only allowed for internal admin roles)
+      supplyChain: (['admin', 'superadmin'].includes(req.user.role) && req.body.supplyChain) ? req.body.supplyChain : undefined,
       // Calculate and save pricing
       amount: (await calculateQrPrice(isBatch ? 1 : quantityNumber)).total,
       subtotal: (await calculateQrPrice(isBatch ? 1 : quantityNumber)).subtotal,
@@ -1318,8 +1318,8 @@ router.put('/:id', protect, authorize('company', 'authorizer', 'creator', 'admin
         pointsDisbursed: order.loyalty?.pointsDisbursed || 0,
       } : undefined;
     }
-    // Update supplyChain if provided
-    if (req.body.supplyChain !== undefined) {
+    // Update supplyChain if provided (internal admin roles only)
+    if (req.body.supplyChain !== undefined && ['admin', 'superadmin'].includes(req.user.role)) {
       order.supplyChain = req.body.supplyChain;
     }
 
