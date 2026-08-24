@@ -417,26 +417,19 @@ function ResultAuthentic({ data }: { data: any }) {
           <div className="flex flex-col relative z-10 pt-2 pb-10 animate-[slide-up_0.5s_ease-out]">
             {/* Main 2-Column Hero Section */}
             <div className="flex items-center gap-3.5 mb-5">
-              {/* Left Column: 3D Shield Badge with Box & Green Refresh Button */}
+              {/* Left Column: 3D Shield Badge with Brand/Authentik Logo & Green Refresh Button */}
               <div className="relative flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 flex items-center justify-center">
                 {/* Outer Glow */}
                 <div className="absolute inset-0 bg-[#4CC9F0]/20 rounded-full blur-xl animate-pulse" style={{ animationDuration: '3s' }} />
                 
                 {/* Shield Box */}
-                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-b from-[#1E40AF]/90 via-[#0F2B7A] to-[#0A194E] border border-[#38BDF8]/40 shadow-[0_0_20px_rgba(16,93,228,0.5)] flex items-center justify-center p-2.5">
+                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-b from-[#1E40AF]/90 via-[#0F2B7A] to-[#0A194E] border border-[#38BDF8]/40 shadow-[0_0_20px_rgba(16,93,228,0.5)] flex items-center justify-center p-3">
                   <div className="relative w-full h-full flex items-center justify-center">
-                    {/* Shield outline SVG */}
-                    <svg viewBox="0 0 24 24" fill="none" className="w-full h-full text-[#38BDF8] filter drop-shadow-[0_0_6px_rgba(56,189,248,0.6)]" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                    </svg>
-                    {/* Box Icon inside Shield */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <svg viewBox="0 0 24 24" fill="none" className="w-8 h-8 sm:w-9 sm:h-9 text-white drop-shadow-md" stroke="currentColor" strokeWidth="1.8">
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                        <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
-                        <line x1="12" y1="22.08" x2="12" y2="12" />
-                      </svg>
-                    </div>
+                    {brandLogo ? (
+                      <img src={brandLogo} alt={companyName} className="w-full h-full object-contain drop-shadow-md" />
+                    ) : (
+                      <img src={authenticIcon} alt="Authentiks Logo" className="w-full h-full object-contain drop-shadow-md" />
+                    )}
                   </div>
 
                   {/* Green Circular Refresh Badge */}
