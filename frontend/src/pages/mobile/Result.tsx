@@ -419,7 +419,7 @@ function ResultAuthentic({ data }: { data: any }) {
               {brandLogo ? (
                 <img src={brandLogo} alt={companyName} className="w-full h-full object-contain drop-shadow-md" />
               ) : (
-                <img src={authenticIcon} alt="Authentiks Logo" className="w-full h-full object-contain filter brightness-0 invert drop-shadow-md" />
+                <img src={authenticIcon} alt="Authentiks Logo" className="w-full h-full object-contain drop-shadow-md" />
               )}
             </div>
             <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-200 text-[10px] font-bold uppercase tracking-wider mb-2 backdrop-blur-md shadow-sm">
@@ -434,7 +434,7 @@ function ResultAuthentic({ data }: { data: any }) {
               {brandLogo ? (
                 <img src={brandLogo} alt={companyName} className="w-full h-full object-contain drop-shadow-xl" />
               ) : (
-                <img src={authenticIcon} alt="Authentiks" className="w-full h-full object-contain filter brightness-0 invert drop-shadow-xl" />
+                <img src={authenticIcon} alt="Authentiks" className="w-full h-full object-contain drop-shadow-xl" />
               )}
             </div>
             <h2 className="text-white text-[24px] font-bold tracking-tight mb-1.5">Authentic Product</h2>
