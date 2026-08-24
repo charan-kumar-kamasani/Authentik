@@ -423,7 +423,7 @@ function ResultAuthentic({ data }: { data: any }) {
                 <div className="absolute inset-0 bg-[#4CC9F0]/20 rounded-full blur-xl animate-pulse" style={{ animationDuration: '3s' }} />
                 
                 {/* Shield Box */}
-                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-b from-[#1E40AF]/90 via-[#0F2B7A] to-[#0A194E] border-2 border-white shadow-[0_0_20px_rgba(255,255,255,0.35)] flex items-center justify-center p-3">
+                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white border-2 border-white shadow-[0_0_20px_rgba(255,255,255,0.35)] flex items-center justify-center p-3">
                   <div className="relative w-full h-full flex items-center justify-center">
                     {brandLogo ? (
                       <img src={brandLogo} alt={companyName} className="w-full h-full object-contain drop-shadow-md" />
@@ -489,7 +489,7 @@ function ResultAuthentic({ data }: { data: any }) {
           </div>
         ) : (
           <div className="flex flex-col items-center relative z-10 pt-0 pb-8 animate-[slide-up_0.5s_ease-out]">
-            <div className="w-16 h-16 mb-2 flex items-center justify-center">
+            <div className="w-16 h-16 mb-2 flex items-center justify-center bg-white p-2 rounded-2xl border-2 border-white shadow-lg">
               {brandLogo ? (
                 <img src={brandLogo} alt={companyName} className="w-full h-full object-contain drop-shadow-xl" />
               ) : (
