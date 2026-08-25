@@ -378,7 +378,7 @@ export default function GenerateQrs() {
     }));
   }, [formConfig?.variants]);
 
-  const isInternalUser = ['admin', 'superadmin'].includes(role);
+  const isInternalUser = ['admin', 'superadmin', 'creator', 'authorizer', 'company'].includes(role);
 
   const handleNextStep = () => {
     const stepEl = document.getElementById(`step-${currentStep}`);
