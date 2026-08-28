@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Share, ShieldCheck, Star, ChevronDown, CheckCircle2, ChevronRight, Check, FileText, Info, FlaskConical, Award, BookOpen } from 'lucide-react';
+import { ChevronLeft, Share, ShieldCheck, Star, ChevronDown, CheckCircle2, ChevronRight, Check, FileText, Info, FlaskConical, Award, BookOpen, Globe, HeadphonesIcon, Phone, Mail, ExternalLink, Truck } from 'lucide-react';
 import API_BASE_URL from '../../config/api';
 import ProductHeroHeader from '../../components/ProductHeroHeader';
 import { AccordionItem, KeyValueRow, CertificateViewer } from '../../components/AccordionComponents';
+import { isSupplyChainEnabled } from './SupplyChain';
 
 const ProductDetails = () => {
   const navigate = useNavigate();
@@ -40,6 +41,22 @@ const ProductDetails = () => {
     }
     const topLinkWithRating = (orderLinks || []).find((l: any) => l.rating);
 
+    const educationContent = (Array.isArray(d.educationContent) && d.educationContent.length > 0)
+      ? d.educationContent
+      : ((Array.isArray(product.educationContent) && product.educationContent.length > 0)
+        ? product.educationContent
+        : ((Array.isArray(order.educationContent) && order.educationContent.length > 0)
+          ? order.educationContent
+          : (Array.isArray(template.educationContent) && template.educationContent.length > 0 ? template.educationContent : [])));
+
+    const certificates = (Array.isArray(d.certificates) && d.certificates.length > 0)
+      ? d.certificates
+      : ((Array.isArray(product.certificates) && product.certificates.length > 0)
+        ? product.certificates
+        : ((Array.isArray(order.certificates) && order.certificates.length > 0)
+          ? order.certificates
+          : (Array.isArray(template.certificates) && template.certificates.length > 0 ? template.certificates : [])));
+
     return {
       ...d,
       productName: product.productName || order.productName || template.productName || d.productName,
@@ -56,6 +73,14 @@ const ProductDetails = () => {
       servingSize: product.servingSize || order.servingSize || template.servingSize || d.servingSize || (product.dynamicFields?.['Serving Size']) || (product.dynamicFields?.['servingSize']),
       keyBenefits: product.keyBenefits || order.keyBenefits || template.keyBenefits || d.keyBenefits,
       additionalInfo: product.additionalInfo || order.additionalInfo || template.additionalInfo || d.additionalInfo || product.dynamicFields?.additionalInfo || order.dynamicFields?.additionalInfo,
+      ingredients: product.ingredients || order.ingredients || template.ingredients || d.ingredients,
+      website: product.website || order.website || template.website || d.website,
+      customerCare: product.customerCare || order.customerCare || template.customerCare || d.customerCare,
+      supportEmail: product.supportEmail || order.supportEmail || template.supportEmail || d.supportEmail,
+      supplyChain: product.supplyChain || order.supplyChain || template.supplyChain || d.supplyChain,
+      showSupplyChain: product.showSupplyChain || order.showSupplyChain || template.showSupplyChain || d.showSupplyChain,
+      educationContent,
+      certificates,
     };
   }, []);
 
@@ -171,7 +196,7 @@ const ProductDetails = () => {
             </AccordionItem>
           )}
 
-          {/* 5. Product Education */}
+          {/* 6. Product Education */}
           {(data.educationContent && data.educationContent.length > 0) && (
             <AccordionItem title="Product Education" subtitle="Discover how to use this product" icon={BookOpen} isOpen={openSection === 'Product Education'} onToggle={() => setOpenSection(openSection === 'Product Education' ? '' : 'Product Education')}>
               <div className="flex flex-col gap-3">
@@ -200,7 +225,73 @@ const ProductDetails = () => {
               </div>
             </AccordionItem>
           )}
+
+          {/* 7. Website */}
+          {Boolean(data.website) && (
+            <AccordionItem title="Website" subtitle="Visit our official store" icon={Globe} isOpen={openSection === 'Website'} onToggle={() => setOpenSection(openSection === 'Website' ? '' : 'Website')}>
+              <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100">
+                <span className="text-[13px] font-medium text-slate-700">{data.website}</span>
+                <a href={data.website.startsWith('http') ? data.website : `https://${data.website}`} target="_blank" rel="noreferrer" className="text-[#105DE4]">
+                  <ExternalLink size={18} />
+                </a>
+              </div>
+            </AccordionItem>
+          )}
+
+          {/* 8. Consumer Support */}
+          {Boolean(data.customerCare || data.supportEmail) && (
+            <AccordionItem title="Consumer Support" subtitle="Get in touch with us" icon={HeadphonesIcon} isOpen={openSection === 'Consumer Support'} onToggle={() => setOpenSection(openSection === 'Consumer Support' ? '' : 'Consumer Support')}>
+              <div className="flex flex-col gap-3">
+                {data.customerCare && (
+                  <a href={`tel:${data.customerCare.replace(/[^0-9]/g, '')}`} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-[#F8FAFC]">
+                     <div className="w-10 h-10 rounded-full bg-blue-100 text-[#105DE4] flex items-center justify-center shrink-0">
+                       <Phone size={18} />
+                     </div>
+                     <div>
+                       <h4 className="text-[13px] font-bold text-[#0B1E36]">Call Us</h4>
+                       <p className="text-[12px] text-slate-500 font-medium">{data.customerCare}</p>
+                     </div>
+                  </a>
+                )}
+                {data.supportEmail && (
+                  <a href={`mailto:${data.supportEmail}`} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-[#F8FAFC]">
+                     <div className="w-10 h-10 rounded-full bg-red-100 text-red-500 flex items-center justify-center shrink-0">
+                       <Mail size={18} />
+                     </div>
+                     <div>
+                       <h4 className="text-[13px] font-bold text-[#0B1E36]">Email Support</h4>
+                       <p className="text-[12px] text-slate-500 font-medium">{data.supportEmail}</p>
+                     </div>
+                  </a>
+                )}
+              </div>
+            </AccordionItem>
+          )}
         </div>
+
+        {/* Supply Chain Details Button */}
+        {isSupplyChainEnabled(data) && (
+          <div className="mb-6">
+            <button
+              onClick={() => navigate('/supply-chain', { state: data })}
+              className="w-full bg-gradient-to-r from-[#0D4E96] via-[#105DE4] to-[#0D4E96] text-white p-3.5 rounded-2xl shadow-md shadow-blue-500/20 hover:shadow-blue-500/30 active:scale-[0.99] transition-all flex items-center justify-between border border-blue-400/30 group"
+            >
+              <div className="flex items-center gap-3 text-left">
+                <div className="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-md flex items-center justify-center shrink-0 border border-white/20 group-hover:scale-105 transition-transform">
+                  <Truck size={20} className="text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[13px] font-bold text-white">Supply Chain Traceability</span>
+                    <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-white/20 text-white tracking-wider uppercase">Live</span>
+                  </div>
+                  <span className="text-[11px] text-blue-100/90 font-medium line-clamp-1">Track origin, batch timeline & quality checkpoints</span>
+                </div>
+              </div>
+              <ChevronRight size={18} className="text-white/80 group-hover:translate-x-0.5 transition-transform shrink-0" />
+            </button>
+          </div>
+        )}
 
         {/* Key Benefits */}
         {benefitsList.length > 0 && (

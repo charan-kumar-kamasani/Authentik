@@ -609,6 +609,19 @@ export default function GenerateQrs() {
       delete cleanedDynamicFields['marketedBy'];
       delete cleanedDynamicFields['Product Quantity'];
 
+      // Process Supply Chain Supporting Document upload if attached
+      let processedSupplyChain = { ...supplyChain };
+      if (supplyChain.supportingDocument instanceof File) {
+        try {
+          const uploadedDocUrl = await uploadImage(supplyChain.supportingDocument);
+          processedSupplyChain.supportingDocument = uploadedDocUrl;
+          processedSupplyChain.supportingDocumentName = supplyChain.supportingDocument.name;
+        } catch (docErr) {
+          console.error("Error uploading supply chain supporting document:", docErr);
+        }
+      }
+      const hasSupplyChainData = processedSupplyChain && Object.values(processedSupplyChain).some(v => v !== '' && v !== null && v !== undefined);
+
       const orderData = {
         templateId: newQr.templateId,
         productName,
@@ -665,7 +678,8 @@ export default function GenerateQrs() {
           pointsPerScan: Number(loyalty.pointsPerScan) || 0,
           totalPointsFund: Number(loyalty.totalPointsFund) || 0,
         } : undefined,
-        supplyChain: supplyChain,
+        // Supply Chain
+        supplyChain: hasSupplyChainData ? processedSupplyChain : undefined,
       };
 
       return orderData;

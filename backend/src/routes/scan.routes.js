@@ -672,21 +672,31 @@ router.post("/", async (req, res, next) => {
            const template = await ProductTemplate.findOne(query).lean();
            console.log("Found template?", !!template);
            if (template) {
-              fullTemplate = template;
-              templateData.orderLinks = template.orderLinks || [];
-              templateData.price = template.price || null;
-              templateData.mrp = template.mrp || null;
-              templateData.category = template.category || null;
-              templateData.productImage = template.productImage || null;
-              templateData.productInfo = template.productInfo || null;
-              templateData.description = template.description || null;
-              templateData.keyBenefits = template.keyBenefits || null;
-              templateData.dynamicFields = template.dynamicFields || {};
-              templateData.variants = template.variants || [];
-              templateData.educationContent = template.educationContent || [];
-              templateData.supportEmail = template.supportEmail || null;
-              templateData.customerCare = template.customerCare || null;
-           }
+               fullTemplate = template;
+               templateData.orderLinks = template.orderLinks || [];
+               templateData.price = template.price || null;
+               templateData.mrp = template.mrp || null;
+               templateData.category = template.category || null;
+               templateData.productImage = template.productImage || null;
+               templateData.productInfo = template.productInfo || null;
+               templateData.description = template.description || null;
+               templateData.keyBenefits = template.keyBenefits || null;
+               templateData.dynamicFields = template.dynamicFields || {};
+               templateData.variants = template.variants || [];
+               templateData.educationContent = (template.educationContent && template.educationContent.length > 0) ? template.educationContent : [];
+               templateData.supportEmail = template.supportEmail || null;
+               templateData.customerCare = template.customerCare || null;
+               templateData.ingredients = template.ingredients || null;
+               templateData.certificates = template.certificates || [];
+               templateData.additionalInfo = template.additionalInfo || null;
+               templateData.website = template.website || null;
+               templateData.manufacturedBy = template.manufacturedBy || null;
+               templateData.marketedBy = template.marketedBy || null;
+               templateData.countryOfOrigin = template.countryOfOrigin || null;
+               templateData.warranty = template.warranty || null;
+               templateData.bestBefore = template.bestBefore || null;
+               templateData.supplyChain = template.supplyChain || null;
+            }
         }
       } catch (err) {
         console.error("Error fetching scan recommendations:", err);
@@ -742,12 +752,15 @@ router.post("/", async (req, res, next) => {
           bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
           calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
           dynamicFields: (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
-          variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
-          warranty: product.warranty || product.orderId?.warranty || null,
-          supplyChain: product.supplyChain || product.orderId?.supplyChain || null,
-          showSupplyChain: !!process.env.TEST_SUPPLY_SHOW,
+          variants: (product.variants && product.variants.length > 0) ? product.variants : ((product.orderId?.variants && product.orderId.variants.length > 0) ? product.orderId.variants : templateData.variants),
+          ingredients: product.ingredients || product.orderId?.ingredients || templateData.ingredients || null,
+          certificates: (product.certificates && product.certificates.length > 0) ? product.certificates : ((product.orderId?.certificates && product.orderId.certificates.length > 0) ? product.orderId.certificates : (templateData.certificates || [])),
+          additionalInfo: product.additionalInfo || product.orderId?.additionalInfo || templateData.additionalInfo || null,
+          warranty: product.warranty || product.orderId?.warranty || templateData.warranty || null,
+          supplyChain: product.supplyChain || product.orderId?.supplyChain || templateData.supplyChain || null,
+          showSupplyChain: true,
           coupon: product.coupon || product.orderId?.coupon || null,
-          educationContent: product.educationContent || product.orderId?.educationContent || templateData.educationContent || [],
+          educationContent: (product.educationContent && product.educationContent.length > 0) ? product.educationContent : ((product.orderId?.educationContent && product.orderId.educationContent.length > 0) ? product.orderId.educationContent : (templateData.educationContent || [])),
           fieldLabels,
           alreadyReviewed,
           warrantyClaimStatus,
@@ -769,7 +782,6 @@ router.post("/", async (req, res, next) => {
     ======================= */
     if (myPreviousScan) {
       // Don't create another record — just return ORIGINAL for their own product
-      console.log("DEBUG DYNAMIC FIELDS BEFORE SEND:", product.dynamicFields);
     return res.json({
       status: "ORIGINAL",
         data: {
@@ -786,30 +798,33 @@ router.post("/", async (req, res, next) => {
           productImage: product.productImage || product.orderId?.productImage || templateData.productImage,
           category: product.category || product.orderId?.category || templateData.category,
           mrp: product.mrp || product.orderId?.mrp || templateData.mrp,
-          manufacturedBy: product.manufacturedBy || product.orderId?.manufacturedBy,
-          marketedBy: product.marketedBy || product.orderId?.marketedBy,
+          manufacturedBy: product.manufacturedBy || product.orderId?.manufacturedBy || templateData.manufacturedBy,
+          marketedBy: product.marketedBy || product.orderId?.marketedBy || templateData.marketedBy,
           importMarketedBy: product.importMarketedBy || product.orderId?.importMarketedBy,
           importerRegNo: product.importerRegNo || product.orderId?.importerRegNo,
-          countryOfOrigin: product.countryOfOrigin || product.orderId?.countryOfOrigin,
-          website: product.website || product.orderId?.website,
+          countryOfOrigin: product.countryOfOrigin || product.orderId?.countryOfOrigin || templateData.countryOfOrigin,
+          website: product.website || product.orderId?.website || templateData.website,
           supportEmail: product.supportEmail || product.orderId?.supportEmail || product.dynamicFields?.supportEmail || product.orderId?.dynamicFields?.supportEmail || product.warranty?.supportEmail || product.orderId?.warranty?.supportEmail || templateData.supportEmail,
           customerCare: product.customerCare || product.orderId?.customerCare || product.dynamicFields?.customerCare || product.orderId?.dynamicFields?.customerCare || product.warranty?.customerCare || product.orderId?.warranty?.customerCare || templateData.customerCare,
           keyBenefits: product.keyBenefits || product.orderId?.keyBenefits || templateData.keyBenefits,
           mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
           description: product.description || product.orderId?.description || templateData.description,
           productInfo: product.productInfo || product.orderId?.productInfo || templateData.productInfo,
-          bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
+          bestBefore: (product.bestBefore?.value) ? product.bestBefore : (product.orderId?.bestBefore || templateData.bestBefore),
           calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
           dynamicFields: (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && Object.keys(product.orderId.dynamicFields).length > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
           variants: (product.variants && product.variants.length > 0) ? product.variants : ((product.orderId?.variants && product.orderId.variants.length > 0) ? product.orderId.variants : templateData.variants),
-          warranty: product.warranty || product.orderId?.warranty || null,
-          supplyChain: product.supplyChain || product.orderId?.supplyChain || null,
-          showSupplyChain: !!process.env.TEST_SUPPLY_SHOW,
+          ingredients: product.ingredients || product.orderId?.ingredients || templateData.ingredients || null,
+          certificates: (product.certificates && product.certificates.length > 0) ? product.certificates : ((product.orderId?.certificates && product.orderId.certificates.length > 0) ? product.orderId.certificates : (templateData.certificates || [])),
+          additionalInfo: product.additionalInfo || product.orderId?.additionalInfo || templateData.additionalInfo || null,
+          warranty: product.warranty || product.orderId?.warranty || templateData.warranty || null,
+          supplyChain: product.supplyChain || product.orderId?.supplyChain || templateData.supplyChain || null,
+          showSupplyChain: true,
           coupon: product.coupon || product.orderId?.coupon || null,
-          educationContent: product.educationContent || product.orderId?.educationContent || templateData.educationContent || [],
+          educationContent: (product.educationContent && product.educationContent.length > 0) ? product.educationContent : ((product.orderId?.educationContent && product.orderId.educationContent.length > 0) ? product.orderId.educationContent : (templateData.educationContent || [])),
           orderLinks: (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((product.orderId?.orderLinks && product.orderId.orderLinks.length > 0) ? product.orderId.orderLinks : templateData.orderLinks),
           price: product.price || templateData.price,
-        fieldLabels,
+          fieldLabels,
           alreadyReviewed,
           warrantyClaimStatus,
           place,
@@ -878,27 +893,30 @@ router.post("/", async (req, res, next) => {
           productImage: product.productImage || product.orderId?.productImage || templateData.productImage,
           category: product.category || product.orderId?.category || templateData.category,
           mrp: product.mrp || product.orderId?.mrp || templateData.mrp,
-          manufacturedBy: product.manufacturedBy || product.orderId?.manufacturedBy,
-          marketedBy: product.marketedBy || product.orderId?.marketedBy,
+          manufacturedBy: product.manufacturedBy || product.orderId?.manufacturedBy || templateData.manufacturedBy,
+          marketedBy: product.marketedBy || product.orderId?.marketedBy || templateData.marketedBy,
           importMarketedBy: product.importMarketedBy || product.orderId?.importMarketedBy,
           importerRegNo: product.importerRegNo || product.orderId?.importerRegNo,
-          countryOfOrigin: product.countryOfOrigin || product.orderId?.countryOfOrigin,
-          website: product.website || product.orderId?.website,
+          countryOfOrigin: product.countryOfOrigin || product.orderId?.countryOfOrigin || templateData.countryOfOrigin,
+          website: product.website || product.orderId?.website || templateData.website,
           supportEmail: product.supportEmail || product.orderId?.supportEmail || product.dynamicFields?.supportEmail || product.orderId?.dynamicFields?.supportEmail || product.warranty?.supportEmail || product.orderId?.warranty?.supportEmail || templateData.supportEmail,
           customerCare: product.customerCare || product.orderId?.customerCare || product.dynamicFields?.customerCare || product.orderId?.dynamicFields?.customerCare || product.warranty?.customerCare || product.orderId?.warranty?.customerCare || templateData.customerCare,
           keyBenefits: product.keyBenefits || product.orderId?.keyBenefits || templateData.keyBenefits,
           mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
           description: product.description || product.orderId?.description || templateData.description,
           productInfo: product.productInfo || product.orderId?.productInfo || templateData.productInfo,
-          bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
+          bestBefore: (product.bestBefore?.value) ? product.bestBefore : (product.orderId?.bestBefore || templateData.bestBefore),
           calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
           dynamicFields: (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && Object.keys(product.orderId.dynamicFields).length > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
           variants: (product.variants && product.variants.length > 0) ? product.variants : ((product.orderId?.variants && product.orderId.variants.length > 0) ? product.orderId.variants : templateData.variants),
-          warranty: product.warranty || product.orderId?.warranty || null,
-          supplyChain: product.supplyChain || product.orderId?.supplyChain || null,
-          showSupplyChain: !!process.env.TEST_SUPPLY_SHOW,
+          ingredients: product.ingredients || product.orderId?.ingredients || templateData.ingredients || null,
+          certificates: (product.certificates && product.certificates.length > 0) ? product.certificates : ((product.orderId?.certificates && product.orderId.certificates.length > 0) ? product.orderId.certificates : (templateData.certificates || [])),
+          additionalInfo: product.additionalInfo || product.orderId?.additionalInfo || templateData.additionalInfo || null,
+          warranty: product.warranty || product.orderId?.warranty || templateData.warranty || null,
+          supplyChain: product.supplyChain || product.orderId?.supplyChain || templateData.supplyChain || null,
+          showSupplyChain: true,
           coupon: product.coupon || product.orderId?.coupon || null,
-          educationContent: product.educationContent || product.orderId?.educationContent || templateData.educationContent || [],
+          educationContent: (product.educationContent && product.educationContent.length > 0) ? product.educationContent : ((product.orderId?.educationContent && product.orderId.educationContent.length > 0) ? product.orderId.educationContent : (templateData.educationContent || [])),
           orderLinks: (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((product.orderId?.orderLinks && product.orderId.orderLinks.length > 0) ? product.orderId.orderLinks : templateData.orderLinks),
           price: product.price || templateData.price,
           fieldLabels,
@@ -1026,27 +1044,32 @@ router.post("/", async (req, res, next) => {
         productImage: product.productImage || product.orderId?.productImage || templateData.productImage,
         category: product.category || product.orderId?.category || templateData.category,
         mrp: product.mrp || product.orderId?.mrp || templateData.mrp,
-        manufacturedBy: product.manufacturedBy || product.orderId?.manufacturedBy,
-        marketedBy: product.marketedBy || product.orderId?.marketedBy,
+        manufacturedBy: product.manufacturedBy || product.orderId?.manufacturedBy || templateData.manufacturedBy,
+        marketedBy: product.marketedBy || product.orderId?.marketedBy || templateData.marketedBy,
         importMarketedBy: product.importMarketedBy || product.orderId?.importMarketedBy,
         importerRegNo: product.importerRegNo || product.orderId?.importerRegNo,
-        countryOfOrigin: product.countryOfOrigin || product.orderId?.countryOfOrigin,
-        website: product.website || product.orderId?.website,
+        countryOfOrigin: product.countryOfOrigin || product.orderId?.countryOfOrigin || templateData.countryOfOrigin,
+        website: product.website || product.orderId?.website || templateData.website,
         supportEmail: product.supportEmail || product.orderId?.supportEmail || product.dynamicFields?.supportEmail || product.orderId?.dynamicFields?.supportEmail || product.warranty?.supportEmail || product.orderId?.warranty?.supportEmail || templateData.supportEmail,
         customerCare: product.customerCare || product.orderId?.customerCare || product.dynamicFields?.customerCare || product.orderId?.dynamicFields?.customerCare || product.warranty?.customerCare || product.orderId?.warranty?.customerCare || templateData.customerCare,
         mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
         description: product.description || product.orderId?.description || templateData.description,
         productInfo: product.productInfo || product.orderId?.productInfo || templateData.productInfo,
-        bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
+        bestBefore: (product.bestBefore?.value) ? product.bestBefore : (product.orderId?.bestBefore || templateData.bestBefore),
         calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
         dynamicFields: (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && Object.keys(product.orderId.dynamicFields).length > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
         variants: (product.variants && product.variants.length > 0) ? product.variants : ((product.orderId?.variants && product.orderId.variants.length > 0) ? product.orderId.variants : templateData.variants),
-        warranty: product.warranty || product.orderId?.warranty || null,
-          coupon: product.coupon || product.orderId?.coupon || null,
+        ingredients: product.ingredients || product.orderId?.ingredients || templateData.ingredients || null,
+        certificates: (product.certificates && product.certificates.length > 0) ? product.certificates : ((product.orderId?.certificates && product.orderId.certificates.length > 0) ? product.orderId.certificates : (templateData.certificates || [])),
+        additionalInfo: product.additionalInfo || product.orderId?.additionalInfo || templateData.additionalInfo || null,
+        warranty: product.warranty || product.orderId?.warranty || templateData.warranty || null,
+        supplyChain: product.supplyChain || product.orderId?.supplyChain || templateData.supplyChain || null,
+        showSupplyChain: true,
+        coupon: product.coupon || product.orderId?.coupon || null,
         keyBenefits: product.keyBenefits || product.orderId?.keyBenefits || templateData.keyBenefits,
         orderLinks: (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((product.orderId?.orderLinks && product.orderId.orderLinks.length > 0) ? product.orderId.orderLinks : templateData.orderLinks),
         price: product.price || templateData.price,
-        educationContent: product.educationContent || product.orderId?.educationContent || templateData.educationContent || [],
+        educationContent: (product.educationContent && product.educationContent.length > 0) ? product.educationContent : ((product.orderId?.educationContent && product.orderId.educationContent.length > 0) ? product.orderId.educationContent : (templateData.educationContent || [])),
         fieldLabels,
         alreadyReviewed,
         warrantyClaimStatus,

@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, Share, FileText, BookOpen, MessageSquare, ShieldCheck, Gift, ChevronRight, XCircle, AlertTriangle, Headset, Flag, X, ShieldAlert, Calendar, Phone, MapPin, RefreshCcw, ScanLine, CheckCircle2, FlaskConical, Award, Star, ChevronDown, Check, Search, CheckCircle, QrCode, ExternalLink, Mail, Clock, Info, Globe, Truck } from "lucide-react";
+import { ChevronLeft, Share, FileText, BookOpen, MessageSquare, ShieldCheck, Gift, ChevronRight, XCircle, AlertTriangle, Headset, Flag, X, ShieldAlert, Calendar, Phone, MapPin, RefreshCcw, ScanLine, CheckCircle2, FlaskConical, Award, Star, ChevronDown, Check, Search, CheckCircle, QrCode, ExternalLink, Mail, Clock, Info, Globe, Truck, Maximize2 } from "lucide-react";
 import { isSupplyChainEnabled } from "./SupplyChain";
+import ProductImageModal from "../../components/ProductImageModal";
 import authenticIcon from "../../assets/logo-shield.png";
 import fakeIcon from "../../assets/v2/home/header/dangerous.svg";
 
 const DEMO_PRODUCT = {
+  isDemo: true,
   active: true,
   companyName: "ProtiQ Nutrition",
   productName: "PROTIQ Whey Isolate Elite",
@@ -19,6 +21,7 @@ const DEMO_PRODUCT = {
   features: "25 g Protein per Serving\n5.5 g Naturally Occurring BCAAs\n11.7 g EAAs\n0 g Added Sugar\nFast Absorption\nLow Fat & Low Carbs\nGluten Free\nThird-Party Lab Tested\nNo Banned Substances\nMixes Instantly",
   productImage: "/protiq_whey.png",
   category: "Sports Nutrition",
+  showSupplyChain: true,
   dynamicFields: {
     "mrp": "₹3,499 (Incl. of all taxes)",
     "manufacturedBy": "ProtiQ Nutrition Pvt. Ltd.\nBengaluru, Karnataka, India",
@@ -56,7 +59,48 @@ const DEMO_PRODUCT = {
     { name: "ISO 22000 Certified", issuer: "ISO Board", date: "Mar 2025" },
     { name: "Heavy Metal Tested", issuer: "Eurofins", date: "Jul 2026", isLabTest: true },
     { name: "Every Batch Verified", issuer: "ProtiQ Labs", date: "Jul 2026", isLabTest: true }
-  ]
+  ],
+  educationContent: [
+    {
+      title: "How to Consume for Best Results",
+      description: "Mix 1 scoop (30g) in 200ml chilled water or skimmed milk. Consume immediately post-workout.",
+      url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    },
+    {
+      title: "Authenticity & Protein Purity Certificate",
+      description: "Learn how Eurofins certifies each batch for zero adulteration and heavy metal compliance.",
+      url: "https://authentiks.in"
+    }
+  ],
+  supplyChain: {
+    manufacturerName: "ProtiQ Nutrition Processing Facility",
+    manufacturingUnit: "Unit 3 - Advanced Dairy & Whey Processing",
+    manufacturingLocation: "Bengaluru, Karnataka, India",
+    manufacturingDate: "01 Jul 2026",
+    batchNumber: "PTQ250701",
+    skuCode: "PTQ-WI-907-DRC",
+    productionQuantity: "5,000",
+    productionQuantityUnit: "Jars",
+    countryOfManufacture: "India",
+    rawMaterialSource: "Grade-A Grass-Fed Bovine Whey from Certified Farms",
+    countryOfOrigin: "India",
+    supplierName: "Apex Dairy & Protein Co.",
+    certifications: "FSSAI, ISO 22000, US-FDA Registered",
+    processingLocation: "Sterile Blending Line 2, Bengaluru",
+    packagingUnit: "Unit 3 Automated Packaging",
+    packagingLocation: "Bengaluru, Karnataka",
+    packagingDate: "02 Jul 2026",
+    packagingType: "HDPE Food-Grade Recyclable Tub",
+    packSize: "907 g (2 lbs)",
+    numberOfUnitsPacked: "5,000",
+    numberOfUnitsPackedUnit: "Jars",
+    dispatchLocation: "Central Distribution Hub, Bengaluru",
+    distributorName: "Authentik Express Cold Logistics",
+    distributionLocation: "Pan India",
+    modeOfTransport: "Climate-Controlled Express Road Freight",
+    expectedDeliveryDate: "05 Jul 2026",
+    notes: "Batch passed all Eurofins purity and microbiological safety clearances."
+  }
 };
 
 
@@ -135,6 +179,7 @@ function ResultAuthentic({ data }) {
   const [showCertsModal, setShowCertsModal] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
 
+  const [showImageModal, setShowImageModal] = useState(false);
   const [showWarrantyModal, setShowWarrantyModal] = useState(false);
   const [warrantyClaiming, setWarrantyClaiming] = useState(false);
   const [warrantyClaimStatus, setWarrantyClaimStatus] = useState(null);
@@ -202,8 +247,15 @@ function ResultAuthentic({ data }) {
         
         {/* Product Info Card */}
         <div className="bg-white rounded-[24px] p-5 shadow-[0_4px_25px_rgba(0,0,0,0.06)] flex gap-4">
-          <div className="w-[100px] h-[120px] flex-shrink-0 flex items-center justify-center">
-             <img src={productImage} alt={productName} className="w-full h-full object-contain drop-shadow-md" />
+          <div 
+            onClick={() => setShowImageModal(true)}
+            className="w-[100px] h-[120px] flex-shrink-0 flex items-center justify-center cursor-pointer group relative"
+            title="Tap to view full image"
+          >
+             <img src={productImage} alt={productName} className="w-full h-full object-contain drop-shadow-md group-hover:scale-105 transition-transform" />
+             <div className="absolute bottom-0 right-0 bg-slate-900/60 backdrop-blur-md text-white p-1 rounded-full opacity-80 group-hover:opacity-100 transition-opacity">
+               <Maximize2 size={11} strokeWidth={2.5} />
+             </div>
           </div>
           <div className="flex flex-col flex-1 py-1 justify-center">
             <div className="flex items-center gap-1.5 mb-1.5">
@@ -273,127 +325,181 @@ function ResultAuthentic({ data }) {
           </AccordionItem>
 
           {/* 2. Description */}
-          <AccordionItem title="Description" subtitle="About this product" icon={Info}>
-            <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">{data.description}</p>
-            
-            <h4 className="text-[13px] font-bold text-[#0B1E36] mt-4 mb-2">Key Highlights</h4>
-            <div className="flex flex-col gap-2">
-               {data.features.split('\n').map((feature, idx) => (
-                 <div key={idx} className="flex items-start gap-2">
-                   <CheckCircle2 size={16} className="text-[#105DE4] shrink-0 mt-0.5" />
-                   <span className="text-[13px] font-medium text-slate-700">{feature}</span>
-                 </div>
-               ))}
-            </div>
+          {Boolean(data.description || data.keyBenefits) && (
+            <AccordionItem title="Description" subtitle="About this product" icon={Info}>
+              {data.description && <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">{data.description}</p>}
+              
+              {data.features && (
+                <>
+                  <h4 className="text-[13px] font-bold text-[#0B1E36] mt-4 mb-2">Key Highlights</h4>
+                  <div className="flex flex-col gap-2">
+                     {data.features.split('\n').map((feature, idx) => (
+                       <div key={idx} className="flex items-start gap-2">
+                         <CheckCircle2 size={16} className="text-[#105DE4] shrink-0 mt-0.5" />
+                         <span className="text-[13px] font-medium text-slate-700">{feature}</span>
+                       </div>
+                     ))}
+                  </div>
+                </>
+              )}
 
-            <h4 className="text-[13px] font-bold text-[#0B1E36] mt-4 mb-2">Benefits</h4>
-            <div className="flex flex-col gap-2">
-               {data.keyBenefits.split('\n').map((benefit, idx) => (
-                 <div key={idx} className="flex items-start gap-2">
-                   <CheckCircle2 size={16} className="text-[#105DE4] shrink-0 mt-0.5" />
-                   <span className="text-[13px] font-medium text-slate-700">{benefit}</span>
-                 </div>
-               ))}
-            </div>
+              {data.keyBenefits && (
+                <>
+                  <h4 className="text-[13px] font-bold text-[#0B1E36] mt-4 mb-2">Benefits</h4>
+                  <div className="flex flex-col gap-2">
+                     {data.keyBenefits.split('\n').map((benefit, idx) => (
+                       <div key={idx} className="flex items-start gap-2">
+                         <CheckCircle2 size={16} className="text-[#105DE4] shrink-0 mt-0.5" />
+                         <span className="text-[13px] font-medium text-slate-700">{benefit}</span>
+                       </div>
+                     ))}
+                  </div>
+                </>
+              )}
 
-            <h4 className="text-[13px] font-bold text-[#0B1E36] mt-4 mb-2">Who Is It For?</h4>
-            <div className="flex flex-wrap gap-2">
-               {data.whoIsItFor.map((item, idx) => (
-                 <span key={idx} className="px-2.5 py-1 bg-blue-50 text-[#105DE4] text-[11px] font-bold rounded-lg border border-blue-100">
-                   {item}
-                 </span>
-               ))}
-            </div>
-          </AccordionItem>
+              {data.whoIsItFor && data.whoIsItFor.length > 0 && (
+                <>
+                  <h4 className="text-[13px] font-bold text-[#0B1E36] mt-4 mb-2">Who Is It For?</h4>
+                  <div className="flex flex-wrap gap-2">
+                     {data.whoIsItFor.map((item, idx) => (
+                       <span key={idx} className="px-2.5 py-1 bg-blue-50 text-[#105DE4] text-[11px] font-bold rounded-lg border border-blue-100">
+                         {item}
+                       </span>
+                     ))}
+                  </div>
+                </>
+              )}
+            </AccordionItem>
+          )}
 
           {/* 3. Ingredients */}
-          <AccordionItem title="Ingredients" subtitle="What goes into this product" icon={FlaskConical}>
-            <h4 className="text-[13px] font-bold text-[#0B1E36] mb-2">Formulation</h4>
-            <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap mb-4">{data.ingredients}</p>
-            
-            <h4 className="text-[13px] font-bold text-[#0B1E36] mb-2">Supplement Facts</h4>
-            <div className="border border-slate-100 rounded-xl overflow-hidden mb-4">
-              {data.supplementFacts.map((fact, idx) => (
-                <div key={idx} className={`flex justify-between p-2.5 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'} border-b border-slate-100 last:border-0`}>
-                  <span className="text-[12px] font-semibold text-slate-600">{fact.label}</span>
-                  <span className="text-[12px] font-bold text-[#0B1E36]">{fact.value}</span>
-                </div>
-              ))}
-            </div>
+          {Boolean(data.ingredients) && (
+            <AccordionItem title="Ingredients" subtitle="What goes into this product" icon={FlaskConical}>
+              <h4 className="text-[13px] font-bold text-[#0B1E36] mb-2">Formulation</h4>
+              <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap mb-4">{data.ingredients}</p>
+              
+              {data.supplementFacts && data.supplementFacts.length > 0 && (
+                <>
+                  <h4 className="text-[13px] font-bold text-[#0B1E36] mb-2">Supplement Facts</h4>
+                  <div className="border border-slate-100 rounded-xl overflow-hidden mb-4">
+                    {data.supplementFacts.map((fact, idx) => (
+                      <div key={idx} className={`flex justify-between p-2.5 ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'} border-b border-slate-100 last:border-0`}>
+                        <span className="text-[12px] font-semibold text-slate-600">{fact.label}</span>
+                        <span className="text-[12px] font-bold text-[#0B1E36]">{fact.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
 
-            <h4 className="text-[13px] font-bold text-[#0B1E36] mb-2">Recommended Use</h4>
-            <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">{data.recommendedUse}</p>
-          </AccordionItem>
+              {data.recommendedUse && (
+                <>
+                  <h4 className="text-[13px] font-bold text-[#0B1E36] mb-2">Recommended Use</h4>
+                  <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">{data.recommendedUse}</p>
+                </>
+              )}
+            </AccordionItem>
+          )}
 
           {/* 4. Additional Details */}
-          <AccordionItem title="Additional Details" subtitle="Manufacturing and other info" icon={FileText}>
-            <KeyValueRow label="Manufactured By" value={data.dynamicFields.manufacturedBy} />
-            <KeyValueRow label="MRP" value={data.dynamicFields.mrp} />
-            <KeyValueRow label="Warranty" value={`${data.warranty.duration} ${data.warranty.durationUnit} ${data.warranty.warrantyType}`} />
-            <div className="mt-3">
-              <h4 className="text-[13px] font-bold text-[#0B1E36] mb-1">Quality Assurance</h4>
-              <p className="text-[12px] text-slate-600 leading-relaxed">{data.warranty.description}</p>
-            </div>
-          </AccordionItem>
+          {Boolean(data.dynamicFields?.manufacturedBy || data.warranty) && (
+            <AccordionItem title="Additional Details" subtitle="Manufacturing and other info" icon={FileText}>
+              {data.dynamicFields?.manufacturedBy && <KeyValueRow label="Manufactured By" value={data.dynamicFields.manufacturedBy} />}
+              {data.dynamicFields?.mrp && <KeyValueRow label="MRP" value={data.dynamicFields.mrp} />}
+              {data.warranty && <KeyValueRow label="Warranty" value={`${data.warranty.duration} ${data.warranty.durationUnit} ${data.warranty.warrantyType}`} />}
+              {data.warranty?.description && (
+                <div className="mt-3">
+                  <h4 className="text-[13px] font-bold text-[#0B1E36] mb-1">Quality Assurance</h4>
+                  <p className="text-[12px] text-slate-600 leading-relaxed">{data.warranty.description}</p>
+                </div>
+              )}
+            </AccordionItem>
+          )}
 
           {/* 5. Certifications and Lab */}
-          <AccordionItem title="Certifications and Lab" subtitle="Verified certificates and lab tests" icon={Award}>
-             <div className="flex flex-col gap-3">
-               {data.certificates.map((cert, idx) => (
-                 <div key={idx} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50">
-                   <div className="w-10 h-10 rounded-full bg-blue-100 text-[#105DE4] flex items-center justify-center shrink-0">
-                     {cert.isLabTest ? <FlaskConical size={18} /> : <Award size={18} />}
+          {Boolean(data.certificates && data.certificates.length > 0) && (
+            <AccordionItem title="Certifications and Lab" subtitle="Verified certificates and lab tests" icon={Award}>
+               <div className="flex flex-col gap-3">
+                 {data.certificates.map((cert, idx) => (
+                   <div key={idx} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-slate-50">
+                     <div className="w-10 h-10 rounded-full bg-blue-100 text-[#105DE4] flex items-center justify-center shrink-0">
+                       {cert.isLabTest ? <FlaskConical size={18} /> : <Award size={18} />}
+                     </div>
+                     <div className="flex-1">
+                       <h4 className="text-[13px] font-bold text-[#0B1E36] leading-tight mb-0.5">{cert.name}</h4>
+                       <p className="text-[11px] text-slate-500 font-medium">Issued by {cert.issuer} • {cert.date}</p>
+                     </div>
                    </div>
-                   <div className="flex-1">
-                     <h4 className="text-[13px] font-bold text-[#0B1E36] leading-tight mb-0.5">{cert.name}</h4>
-                     <p className="text-[11px] text-slate-500 font-medium">Issued by {cert.issuer} • {cert.date}</p>
-                   </div>
-                 </div>
-               ))}
-             </div>
-          </AccordionItem>
+                 ))}
+               </div>
+            </AccordionItem>
+          )}
 
           {/* 6. Product Education */}
-          <AccordionItem title="Product Education" subtitle="Learn more about usage" icon={BookOpen}>
-            <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-               <h4 className="text-[13px] font-bold text-[#105DE4] mb-1">How to verify?</h4>
-               <p className="text-[12px] text-slate-600 leading-relaxed">This product has been securely verified using Authentiks anti-counterfeit technology. Always ensure the holographic seal is intact before purchase.</p>
-            </div>
-          </AccordionItem>
+          {Boolean(data.educationContent && data.educationContent.length > 0) && (
+            <AccordionItem title="Product Education" subtitle="Learn more about usage" icon={BookOpen}>
+              <div className="flex flex-col gap-3">
+                {data.educationContent.map((edu, idx) => (
+                  <div key={idx} className="flex flex-col gap-1 p-3 rounded-xl border border-blue-100 bg-blue-50/60">
+                    <h4 className="text-[13px] font-bold text-[#0B1E36]">{edu.title}</h4>
+                    <p className="text-[12px] text-slate-600 leading-relaxed mb-1">{edu.description}</p>
+                    {edu.url && (
+                      <a
+                        href={edu.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#105DE4] bg-blue-100/70 px-3 py-1.5 rounded-lg w-max"
+                      >
+                        Learn More <ChevronRight size={14} />
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </AccordionItem>
+          )}
 
           {/* 7. Website */}
-          <AccordionItem title="Website" subtitle="Visit our official store" icon={Globe}>
-            <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100">
-              <span className="text-[13px] font-medium text-slate-700">{data.dynamicFields.website}</span>
-              <a href={`https://${data.dynamicFields.website}`} target="_blank" rel="noreferrer" className="text-[#105DE4]">
-                <ExternalLink size={18} />
-              </a>
-            </div>
-          </AccordionItem>
+          {Boolean(data.dynamicFields?.website) && (
+            <AccordionItem title="Website" subtitle="Visit our official store" icon={Globe}>
+              <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100">
+                <span className="text-[13px] font-medium text-slate-700">{data.dynamicFields.website}</span>
+                <a href={`https://${data.dynamicFields.website}`} target="_blank" rel="noreferrer" className="text-[#105DE4]">
+                  <ExternalLink size={18} />
+                </a>
+              </div>
+            </AccordionItem>
+          )}
 
           {/* 8. Customer Support */}
-          <AccordionItem title="Customer Support" subtitle="Get in touch with us" icon={Headset}>
-            <div className="flex flex-col gap-3">
-              <a href={`tel:${data.warranty.customerCare.replace(/[^0-9]/g, '')}`} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-[#F8FAFC]">
-                 <div className="w-10 h-10 rounded-full bg-blue-100 text-[#105DE4] flex items-center justify-center shrink-0">
-                   <Phone size={18} />
-                 </div>
-                 <div>
-                   <h4 className="text-[13px] font-bold text-[#0B1E36]">Call Us</h4>
-                   <p className="text-[12px] text-slate-500 font-medium">{data.warranty.customerCare}</p>
-                 </div>
-              </a>
-              <a href={`mailto:${data.warranty.supportEmail}`} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-[#F8FAFC]">
-                 <div className="w-10 h-10 rounded-full bg-red-100 text-red-500 flex items-center justify-center shrink-0">
-                   <Mail size={18} />
-                 </div>
-                 <div>
-                   <h4 className="text-[13px] font-bold text-[#0B1E36]">Email Support</h4>
-                   <p className="text-[12px] text-slate-500 font-medium">{data.warranty.supportEmail}</p>
-                 </div>
-              </a>
-            </div>
-          </AccordionItem>
+          {Boolean(data.warranty?.customerCare || data.warranty?.supportEmail) && (
+            <AccordionItem title="Customer Support" subtitle="Get in touch with us" icon={Headset}>
+              <div className="flex flex-col gap-3">
+                {data.warranty?.customerCare && (
+                  <a href={`tel:${data.warranty.customerCare.replace(/[^0-9]/g, '')}`} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-[#F8FAFC]">
+                     <div className="w-10 h-10 rounded-full bg-blue-100 text-[#105DE4] flex items-center justify-center shrink-0">
+                       <Phone size={18} />
+                     </div>
+                     <div>
+                       <h4 className="text-[13px] font-bold text-[#0B1E36]">Call Us</h4>
+                       <p className="text-[12px] text-slate-500 font-medium">{data.warranty.customerCare}</p>
+                     </div>
+                  </a>
+                )}
+                {data.warranty?.supportEmail && (
+                  <a href={`mailto:${data.warranty.supportEmail}`} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-[#F8FAFC]">
+                     <div className="w-10 h-10 rounded-full bg-red-100 text-red-500 flex items-center justify-center shrink-0">
+                       <Mail size={18} />
+                     </div>
+                     <div>
+                       <h4 className="text-[13px] font-bold text-[#0B1E36]">Email Support</h4>
+                       <p className="text-[12px] text-slate-500 font-medium">{data.warranty.supportEmail}</p>
+                     </div>
+                  </a>
+                )}
+              </div>
+            </AccordionItem>
+          )}
         </div>
 
         {/* Supply Chain Details Button (Shown when TEST_SUPPLY_SHOW is set in .env) */}
@@ -814,7 +920,17 @@ function ResultAuthentic({ data }) {
       {showIngredientsModal && <DemoIngredients data={data} onBack={() => setShowIngredientsModal(false)} />}
       {showCertsModal && <DemoCertificates data={data} onBack={() => setShowCertsModal(false)} />}
       {showSupportModal && <DemoConsumerSupport data={data} onBack={() => setShowSupportModal(false)} />}
-<style>{`
+
+      {/* Product Image Lightbox Modal */}
+      <ProductImageModal
+        isOpen={showImageModal}
+        onClose={() => setShowImageModal(false)}
+        imageUrl={productImage}
+        productName={productName}
+        brand={companyName}
+      />
+
+      <style>{`
         @keyframes reviewOverlayIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes reviewSheetUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
       `}</style>

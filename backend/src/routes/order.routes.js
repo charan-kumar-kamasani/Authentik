@@ -229,8 +229,8 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
         totalPointsFund: Number(req.body.loyalty.totalPointsFund) || 0,
         pointsDisbursed: 0,
       } : undefined,
-      // Supply Chain Details (only allowed for internal admin roles)
-      supplyChain: (['admin', 'superadmin'].includes(req.user.role) && req.body.supplyChain) ? req.body.supplyChain : undefined,
+      // Supply Chain Details (if provided)
+      supplyChain: (req.body.supplyChain && typeof req.body.supplyChain === 'object' && Object.keys(req.body.supplyChain).length > 0) ? req.body.supplyChain : undefined,
       // Calculate and save pricing
       amount: (await calculateQrPrice(isBatch ? 1 : quantityNumber)).total,
       subtotal: (await calculateQrPrice(isBatch ? 1 : quantityNumber)).subtotal,
@@ -620,6 +620,7 @@ router.put('/:id/authorize', protect, authorize('company', 'authorizer'), async 
         dynamicFields: order.dynamicFields,
         variants: order.variants,
         warranty: (order.warranty && (order.warranty.duration || order.warranty.warrantyType)) ? order.warranty : undefined,
+        supplyChain: order.supplyChain || undefined,
         orderLinks: (order.orderLinks && order.orderLinks.length > 0) ? order.orderLinks : templateOrderLinks,
         educationContent: templateEducationContent,
         description: order.description,
@@ -820,6 +821,7 @@ router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req
         dynamicFields: order.dynamicFields,
         variants: order.variants,
         warranty: (order.warranty && (order.warranty.duration || order.warranty.warrantyType)) ? order.warranty : undefined,
+        supplyChain: order.supplyChain || undefined,
         orderLinks: (order.orderLinks && order.orderLinks.length > 0) ? order.orderLinks : templateOrderLinks,
         educationContent: templateEducationContent,
         description: order.description,
@@ -1318,8 +1320,8 @@ router.put('/:id', protect, authorize('company', 'authorizer', 'creator', 'admin
         pointsDisbursed: order.loyalty?.pointsDisbursed || 0,
       } : undefined;
     }
-    // Update supplyChain if provided (internal admin roles only)
-    if (req.body.supplyChain !== undefined && ['admin', 'superadmin'].includes(req.user.role)) {
+    // Update supplyChain if provided
+    if (req.body.supplyChain !== undefined) {
       order.supplyChain = req.body.supplyChain;
     }
 

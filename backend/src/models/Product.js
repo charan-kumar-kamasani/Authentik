@@ -114,6 +114,10 @@ const productSchema = new mongoose.Schema(
       url: { type: String, trim: true },
       description: { type: String, trim: true }
     }],
+    supplyChain: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null
+    },
   },
   { timestamps: true }
 );

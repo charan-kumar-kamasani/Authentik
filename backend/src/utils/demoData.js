@@ -38,6 +38,53 @@ const DEMO_PRODUCT = {
     { variantName: "size", variantLabel: "Size", value: "10 UK" },
     { variantName: "model_series", variantLabel: "Model / Series", value: "Panther" }
   ],
+  ingredients: "Engineered Microfiber Mesh, Electroluminescent TPU Piping, High-Density Carbon Rubber Outsole, OrthoLite Comfort Foam Insole.",
+  certificates: [
+    { name: "Authentiks Anti-Counterfeit Verified", image: "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png" },
+    { name: "ISO 9001:2015 Quality Clearance", isLabTest: true, image: "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png" }
+  ],
+  educationContent: [
+    {
+      title: "Smart Care & Battery Maintenance",
+      description: "Learn how to optimize the electroluminescent piping battery life and maintain the waterproof coating.",
+      url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    },
+    {
+      title: "Adaptive Grip & Sizing Guide",
+      description: "Discover how the carbon-traction outsole dynamically adapts to running on asphalt and wet terrain.",
+      url: "https://authentiks.in"
+    }
+  ],
+  showSupplyChain: true,
+  supplyChain: {
+    manufacturerName: "Alphalite Performance Labs Pvt. Ltd.",
+    manufacturingUnit: "Facility Alpha-9 (High-Tech Footwear Division)",
+    manufacturingLocation: "Bengaluru, Karnataka, India",
+    manufacturingDate: "15 Feb 2026",
+    batchNumber: "ALPHA-2478",
+    skuCode: "AL2468-BLK-10",
+    productionQuantity: 5000,
+    productionQuantityUnit: "Pairs",
+    countryOfManufacture: "India",
+    rawMaterialSource: "Recycled Carbon Fibers & Organic Microfiber",
+    countryOfOrigin: "India",
+    supplierName: "Apex High-Tech Textiles Ltd.",
+    certifications: "ISO 9001, GRS Certified Recycled Content",
+    processingLocation: "Automated Robotic Assembly Line 3",
+    packagingUnit: "Eco-Packaging Hub 2",
+    packagingLocation: "Bengaluru, Karnataka",
+    packagingDate: "18 Feb 2026",
+    packagingType: "100% Biodegradable Carbon Box",
+    packSize: "Pair (UK 10)",
+    numberOfUnitsPacked: 5000,
+    numberOfUnitsPackedUnit: "Pairs",
+    dispatchLocation: "Central Distribution Center, Bengaluru",
+    distributorName: "Authentik Express Premium Logistics",
+    distributionLocation: "Pan-India Tier 1 Hubs",
+    modeOfTransport: "Smart Climate-Controlled Express Fleet",
+    expectedDeliveryDate: "25 Feb 2026",
+    notes: "Batch passed all electromagnetic safety and anti-counterfeiting cryptographic checks."
+  },
   hasCoupon: true,
   alreadyReviewed: false,
   warranty: {

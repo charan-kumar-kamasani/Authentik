@@ -1,6 +1,7 @@
-import { ChevronLeft, Share, FileText, BookOpen, Layers, MessageSquare, ShieldCheck, Gift, ChevronRight, XCircle, AlertTriangle, Headset, Flag, X, ShieldAlert, Calendar, Phone, MapPin, RefreshCcw, ScanLine, CheckCircle2, FlaskConical, Award, Globe, HeadphonesIcon, Mail, Info, ExternalLink, Check, Star, Truck } from "lucide-react";
+import { ChevronLeft, Share, FileText, BookOpen, Layers, MessageSquare, ShieldCheck, Gift, ChevronRight, XCircle, AlertTriangle, Headset, Flag, X, ShieldAlert, Calendar, Phone, MapPin, RefreshCcw, ScanLine, CheckCircle2, FlaskConical, Award, Globe, HeadphonesIcon, Mail, Info, ExternalLink, Check, Star, Truck, Maximize2 } from "lucide-react";
 import { AccordionItem, KeyValueRow, CertificateViewer } from '../../components/AccordionComponents';
 import { isSupplyChainEnabled } from './SupplyChain';
+import ProductImageModal from '../../components/ProductImageModal';
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import API_BASE_URL from "../../config/api";
@@ -124,7 +125,8 @@ function ResultAuthentic({ data }: { data: any }) {
   const [showCouponReveal, setShowCouponReveal] = useState(false);
   const [couponCopied, setCouponCopied] = useState(false);
   const [showProfilePrompt, setShowProfilePrompt] = useState(false);
-  const [openSection, setOpenSection] = useState<string>('');
+  const [openSection, setOpenSection] = useState<string>('Product Details');
+  const [showImageModal, setShowImageModal] = useState(false);
   // Warranty claim state
   const [showWarrantyModal, setShowWarrantyModal] = useState(false);
   const [warrantyClaiming, setWarrantyClaiming] = useState(false);
@@ -152,12 +154,30 @@ function ResultAuthentic({ data }: { data: any }) {
   const brandLogo = data.brandLogo || data.logo || data.companyLogo || data.brandId?.logo || data.brandId?.brandLogo || productObj.brandLogo || productObj.logo || productObj.companyLogo || orderObj.brandLogo || orderObj.logo || orderObj.companyLogo;
 
   const extractedIngredients = data.ingredients || productObj.ingredients || orderObj.ingredients || templateObj.ingredients || null;
-  const extractedCertificates = (productObj.certificates && productObj.certificates.length > 0) ? productObj.certificates : ((orderObj.certificates && orderObj.certificates.length > 0) ? orderObj.certificates : (templateObj.certificates || data.certificates || []));
-  const edu = data.educationContent || productObj.educationContent || orderObj.educationContent || templateObj.educationContent;
-  const hasEducation = Array.isArray(edu) ? edu.length > 0 : !!edu;
+  const extractedCertificates = (Array.isArray(data.certificates) && data.certificates.length > 0)
+    ? data.certificates
+    : ((Array.isArray(productObj.certificates) && productObj.certificates.length > 0)
+      ? productObj.certificates
+      : ((Array.isArray(orderObj.certificates) && orderObj.certificates.length > 0)
+        ? orderObj.certificates
+        : (Array.isArray(templateObj.certificates) && templateObj.certificates.length > 0 ? templateObj.certificates : [])));
+
+  // Safely resolve education content array
+  const getEducation = () => {
+    if (Array.isArray(data.educationContent) && data.educationContent.length > 0) return data.educationContent;
+    if (Array.isArray(productObj.educationContent) && productObj.educationContent.length > 0) return productObj.educationContent;
+    if (Array.isArray(orderObj.educationContent) && orderObj.educationContent.length > 0) return orderObj.educationContent;
+    if (Array.isArray(templateObj.educationContent) && templateObj.educationContent.length > 0) return templateObj.educationContent;
+    if (Array.isArray(data.templateData?.educationContent) && data.templateData.educationContent.length > 0) return data.templateData.educationContent;
+    if (data.educationContent && typeof data.educationContent === 'object' && !Array.isArray(data.educationContent)) return [data.educationContent];
+    return [];
+  };
+  const edu = getEducation();
+  const hasEducation = edu.length > 0;
+
   const dynFields = data.dynamicFields || productObj.dynamicFields || orderObj.dynamicFields || templateObj.dynamicFields || {};
   const descText = data.productInfo || data.description || dynFields.description || templateObj.description || templateObj.productInfo;
-  const additionalText = data.additionalInfo || dynFields.additionalInfo || dynFields['Additional Info'];
+  const additionalText = data.additionalInfo || dynFields.additionalInfo || dynFields['Additional Info'] || templateObj.additionalInfo;
   const webLink = data.website || productObj.website || orderObj.website || templateObj.website || dynFields.website;
   const custCare = data.customerCare || productObj.customerCare || orderObj.customerCare || templateObj.customerCare || dynFields.customerCare;
   const supEmail = data.supportEmail || productObj.supportEmail || orderObj.supportEmail || templateObj.supportEmail || dynFields.supportEmail;
@@ -510,12 +530,19 @@ function ResultAuthentic({ data }: { data: any }) {
         
         {/* Product Info Card */}
         <div className="bg-white rounded-[24px] p-5 shadow-[0_4px_25px_rgba(0,0,0,0.06)] flex gap-4">
-          <div className="w-[100px] h-[120px] flex-shrink-0 flex items-center justify-center">
+          <div 
+            onClick={() => setShowImageModal(true)}
+            className="w-[100px] h-[120px] flex-shrink-0 flex items-center justify-center cursor-pointer group relative"
+            title="Tap to view full image"
+          >
             <img 
               src={productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"} 
               alt={productName} 
-              className="w-full h-full object-contain drop-shadow-md mix-blend-multiply" 
+              className="w-full h-full object-contain drop-shadow-md mix-blend-multiply group-hover:scale-105 transition-transform" 
             />
+            <div className="absolute bottom-0 right-0 bg-slate-900/60 backdrop-blur-md text-white p-1 rounded-full opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all shadow-sm">
+              <Maximize2 size={11} strokeWidth={2.5} />
+            </div>
           </div>
           <div className="flex flex-col flex-1 py-1 justify-center">
             <div className="flex items-center gap-1.5 mb-1.5">
@@ -667,67 +694,55 @@ function ResultAuthentic({ data }: { data: any }) {
           </AccordionItem>
 
           {/* 2. Description */}
-          <AccordionItem title="Description" subtitle="About this product" icon={Info} isOpen={openSection === 'Description'} onToggle={() => setOpenSection(openSection === 'Description' ? '' : 'Description')}>
-            {descText ? (
-              <>
-                <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">{descText}</p>
-                {data.keyBenefits && (
-                  <>
-                    <h4 className="text-[13px] font-bold text-[#0B1E36] mt-4 mb-2">Key Benefits</h4>
-                    <div className="flex flex-col gap-2">
-                       {data.keyBenefits.split('\n').map((benefit: string, idx: number) => (
-                         <div key={idx} className="flex items-start gap-2">
-                           <CheckCircle2 size={16} className="text-[#105DE4] shrink-0 mt-0.5" />
-                           <span className="text-[13px] font-medium text-slate-700">{benefit}</span>
-                         </div>
-                       ))}
-                    </div>
-                  </>
-                )}
-              </>
-            ) : (
-              <p className="text-[13px] text-slate-400 italic">No description available for this product.</p>
-            )}
-          </AccordionItem>
+          {Boolean(descText || data.keyBenefits) && (
+            <AccordionItem title="Description" subtitle="About this product" icon={Info} isOpen={openSection === 'Description'} onToggle={() => setOpenSection(openSection === 'Description' ? '' : 'Description')}>
+              {descText && <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">{descText}</p>}
+              {data.keyBenefits && (
+                <>
+                  <h4 className="text-[13px] font-bold text-[#0B1E36] mt-4 mb-2">Key Benefits</h4>
+                  <div className="flex flex-col gap-2">
+                     {data.keyBenefits.split('\n').map((benefit: string, idx: number) => (
+                       <div key={idx} className="flex items-start gap-2">
+                         <CheckCircle2 size={16} className="text-[#105DE4] shrink-0 mt-0.5" />
+                         <span className="text-[13px] font-medium text-slate-700">{benefit}</span>
+                       </div>
+                     ))}
+                  </div>
+                </>
+              )}
+            </AccordionItem>
+          )}
 
           {/* 3. Ingredients */}
-          <AccordionItem title="Ingredients" subtitle="What goes into this product" icon={FlaskConical} isOpen={openSection === 'Ingredients'} onToggle={() => setOpenSection(openSection === 'Ingredients' ? '' : 'Ingredients')}>
-            {extractedIngredients ? (
+          {Boolean(extractedIngredients) && (
+            <AccordionItem title="Ingredients" subtitle="What goes into this product" icon={FlaskConical} isOpen={openSection === 'Ingredients'} onToggle={() => setOpenSection(openSection === 'Ingredients' ? '' : 'Ingredients')}>
               <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">{extractedIngredients}</p>
-            ) : (
-              <p className="text-[13px] text-slate-400 italic">No ingredients information available.</p>
-            )}
-          </AccordionItem>
+            </AccordionItem>
+          )}
 
           {/* 4. Additional Details */}
-          <AccordionItem title="Additional Details" subtitle="Manufacturing and other info" icon={FileText} isOpen={openSection === 'Additional Details'} onToggle={() => setOpenSection(openSection === 'Additional Details' ? '' : 'Additional Details')}>
-            {additionalText ? (
+          {Boolean(additionalText) && (
+            <AccordionItem title="Additional Details" subtitle="Manufacturing and other info" icon={FileText} isOpen={openSection === 'Additional Details'} onToggle={() => setOpenSection(openSection === 'Additional Details' ? '' : 'Additional Details')}>
               <p className="text-[13px] text-slate-700 leading-[1.6] whitespace-pre-wrap">
                 {additionalText}
               </p>
-            ) : (
-              <p className="text-[13px] text-slate-400 italic">No additional details available.</p>
-            )}
-          </AccordionItem>
-
-          {/* 4b. Supply Chain Details - Hidden for public users (internal purpose only) */}
+            </AccordionItem>
+          )}
 
           {/* 5. Certifications and Lab Tests */}
-          <AccordionItem title="Certifications and Lab" subtitle="Verified certificates and lab tests" icon={Award} isOpen={openSection === 'Certifications and Lab'} onToggle={() => setOpenSection(openSection === 'Certifications and Lab' ? '' : 'Certifications and Lab')}>
-             {extractedCertificates && extractedCertificates.length > 0 ? (
+          {Boolean(extractedCertificates && extractedCertificates.length > 0) && (
+            <AccordionItem title="Certifications and Lab" subtitle="Verified certificates and lab tests" icon={Award} isOpen={openSection === 'Certifications and Lab'} onToggle={() => setOpenSection(openSection === 'Certifications and Lab' ? '' : 'Certifications and Lab')}>
                <div className="flex flex-col gap-3">
                  {extractedCertificates.map((cert: any, idx: number) => (
                     <CertificateViewer key={idx} cert={cert} />
                  ))}
                </div>
-             ) : (
-               <p className="text-[13px] text-slate-400 italic">No certifications or lab tests available.</p>
-             )}
-          </AccordionItem>
+            </AccordionItem>
+          )}
 
           {/* 6. Product Education */}
-          <AccordionItem title="Product Education" subtitle="Discover how to use this product" icon={BookOpen} isOpen={openSection === 'Product Education'} onToggle={() => setOpenSection(openSection === 'Product Education' ? '' : 'Product Education')}>
-            {edu && hasEducation ? (
+          {Boolean(hasEducation) && (
+            <AccordionItem title="Product Education" subtitle="Discover how to use this product" icon={BookOpen} isOpen={openSection === 'Product Education'} onToggle={() => setOpenSection(openSection === 'Product Education' ? '' : 'Product Education')}>
               <div className="flex flex-col gap-3">
                 {(Array.isArray(edu) ? edu : [edu]).map((e: any, idx: number) => {
                   const isVideo = e.url?.includes('youtube.com') || e.url?.includes('youtu.be') || e.url?.endsWith('.mp4');
@@ -752,28 +767,24 @@ function ResultAuthentic({ data }: { data: any }) {
                   );
                 })}
               </div>
-            ) : (
-              <p className="text-[13px] text-slate-400 italic">No product education content available.</p>
-            )}
-          </AccordionItem>
+            </AccordionItem>
+          )}
 
           {/* 7. Website */}
-          <AccordionItem title="Website" subtitle="Visit our official store" icon={Globe} isOpen={openSection === 'Website'} onToggle={() => setOpenSection(openSection === 'Website' ? '' : 'Website')}>
-            {webLink ? (
+          {Boolean(webLink) && (
+            <AccordionItem title="Website" subtitle="Visit our official store" icon={Globe} isOpen={openSection === 'Website'} onToggle={() => setOpenSection(openSection === 'Website' ? '' : 'Website')}>
               <div className="flex items-center justify-between p-3 rounded-xl border border-slate-100">
                 <span className="text-[13px] font-medium text-slate-700">{webLink}</span>
                 <a href={webLink.startsWith('http') ? webLink : `https://${webLink}`} target="_blank" rel="noreferrer" className="text-[#105DE4]">
                   <ExternalLink size={18} />
                 </a>
               </div>
-            ) : (
-              <p className="text-[13px] text-slate-400 italic">No website available.</p>
-            )}
-          </AccordionItem>
+            </AccordionItem>
+          )}
 
           {/* 8. Consumer Support */}
-          <AccordionItem title="Consumer Support" subtitle="Get in touch with us" icon={HeadphonesIcon} isOpen={openSection === 'Consumer Support'} onToggle={() => setOpenSection(openSection === 'Consumer Support' ? '' : 'Consumer Support')}>
-            {hasSupport ? (
+          {Boolean(hasSupport) && (
+            <AccordionItem title="Consumer Support" subtitle="Get in touch with us" icon={HeadphonesIcon} isOpen={openSection === 'Consumer Support'} onToggle={() => setOpenSection(openSection === 'Consumer Support' ? '' : 'Consumer Support')}>
               <div className="flex flex-col gap-3">
                 {custCare && (
                   <a href={`tel:${custCare.replace(/[^0-9]/g, '')}`} className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 bg-[#F8FAFC]">
@@ -798,10 +809,8 @@ function ResultAuthentic({ data }: { data: any }) {
                   </a>
                 )}
               </div>
-            ) : (
-              <p className="text-[13px] text-slate-400 italic">No consumer support information available.</p>
-            )}
-          </AccordionItem>
+            </AccordionItem>
+          )}
         </div>
 
         {/* Supply Chain Details Button (Shown when TEST_SUPPLY_SHOW is set in .env) */}
@@ -1667,6 +1676,15 @@ function ResultAuthentic({ data }: { data: any }) {
             </div>
           </div>
         )}
+
+        {/* Image Full View Modal */}
+        <ProductImageModal
+          isOpen={showImageModal}
+          onClose={() => setShowImageModal(false)}
+          imageUrl={productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"}
+          productName={productName}
+          brand={companyName}
+        />
       </div>
   );
 }

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Share, ShieldCheck, CheckCircle2, Star } from 'lucide-react';
+import { ChevronLeft, Share, ShieldCheck, CheckCircle2, Star, Maximize2 } from 'lucide-react';
 import ProductRating from './ProductRating';
+import ProductImageModal from './ProductImageModal';
 
 interface ProductHeroHeaderProps {
   title: string;
@@ -12,6 +13,7 @@ interface ProductHeroHeaderProps {
 
 const ProductHeroHeader: React.FC<ProductHeroHeaderProps> = ({ title, data, onBack, onShare }) => {
   const navigate = useNavigate();
+  const [showImageModal, setShowImageModal] = useState(false);
 
   const handleBack = () => {
     if (onBack) onBack();
@@ -34,6 +36,8 @@ const ProductHeroHeader: React.FC<ProductHeroHeaderProps> = ({ title, data, onBa
 
   if (!data) return null;
 
+  const productImageSrc = data.productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png";
+
   return (
     <div className="bg-[#001466] text-white pt-8 pb-8 px-5 relative">
       {/* Top Nav */}
@@ -49,12 +53,19 @@ const ProductHeroHeader: React.FC<ProductHeroHeaderProps> = ({ title, data, onBa
 
       {/* Product Header Content */}
       <div className="flex gap-4 items-center mb-0">
-        <div className="w-[120px] h-[140px] flex-shrink-0 relative flex items-center justify-center bg-transparent -ml-2">
+        <div 
+          onClick={() => setShowImageModal(true)}
+          className="w-[120px] h-[140px] flex-shrink-0 relative flex items-center justify-center bg-transparent -ml-2 cursor-pointer group"
+          title="Tap to view full image"
+        >
           <img
-            src={data.productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"}
+            src={productImageSrc}
             alt={data.productName}
-            className="w-full h-full object-contain drop-shadow-2xl mix-blend-normal"
+            className="w-full h-full object-contain drop-shadow-2xl mix-blend-normal group-hover:scale-105 transition-transform"
           />
+          <div className="absolute bottom-1 right-1 bg-black/40 backdrop-blur-md text-white p-1 rounded-full opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all shadow-md">
+            <Maximize2 size={12} strokeWidth={2.5} />
+          </div>
         </div>
         <div className="flex flex-col flex-1 pt-0">
          
@@ -93,6 +104,15 @@ const ProductHeroHeader: React.FC<ProductHeroHeaderProps> = ({ title, data, onBa
           </div>
         </div>
       </div>
+
+      {/* Image Lightbox Modal */}
+      <ProductImageModal
+        isOpen={showImageModal}
+        onClose={() => setShowImageModal(false)}
+        imageUrl={productImageSrc}
+        productName={data.productName}
+        brand={data.brand || data.companyName}
+      />
     </div>
   );
 };

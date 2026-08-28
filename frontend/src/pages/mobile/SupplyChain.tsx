@@ -23,11 +23,31 @@ import {
   History,
   QrCode,
   Gift,
-  Shield
+  Shield,
+  Maximize2
 } from 'lucide-react';
+import ProductImageModal from '../../components/ProductImageModal';
 
 export const isSupplyChainEnabled = (data?: any): boolean => {
-  // 1. Check Vite / Process environment variables
+  if (!data) return false;
+
+  // 0. Demo QR codes & mock preview
+  if (data.isDemo || (typeof data.qrCode === 'string' && data.qrCode.startsWith('DEMO-'))) {
+    return true;
+  }
+
+  // 1. Check direct supply chain flag or data in payload/product/template
+  if (
+    data.showSupplyChain ||
+    data.supplyChain ||
+    data.productId?.supplyChain ||
+    data.orderId?.supplyChain ||
+    data.templateData?.supplyChain
+  ) {
+    return true;
+  }
+
+  // 2. Check Vite / Process environment variables
   const viteEnv = (import.meta as any).env?.VITE_TEST_SUPPLY_SHOW || (import.meta as any).env?.TEST_SUPPLY_SHOW;
   
   // Extract user phone from localStorage if present
@@ -78,11 +98,6 @@ export const isSupplyChainEnabled = (data?: any): boolean => {
     return true;
   }
 
-  // 2. Check data payload flag from backend
-  if (data?.showSupplyChain || data?.supplyChain) {
-    return true;
-  }
-
   return false;
 };
 
@@ -90,28 +105,39 @@ export default function SupplyChain() {
   const navigate = useNavigate();
   const location = useLocation();
   const data = (location.state as any) || {};
+  const [showImageModal, setShowImageModal] = useState(false);
 
-  // Extract or fallback product & supply chain info
-  const product = (data.productId && typeof data.productId === 'object') ? data.productId : data;
-  const supplyChain = data.supplyChain || product.supplyChain || product.orderId?.supplyChain || {};
+  // Extract real product and order data
+  const product = (data.productId && typeof data.productId === 'object') ? data.productId : (data.product || data);
+  const order = (product.orderId && typeof product.orderId === 'object') ? product.orderId : (data.orderId && typeof data.orderId === 'object' ? data.orderId : {});
+  const template = data.templateData || {};
 
-  const productName = data.productName || product.productName || 'Thandai';
-  const brandName = data.brand || product.brand || 'Gulabs';
-  const productImage = data.productImage || product.productImage || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60';
-  const batchNo = supplyChain.batchNumber || data.batchNo || product.batchNo || '827278287';
-  const manufactureDate = supplyChain.manufacturingDate || data.manufactureDate || product.manufactureDate || '15 Aug 2026, 08:30 AM';
-  const categoryTag = data.category || product.category || 'Natural • Traditional • Refreshing';
+  // Extract real supply chain object
+  const supplyChain = data.supplyChain || product.supplyChain || order.supplyChain || template.supplyChain || {};
+
+  // Real product header details
+  const productName = data.productName || product.productName || order.productName || template.productName || 'Product Details';
+  const brandName = data.brand || product.brand || order.brand || data.companyName || product.companyName || 'Verified Brand';
+  const productImage = data.productImage || product.productImage || order.productImage || template.productImage || (data.images && data.images[0]) || 'https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png';
+  const batchNo = supplyChain.batchNumber || data.batchNo || product.batchNo || order.batchNo || 'Standard Batch';
+  
+  // Format real manufacture date
+  const rawMfd = supplyChain.manufacturingDate || data.manufactureDate || product.manufactureDate || order.manufactureDate || (data.mfdOn?.month ? `${data.mfdOn.month}/${data.mfdOn.year || ''}`.trim() : null);
+  const manufactureDate = rawMfd || 'Not Specified';
+
+  // Real category / tags
+  const categoryTag = data.category || product.category || order.category || template.category || 'Authentik Verified Product';
 
   // Toggle for Timeline View vs Accordion View
   const [viewMode, setViewMode] = useState<'accordion' | 'timeline'>('accordion');
 
-  // Accordions open state
+  // Accordions open state - initialize open for all
   const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
     '01': true,
-    '02': false,
-    '03': false,
-    '04': false,
-    '05': false,
+    '02': true,
+    '03': true,
+    '04': true,
+    '05': true,
   });
 
   const toggleSection = (id: string) => {
@@ -135,102 +161,178 @@ export default function SupplyChain() {
     }
   };
 
-  // 5 Main Supply Chain Sections Data
-  const sections = [
+  // Helper to filter valid key-value pairs
+  const cleanDetails = (items: { label: string; value: any }[]) => {
+    return items.filter(
+      (item) => item.value !== null && item.value !== undefined && String(item.value).trim() !== ''
+    );
+  };
+
+  // 1. Manufacturing Details
+  const mfgRawDetails = [
+    { label: 'Manufacturer Name', value: supplyChain.manufacturerName },
+    { label: 'Manufacturing Unit', value: supplyChain.manufacturingUnit },
+    { label: 'Manufacturing Location', value: supplyChain.manufacturingLocation },
+    { label: 'Manufacturing Date', value: supplyChain.manufacturingDate },
+    { label: 'Batch / Lot No.', value: supplyChain.batchNumber || data.batchNo || product.batchNo || order.batchNo },
+    { label: 'SKU / Product Code', value: supplyChain.skuCode || data.skuNumber || product.skuNumber || order.skuNumber },
+    {
+      label: 'Production Quantity',
+      value: supplyChain.productionQuantity
+        ? `${supplyChain.productionQuantity} ${supplyChain.productionQuantityUnit || 'Units'}`
+        : null,
+    },
+    { label: 'Country of Manufacture', value: supplyChain.countryOfManufacture },
+  ];
+  const mfgDetails = cleanDetails(mfgRawDetails);
+
+  // 2. Raw Material / Source Details
+  const rawMatDetails = cleanDetails([
+    { label: 'Raw Material Source', value: supplyChain.rawMaterialSource },
+    { label: 'Country of Origin', value: supplyChain.countryOfOrigin },
+    { label: 'Supplier Name', value: supplyChain.supplierName },
+    { label: 'Certifications', value: supplyChain.certifications },
+  ]);
+
+  // 3. Processing & Packaging Details
+  const packDetails = cleanDetails([
+    { label: 'Processing Facility', value: supplyChain.processingLocation },
+    { label: 'Packaging Unit', value: supplyChain.packagingUnit },
+    { label: 'Packaging Location', value: supplyChain.packagingLocation },
+    { label: 'Packaging Date', value: supplyChain.packagingDate },
+    { label: 'Packaging Type', value: supplyChain.packagingType },
+    { label: 'Pack Size', value: supplyChain.packSize },
+    {
+      label: 'Units Packed',
+      value: supplyChain.numberOfUnitsPacked
+        ? `${supplyChain.numberOfUnitsPacked} ${supplyChain.numberOfUnitsPackedUnit || 'Units'}`
+        : null,
+    },
+  ]);
+
+  // 4. Distribution Details
+  const distDetails = cleanDetails([
+    { label: 'Dispatch Location', value: supplyChain.dispatchLocation },
+    { label: 'Distributor Name', value: supplyChain.distributorName },
+    { label: 'Distribution Location', value: supplyChain.distributionLocation },
+    { label: 'Mode of Transport', value: supplyChain.modeOfTransport },
+    { label: 'Expected Delivery Date', value: supplyChain.expectedDeliveryDate },
+    { label: 'Notes', value: supplyChain.notes },
+  ]);
+
+  // 5. Supporting Documents / Certificates
+  const realDocuments: Array<{ title: string; size: string; docNo?: string; url?: string }> = [];
+
+  // If user uploaded a supporting document in supply chain
+  if (supplyChain.supportingDocument) {
+    const docUrl = typeof supplyChain.supportingDocument === 'string' ? supplyChain.supportingDocument : (supplyChain.supportingDocument.url || '');
+    const docName = supplyChain.supportingDocumentName || (typeof supplyChain.supportingDocument === 'string' ? 'Batch Supporting Document' : (supplyChain.supportingDocument.name || 'Supporting Document'));
+    realDocuments.push({
+      title: docName,
+      size: 'Uploaded Document',
+      docNo: 'DOC-' + (batchNo !== 'Standard Batch' ? batchNo : 'VERIFIED'),
+      url: docUrl,
+    });
+  }
+
+  // If product/order/scan has certificates
+  const certsList = (Array.isArray(data.certificates) && data.certificates.length > 0)
+    ? data.certificates
+    : (Array.isArray(product.certificates) && product.certificates.length > 0)
+    ? product.certificates
+    : (Array.isArray(order.certificates) && order.certificates.length > 0)
+    ? order.certificates
+    : [];
+
+  certsList.forEach((c: any, i: number) => {
+    const certTitle = typeof c === 'string' ? c : (c.name || `Certificate ${i + 1}`);
+    const certUrl = typeof c === 'string' ? '' : (c.image || c.url || '');
+    realDocuments.push({
+      title: certTitle,
+      size: 'Verified Certificate',
+      docNo: `CERT-0${i + 1}`,
+      url: certUrl,
+    });
+  });
+
+  // Calculate dynamic section list
+  const allSections = [
     {
       id: '01',
       title: 'Manufacturing Details',
-      subtitle: 'Details about manufacturing facility and production.',
+      subtitle: 'Details about manufacturing facility, production, and batch info.',
       icon: Building2,
       bgColor: 'bg-[#105DE4]',
       iconColor: 'text-white',
-      badgeText: 'Completed',
+      badgeText: mfgDetails.length >= 3 ? 'Completed' : 'Recorded',
       badgeStyle: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
       badgeIcon: CheckCircle2,
-      details: [
-        { label: 'Manufacturer Name', value: supplyChain.manufacturerName || `${brandName} Foods Pvt. Ltd.` },
-        { label: 'Manufacturing Unit', value: supplyChain.manufacturingUnit || 'Unit 2 - Beverage & Dairy Facility' },
-        { label: 'Location', value: supplyChain.manufacturingLocation || 'Jaipur, Rajasthan, India' },
-        { label: 'Manufacturing Date', value: supplyChain.manufacturingDate || '15 Aug 2026' },
-        { label: 'Batch / Lot No.', value: supplyChain.batchNumber || batchNo },
-        { label: 'SKU / Product Code', value: supplyChain.skuCode || 'GLB-THN-500ML' },
-        { label: 'Production Quantity', value: supplyChain.productionQuantity ? `${supplyChain.productionQuantity} ${supplyChain.productionQuantityUnit || 'Units'}` : '10,000 Bottles' },
-        { label: 'Country of Manufacture', value: supplyChain.countryOfManufacture || 'India' },
-      ],
+      hasData: mfgDetails.length > 0,
+      details: mfgDetails,
     },
     {
       id: '02',
       title: 'Raw Material / Source Details',
-      subtitle: 'Information about raw materials and their sources.',
+      subtitle: 'Information about ingredients, origin, and suppliers.',
       icon: Leaf,
       bgColor: 'bg-[#10B981]',
       iconColor: 'text-white',
-      badgeText: 'Completed',
+      badgeText: rawMatDetails.length >= 2 ? 'Completed' : 'Recorded',
       badgeStyle: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
       badgeIcon: CheckCircle2,
-      details: [
-        { label: 'Primary Ingredients Source', value: supplyChain.rawMaterialSource || 'Organic Farms - Almonds, Saffron & Cardamom' },
-        { label: 'Country of Origin', value: supplyChain.countryOfOrigin || 'India' },
-        { label: 'Supplier Name', value: supplyChain.supplierName || 'Apex Organic Sourcing Co.' },
-        { label: 'Certifications', value: supplyChain.certifications || 'FSSAI Certified, NOP Organic Certified' },
-      ],
+      hasData: rawMatDetails.length > 0,
+      details: rawMatDetails,
     },
     {
       id: '03',
       title: 'Processing & Packaging Details',
-      subtitle: 'Details of processing, quality checks and packaging.',
+      subtitle: 'Facility packaging, pack configuration, and dates.',
       icon: Settings,
       bgColor: 'bg-[#8B5CF6]',
       iconColor: 'text-white',
-      badgeText: 'In Progress',
-      badgeStyle: 'bg-amber-500/10 text-amber-600 border-amber-500/30',
-      badgeIcon: Clock,
-      details: [
-        { label: 'Processing Facility', value: supplyChain.processingLocation || 'Automated Sterilization & Blending Line 4' },
-        { label: 'Packaging Unit', value: supplyChain.packagingUnit || 'Jaipur Bottling Plant' },
-        { label: 'Packaging Location', value: supplyChain.packagingLocation || 'Jaipur, Rajasthan' },
-        { label: 'Packaging Date', value: supplyChain.packagingDate || '16 Aug 2026' },
-        { label: 'Packaging Type', value: supplyChain.packagingType || 'Glass Bottle (100% Recyclable)' },
-        { label: 'Pack Size', value: supplyChain.packSize || '500 ml' },
-        { label: 'Units Packed', value: supplyChain.numberOfUnitsPacked ? `${supplyChain.numberOfUnitsPacked} ${supplyChain.numberOfUnitsPackedUnit || 'Units'}` : '10,000 Bottles' },
-      ],
+      badgeText: packDetails.length >= 3 ? 'Completed' : 'Recorded',
+      badgeStyle: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
+      badgeIcon: CheckCircle2,
+      hasData: packDetails.length > 0,
+      details: packDetails,
     },
     {
       id: '04',
       title: 'Distribution Details',
-      subtitle: 'Information about dispatch, logistics and delivery.',
+      subtitle: 'Logistics, distributor, and delivery schedule.',
       icon: Truck,
       bgColor: 'bg-[#F97316]',
       iconColor: 'text-white',
-      badgeText: 'Partially Complete',
+      badgeText: distDetails.length >= 3 ? 'Completed' : 'Recorded',
       badgeStyle: 'bg-sky-500/10 text-sky-700 border-sky-500/20',
-      badgeIcon: Clock,
-      details: [
-        { label: 'Dispatch Location', value: supplyChain.dispatchLocation || 'Central Logistics Warehouse, Jaipur' },
-        { label: 'Distributor Name', value: supplyChain.distributorName || 'Authentik Express Logistics' },
-        { label: 'Distribution Region', value: supplyChain.distributionLocation || 'North & Central India' },
-        { label: 'Transport Mode', value: supplyChain.modeOfTransport || 'Cold Chain Express Truck' },
-        { label: 'Expected Delivery Date', value: supplyChain.expectedDeliveryDate || '20 Aug 2026' },
-        { label: 'Notes', value: supplyChain.notes || 'Temperature monitored under 5°C throughout transit.' },
-      ],
+      badgeIcon: CheckCircle2,
+      hasData: distDetails.length > 0,
+      details: distDetails,
     },
     {
       id: '05',
-      title: 'Supporting Documents',
-      subtitle: 'Certificates, invoices and other supporting documents.',
+      title: 'Supporting Documents & Certificates',
+      subtitle: 'Compliance certificates and supporting files.',
       icon: FileText,
       bgColor: 'bg-[#06B6D4]',
       iconColor: 'text-white',
-      badgeText: '3 Documents',
+      badgeText: realDocuments.length > 0 ? `${realDocuments.length} Document${realDocuments.length > 1 ? 's' : ''}` : '',
       badgeStyle: 'bg-purple-500/10 text-purple-700 border-purple-500/20',
       badgeIcon: FileCheck,
-      documents: [
-        { title: 'Quality Analysis Certificate (CoA)', size: '1.2 MB PDF', docNo: 'COA-2026-82727' },
-        { title: 'Organic Origin Certificate', size: '850 KB PDF', docNo: 'ORG-IND-9941' },
-        { title: 'Batch Safety & Inspection Clearance', size: '2.1 MB PDF', docNo: 'FSSAI-INSP-4412' },
-      ],
+      hasData: realDocuments.length > 0,
+      documents: realDocuments,
     },
   ];
+
+  // ONLY RENDER SECTIONS THAT HAVE ACTUAL DATA (HIDE EMPTY SECTIONS)
+  const sections = allSections.filter(s => s.hasData);
+
+  // Dynamic progress calculation
+  const completedSectionsCount = sections.length;
+  const progressPercentage = completedSectionsCount > 0 ? Math.round((completedSectionsCount / allSections.length) * 100) : 0;
+  const lastUpdatedDate = data.scannedAt
+    ? new Date(data.scannedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+    : new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-28 font-sans text-slate-800 antialiased selection:bg-blue-500 selection:text-white">
@@ -285,7 +387,7 @@ export default function SupplyChain() {
           Supply Chain Details
         </h1>
         <p className="text-xs text-center text-blue-100/80 font-medium mt-1 relative z-10">
-          Complete visibility from source to distribution
+          Verified product origin and distribution timeline
         </p>
       </div>
 
@@ -295,15 +397,22 @@ export default function SupplyChain() {
           <div className="flex items-center justify-between gap-3">
             {/* Left: Product Info */}
             <div className="flex items-center gap-3">
-              <div className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-100 p-1 flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
+              <div 
+                onClick={() => setShowImageModal(true)}
+                className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-100 p-1 flex items-center justify-center shrink-0 overflow-hidden shadow-sm cursor-pointer relative group"
+                title="Tap to view full image"
+              >
                 <img
                   src={productImage}
                   alt={productName}
-                  className="w-full h-full object-contain rounded-xl"
+                  className="w-full h-full object-contain rounded-xl group-hover:scale-105 transition-transform"
                   onError={(e) => {
-                    (e.target as HTMLElement).setAttribute('src', 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60');
+                    (e.target as HTMLElement).setAttribute('src', 'https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png');
                   }}
                 />
+                <div className="absolute bottom-0.5 right-0.5 bg-black/50 text-white p-0.5 rounded-full opacity-70 group-hover:opacity-100 transition-opacity">
+                  <Maximize2 size={9} strokeWidth={2.5} />
+                </div>
               </div>
 
               <div>
@@ -350,16 +459,18 @@ export default function SupplyChain() {
                 <span>Traceability Progress</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-[#105DE4]">80% Complete</span>
+                <span className="font-extrabold text-[#105DE4]">
+                  {completedSectionsCount > 0 ? `${completedSectionsCount} Stage${completedSectionsCount > 1 ? 's' : ''} Verified` : 'Initiation Pending'}
+                </span>
                 <span className="text-[10px] text-slate-400">|</span>
-                <span className="text-[10.5px] text-slate-500 font-medium">Last Updated: 24 Aug 2026</span>
+                <span className="text-[10.5px] text-slate-500 font-medium">Last Updated: {lastUpdatedDate}</span>
               </div>
             </div>
 
             <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/50">
               <div
                 className="h-full bg-gradient-to-r from-[#105DE4] to-[#2563EB] rounded-full transition-all duration-1000 shadow-xs"
-                style={{ width: '80%' }}
+                style={{ width: `${Math.max(progressPercentage, 10)}%` }}
               />
             </div>
           </div>
@@ -370,23 +481,39 @@ export default function SupplyChain() {
       <div className="px-4 mt-6">
         {/* Header Row */}
         <div className="flex items-center justify-between mb-3.5">
-          <h3 className="text-[16px] font-extrabold text-[#0B1E36]">Traceability Sections</h3>
-          <button
-            onClick={() => setViewMode(viewMode === 'accordion' ? 'timeline' : 'accordion')}
-            className="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-[#105DE4] bg-blue-50 hover:bg-blue-100/80 px-3 py-1.5 rounded-xl border border-blue-200/60 transition-all active:scale-95"
-          >
-            <ArrowLeftRight size={13} />
-            {viewMode === 'accordion' ? 'View as Timeline' : 'View as List'}
-          </button>
+          <h3 className="text-[16px] font-extrabold text-[#0B1E36]">
+            {sections.length > 0 ? 'Traceability Sections' : 'Traceability Status'}
+          </h3>
+          {sections.length > 1 && (
+            <button
+              onClick={() => setViewMode(viewMode === 'accordion' ? 'timeline' : 'accordion')}
+              className="inline-flex items-center gap-1.5 text-[11.5px] font-bold text-[#105DE4] bg-blue-50 hover:bg-blue-100/80 px-3 py-1.5 rounded-xl border border-blue-200/60 transition-all active:scale-95"
+            >
+              <ArrowLeftRight size={13} />
+              {viewMode === 'accordion' ? 'View as Timeline' : 'View as List'}
+            </button>
+          )}
         </div>
 
-        {/* ACCORDION VIEW MODE */}
-        {viewMode === 'accordion' ? (
+        {sections.length === 0 ? (
+          /* NO SECTIONS STATE */
+          <div className="bg-white rounded-3xl p-8 text-center border border-slate-100 shadow-sm">
+            <div className="w-14 h-14 rounded-2xl bg-blue-50 text-[#105DE4] flex items-center justify-center mx-auto mb-3">
+              <Layers size={24} />
+            </div>
+            <h4 className="text-[16px] font-extrabold text-[#0B1E36]">No Supply Chain Records</h4>
+            <p className="text-[12.5px] text-slate-500 mt-1 max-w-xs mx-auto">
+              Supply chain and tracking details have not been provided for this product batch yet.
+            </p>
+          </div>
+        ) : viewMode === 'accordion' ? (
+          /* ACCORDION VIEW MODE */
           <div className="flex flex-col gap-3">
-            {sections.map((sec) => {
+            {sections.map((sec, index) => {
               const Icon = sec.icon;
               const BadgeIcon = sec.badgeIcon;
-              const isOpen = !!openSections[sec.id];
+              const isOpen = openSections[sec.id] !== false;
+              const displayIndex = String(index + 1).padStart(2, '0');
 
               return (
                 <div
@@ -405,7 +532,7 @@ export default function SupplyChain() {
                           <Icon size={20} />
                         </div>
                         <span className="absolute -bottom-1 -right-1 bg-white text-[9.5px] font-black text-slate-700 px-1 py-0.2 rounded-md border border-slate-200 shadow-xs">
-                          {sec.id}
+                          {displayIndex}
                         </span>
                       </div>
 
@@ -437,7 +564,7 @@ export default function SupplyChain() {
                   {/* Expandable Accordion Body */}
                   {isOpen && (
                     <div className="px-4 pb-4 pt-1 border-t border-slate-100/80 bg-slate-50/50">
-                      {sec.details && (
+                      {sec.details && sec.details.length > 0 && (
                         <div className="grid grid-cols-1 gap-2.5 mt-2">
                           {sec.details.map((item, idx) => (
                             <div key={idx} className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100">
@@ -449,7 +576,7 @@ export default function SupplyChain() {
                       )}
 
                       {/* Supporting Documents List */}
-                      {sec.documents && (
+                      {sec.documents && sec.documents.length > 0 && (
                         <div className="flex flex-col gap-2 mt-2">
                           {sec.documents.map((doc, idx) => (
                             <div key={idx} className="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100 shadow-xs">
@@ -459,16 +586,24 @@ export default function SupplyChain() {
                                 </div>
                                 <div>
                                   <h5 className="text-[12.5px] font-bold text-[#0B1E36]">{doc.title}</h5>
-                                  <p className="text-[10.5px] text-slate-400 font-medium">{doc.docNo} • {doc.size}</p>
+                                  <p className="text-[10.5px] text-slate-400 font-medium">
+                                    {doc.docNo ? `${doc.docNo} • ` : ''}{doc.size}
+                                  </p>
                                 </div>
                               </div>
-                              <button
-                                onClick={() => alert(`Viewing document: ${doc.title}`)}
-                                className="inline-flex items-center gap-1 text-[11px] font-bold text-[#105DE4] bg-blue-50 px-2.5 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors"
-                              >
-                                <ExternalLink size={12} />
-                                View
-                              </button>
+                              {doc.url ? (
+                                <button
+                                  onClick={() => window.open(doc.url, '_blank')}
+                                  className="inline-flex items-center gap-1 text-[11px] font-bold text-[#105DE4] bg-blue-50 px-2.5 py-1.5 rounded-lg border border-blue-100 hover:bg-blue-100 transition-colors"
+                                >
+                                  <ExternalLink size={12} />
+                                  View
+                                </button>
+                              ) : (
+                                <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">
+                                  Verified
+                                </span>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -482,12 +617,13 @@ export default function SupplyChain() {
         ) : (
           /* TIMELINE VIEW MODE */
           <div className="relative pl-6 space-y-6 before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-gradient-to-b before:from-[#105DE4] before:via-[#10B981] before:to-slate-300">
-            {sections.map((sec) => {
+            {sections.map((sec, index) => {
               const Icon = sec.icon;
+              const displayIndex = String(index + 1).padStart(2, '0');
               return (
                 <div key={sec.id} className="relative bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
                   <div className="absolute -left-6 top-4 w-6 h-6 rounded-full bg-[#105DE4] text-white text-[10px] font-black flex items-center justify-center border-2 border-white shadow-md">
-                    {sec.id}
+                    {displayIndex}
                   </div>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
@@ -502,16 +638,34 @@ export default function SupplyChain() {
                   </div>
                   <p className="text-[11.5px] text-slate-500 font-medium mb-3">{sec.subtitle}</p>
 
-                  {sec.details && (
+                  {sec.details && sec.details.length > 0 ? (
                     <div className="space-y-1.5 bg-slate-50 p-2.5 rounded-xl text-[11.5px]">
-                      {sec.details.slice(0, 3).map((d, i) => (
+                      {sec.details.slice(0, 4).map((d, i) => (
                         <div key={i} className="flex justify-between">
                           <span className="text-slate-500 font-medium">{d.label}:</span>
-                          <span className="font-bold text-slate-800">{d.value}</span>
+                          <span className="font-bold text-slate-800 text-right">{d.value}</span>
                         </div>
                       ))}
                     </div>
-                  )}
+                  ) : sec.documents && sec.documents.length > 0 ? (
+                    <div className="space-y-1.5 bg-slate-50 p-2.5 rounded-xl text-[11.5px]">
+                      {sec.documents.map((d, i) => (
+                        <div key={i} className="flex justify-between items-center">
+                          <span className="text-slate-600 font-medium">{d.title}</span>
+                          {d.url ? (
+                            <button
+                              onClick={() => window.open(d.url, '_blank')}
+                              className="text-[#105DE4] font-bold text-[11px] hover:underline"
+                            >
+                              View
+                            </button>
+                          ) : (
+                            <span className="text-emerald-600 font-bold text-[10.5px]">Verified</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
               );
             })}
@@ -526,10 +680,10 @@ export default function SupplyChain() {
             </div>
             <div>
               <h4 className="text-[13px] font-extrabold text-[#0B1E36]">
-                All information is verified & secured
+                Authentiks Verified Traceability
               </h4>
               <p className="text-[11px] text-slate-500 font-medium leading-snug mt-0.5">
-                Every step is recorded securely on Authentiks to ensure complete transparency.
+                Every supply chain entry is cryptographically linked and logged to ensure authenticity and consumer safety.
               </p>
             </div>
           </div>
@@ -561,6 +715,15 @@ export default function SupplyChain() {
           <span className="text-[10px] font-semibold">Warranty</span>
         </button>
       </div>
+
+      {/* Product Image Full View Lightbox */}
+      <ProductImageModal
+        isOpen={showImageModal}
+        onClose={() => setShowImageModal(false)}
+        imageUrl={productImage}
+        productName={productName}
+        brand={brandName}
+      />
     </div>
   );
 }

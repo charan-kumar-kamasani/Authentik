@@ -52,6 +52,8 @@ const ProductPassport = () => {
         certificates: (product.certificates && product.certificates.length > 0) ? product.certificates : ((order.certificates && order.certificates.length > 0) ? order.certificates : (template.certificates || d.certificates)),
         coupon: product.coupon || order.coupon || template.coupon || d.coupon,
         couponCode: product.couponCode || order.couponCode || template.couponCode || d.couponCode,
+        supplyChain: product.supplyChain || order.supplyChain || template.supplyChain || d.supplyChain,
+        showSupplyChain: product.showSupplyChain || order.showSupplyChain || template.showSupplyChain || d.showSupplyChain,
       };
     }
     return d;
