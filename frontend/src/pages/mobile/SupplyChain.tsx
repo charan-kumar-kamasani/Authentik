@@ -30,75 +30,7 @@ import ProductImageModal from '../../components/ProductImageModal';
 
 export const isSupplyChainEnabled = (data?: any): boolean => {
   if (!data) return false;
-
-  // 0. Demo QR codes & mock preview
-  if (data.isDemo || (typeof data.qrCode === 'string' && data.qrCode.startsWith('DEMO-'))) {
-    return true;
-  }
-
-  // 1. Check direct supply chain flag or data in payload/product/template
-  if (
-    data.showSupplyChain ||
-    data.supplyChain ||
-    data.productId?.supplyChain ||
-    data.orderId?.supplyChain ||
-    data.templateData?.supplyChain
-  ) {
-    return true;
-  }
-
-  // 2. Check Vite / Process environment variables
-  const viteEnv = (import.meta as any).env?.VITE_TEST_SUPPLY_SHOW || (import.meta as any).env?.TEST_SUPPLY_SHOW;
-  
-  // Extract user phone from localStorage if present
-  let userPhone = '';
-  try {
-    const userInfoStr = localStorage.getItem('userInfo');
-    if (userInfoStr) {
-      const userInfo = JSON.parse(userInfoStr);
-      userPhone = String(userInfo.mobile || userInfo.phone || userInfo.phoneNumber || '').trim();
-    }
-  } catch (e) {
-    // Ignore parse error
-  }
-
-  const payloadPhone = String(data?.scannedBy || data?.originalScan?.scannedBy || data?.userPhone || '').trim();
-
-  if (viteEnv) {
-    const val = String(viteEnv).trim().toLowerCase();
-    
-    // Explicit boolean or wildcard values
-    if (val === 'true' || val === '1' || val === 'yes' || val === 'all') {
-      return true;
-    }
-
-    // Phone numbers list (e.g. "6301421560,9884139144")
-    const allowedPhones = val.split(',').map(p => p.replace(/[^0-9]/g, '').trim()).filter(Boolean);
-    if (allowedPhones.length > 0) {
-      const cleanUserPhone = userPhone.replace(/[^0-9]/g, '');
-      const cleanPayloadPhone = payloadPhone.replace(/[^0-9]/g, '');
-
-      // Check if logged in user's phone or scan payload phone matches allowed numbers
-      const isMatched = allowedPhones.some(ap => {
-        if (!ap) return false;
-        return (cleanUserPhone && (cleanUserPhone.includes(ap) || ap.includes(cleanUserPhone))) ||
-               (cleanPayloadPhone && (cleanPayloadPhone.includes(ap) || ap.includes(cleanPayloadPhone)));
-      });
-
-      if (isMatched) return true;
-
-      // If user phone is not in localStorage yet, return true if env var exists so test scan previews work out of the box!
-      if (!cleanUserPhone && !cleanPayloadPhone) {
-        return true;
-      }
-
-      return isMatched;
-    }
-
-    return true;
-  }
-
-  return false;
+  return true;
 };
 
 export default function SupplyChain() {
