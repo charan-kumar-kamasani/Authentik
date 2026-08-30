@@ -140,8 +140,11 @@ function ResultAuthentic({ data }: { data: any }) {
   const [invoiceImages, setInvoiceImages] = useState<{ file: File; preview: string }[]>([]);
   const warrantyFileRef = useRef<HTMLInputElement>(null);
 
-  // Determine colors
-  const isBatchQr = data.qrType === "batch" || productObj.qrType === "batch" || orderObj.qrType === "batch";
+  // Determine if this is a Batch QR, Product QR, or Individual unit QR
+  const qrTypeResolved = (data.qrType || productObj.qrType || orderObj.qrType || 'individual').toLowerCase();
+  const isBatchQr = qrTypeResolved === 'batch';
+  const isProductQr = qrTypeResolved === 'product' || qrTypeResolved === 'product_qr';
+  const isInfoQr = isBatchQr || isProductQr;
   const productName = data.productName || data.productId?.productName || "Product Info";
 
   // Check for image in data, then data.productId, then data.images array
@@ -433,8 +436,8 @@ function ResultAuthentic({ data }: { data: any }) {
           </button>
         </div>
 
-        {/* Dynamic Header Section (Batch vs Product) */}
-        {isBatchQr ? (
+        {/* Dynamic Header Section (Batch vs Product vs Individual) */}
+        {isInfoQr ? (
           <div className="flex flex-col relative z-10 pt-2 pb-10 animate-[slide-up_0.5s_ease-out]">
             {/* Main 2-Column Hero Section */}
             <div className="flex items-center gap-3.5 mb-5">
@@ -463,13 +466,15 @@ function ResultAuthentic({ data }: { data: any }) {
               {/* Right Column: Information */}
               <div className="flex flex-col flex-1 pr-1">
                 <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#1E40AF]/60 border border-blue-400/30 text-blue-200 text-[10px] font-bold uppercase tracking-wider mb-1.5 self-start backdrop-blur-sm shadow-sm">
-                  PRODUCT INFORMATION
+                  {isBatchQr ? "BATCH INFORMATION" : "PRODUCT INFORMATION"}
                 </div>
                 <h2 className="text-white text-[19px] sm:text-[21px] font-extrabold leading-snug tracking-tight mb-1">
                   Real insights.<br />Every time you scan.
                 </h2>
                 <p className="text-blue-100/80 text-[11px] sm:text-[12px] leading-relaxed font-normal">
-                  This QR represents authentic product details. Scan it multiple times to explore product information.
+                  {isBatchQr 
+                    ? "This QR represents authentic batch details. Scan it multiple times to explore batch-level information."
+                    : "This QR represents authentic product details. Scan it multiple times to explore product information."}
                 </p>
               </div>
             </div>
@@ -494,7 +499,7 @@ function ResultAuthentic({ data }: { data: any }) {
                   <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4" strokeWidth={2} />
                 </div>
                 <span className="text-white text-[10px] sm:text-[11px] font-semibold leading-tight">
-                  Complete Product<br />Information
+                  {isBatchQr ? "Complete Batch" : "Complete Product"}<br />Information
                 </span>
               </div>
 
@@ -518,8 +523,8 @@ function ResultAuthentic({ data }: { data: any }) {
               )}
             </div>
             <h2 className="text-white text-[24px] font-bold tracking-tight mb-1.5">Authentic Product</h2>
-            <p className="text-[#B3C8F9] text-[13px] font-medium text-center max-w-[240px] leading-relaxed">
-              This product is verified by Authentiks
+            <p className="text-blue-100 text-[13px] font-medium max-w-[280px] text-center leading-relaxed">
+              This product is verified authentic and covered under manufacturer protection.
             </p>
           </div>
         )}
@@ -528,34 +533,26 @@ function ResultAuthentic({ data }: { data: any }) {
       {/* Main Scrollable Content */}
       <div className="flex-1 px-4 -mt-6 relative z-20 flex flex-col gap-4 pb-10">
         
-        {/* Product Info Card */}
-        <div className="bg-white rounded-[24px] p-5 shadow-[0_4px_25px_rgba(0,0,0,0.06)] flex gap-4">
+        {/* 1. Main Product Card with horizontal layout */}
+        <div className="bg-white rounded-3xl p-4 shadow-[0_10px_30px_rgba(0,0,0,0.06)] border border-slate-100 flex items-center gap-4 relative z-20">
           <div 
             onClick={() => setShowImageModal(true)}
-            className="w-[100px] h-[120px] flex-shrink-0 flex items-center justify-center cursor-pointer group relative"
-            title="Tap to view full image"
+            className="w-20 h-20 bg-slate-50 border border-slate-100/80 rounded-2xl p-2 flex items-center justify-center shrink-0 shadow-inner overflow-hidden cursor-pointer active:scale-95 transition-transform"
+            title="Click to view full image"
           >
             <img 
               src={productImage || "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png"} 
               alt={productName} 
-              className="w-full h-full object-contain drop-shadow-md mix-blend-multiply group-hover:scale-105 transition-transform" 
+              className="w-full h-full object-contain hover:scale-105 transition-transform duration-300" 
             />
-            <div className="absolute bottom-0 right-0 bg-slate-900/60 backdrop-blur-md text-white p-1 rounded-full opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all shadow-sm">
-              <Maximize2 size={11} strokeWidth={2.5} />
-            </div>
           </div>
-          <div className="flex flex-col flex-1 py-1 justify-center">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <span className="text-[#0B1E36] font-bold text-[13px]">{companyName}</span>
-              <ShieldCheck className="w-[14px] h-[14px] text-[#105DE4] fill-[#105DE4] stroke-white" strokeWidth={1} />
-            </div>
-            <h3 className="text-[#0B1E36] font-extrabold text-[17px] leading-tight mb-1">{productName}</h3>
-            {(data.category || data.productId?.category) && (
-              <p className="text-[#5A7184] text-[13px] font-medium mb-2">{data.category || data.productId?.category}</p>
-            )}
+          <div className="flex flex-col flex-1 min-w-0">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">{companyName}</span>
+            <h1 className="text-[15px] font-black text-[#0B1E36] leading-tight line-clamp-2 mb-1">{productName}</h1>
             
-            <div className="flex flex-wrap gap-2 mt-1 mb-2.5">
-              {(data.variants || data.productId?.variants || []).map((v: any, index: number) => (
+            {/* Dynamic Custom Variants / Attributes Pills */}
+            <div className="flex flex-wrap gap-1.5 my-1">
+              {variantList.map((v: any, index: number) => (
                 <span 
                   key={index}
                   className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wide ${index % 2 === 0 ? 'bg-[#EEF2FF] text-[#4F46E5]' : 'bg-[#ECFDF5] text-[#059669]'}`}
@@ -565,7 +562,7 @@ function ResultAuthentic({ data }: { data: any }) {
               ))}
             </div>
             
-            {!isBatchQr && (
+            {!isInfoQr && (
               <div className="mt-auto pt-1 flex items-center gap-1.5">
                 <div className="w-3.5 h-3.5 bg-[#105DE4] rounded-full flex items-center justify-center shadow-[0_2px_4px_rgba(16,93,228,0.2)]">
                   <CheckCircle2 size={9} className="text-white" strokeWidth={3} />
