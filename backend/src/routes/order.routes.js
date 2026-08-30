@@ -163,8 +163,8 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       if (brandDoc) finalCompanyId = brandDoc.companyId;
     }
 
-    const isBatch = (req.body.qrType === 'batch');
-    const orderStatus = 'Pending Authorization';
+    const isSingleQr = (req.body.qrType === 'batch' || req.body.qrType === 'product' || req.body.qrType === 'product_qr' || req.body.qrType === 'individual_product');
+    const orderStatus = isSingleQr ? 'Received' : 'Pending Authorization';
 
     const order = new Order({
       orderId,
@@ -175,7 +175,7 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       batchNo: batchNo || `BATCH-${orderId}`,
       manufactureDate,
       expiryDate,
-      quantity: isBatch ? 1 : quantityNumber,
+      quantity: isSingleQr ? 1 : quantityNumber,
       qrType: req.body.qrType || 'product',
       description,
       productInfo,
@@ -184,8 +184,8 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       companyId: finalCompanyId,
       company: (req.user.role === 'company') ? req.user._id : (finalCompanyId ? null : null), // legacy
       status: orderStatus,
-      qrCodesGenerated: false,
-      qrGeneratedCount: 0,
+      qrCodesGenerated: isSingleQr,
+      qrGeneratedCount: isSingleQr ? 1 : 0,
       // New dynamic fields (sanitize to avoid empty objects)
       mfdOn: (mfdOn && mfdOn.month && mfdOn.year) ? mfdOn : undefined,
       bestBefore: (bestBefore && bestBefore.value) ? bestBefore : undefined,
@@ -232,22 +232,22 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       // Supply Chain Details (if provided)
       supplyChain: (req.body.supplyChain && typeof req.body.supplyChain === 'object' && Object.keys(req.body.supplyChain).length > 0) ? req.body.supplyChain : undefined,
       // Calculate and save pricing
-      amount: (await calculateQrPrice(isBatch ? 1 : quantityNumber)).total,
-      subtotal: (await calculateQrPrice(isBatch ? 1 : quantityNumber)).subtotal,
-      tax: (await calculateQrPrice(isBatch ? 1 : quantityNumber)).tax,
-      pricePerQr: (await calculateQrPrice(isBatch ? 1 : quantityNumber)).pricePerQr,
+      amount: (await calculateQrPrice(isSingleQr ? 1 : quantityNumber)).total,
+      subtotal: (await calculateQrPrice(isSingleQr ? 1 : quantityNumber)).subtotal,
+      tax: (await calculateQrPrice(isSingleQr ? 1 : quantityNumber)).tax,
+      pricePerQr: (await calculateQrPrice(isSingleQr ? 1 : quantityNumber)).pricePerQr,
       history: [{
         status: orderStatus,
         changedBy: req.user._id,
         role: req.user.role,
-        comment: isBatch ? 'Batch QR order created and auto-authorized (Superadmin approval not required)' : 'Order created and awaiting authorization'
+        comment: isSingleQr ? 'Single QR created and mapped automatically' : 'Order created and awaiting authorization'
       }]
     });
 
     const createdOrder = await order.save();
-    
-    // Auto-generate Batch QR product if batch level
-    if (isBatch) {
+
+    // Map 1 physical Blank QR and generate product immediately for single QR orders
+    if (isSingleQr) {
       try {
         const BlankQr = require('../models/BlankQr');
         const Product = require('../models/Product');
@@ -266,9 +266,12 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
 
         if (assignedBlankQr) {
           qrCode = assignedBlankQr.qrCode;
+          createdOrder.startSerialNumber = assignedBlankQr.serialNumber;
+          createdOrder.endSerialNumber = assignedBlankQr.serialNumber;
+          await createdOrder.save();
         } else {
           const uniqueSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
-          qrCode = `${brand || 'BRAND'}-BATCH-${createdOrder.orderId}-${uniqueSuffix}`;
+          qrCode = `${brand || 'BRAND'}-${req.body.qrType === 'batch' ? 'BATCH' : 'PROD'}-${createdOrder.orderId}-${uniqueSuffix}`;
         }
 
         const lastProduct = await Product.findOne({ brand: brand || 'Unknown' }).sort({ sequence: -1 });
@@ -294,7 +297,7 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
           description: createdOrder.description,
           productInfo: createdOrder.productInfo,
           quantity: 1,
-          qrType: 'batch',
+          qrType: req.body.qrType || 'product',
           sequence: startSeq,
           orderId: createdOrder._id,
           isActive: true,
@@ -307,6 +310,15 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
           assignedBlankQr.isAssigned = true;
           assignedBlankQr.assignedToProduct = savedProd._id;
           await assignedBlankQr.save();
+
+          if (finalCompanyId) {
+            const unassignedForCompanyCount = await BlankQr.countDocuments({
+              assignedToCompany: finalCompanyId,
+              isAssigned: false,
+              isBlocked: false
+            });
+            await Company.findByIdAndUpdate(finalCompanyId, { qrCredits: unassignedForCompanyCount });
+          }
         }
 
         if (createdOrder.coupon && createdOrder.coupon.title) {
@@ -326,7 +338,7 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
           });
         }
       } catch (genErr) {
-        console.error('Error auto-generating Batch QR product:', genErr);
+        console.error('Error auto-generating Single QR product:', genErr);
       }
     }
     

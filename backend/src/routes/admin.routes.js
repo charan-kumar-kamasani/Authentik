@@ -1686,7 +1686,18 @@ router.get('/credits/balance', protect, async (req, res) => {
         const company = await Company.findById(user.companyId);
         if (!company) return res.status(404).json({ message: 'Company not found' });
         
-        res.json({ companyId: company._id, companyName: company.companyName, qrCredits: company.qrCredits || 0, hasUsedTrial: company.hasUsedTrial || false });
+        const BlankQr = require('../models/BlankQr');
+        const unassignedCount = await BlankQr.countDocuments({
+            assignedToCompany: company._id,
+            isAssigned: false,
+            isBlocked: false
+        });
+        if (company.qrCredits !== unassignedCount) {
+            company.qrCredits = unassignedCount;
+            await company.save({ validateModifiedOnly: true });
+        }
+
+        res.json({ companyId: company._id, companyName: company.companyName, qrCredits: unassignedCount, hasUsedTrial: company.hasUsedTrial || false });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

@@ -163,7 +163,7 @@ export default function AdminLayout({ children }) {
         // try common shapes: { qrCredits }, { credits }
         const val =
           (bal &&
-            (bal.qrCredits || bal.credits || bal.available || bal.balance)) ||
+            (bal.qrCredits !== undefined ? bal.qrCredits : (bal.credits !== undefined ? bal.credits : (bal.available !== undefined ? bal.available : bal.balance)))) ??
           null;
         setRemainingCredits(val !== null ? Number(val) : null);
       } catch (e) {
@@ -179,11 +179,13 @@ export default function AdminLayout({ children }) {
       role === "superadmin"
     ) {
       fetchCredits();
+      window.addEventListener('creditsUpdated', fetchCredits);
     }
     return () => {
       mounted = false;
+      window.removeEventListener('creditsUpdated', fetchCredits);
     };
-  }, [role, token]);
+  }, [role, token, location.pathname]);
 
   // Start browser push notifications for new leads (superadmin only)
   useEffect(() => {

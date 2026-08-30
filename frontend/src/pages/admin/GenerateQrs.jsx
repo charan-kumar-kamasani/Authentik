@@ -387,6 +387,7 @@ export default function GenerateQrs() {
       const inputs = stepEl.querySelectorAll('input, select, textarea');
       for (let i = 0; i < inputs.length; i++) {
         if (inputs[i].name === 'batchNo' && qrType !== 'batch') continue;
+        if ((inputs[i].name === 'quantity' || inputs[i].type === 'number') && currentStep === 1 && qrType !== 'individual') continue;
         if (!inputs[i].checkValidity()) {
           inputs[i].reportValidity();
           return;
@@ -425,7 +426,12 @@ export default function GenerateQrs() {
         if (field.isBatchNo && qrType !== 'batch') {
           continue;
         }
-        const val = dynamicFieldValues[field.fieldName];
+        if (field.isQuantity && qrType !== 'individual') {
+          continue;
+        }
+        const val = (field.isQuantity && qrType === 'individual') 
+          ? (dynamicFieldValues[field.fieldName] || qrQuantity || 1000) 
+          : dynamicFieldValues[field.fieldName];
         if (field.isMandatory && !val) {
           await confirm({ title: 'Required Field', description: `${field.fieldLabel} is required`, cancelText: null });
           setSubmitting(false);
@@ -558,9 +564,14 @@ export default function GenerateQrs() {
 
 
 
-      // Minimum quantity check (Field based)
-      if (quantityField && quantityField.validation?.min) {
-        if (quantity < quantityField.validation.min) {
+      // Minimum quantity check (Only for Individual Product QRs)
+      if (qrType === 'individual') {
+        if (quantity < 250) {
+          await confirm({ title: 'Validation Failed', description: 'Minimum quantity for Individual Product QRs is 250 units.', cancelText: null });
+          setSubmitting(false);
+          return;
+        }
+        if (quantityField && quantityField.validation?.min && quantity < quantityField.validation.min) {
           await confirm({ title: 'Validation Failed', description: `Minimum quantity allowed is ${quantityField.validation.min} units.`, cancelText: null });
           setSubmitting(false);
           return;
@@ -734,11 +745,13 @@ export default function GenerateQrs() {
         });
         navigate('/orders');
       } else if (role === 'creator') {
+        const isSingle = (orderData.qrType === 'product' || orderData.qrType === 'batch');
         await createOrder(orderData, token);
+        window.dispatchEvent(new Event('creditsUpdated'));
         setMobilePreviewOrder(null);
         await confirm({
           title: 'Success!',
-          description: 'Order created successfully. The Authorizer will review it.',
+          description: isSingle ? 'QR created and mapped successfully!' : 'Order created successfully. The Authorizer will review it.',
           confirmText: 'Done',
           cancelText: null
         });
@@ -1397,7 +1410,8 @@ export default function GenerateQrs() {
                     <button 
                       type="button"
                       onClick={() => {
-                        const newQ = Math.max(10, (Number(qrQuantity) || 1000) - 250);
+                        const currentQ = Number(qrQuantity) || 1000;
+                        const newQ = Math.max(250, currentQ - 250);
                         setQrQuantity(newQ);
                         const qtyField = formConfig?.customFields?.find(f => f.isQuantity);
                         if (qtyField) setDynamicFieldValues(prev => ({ ...prev, [qtyField.fieldName]: newQ }));
@@ -1410,19 +1424,31 @@ export default function GenerateQrs() {
                       type="number" 
                       value={qrQuantity}
                       onChange={(e) => {
-                        const val = Math.max(0, Number(e.target.value));
+                        const val = e.target.value === '' ? '' : Number(e.target.value);
+                        setQrQuantity(val);
+                        const qtyField = formConfig?.customFields?.find(f => f.isQuantity);
+                        if (qtyField) setDynamicFieldValues(prev => ({ ...prev, [qtyField.fieldName]: val }));
+                      }}
+                      onBlur={(e) => {
+                        let val = Number(e.target.value) || 250;
+                        if (val < 250) val = 250;
+                        val = Math.round(val / 250) * 250;
+                        if (val < 250) val = 250;
+                        if (val > 100000) val = 100000;
                         setQrQuantity(val);
                         const qtyField = formConfig?.customFields?.find(f => f.isQuantity);
                         if (qtyField) setDynamicFieldValues(prev => ({ ...prev, [qtyField.fieldName]: val }));
                       }}
                       className="w-full h-10 text-center font-bold text-slate-900 border-none focus:outline-none focus:ring-0 text-base"
-                      min="10"
+                      min="250"
+                      step="250"
                       max="100000"
                     />
                     <button 
                       type="button"
                       onClick={() => {
-                        const newQ = Math.min(100000, (Number(qrQuantity) || 1000) + 250);
+                        const currentQ = Number(qrQuantity) || 1000;
+                        const newQ = Math.min(100000, currentQ + 250);
                         setQrQuantity(newQ);
                         const qtyField = formConfig?.customFields?.find(f => f.isQuantity);
                         if (qtyField) setDynamicFieldValues(prev => ({ ...prev, [qtyField.fieldName]: newQ }));
@@ -1433,7 +1459,7 @@ export default function GenerateQrs() {
                     </button>
                   </div>
                   <p className="text-[10.5px] text-slate-400 font-medium text-center mt-1.5">
-                    Minimum 10 • Maximum 1,00,000
+                    Minimum 250 • Maximum 1,00,000 (Multiples of 250)
                   </p>
                 </div>
 
