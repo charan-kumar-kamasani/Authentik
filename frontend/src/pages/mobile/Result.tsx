@@ -552,7 +552,7 @@ function ResultAuthentic({ data }: { data: any }) {
             
             {/* Dynamic Custom Variants / Attributes Pills */}
             <div className="flex flex-wrap gap-1.5 my-1">
-              {variantList.map((v: any, index: number) => (
+              {((Array.isArray(data.variants) && data.variants.length > 0) ? data.variants : ((Array.isArray(data.productId?.variants) && data.productId.variants.length > 0) ? data.productId.variants : (Array.isArray(productObj.variants) ? productObj.variants : []))).map((v: any, index: number) => (
                 <span 
                   key={index}
                   className={`px-2 py-0.5 rounded-md text-[10px] font-bold tracking-wide ${index % 2 === 0 ? 'bg-[#EEF2FF] text-[#4F46E5]' : 'bg-[#ECFDF5] text-[#059669]'}`}
@@ -573,14 +573,45 @@ function ResultAuthentic({ data }: { data: any }) {
           </div>
         </div>
 
-        {/* Horizontal Scanned On Bar */}
-        <div className="bg-white rounded-2xl px-4 py-3 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-slate-600">
-            <ScanLine size={16} className="text-[#105DE4]" />
-            <span className="text-[12px] font-semibold text-slate-500">Scanned on</span>
+        {/* Tracking Stats: 4-Column Grid for Batch Level, Horizontal Bar for Product / Individual */}
+        {isBatchQr ? (
+          <div className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex justify-between divide-x divide-slate-100">
+            <div className="flex flex-col items-center flex-1 px-1">
+              <ScanLine size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
+              <h4 className="text-[10px] font-bold text-slate-900 mb-1">Scanned On</h4>
+              <p className="text-[9px] text-slate-500 font-medium text-center leading-tight whitespace-pre-line">{scanDateStr}</p>
+            </div>
+            {mfdDate !== 'N/A' && (
+              <div className="flex flex-col items-center flex-1 px-1">
+                <Calendar size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
+                <h4 className="text-[10px] font-bold text-slate-900 mb-1">Mfd On</h4>
+                <p className="text-[9px] text-slate-500 font-medium text-center leading-tight">{mfdDate}</p>
+              </div>
+            )}
+            {expDate !== 'N/A' && (
+              <div className="flex flex-col items-center flex-1 px-1">
+                <Calendar size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
+                <h4 className="text-[10px] font-bold text-slate-900 mb-1">Expiry On</h4>
+                <p className="text-[9px] text-slate-500 font-medium text-center leading-tight">{expDate}</p>
+              </div>
+            )}
+            {batchNo !== 'N/A' && (
+              <div className="flex flex-col items-center flex-1 px-1">
+                <ShieldCheck size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
+                <h4 className="text-[10px] font-bold text-slate-900 mb-1">Batch No.</h4>
+                <p className="text-[9px] text-slate-500 font-medium text-center leading-tight">{batchNo}</p>
+              </div>
+            )}
           </div>
-          <span className="text-[12px] font-bold text-slate-900">{scanDateStr}</span>
-        </div>
+        ) : (
+          <div className="bg-white rounded-2xl px-4 py-3 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-slate-600">
+              <ScanLine size={16} className="text-[#105DE4]" />
+              <span className="text-[12px] font-semibold text-slate-500">Scanned on</span>
+            </div>
+            <span className="text-[12px] font-bold text-slate-900">{scanDateStr}</span>
+          </div>
+        )}
 
  {/* Review & Claim Reward Banner */}
         <button
