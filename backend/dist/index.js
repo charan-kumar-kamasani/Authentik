@@ -427231,7 +427231,7 @@ const orderSchema = new mongoose.Schema({
   manufactureDate: { type: String },
   expiryDate: { type: String },
   quantity: { type: Number, required: true },
-  qrType: { type: String, enum: ['batch', 'product'], default: 'product' },
+  qrType: { type: String, enum: ['batch', 'product', 'individual', 'product_qr', 'individual_product'], default: 'product' },
   description: { type: String },
   productInfo: { type: String },
   productImage: { type: String }, // URL of the product image
@@ -427552,7 +427552,7 @@ const productSchema = new mongoose.Schema(
       image: String
     }],
     quantity: Number,
-    qrType: { type: String, enum: ['batch', 'product'], default: 'product' },
+    qrType: { type: String, enum: ['batch', 'product', 'individual', 'product_qr', 'individual_product'], default: 'product' },
     productImage: String,
     sequence: { type: Number, default: 0 },
 
@@ -430139,7 +430139,18 @@ router.get('/credits/balance', protect, async (req, res) => {
         const company = await Company.findById(user.companyId);
         if (!company) return res.status(404).json({ message: 'Company not found' });
         
-        res.json({ companyId: company._id, companyName: company.companyName, qrCredits: company.qrCredits || 0, hasUsedTrial: company.hasUsedTrial || false });
+        const BlankQr = __nccwpck_require__(50294);
+        const unassignedCount = await BlankQr.countDocuments({
+            assignedToCompany: company._id,
+            isAssigned: false,
+            isBlocked: false
+        });
+        if (company.qrCredits !== unassignedCount) {
+            company.qrCredits = unassignedCount;
+            await company.save({ validateModifiedOnly: true });
+        }
+
+        res.json({ companyId: company._id, companyName: company.companyName, qrCredits: unassignedCount, hasUsedTrial: company.hasUsedTrial || false });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -432371,8 +432382,8 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       if (brandDoc) finalCompanyId = brandDoc.companyId;
     }
 
-    const isBatch = (req.body.qrType === 'batch');
-    const orderStatus = 'Pending Authorization';
+    const isSingleQr = (req.body.qrType === 'batch' || req.body.qrType === 'product' || req.body.qrType === 'product_qr' || req.body.qrType === 'individual_product');
+    const orderStatus = isSingleQr ? 'Received' : 'Pending Authorization';
 
     const order = new Order({
       orderId,
@@ -432383,7 +432394,7 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       batchNo: batchNo || `BATCH-${orderId}`,
       manufactureDate,
       expiryDate,
-      quantity: isBatch ? 1 : quantityNumber,
+      quantity: isSingleQr ? 1 : quantityNumber,
       qrType: req.body.qrType || 'product',
       description,
       productInfo,
@@ -432392,8 +432403,8 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       companyId: finalCompanyId,
       company: (req.user.role === 'company') ? req.user._id : (finalCompanyId ? null : null), // legacy
       status: orderStatus,
-      qrCodesGenerated: false,
-      qrGeneratedCount: 0,
+      qrCodesGenerated: isSingleQr,
+      qrGeneratedCount: isSingleQr ? 1 : 0,
       // New dynamic fields (sanitize to avoid empty objects)
       mfdOn: (mfdOn && mfdOn.month && mfdOn.year) ? mfdOn : undefined,
       bestBefore: (bestBefore && bestBefore.value) ? bestBefore : undefined,
@@ -432440,22 +432451,22 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       // Supply Chain Details (if provided)
       supplyChain: (req.body.supplyChain && typeof req.body.supplyChain === 'object' && Object.keys(req.body.supplyChain).length > 0) ? req.body.supplyChain : undefined,
       // Calculate and save pricing
-      amount: (await calculateQrPrice(isBatch ? 1 : quantityNumber)).total,
-      subtotal: (await calculateQrPrice(isBatch ? 1 : quantityNumber)).subtotal,
-      tax: (await calculateQrPrice(isBatch ? 1 : quantityNumber)).tax,
-      pricePerQr: (await calculateQrPrice(isBatch ? 1 : quantityNumber)).pricePerQr,
+      amount: (await calculateQrPrice(isSingleQr ? 1 : quantityNumber)).total,
+      subtotal: (await calculateQrPrice(isSingleQr ? 1 : quantityNumber)).subtotal,
+      tax: (await calculateQrPrice(isSingleQr ? 1 : quantityNumber)).tax,
+      pricePerQr: (await calculateQrPrice(isSingleQr ? 1 : quantityNumber)).pricePerQr,
       history: [{
         status: orderStatus,
         changedBy: req.user._id,
         role: req.user.role,
-        comment: isBatch ? 'Batch QR order created and auto-authorized (Superadmin approval not required)' : 'Order created and awaiting authorization'
+        comment: isSingleQr ? 'Single QR created and mapped automatically' : 'Order created and awaiting authorization'
       }]
     });
 
     const createdOrder = await order.save();
-    
-    // Auto-generate Batch QR product if batch level
-    if (isBatch) {
+
+    // Map 1 physical Blank QR and generate product immediately for single QR orders
+    if (isSingleQr) {
       try {
         const BlankQr = __nccwpck_require__(50294);
         const Product = __nccwpck_require__(67692);
@@ -432474,9 +432485,12 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
 
         if (assignedBlankQr) {
           qrCode = assignedBlankQr.qrCode;
+          createdOrder.startSerialNumber = assignedBlankQr.serialNumber;
+          createdOrder.endSerialNumber = assignedBlankQr.serialNumber;
+          await createdOrder.save();
         } else {
           const uniqueSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
-          qrCode = `${brand || 'BRAND'}-BATCH-${createdOrder.orderId}-${uniqueSuffix}`;
+          qrCode = `${brand || 'BRAND'}-${req.body.qrType === 'batch' ? 'BATCH' : 'PROD'}-${createdOrder.orderId}-${uniqueSuffix}`;
         }
 
         const lastProduct = await Product.findOne({ brand: brand || 'Unknown' }).sort({ sequence: -1 });
@@ -432502,7 +432516,7 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
           description: createdOrder.description,
           productInfo: createdOrder.productInfo,
           quantity: 1,
-          qrType: 'batch',
+          qrType: req.body.qrType || 'product',
           sequence: startSeq,
           orderId: createdOrder._id,
           isActive: true,
@@ -432515,6 +432529,15 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
           assignedBlankQr.isAssigned = true;
           assignedBlankQr.assignedToProduct = savedProd._id;
           await assignedBlankQr.save();
+
+          if (finalCompanyId) {
+            const unassignedForCompanyCount = await BlankQr.countDocuments({
+              assignedToCompany: finalCompanyId,
+              isAssigned: false,
+              isBlocked: false
+            });
+            await Company.findByIdAndUpdate(finalCompanyId, { qrCredits: unassignedForCompanyCount });
+          }
         }
 
         if (createdOrder.coupon && createdOrder.coupon.title) {
@@ -432534,7 +432557,7 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
           });
         }
       } catch (genErr) {
-        console.error('Error auto-generating Batch QR product:', genErr);
+        console.error('Error auto-generating Single QR product:', genErr);
       }
     }
     
@@ -439437,6 +439460,8 @@ const buildBatchQrPdf = async (products, options = {}) => {
   const order = options.orderObj || {};
   const sc = p.supplyChain || order.supplyChain || {};
 
+  const isProduct = options.isProductLevel || p.qrType === 'product' || p.qrType === 'product_qr' || order.qrType === 'product' || order.qrType === 'product_qr';
+
   const BOLD_FONT = __nccwpck_require__.ab + "Roboto-Bold.ttf";
   const REGULAR_FONT = __nccwpck_require__.ab + "Roboto-Regular.ttf";
 
@@ -439454,14 +439479,14 @@ const buildBatchQrPdf = async (products, options = {}) => {
 
   const brandTitle = p.brand || options.brand || "AUTHENTIKS";
   doc.fillColor("#FFFFFF").font(__nccwpck_require__.ab + "Roboto-Bold.ttf").fontSize(20).text(brandTitle.toUpperCase(), 35, 20, { lineBreak: false });
-  doc.fillColor("#8CB4D6").font(__nccwpck_require__.ab + "Roboto-Regular.ttf").fontSize(9).text("BATCH QR CODE & SPECIFICATION CERTIFICATE", 35, 46, { lineBreak: false });
+  doc.fillColor("#8CB4D6").font(__nccwpck_require__.ab + "Roboto-Regular.ttf").fontSize(9).text(isProduct ? "PRODUCT QR CODE & SPECIFICATION CERTIFICATE" : "BATCH QR CODE & SPECIFICATION CERTIFICATE", 35, 46, { lineBreak: false });
 
   // Header Right side: Order ID & Date
   const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   doc.fillColor("#FFFFFF").font(__nccwpck_require__.ab + "Roboto-Bold.ttf").fontSize(9).text(`ORDER ID: ${options.orderId || order.orderId || 'N/A'}`, 350, 24, { width: 210, align: "right" });
   doc.fillColor("#94A3B8").font(__nccwpck_require__.ab + "Roboto-Regular.ttf").fontSize(8.5).text(`Generated: ${dateStr}`, 350, 42, { width: 210, align: "right" });
 
-  // 2. QR CODE CARD (Centered Upper Section - No "VERIFY & WIN" or "Use a Coin")
+  // 2. QR CODE CARD (Centered Upper Section)
   const qrCardX = (pageWidth - 240) / 2;
   doc.save();
   doc.roundedRect(qrCardX, 95, 240, 245, 12).fillAndStroke("#FAFAFA", "#E2E8F0");
@@ -439475,7 +439500,7 @@ const buildBatchQrPdf = async (products, options = {}) => {
 
   // Code string & text below QR
   doc.fillColor("#0b1b36").font(__nccwpck_require__.ab + "Roboto-Bold.ttf").fontSize(9.5).text(p.qrCode || 'N/A', qrCardX, 290, { width: 240, align: 'center' });
-  doc.fillColor("#64748B").font(__nccwpck_require__.ab + "Roboto-Regular.ttf").fontSize(8).text("Scan with camera to verify batch authenticity", qrCardX, 308, { width: 240, align: 'center' });
+  doc.fillColor("#64748B").font(__nccwpck_require__.ab + "Roboto-Regular.ttf").fontSize(8).text(isProduct ? "Scan with camera to view complete product information" : "Scan with camera to verify batch authenticity", qrCardX, 308, { width: 240, align: 'center' });
   doc.restore();
 
   // 3. PRODUCT & BATCH DETAILS CARD
@@ -439489,7 +439514,7 @@ const buildBatchQrPdf = async (products, options = {}) => {
   
   // Card Section Header
   doc.rect(cardX, currentY, cardW, 30).fill("#F1F5F9");
-  doc.fillColor("#0F172A").font(__nccwpck_require__.ab + "Roboto-Bold.ttf").fontSize(10).text("BATCH & PRODUCT SPECIFICATIONS", cardX + 15, currentY + 9);
+  doc.fillColor("#0F172A").font(__nccwpck_require__.ab + "Roboto-Bold.ttf").fontSize(10).text(isProduct ? "PRODUCT SPECIFICATIONS" : "BATCH & PRODUCT SPECIFICATIONS", cardX + 15, currentY + 9);
   
   // Table Content Inside Card
   const tableY = currentY + 40;
@@ -439516,9 +439541,9 @@ const buildBatchQrPdf = async (products, options = {}) => {
   const expStr = p.calculatedExpiryDate || p.expiryDate || (p.bestBefore ? `${p.bestBefore.value} ${p.bestBefore.unit}` : 'N/A');
 
   drawKvRow("Product Name", p.productName || 'N/A', "Brand / Manufacturer", p.brand || options.brand || 'N/A', tableY);
-  drawKvRow("Batch / Lot Number", p.batchNo || 'N/A', "SKU / Product Code", p.skuNumber || 'N/A', tableY + rowHeight);
+  drawKvRow(isProduct ? "Batch No (Optional)" : "Batch / Lot Number", p.batchNo || (isProduct ? 'N/A (Product Level)' : 'N/A'), "SKU / Product Code", p.skuNumber || 'N/A', tableY + rowHeight);
   drawKvRow("Manufacturing Date", mfdStr, "Expiry Date", expStr, tableY + rowHeight * 2);
-  drawKvRow("QR Type", "Batch-Level QR", "Status", "Active & Authenticated", tableY + rowHeight * 3, true);
+  drawKvRow("QR Type", isProduct ? "Product-Level QR" : "Batch-Level QR", "Status", "Active & Authenticated", tableY + rowHeight * 3, true);
 
   doc.restore();
 
@@ -439549,7 +439574,7 @@ const buildBatchQrPdf = async (products, options = {}) => {
   // 5. FOOTER
   doc.rect(0, 805, pageWidth, 36.89).fill("#F8FAFC");
   doc.moveTo(0, 805).lineTo(pageWidth, 805).strokeColor("#E2E8F0").lineWidth(1).stroke();
-  doc.fillColor("#64748B").font(__nccwpck_require__.ab + "Roboto-Regular.ttf").fontSize(8.5).text("Authentiks Enterprise Product Traceability System  •  Batch QR Code Certificate", 0, 818, { width: pageWidth, align: "center" });
+  doc.fillColor("#64748B").font(__nccwpck_require__.ab + "Roboto-Regular.ttf").fontSize(8.5).text(isProduct ? "Authentiks Enterprise Product Identity System  •  Product QR Code Certificate" : "Authentiks Enterprise Product Traceability System  •  Batch QR Code Certificate", 0, 818, { width: pageWidth, align: "center" });
 
   return doc;
 };
@@ -439559,9 +439584,12 @@ const buildBatchQrPdf = async (products, options = {}) => {
  * Note: Caller is responsible for calling doc.end() when finished.
  */
 const buildQrPdf = async (products, options = {}) => {
-  const isBatch = options.orderObj?.qrType === 'batch' || products[0]?.qrType === 'batch';
-  if (isBatch) {
-    return await buildBatchQrPdf(products, options);
+  const qrType = (options.orderObj?.qrType || products[0]?.qrType || options.qrType || '').toLowerCase();
+  const isBatch = qrType === 'batch';
+  const isProduct = qrType === 'product' || qrType === 'product_qr';
+
+  if (isBatch || isProduct || products.length === 1) {
+    return await buildBatchQrPdf(products, { ...options, isProductLevel: isProduct || (!isBatch && products.length === 1) });
   }
 
   /** ─── PAGE SIZE — A3 Plus Horizontal (19 × 13 inches) ─── **/

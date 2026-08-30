@@ -97,6 +97,8 @@ const buildBatchQrPdf = async (products, options = {}) => {
   const order = options.orderObj || {};
   const sc = p.supplyChain || order.supplyChain || {};
 
+  const isProduct = options.isProductLevel || p.qrType === 'product' || p.qrType === 'product_qr' || order.qrType === 'product' || order.qrType === 'product_qr';
+
   const BOLD_FONT = path.join(__dirname, "../assets/fonts/Roboto-Bold.ttf");
   const REGULAR_FONT = path.join(__dirname, "../assets/fonts/Roboto-Regular.ttf");
 
@@ -114,14 +116,14 @@ const buildBatchQrPdf = async (products, options = {}) => {
 
   const brandTitle = p.brand || options.brand || "AUTHENTIKS";
   doc.fillColor("#FFFFFF").font(BOLD_FONT).fontSize(20).text(brandTitle.toUpperCase(), 35, 20, { lineBreak: false });
-  doc.fillColor("#8CB4D6").font(REGULAR_FONT).fontSize(9).text("BATCH QR CODE & SPECIFICATION CERTIFICATE", 35, 46, { lineBreak: false });
+  doc.fillColor("#8CB4D6").font(REGULAR_FONT).fontSize(9).text(isProduct ? "PRODUCT QR CODE & SPECIFICATION CERTIFICATE" : "BATCH QR CODE & SPECIFICATION CERTIFICATE", 35, 46, { lineBreak: false });
 
   // Header Right side: Order ID & Date
   const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   doc.fillColor("#FFFFFF").font(BOLD_FONT).fontSize(9).text(`ORDER ID: ${options.orderId || order.orderId || 'N/A'}`, 350, 24, { width: 210, align: "right" });
   doc.fillColor("#94A3B8").font(REGULAR_FONT).fontSize(8.5).text(`Generated: ${dateStr}`, 350, 42, { width: 210, align: "right" });
 
-  // 2. QR CODE CARD (Centered Upper Section - No "VERIFY & WIN" or "Use a Coin")
+  // 2. QR CODE CARD (Centered Upper Section)
   const qrCardX = (pageWidth - 240) / 2;
   doc.save();
   doc.roundedRect(qrCardX, 95, 240, 245, 12).fillAndStroke("#FAFAFA", "#E2E8F0");
@@ -135,7 +137,7 @@ const buildBatchQrPdf = async (products, options = {}) => {
 
   // Code string & text below QR
   doc.fillColor("#0b1b36").font(BOLD_FONT).fontSize(9.5).text(p.qrCode || 'N/A', qrCardX, 290, { width: 240, align: 'center' });
-  doc.fillColor("#64748B").font(REGULAR_FONT).fontSize(8).text("Scan with camera to verify batch authenticity", qrCardX, 308, { width: 240, align: 'center' });
+  doc.fillColor("#64748B").font(REGULAR_FONT).fontSize(8).text(isProduct ? "Scan with camera to view complete product information" : "Scan with camera to verify batch authenticity", qrCardX, 308, { width: 240, align: 'center' });
   doc.restore();
 
   // 3. PRODUCT & BATCH DETAILS CARD
@@ -149,7 +151,7 @@ const buildBatchQrPdf = async (products, options = {}) => {
   
   // Card Section Header
   doc.rect(cardX, currentY, cardW, 30).fill("#F1F5F9");
-  doc.fillColor("#0F172A").font(BOLD_FONT).fontSize(10).text("BATCH & PRODUCT SPECIFICATIONS", cardX + 15, currentY + 9);
+  doc.fillColor("#0F172A").font(BOLD_FONT).fontSize(10).text(isProduct ? "PRODUCT SPECIFICATIONS" : "BATCH & PRODUCT SPECIFICATIONS", cardX + 15, currentY + 9);
   
   // Table Content Inside Card
   const tableY = currentY + 40;
@@ -176,9 +178,9 @@ const buildBatchQrPdf = async (products, options = {}) => {
   const expStr = p.calculatedExpiryDate || p.expiryDate || (p.bestBefore ? `${p.bestBefore.value} ${p.bestBefore.unit}` : 'N/A');
 
   drawKvRow("Product Name", p.productName || 'N/A', "Brand / Manufacturer", p.brand || options.brand || 'N/A', tableY);
-  drawKvRow("Batch / Lot Number", p.batchNo || 'N/A', "SKU / Product Code", p.skuNumber || 'N/A', tableY + rowHeight);
+  drawKvRow(isProduct ? "Batch No (Optional)" : "Batch / Lot Number", p.batchNo || (isProduct ? 'N/A (Product Level)' : 'N/A'), "SKU / Product Code", p.skuNumber || 'N/A', tableY + rowHeight);
   drawKvRow("Manufacturing Date", mfdStr, "Expiry Date", expStr, tableY + rowHeight * 2);
-  drawKvRow("QR Type", "Batch-Level QR", "Status", "Active & Authenticated", tableY + rowHeight * 3, true);
+  drawKvRow("QR Type", isProduct ? "Product-Level QR" : "Batch-Level QR", "Status", "Active & Authenticated", tableY + rowHeight * 3, true);
 
   doc.restore();
 
@@ -209,7 +211,7 @@ const buildBatchQrPdf = async (products, options = {}) => {
   // 5. FOOTER
   doc.rect(0, 805, pageWidth, 36.89).fill("#F8FAFC");
   doc.moveTo(0, 805).lineTo(pageWidth, 805).strokeColor("#E2E8F0").lineWidth(1).stroke();
-  doc.fillColor("#64748B").font(REGULAR_FONT).fontSize(8.5).text("Authentiks Enterprise Product Traceability System  •  Batch QR Code Certificate", 0, 818, { width: pageWidth, align: "center" });
+  doc.fillColor("#64748B").font(REGULAR_FONT).fontSize(8.5).text(isProduct ? "Authentiks Enterprise Product Identity System  •  Product QR Code Certificate" : "Authentiks Enterprise Product Traceability System  •  Batch QR Code Certificate", 0, 818, { width: pageWidth, align: "center" });
 
   return doc;
 };
@@ -219,9 +221,12 @@ const buildBatchQrPdf = async (products, options = {}) => {
  * Note: Caller is responsible for calling doc.end() when finished.
  */
 const buildQrPdf = async (products, options = {}) => {
-  const isBatch = options.orderObj?.qrType === 'batch' || products[0]?.qrType === 'batch';
-  if (isBatch) {
-    return await buildBatchQrPdf(products, options);
+  const qrType = (options.orderObj?.qrType || products[0]?.qrType || options.qrType || '').toLowerCase();
+  const isBatch = qrType === 'batch';
+  const isProduct = qrType === 'product' || qrType === 'product_qr';
+
+  if (isBatch || isProduct || products.length === 1) {
+    return await buildBatchQrPdf(products, { ...options, isProductLevel: isProduct || (!isBatch && products.length === 1) });
   }
 
   /** ─── PAGE SIZE — A3 Plus Horizontal (19 × 13 inches) ─── **/
