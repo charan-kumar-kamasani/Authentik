@@ -427231,6 +427231,7 @@ const orderSchema = new mongoose.Schema({
   manufactureDate: { type: String },
   expiryDate: { type: String },
   quantity: { type: Number, required: true },
+  qrType: { type: String, enum: ['batch', 'product'], default: 'product' },
   description: { type: String },
   productInfo: { type: String },
   productImage: { type: String }, // URL of the product image
@@ -427397,6 +427398,38 @@ const orderSchema = new mongoose.Schema({
     pointsDisbursed: { type: Number, default: 0 }
   },
 
+  // Supply Chain Details attached to this order
+  supplyChain: {
+    manufacturerName: String,
+    manufacturingUnit: String,
+    manufacturingLocation: String,
+    manufacturingDate: String,
+    batchNumber: String,
+    skuCode: String,
+    productionQuantity: String,
+    productionQuantityUnit: String,
+    countryOfManufacture: String,
+    rawMaterialSource: String,
+    countryOfOrigin: String,
+    supplierName: String,
+    certifications: String,
+    processingLocation: String,
+    packagingUnit: String,
+    packagingLocation: String,
+    packagingDate: String,
+    packagingType: String,
+    packSize: String,
+    numberOfUnitsPacked: String,
+    numberOfUnitsPackedUnit: String,
+    dispatchLocation: String,
+    distributorName: String,
+    distributionLocation: String,
+    modeOfTransport: String,
+    expectedDeliveryDate: String,
+    notes: String,
+    supportingDocument: String
+  },
+
 }, { timestamps: true });
 
 // Performance Indexes
@@ -427519,6 +427552,7 @@ const productSchema = new mongoose.Schema(
       image: String
     }],
     quantity: Number,
+    qrType: { type: String, enum: ['batch', 'product'], default: 'product' },
     productImage: String,
     sequence: { type: Number, default: 0 },
 
@@ -427614,6 +427648,10 @@ const productSchema = new mongoose.Schema(
       url: { type: String, trim: true },
       description: { type: String, trim: true }
     }],
+    supplyChain: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null
+    },
   },
   { timestamps: true }
 );
@@ -432333,6 +432371,9 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       if (brandDoc) finalCompanyId = brandDoc.companyId;
     }
 
+    const isBatch = (req.body.qrType === 'batch');
+    const orderStatus = 'Pending Authorization';
+
     const order = new Order({
       orderId,
       templateId: templateId || null,
@@ -432342,14 +432383,17 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       batchNo: batchNo || `BATCH-${orderId}`,
       manufactureDate,
       expiryDate,
-      quantity: quantityNumber,
+      quantity: isBatch ? 1 : quantityNumber,
+      qrType: req.body.qrType || 'product',
       description,
       productInfo,
       createdBy: req.user._id,
       brandId,
       companyId: finalCompanyId,
       company: (req.user.role === 'company') ? req.user._id : (finalCompanyId ? null : null), // legacy
-      status: 'Pending Authorization',
+      status: orderStatus,
+      qrCodesGenerated: false,
+      qrGeneratedCount: 0,
       // New dynamic fields (sanitize to avoid empty objects)
       mfdOn: (mfdOn && mfdOn.month && mfdOn.year) ? mfdOn : undefined,
       bestBefore: (bestBefore && bestBefore.value) ? bestBefore : undefined,
@@ -432393,20 +432437,106 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
         totalPointsFund: Number(req.body.loyalty.totalPointsFund) || 0,
         pointsDisbursed: 0,
       } : undefined,
+      // Supply Chain Details (if provided)
+      supplyChain: (req.body.supplyChain && typeof req.body.supplyChain === 'object' && Object.keys(req.body.supplyChain).length > 0) ? req.body.supplyChain : undefined,
       // Calculate and save pricing
-      amount: (await calculateQrPrice(quantityNumber)).total,
-      subtotal: (await calculateQrPrice(quantityNumber)).subtotal,
-      tax: (await calculateQrPrice(quantityNumber)).tax,
-      pricePerQr: (await calculateQrPrice(quantityNumber)).pricePerQr,
+      amount: (await calculateQrPrice(isBatch ? 1 : quantityNumber)).total,
+      subtotal: (await calculateQrPrice(isBatch ? 1 : quantityNumber)).subtotal,
+      tax: (await calculateQrPrice(isBatch ? 1 : quantityNumber)).tax,
+      pricePerQr: (await calculateQrPrice(isBatch ? 1 : quantityNumber)).pricePerQr,
       history: [{
-        status: 'Pending Authorization',
+        status: orderStatus,
         changedBy: req.user._id,
         role: req.user.role,
-        comment: 'Order created and awaiting authorization'
+        comment: isBatch ? 'Batch QR order created and auto-authorized (Superadmin approval not required)' : 'Order created and awaiting authorization'
       }]
     });
 
     const createdOrder = await order.save();
+    
+    // Auto-generate Batch QR product if batch level
+    if (isBatch) {
+      try {
+        const BlankQr = __nccwpck_require__(50294);
+        const Product = __nccwpck_require__(67692);
+        const ProductCoupon = __nccwpck_require__(13726);
+        const brandDoc = await Brand.findById(brandId);
+
+        let qrCode = '';
+        let assignedBlankQr = null;
+        if (finalCompanyId) {
+          assignedBlankQr = await BlankQr.findOne({
+            assignedToCompany: finalCompanyId,
+            isAssigned: false,
+            isBlocked: false
+          }).sort({ serialNumber: 1 });
+        }
+
+        if (assignedBlankQr) {
+          qrCode = assignedBlankQr.qrCode;
+        } else {
+          const uniqueSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+          qrCode = `${brand || 'BRAND'}-BATCH-${createdOrder.orderId}-${uniqueSuffix}`;
+        }
+
+        const lastProduct = await Product.findOne({ brand: brand || 'Unknown' }).sort({ sequence: -1 });
+        const startSeq = lastProduct && lastProduct.sequence ? lastProduct.sequence + 1 : 1;
+
+        const productObj = new Product({
+          qrCode,
+          productName: createdOrder.productName,
+          skuNumber: createdOrder.skuNumber,
+          brand: brand || 'Unknown',
+          brandId: brandDoc ? brandDoc._id : null,
+          batchNo: createdOrder.batchNo,
+          manufactureDate: createdOrder.manufactureDate,
+          expiryDate: createdOrder.expiryDate,
+          productImage: createdOrder.productImage,
+          mfdOn: createdOrder.mfdOn,
+          bestBefore: createdOrder.bestBefore,
+          calculatedExpiryDate: createdOrder.calculatedExpiryDate,
+          dynamicFields: createdOrder.dynamicFields,
+          variants: createdOrder.variants,
+          warranty: createdOrder.warranty,
+          orderLinks: createdOrder.orderLinks,
+          description: createdOrder.description,
+          productInfo: createdOrder.productInfo,
+          quantity: 1,
+          qrType: 'batch',
+          sequence: startSeq,
+          orderId: createdOrder._id,
+          isActive: true,
+          createdBy: req.user._id
+        });
+
+        const savedProd = await productObj.save();
+
+        if (assignedBlankQr) {
+          assignedBlankQr.isAssigned = true;
+          assignedBlankQr.assignedToProduct = savedProd._id;
+          await assignedBlankQr.save();
+        }
+
+        if (createdOrder.coupon && createdOrder.coupon.title) {
+          await ProductCoupon.create({
+            title: createdOrder.coupon.title,
+            code: createdOrder.coupon.code || '',
+            description: createdOrder.coupon.description || '',
+            websiteLink: createdOrder.coupon.websiteLink || '',
+            expiryDate: createdOrder.coupon.expiryDate || null,
+            discountType: createdOrder.coupon.discountType || 'percentage',
+            discountValue: createdOrder.coupon.discountValue || null,
+            mrp: createdOrder.coupon.mrp || null,
+            productId: savedProd._id,
+            orderId: createdOrder._id,
+            brandId: brandDoc ? brandDoc._id : null,
+            companyId: finalCompanyId,
+          });
+        }
+      } catch (genErr) {
+        console.error('Error auto-generating Batch QR product:', genErr);
+      }
+    }
     
     // Send email notifications
     const recipients = await getNotificationRecipients(createdOrder);
@@ -432698,11 +432828,13 @@ router.put('/:id/authorize', protect, authorize('company', 'authorizer'), async 
         dynamicFields: order.dynamicFields,
         variants: order.variants,
         warranty: (order.warranty && (order.warranty.duration || order.warranty.warrantyType)) ? order.warranty : undefined,
+        supplyChain: order.supplyChain || undefined,
         orderLinks: (order.orderLinks && order.orderLinks.length > 0) ? order.orderLinks : templateOrderLinks,
         educationContent: templateEducationContent,
         description: order.description,
         productInfo: order.productInfo,
         quantity: 1,
+        qrType: order.qrType || 'product',
         sequence: currentSeq,
         orderId: order._id,
         isActive: true, // Physical QRs are instantly active
@@ -432897,6 +433029,7 @@ router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req
         dynamicFields: order.dynamicFields,
         variants: order.variants,
         warranty: (order.warranty && (order.warranty.duration || order.warranty.warrantyType)) ? order.warranty : undefined,
+        supplyChain: order.supplyChain || undefined,
         orderLinks: (order.orderLinks && order.orderLinks.length > 0) ? order.orderLinks : templateOrderLinks,
         educationContent: templateEducationContent,
         description: order.description,
@@ -433395,6 +433528,10 @@ router.put('/:id', protect, authorize('company', 'authorizer', 'creator', 'admin
         pointsDisbursed: order.loyalty?.pointsDisbursed || 0,
       } : undefined;
     }
+    // Update supplyChain if provided
+    if (req.body.supplyChain !== undefined) {
+      order.supplyChain = req.body.supplyChain;
+    }
 
     order.history.push({
       status: 'Pending Authorization',
@@ -433429,10 +433566,21 @@ router.get('/:id/download', protect, async (req, res) => {
     }
     
     console.log(`👤 User Role: ${req.user.role}`);
-    // Authorization: Super Admins and Admins can download QR PDFs
-    if (!['superadmin', 'admin'].includes(req.user.role)) {
-      console.log(`🚫 Forbidden: User role is ${req.user.role}, not authorized`);
-      return res.status(403).json({ message: 'You are not authorized to download QR PDFs' });
+    // Authorization: Superadmin, Admin, Authorizer/Company, and Creator can download QR codes for authorized orders
+    const isAdmin = ['superadmin', 'admin'].includes(req.user.role);
+    const userBrandIds = req.user.brandIds && req.user.brandIds.length > 0 
+      ? req.user.brandIds.map(id => id.toString()) 
+      : (req.user.brandId ? [req.user.brandId.toString()] : (req.user.role === 'company' ? [req.user._id.toString()] : []));
+    const companyId = req.user.companyId || (req.user.role === 'company' ? req.user._id : null);
+    
+    const isBrandMatch = order.brandId && userBrandIds.includes(order.brandId.toString());
+    const isCompanyMatch = order.companyId && companyId && order.companyId.toString() === companyId.toString();
+    const isLegacyMatch = order.company && req.user.role === 'company' && order.company.toString() === req.user._id.toString();
+    const isCreatorMatch = order.createdBy && order.createdBy.toString() === req.user._id.toString();
+
+    if (!isAdmin && !isBrandMatch && !isCompanyMatch && !isLegacyMatch && !isCreatorMatch) {
+      console.log(`🚫 Forbidden: User role is ${req.user.role}, not authorized for this order`);
+      return res.status(403).json({ message: 'You are not authorized to download QR PDFs for this order' });
     }
 
     
@@ -433460,7 +433608,8 @@ router.get('/:id/download', protect, async (req, res) => {
       brandId: order.brandId?._id || order.brandId || '',
       brandLogo: brandDoc?.brandLogo || '',
       company: companyDoc?.companyName || 'N/A',
-      companyName: companyDoc?.companyName || 'N/A'
+      companyName: companyDoc?.companyName || 'N/A',
+      orderObj: order.toObject ? order.toObject() : order
     };
     
     console.log(`📐 PDF Options: ${JSON.stringify(pdfOptions, null, 2)}`);
@@ -433489,6 +433638,20 @@ router.get('/:id/download-csv', protect, async (req, res) => {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ message: 'Order not found' });
     
+    const isAdmin = ['superadmin', 'admin'].includes(req.user.role);
+    const userBrandIds = req.user.brandIds && req.user.brandIds.length > 0 
+      ? req.user.brandIds.map(id => id.toString()) 
+      : (req.user.brandId ? [req.user.brandId.toString()] : (req.user.role === 'company' ? [req.user._id.toString()] : []));
+    const companyId = req.user.companyId || (req.user.role === 'company' ? req.user._id : null);
+    const isBrandMatch = order.brandId && userBrandIds.includes(order.brandId.toString());
+    const isCompanyMatch = order.companyId && companyId && order.companyId.toString() === companyId.toString();
+    const isLegacyMatch = order.company && req.user.role === 'company' && order.company.toString() === req.user._id.toString();
+    const isCreatorMatch = order.createdBy && order.createdBy.toString() === req.user._id.toString();
+
+    if (!isAdmin && !isBrandMatch && !isCompanyMatch && !isLegacyMatch && !isCreatorMatch) {
+      return res.status(403).json({ message: 'Not authorized for this order' });
+    }
+
     if (!order.qrCodesGenerated) {
       return res.status(400).json({ message: 'QR codes not generated yet' });
     }
@@ -433500,8 +433663,7 @@ router.get('/:id/download-csv', protect, async (req, res) => {
 
     let csvContent = 'Serial Number,QR Code,Product Name,Batch No\n';
     
-    // We need to find the serial numbers. Wait, Product model doesn't store the physical BlankQr serial number directly!
-    // But we can find the BlankQrs that are assigned to these products.
+    // We need to find the serial numbers.
     const productIds = products.map(p => p._id);
     const BlankQr = __nccwpck_require__(50294);
     const blankQrs = await BlankQr.find({ assignedToProduct: { $in: productIds } });
@@ -433532,8 +433694,19 @@ router.get('/:id/download-images', protect, async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ message: 'Order not found' });
-    if (!['superadmin', 'admin'].includes(req.user.role)) {
-      return res.status(403).json({ message: 'Not authorized' });
+    
+    const isAdmin = ['superadmin', 'admin'].includes(req.user.role);
+    const userBrandIds = req.user.brandIds && req.user.brandIds.length > 0 
+      ? req.user.brandIds.map(id => id.toString()) 
+      : (req.user.brandId ? [req.user.brandId.toString()] : (req.user.role === 'company' ? [req.user._id.toString()] : []));
+    const companyId = req.user.companyId || (req.user.role === 'company' ? req.user._id : null);
+    const isBrandMatch = order.brandId && userBrandIds.includes(order.brandId.toString());
+    const isCompanyMatch = order.companyId && companyId && order.companyId.toString() === companyId.toString();
+    const isLegacyMatch = order.company && req.user.role === 'company' && order.company.toString() === req.user._id.toString();
+    const isCreatorMatch = order.createdBy && order.createdBy.toString() === req.user._id.toString();
+
+    if (!isAdmin && !isBrandMatch && !isCompanyMatch && !isLegacyMatch && !isCreatorMatch) {
+      return res.status(403).json({ message: 'Not authorized for this order' });
     }
     if (!order.qrCodesGenerated) {
       return res.status(400).json({ message: 'QR codes not generated yet' });
@@ -435116,26 +435289,41 @@ router.get("/stats", protect, async (req, res) => {
       couponsUnlocked,
       unredeemedRewards,
       warrantyActive,
-      warrantyInactive,
       originalScans,
-      userReviews
+      userReviews,
+      userClaims
     ] = await Promise.all([
       Review.countDocuments({ userId }),
       UserReward.countDocuments({ userId }),
       UserReward.find({ userId, isRedeemed: false }).populate('productCouponId', 'discountType discountValue mrp').lean(),
       WarrantyClaim.countDocuments({ userId, status: { $ne: 'Rejected' } }),
-      WarrantyClaim.countDocuments({ userId, status: 'Rejected' }),
       Scan.find({ userId, status: 'ORIGINAL' }).select('productId').lean(),
-      Review.find({ userId }).select('productId').lean()
+      Review.find({ userId }).select('productId').lean(),
+      WarrantyClaim.find({ userId, status: { $ne: 'Rejected' } }).select('productId').lean()
     ]);
 
     const productIds = originalScans.map(s => s.productId);
+    const uniqueProductIdsStr = [...new Set(productIds.map(pid => pid?.toString()).filter(Boolean))];
+    
     const reviewedProductIds = new Set(userReviews.map(r => r.productId?.toString()));
-    const unreviewedProductIds = productIds.filter(pid => pid && !reviewedProductIds.has(pid.toString()));
+    const unreviewedUniqueProductIds = uniqueProductIdsStr.filter(pid => !reviewedProductIds.has(pid));
+
+    const claimedProductIds = new Set(userClaims.map(c => c.productId?.toString()));
+    const productsWithWarranty = await Product.find({
+      _id: { $in: uniqueProductIdsStr },
+      $or: [
+        { 'warranty.duration': { $exists: true, $ne: null } },
+        { 'warranty.warrantyType': { $exists: true, $ne: '' } }
+      ]
+    }).select('_id').lean();
+    
+    const warrantyInactive = productsWithWarranty.filter(p => !claimedProductIds.has(p._id.toString())).length;
 
     let pendingRewardValue = 0;
-    if (unreviewedProductIds.length > 0) {
-      const pendingCoupons = await ProductCoupon.find({ productId: { $in: unreviewedProductIds }, isActive: true }).lean();
+    let pendingCouponsCount = 0;
+    if (unreviewedUniqueProductIds.length > 0) {
+      const pendingCoupons = await ProductCoupon.find({ productId: { $in: unreviewedUniqueProductIds }, isActive: true }).lean();
+      pendingCouponsCount = pendingCoupons.length;
       pendingCoupons.forEach(coupon => {
          let value = 0;
          if (coupon.discountType === 'flat' && coupon.discountValue) {
@@ -435147,6 +435335,7 @@ router.get("/stats", protect, async (req, res) => {
       });
     }
 
+    let unlockedRewardValue = req.user.walletBalance || 0;
     // Add value of rewards that have been unlocked (reviewed) but not yet redeemed
     unredeemedRewards.forEach(reward => {
        const coupon = reward.productCouponId;
@@ -435157,7 +435346,7 @@ router.get("/stats", protect, async (req, res) => {
          } else if (coupon.discountType === 'percentage' && coupon.discountValue && coupon.mrp) {
             value = (Number(coupon.mrp) * Number(coupon.discountValue)) / 100;
          }
-         pendingRewardValue += value;
+         unlockedRewardValue += value;
        }
     });
 
@@ -435171,14 +435360,15 @@ router.get("/stats", protect, async (req, res) => {
       activeWarranties: warrantyActive,
       
       rewardsData: {
-        totalRewardValue: req.user.walletBalance || 0, // Using user's wallet balance
+        totalRewardValue: unlockedRewardValue,
         pendingRewardValue,
         reviews: {
           submitted: reviewsCount,
-          pending: unreviewedProductIds.length
+          pending: unreviewedUniqueProductIds.length
         },
         coupons: {
           unlocked: couponsUnlocked,
+          pending: pendingCouponsCount,
           available: unredeemedRewards.length
         },
         warranty: {
@@ -435257,13 +435447,23 @@ router.get("/history", protect, async (req, res) => {
     userClaims.forEach(c => claimStatusMap.set(c.productId.toString(), c.status));
 
     // Fetch ProductTemplates
-    const allTemplateIds = rawScans
-      .filter(s => s.productId && (s.productId.templateId || s.productId.orderId?.templateId))
-      .map(s => s.productId.templateId || s.productId.orderId?.templateId);
-    
-    const ProductTemplate = __nccwpck_require__(58846); const templates = await ProductTemplate.find({ _id: { $in: allTemplateIds } }).lean();
+    const ProductTemplate = __nccwpck_require__(58846);
+    const brandIds = [...new Set(rawScans.filter(s => s.brandId).map(s => (s.brandId._id || s.brandId).toString()))];
+    const activeTemplates = await ProductTemplate.find({ brandId: { $in: brandIds }, status: 'active' }).lean();
+
     const templateMap = new Map();
-    templates.forEach(t => templateMap.set(t._id.toString(), t));
+    const templateByNameAndBrand = new Map();
+    activeTemplates.forEach(t => {
+      templateMap.set(t._id.toString(), t);
+      if (t.productName && t.brandId) {
+        templateByNameAndBrand.set(`${t.brandId.toString()}_${t.productName.toLowerCase()}`, t);
+      }
+    });
+
+    // Fetch ProductCoupons
+    const ProductCoupon = __nccwpck_require__(13726);
+    const activeCoupons = await ProductCoupon.find({ productId: { $in: allProductIds }, isActive: true }).lean();
+    const activeCouponProductIds = new Set(activeCoupons.map(c => c.productId.toString()));
 
     // 3. Process scans with pre-fetched data
     const scans = rawScans.map(s => {
@@ -435272,14 +435472,21 @@ router.get("/history", protect, async (req, res) => {
       // Expose warranty and links at the root level for frontend consistency
       if (obj.productId) {
         obj.warranty = obj.productId.warranty || obj.productId.orderId?.warranty || null;
-        obj.orderLinks = obj.productId.orderLinks || obj.productId.orderId?.orderLinks || [];
         obj.alreadyReviewed = reviewedProductIds.has(obj.productId._id.toString());
         obj.warrantyClaimStatus = claimStatusMap.get(obj.productId._id.toString()) || null;
         
         const tId = obj.productId.templateId || obj.productId.orderId?.templateId;
         if (tId) {
           obj.templateData = templateMap.get(tId.toString()) || null;
+        } else if (obj.productId.productName && (obj.brandId?._id || obj.brandId)) {
+          const bId = (obj.brandId?._id || obj.brandId).toString();
+          obj.templateData = templateByNameAndBrand.get(`${bId}_${obj.productId.productName.toLowerCase()}`) || null;
         }
+        
+        obj.orderLinks = (obj.productId.orderLinks && obj.productId.orderLinks.length > 0) ? obj.productId.orderLinks : ((obj.productId.orderId?.orderLinks && obj.productId.orderId.orderLinks.length > 0) ? obj.productId.orderId.orderLinks : (obj.templateData?.orderLinks || []));
+        
+        // Expose hasCoupon
+        obj.hasCoupon = activeCouponProductIds.has(obj.productId._id.toString());
       }
       
       // Inject companyName
@@ -435451,7 +435658,7 @@ console.log(qrCode)
           productInfo: product.productInfo || product.orderId?.productInfo,
           bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
           calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
-          dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
+          dynamicFields: (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
           variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
           warranty: product.warranty || product.orderId?.warranty || null,
           coupon: product.coupon || product.orderId?.coupon || null,
@@ -435488,7 +435695,7 @@ console.log(qrCode)
         productInfo: product.productInfo || product.orderId?.productInfo,
         bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
         calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
-        dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
+        dynamicFields: (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
         variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
         warranty: product.warranty || product.orderId?.warranty || null,
           coupon: product.coupon || product.orderId?.coupon || null,
@@ -435647,6 +435854,7 @@ router.post("/", async (req, res, next) => {
 
     let recommendations = [];
     let templateData = { orderLinks: [], price: null, productInfo: null, description: null, keyBenefits: null, educationContent: [], supportEmail: null, customerCare: null };
+    let fullTemplate = null;
     if (finalBrandId) {
       try {
         const ProductTemplate = __nccwpck_require__(58846);
@@ -435674,20 +435882,31 @@ router.post("/", async (req, res, next) => {
            const template = await ProductTemplate.findOne(query).lean();
            console.log("Found template?", !!template);
            if (template) {
-              templateData.orderLinks = template.orderLinks || [];
-              templateData.price = template.price || null;
-              templateData.mrp = template.mrp || null;
-              templateData.category = template.category || null;
-              templateData.productImage = template.productImage || null;
-              templateData.productInfo = template.productInfo || null;
-              templateData.description = template.description || null;
-              templateData.keyBenefits = template.keyBenefits || null;
-              templateData.dynamicFields = template.dynamicFields || {};
-              templateData.variants = template.variants || [];
-              templateData.educationContent = template.educationContent || [];
-              templateData.supportEmail = template.supportEmail || null;
-              templateData.customerCare = template.customerCare || null;
-           }
+               fullTemplate = template;
+               templateData.orderLinks = template.orderLinks || [];
+               templateData.price = template.price || null;
+               templateData.mrp = template.mrp || null;
+               templateData.category = template.category || null;
+               templateData.productImage = template.productImage || null;
+               templateData.productInfo = template.productInfo || null;
+               templateData.description = template.description || null;
+               templateData.keyBenefits = template.keyBenefits || null;
+               templateData.dynamicFields = template.dynamicFields || {};
+               templateData.variants = template.variants || [];
+               templateData.educationContent = (template.educationContent && template.educationContent.length > 0) ? template.educationContent : [];
+               templateData.supportEmail = template.supportEmail || null;
+               templateData.customerCare = template.customerCare || null;
+               templateData.ingredients = template.ingredients || null;
+               templateData.certificates = template.certificates || [];
+               templateData.additionalInfo = template.additionalInfo || null;
+               templateData.website = template.website || null;
+               templateData.manufacturedBy = template.manufacturedBy || null;
+               templateData.marketedBy = template.marketedBy || null;
+               templateData.countryOfOrigin = template.countryOfOrigin || null;
+               templateData.warranty = template.warranty || null;
+               templateData.bestBefore = template.bestBefore || null;
+               templateData.supplyChain = template.supplyChain || null;
+            }
         }
       } catch (err) {
         console.error("Error fetching scan recommendations:", err);
@@ -435718,7 +435937,8 @@ router.post("/", async (req, res, next) => {
         data: {
           recommendations,
           qrCode,
-          productId: product._id,
+          productId: product,
+          templateData: fullTemplate,
           brandId: finalBrandId,
           companyName: product.brandId?.companyId?.companyName || null,
           productName: product.productName || product.orderId?.productName,
@@ -435741,11 +435961,16 @@ router.post("/", async (req, res, next) => {
           productInfo: product.productInfo || product.orderId?.productInfo || templateData.productInfo,
           bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
           calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
-          dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
-          variants: (product.variants && product.variants.length > 0) ? product.variants : product.orderId?.variants,
-          warranty: product.warranty || product.orderId?.warranty || null,
+          dynamicFields: (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : product.orderId?.dynamicFields,
+          variants: (product.variants && product.variants.length > 0) ? product.variants : ((product.orderId?.variants && product.orderId.variants.length > 0) ? product.orderId.variants : templateData.variants),
+          ingredients: product.ingredients || product.orderId?.ingredients || templateData.ingredients || null,
+          certificates: (product.certificates && product.certificates.length > 0) ? product.certificates : ((product.orderId?.certificates && product.orderId.certificates.length > 0) ? product.orderId.certificates : (templateData.certificates || [])),
+          additionalInfo: product.additionalInfo || product.orderId?.additionalInfo || templateData.additionalInfo || null,
+          warranty: product.warranty || product.orderId?.warranty || templateData.warranty || null,
+          supplyChain: product.supplyChain || product.orderId?.supplyChain || templateData.supplyChain || null,
+          showSupplyChain: true,
           coupon: product.coupon || product.orderId?.coupon || null,
-          educationContent: product.educationContent || product.orderId?.educationContent || templateData.educationContent || [],
+          educationContent: (product.educationContent && product.educationContent.length > 0) ? product.educationContent : ((product.orderId?.educationContent && product.orderId.educationContent.length > 0) ? product.orderId.educationContent : (templateData.educationContent || [])),
           fieldLabels,
           alreadyReviewed,
           warrantyClaimStatus,
@@ -435767,12 +435992,13 @@ router.post("/", async (req, res, next) => {
     ======================= */
     if (myPreviousScan) {
       // Don't create another record — just return ORIGINAL for their own product
-      return res.json({
-        status: "ORIGINAL",
+    return res.json({
+      status: "ORIGINAL",
         data: {
           recommendations,
           qrCode,
-          productId: product._id,
+          productId: product,
+          templateData: fullTemplate,
           companyName: product.brandId?.companyId?.companyName || null,
           productName: product.productName || product.orderId?.productName,
           brand: product.brand || finalBrandName,
@@ -435782,28 +436008,33 @@ router.post("/", async (req, res, next) => {
           productImage: product.productImage || product.orderId?.productImage || templateData.productImage,
           category: product.category || product.orderId?.category || templateData.category,
           mrp: product.mrp || product.orderId?.mrp || templateData.mrp,
-          manufacturedBy: product.manufacturedBy || product.orderId?.manufacturedBy,
-          marketedBy: product.marketedBy || product.orderId?.marketedBy,
+          manufacturedBy: product.manufacturedBy || product.orderId?.manufacturedBy || templateData.manufacturedBy,
+          marketedBy: product.marketedBy || product.orderId?.marketedBy || templateData.marketedBy,
           importMarketedBy: product.importMarketedBy || product.orderId?.importMarketedBy,
           importerRegNo: product.importerRegNo || product.orderId?.importerRegNo,
-          countryOfOrigin: product.countryOfOrigin || product.orderId?.countryOfOrigin,
-          website: product.website || product.orderId?.website,
+          countryOfOrigin: product.countryOfOrigin || product.orderId?.countryOfOrigin || templateData.countryOfOrigin,
+          website: product.website || product.orderId?.website || templateData.website,
           supportEmail: product.supportEmail || product.orderId?.supportEmail || product.dynamicFields?.supportEmail || product.orderId?.dynamicFields?.supportEmail || product.warranty?.supportEmail || product.orderId?.warranty?.supportEmail || templateData.supportEmail,
           customerCare: product.customerCare || product.orderId?.customerCare || product.dynamicFields?.customerCare || product.orderId?.dynamicFields?.customerCare || product.warranty?.customerCare || product.orderId?.warranty?.customerCare || templateData.customerCare,
           keyBenefits: product.keyBenefits || product.orderId?.keyBenefits || templateData.keyBenefits,
           mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
           description: product.description || product.orderId?.description || templateData.description,
           productInfo: product.productInfo || product.orderId?.productInfo || templateData.productInfo,
-          bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
+          bestBefore: (product.bestBefore?.value) ? product.bestBefore : (product.orderId?.bestBefore || templateData.bestBefore),
           calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
-          dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && product.orderId.dynamicFields.size > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
+          dynamicFields: (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && Object.keys(product.orderId.dynamicFields).length > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
           variants: (product.variants && product.variants.length > 0) ? product.variants : ((product.orderId?.variants && product.orderId.variants.length > 0) ? product.orderId.variants : templateData.variants),
-          warranty: product.warranty || product.orderId?.warranty || null,
+          ingredients: product.ingredients || product.orderId?.ingredients || templateData.ingredients || null,
+          certificates: (product.certificates && product.certificates.length > 0) ? product.certificates : ((product.orderId?.certificates && product.orderId.certificates.length > 0) ? product.orderId.certificates : (templateData.certificates || [])),
+          additionalInfo: product.additionalInfo || product.orderId?.additionalInfo || templateData.additionalInfo || null,
+          warranty: product.warranty || product.orderId?.warranty || templateData.warranty || null,
+          supplyChain: product.supplyChain || product.orderId?.supplyChain || templateData.supplyChain || null,
+          showSupplyChain: true,
           coupon: product.coupon || product.orderId?.coupon || null,
-          educationContent: product.educationContent || product.orderId?.educationContent || templateData.educationContent || [],
+          educationContent: (product.educationContent && product.educationContent.length > 0) ? product.educationContent : ((product.orderId?.educationContent && product.orderId.educationContent.length > 0) ? product.orderId.educationContent : (templateData.educationContent || [])),
           orderLinks: (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((product.orderId?.orderLinks && product.orderId.orderLinks.length > 0) ? product.orderId.orderLinks : templateData.orderLinks),
           price: product.price || templateData.price,
-        fieldLabels,
+          fieldLabels,
           alreadyReviewed,
           warrantyClaimStatus,
           place,
@@ -435816,11 +436047,12 @@ router.post("/", async (req, res, next) => {
     }
 
     // 3️⃣  Has a DIFFERENT user already scanned this product?
-    const alreadyUsed = await Scan.findOne({
+    const isBatchQr = product.qrType === 'batch' || product.orderId?.qrType === 'batch';
+    const alreadyUsed = !isBatchQr ? await Scan.findOne({
       productId: product._id,
       userId: { $ne: userId },
       status: "ORIGINAL",
-    });
+    }) : null;
 
     /* =======================
        ⚠️ ALREADY USED BY ANOTHER USER
@@ -435859,7 +436091,8 @@ router.post("/", async (req, res, next) => {
           ],
           recommendations,
           qrCode,
-          productId: product._id,
+          productId: product,
+          templateData: fullTemplate,
           brandId: finalBrandId,
           companyName: product.brandId?.companyId?.companyName || null,
           productName: product.productName || product.orderId?.productName,
@@ -435870,25 +436103,30 @@ router.post("/", async (req, res, next) => {
           productImage: product.productImage || product.orderId?.productImage || templateData.productImage,
           category: product.category || product.orderId?.category || templateData.category,
           mrp: product.mrp || product.orderId?.mrp || templateData.mrp,
-          manufacturedBy: product.manufacturedBy || product.orderId?.manufacturedBy,
-          marketedBy: product.marketedBy || product.orderId?.marketedBy,
+          manufacturedBy: product.manufacturedBy || product.orderId?.manufacturedBy || templateData.manufacturedBy,
+          marketedBy: product.marketedBy || product.orderId?.marketedBy || templateData.marketedBy,
           importMarketedBy: product.importMarketedBy || product.orderId?.importMarketedBy,
           importerRegNo: product.importerRegNo || product.orderId?.importerRegNo,
-          countryOfOrigin: product.countryOfOrigin || product.orderId?.countryOfOrigin,
-          website: product.website || product.orderId?.website,
+          countryOfOrigin: product.countryOfOrigin || product.orderId?.countryOfOrigin || templateData.countryOfOrigin,
+          website: product.website || product.orderId?.website || templateData.website,
           supportEmail: product.supportEmail || product.orderId?.supportEmail || product.dynamicFields?.supportEmail || product.orderId?.dynamicFields?.supportEmail || product.warranty?.supportEmail || product.orderId?.warranty?.supportEmail || templateData.supportEmail,
           customerCare: product.customerCare || product.orderId?.customerCare || product.dynamicFields?.customerCare || product.orderId?.dynamicFields?.customerCare || product.warranty?.customerCare || product.orderId?.warranty?.customerCare || templateData.customerCare,
           keyBenefits: product.keyBenefits || product.orderId?.keyBenefits || templateData.keyBenefits,
           mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
           description: product.description || product.orderId?.description || templateData.description,
           productInfo: product.productInfo || product.orderId?.productInfo || templateData.productInfo,
-          bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
+          bestBefore: (product.bestBefore?.value) ? product.bestBefore : (product.orderId?.bestBefore || templateData.bestBefore),
           calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
-          dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && product.orderId.dynamicFields.size > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
+          dynamicFields: (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && Object.keys(product.orderId.dynamicFields).length > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
           variants: (product.variants && product.variants.length > 0) ? product.variants : ((product.orderId?.variants && product.orderId.variants.length > 0) ? product.orderId.variants : templateData.variants),
-          warranty: product.warranty || product.orderId?.warranty || null,
+          ingredients: product.ingredients || product.orderId?.ingredients || templateData.ingredients || null,
+          certificates: (product.certificates && product.certificates.length > 0) ? product.certificates : ((product.orderId?.certificates && product.orderId.certificates.length > 0) ? product.orderId.certificates : (templateData.certificates || [])),
+          additionalInfo: product.additionalInfo || product.orderId?.additionalInfo || templateData.additionalInfo || null,
+          warranty: product.warranty || product.orderId?.warranty || templateData.warranty || null,
+          supplyChain: product.supplyChain || product.orderId?.supplyChain || templateData.supplyChain || null,
+          showSupplyChain: true,
           coupon: product.coupon || product.orderId?.coupon || null,
-          educationContent: product.educationContent || product.orderId?.educationContent || templateData.educationContent || [],
+          educationContent: (product.educationContent && product.educationContent.length > 0) ? product.educationContent : ((product.orderId?.educationContent && product.orderId.educationContent.length > 0) ? product.orderId.educationContent : (templateData.educationContent || [])),
           orderLinks: (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((product.orderId?.orderLinks && product.orderId.orderLinks.length > 0) ? product.orderId.orderLinks : templateData.orderLinks),
           price: product.price || templateData.price,
           fieldLabels,
@@ -435998,12 +436236,14 @@ router.post("/", async (req, res, next) => {
     }
 
 
+    console.log("DEBUG DYNAMIC FIELDS BEFORE SEND:", product.dynamicFields);
     return res.json({
       status: "ORIGINAL",
       data: {
         recommendations,
         qrCode,
-        productId: product._id,
+        productId: product,
+        templateData: fullTemplate,
         brandId: finalBrandId,
         companyName: product.brandId?.companyId?.companyName || null,
         productName: product.productName || product.orderId?.productName,
@@ -436014,27 +436254,32 @@ router.post("/", async (req, res, next) => {
         productImage: product.productImage || product.orderId?.productImage || templateData.productImage,
         category: product.category || product.orderId?.category || templateData.category,
         mrp: product.mrp || product.orderId?.mrp || templateData.mrp,
-        manufacturedBy: product.manufacturedBy || product.orderId?.manufacturedBy,
-        marketedBy: product.marketedBy || product.orderId?.marketedBy,
+        manufacturedBy: product.manufacturedBy || product.orderId?.manufacturedBy || templateData.manufacturedBy,
+        marketedBy: product.marketedBy || product.orderId?.marketedBy || templateData.marketedBy,
         importMarketedBy: product.importMarketedBy || product.orderId?.importMarketedBy,
         importerRegNo: product.importerRegNo || product.orderId?.importerRegNo,
-        countryOfOrigin: product.countryOfOrigin || product.orderId?.countryOfOrigin,
-        website: product.website || product.orderId?.website,
+        countryOfOrigin: product.countryOfOrigin || product.orderId?.countryOfOrigin || templateData.countryOfOrigin,
+        website: product.website || product.orderId?.website || templateData.website,
         supportEmail: product.supportEmail || product.orderId?.supportEmail || product.dynamicFields?.supportEmail || product.orderId?.dynamicFields?.supportEmail || product.warranty?.supportEmail || product.orderId?.warranty?.supportEmail || templateData.supportEmail,
         customerCare: product.customerCare || product.orderId?.customerCare || product.dynamicFields?.customerCare || product.orderId?.dynamicFields?.customerCare || product.warranty?.customerCare || product.orderId?.warranty?.customerCare || templateData.customerCare,
         mfdOn: (product.mfdOn?.month) ? product.mfdOn : product.orderId?.mfdOn,
         description: product.description || product.orderId?.description || templateData.description,
         productInfo: product.productInfo || product.orderId?.productInfo || templateData.productInfo,
-        bestBefore: (product.bestBefore?.value) ? product.bestBefore : product.orderId?.bestBefore,
+        bestBefore: (product.bestBefore?.value) ? product.bestBefore : (product.orderId?.bestBefore || templateData.bestBefore),
         calculatedExpiryDate: product.calculatedExpiryDate || product.orderId?.calculatedExpiryDate,
-        dynamicFields: (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && product.orderId.dynamicFields.size > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
+        dynamicFields: (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : ((product.orderId?.dynamicFields && Object.keys(product.orderId.dynamicFields).length > 0) ? product.orderId.dynamicFields : templateData.dynamicFields),
         variants: (product.variants && product.variants.length > 0) ? product.variants : ((product.orderId?.variants && product.orderId.variants.length > 0) ? product.orderId.variants : templateData.variants),
-        warranty: product.warranty || product.orderId?.warranty || null,
-          coupon: product.coupon || product.orderId?.coupon || null,
+        ingredients: product.ingredients || product.orderId?.ingredients || templateData.ingredients || null,
+        certificates: (product.certificates && product.certificates.length > 0) ? product.certificates : ((product.orderId?.certificates && product.orderId.certificates.length > 0) ? product.orderId.certificates : (templateData.certificates || [])),
+        additionalInfo: product.additionalInfo || product.orderId?.additionalInfo || templateData.additionalInfo || null,
+        warranty: product.warranty || product.orderId?.warranty || templateData.warranty || null,
+        supplyChain: product.supplyChain || product.orderId?.supplyChain || templateData.supplyChain || null,
+        showSupplyChain: true,
+        coupon: product.coupon || product.orderId?.coupon || null,
         keyBenefits: product.keyBenefits || product.orderId?.keyBenefits || templateData.keyBenefits,
         orderLinks: (product.orderLinks && product.orderLinks.length > 0) ? product.orderLinks : ((product.orderId?.orderLinks && product.orderId.orderLinks.length > 0) ? product.orderId.orderLinks : templateData.orderLinks),
         price: product.price || templateData.price,
-        educationContent: product.educationContent || product.orderId?.educationContent || templateData.educationContent || [],
+        educationContent: (product.educationContent && product.educationContent.length > 0) ? product.educationContent : ((product.orderId?.educationContent && product.orderId.educationContent.length > 0) ? product.orderId.educationContent : (templateData.educationContent || [])),
         fieldLabels,
         alreadyReviewed,
         warrantyClaimStatus,
@@ -436452,7 +436697,7 @@ router.get("/smart-reorder/:productId", async (req, res) => {
     const mrp = product.mrp || templateData?.mrp || null;
 
     // We can extract custom 'usage' related dynamic fields
-    const dynamicFields = (product.dynamicFields && product.dynamicFields.size > 0) ? product.dynamicFields : (templateData?.dynamicFields || {});
+    const dynamicFields = (product.dynamicFields && Object.keys(product.dynamicFields).length > 0) ? product.dynamicFields : (templateData?.dynamicFields || {});
 
     // You can also check if the user is authenticated and get their purchase history for this product
     // For now, return standard product stats
@@ -437508,6 +437753,53 @@ const DEMO_PRODUCT = {
     { variantName: "size", variantLabel: "Size", value: "10 UK" },
     { variantName: "model_series", variantLabel: "Model / Series", value: "Panther" }
   ],
+  ingredients: "Engineered Microfiber Mesh, Electroluminescent TPU Piping, High-Density Carbon Rubber Outsole, OrthoLite Comfort Foam Insole.",
+  certificates: [
+    { name: "Authentiks Anti-Counterfeit Verified", image: "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png" },
+    { name: "ISO 9001:2015 Quality Clearance", isLabTest: true, image: "https://res.cloudinary.com/dx4i1w3uf/image/upload/v1782620446/ChatGPT_Image_Jun_27_2026_09_46_43_PM_r45ybg.png" }
+  ],
+  educationContent: [
+    {
+      title: "Smart Care & Battery Maintenance",
+      description: "Learn how to optimize the electroluminescent piping battery life and maintain the waterproof coating.",
+      url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    },
+    {
+      title: "Adaptive Grip & Sizing Guide",
+      description: "Discover how the carbon-traction outsole dynamically adapts to running on asphalt and wet terrain.",
+      url: "https://authentiks.in"
+    }
+  ],
+  showSupplyChain: true,
+  supplyChain: {
+    manufacturerName: "Alphalite Performance Labs Pvt. Ltd.",
+    manufacturingUnit: "Facility Alpha-9 (High-Tech Footwear Division)",
+    manufacturingLocation: "Bengaluru, Karnataka, India",
+    manufacturingDate: "15 Feb 2026",
+    batchNumber: "ALPHA-2478",
+    skuCode: "AL2468-BLK-10",
+    productionQuantity: 5000,
+    productionQuantityUnit: "Pairs",
+    countryOfManufacture: "India",
+    rawMaterialSource: "Recycled Carbon Fibers & Organic Microfiber",
+    countryOfOrigin: "India",
+    supplierName: "Apex High-Tech Textiles Ltd.",
+    certifications: "ISO 9001, GRS Certified Recycled Content",
+    processingLocation: "Automated Robotic Assembly Line 3",
+    packagingUnit: "Eco-Packaging Hub 2",
+    packagingLocation: "Bengaluru, Karnataka",
+    packagingDate: "18 Feb 2026",
+    packagingType: "100% Biodegradable Carbon Box",
+    packSize: "Pair (UK 10)",
+    numberOfUnitsPacked: 5000,
+    numberOfUnitsPackedUnit: "Pairs",
+    dispatchLocation: "Central Distribution Center, Bengaluru",
+    distributorName: "Authentik Express Premium Logistics",
+    distributionLocation: "Pan-India Tier 1 Hubs",
+    modeOfTransport: "Smart Climate-Controlled Express Fleet",
+    expectedDeliveryDate: "25 Feb 2026",
+    notes: "Batch passed all electromagnetic safety and anti-counterfeiting cryptographic checks."
+  },
   hasCoupon: true,
   alreadyReviewed: false,
   warranty: {
@@ -438982,7 +439274,7 @@ const sendOTP = async (countryCode, phoneNumber) => {
 
       const json = await response.json().catch(() => ({}));
 
-      if (response.ok) {
+      if (response.ok && json.type !== "error") {
         return { success: true, message: "OTP sent successfully" };
       }
 
@@ -439007,7 +439299,7 @@ const verifyOTP = async (countryCode, phoneNumber, code) => {
     console.log("__________", phoneNumber);
     if (phoneNumber !== TEST_PHONENUMBER) {
       const sessionResponse = await fetch(
-        `${msg91_api}/verify?otp=${code}&mobile=+91${phoneNumber}`,
+        `${msg91_api}/verify?otp=${code}&mobile=${countryCode}${phoneNumber}`,
         {
           headers: {
             Accept: "application/json",
@@ -439023,9 +439315,12 @@ const verifyOTP = async (countryCode, phoneNumber, code) => {
         sessionResponse.status,
         sessionResponse.statusText,
       );
-      if ((sessionResponse.status == 200, sessionResponse.statusText == "OK"))
+      
+      const json = await sessionResponse.json().catch(() => ({}));
+      if (sessionResponse.ok && json.type !== "error") {
         return { success: true, message: "OTP verified successfully" };
-      return { success: false, message: "Invalid OTP" };
+      }
+      return { success: false, message: json?.message || "Invalid OTP" };
     }
 
     // test number bypass
@@ -439135,10 +439430,140 @@ const formatSN = (num) => {
 };
 
 /**
+ * Dedicated A4 PDF generator for Batch-Level QRs: Displays QR Code on an A4 sheet with product & supply chain specifications.
+ */
+const buildBatchQrPdf = async (products, options = {}) => {
+  const p = products[0] || {};
+  const order = options.orderObj || {};
+  const sc = p.supplyChain || order.supplyChain || {};
+
+  const BOLD_FONT = __nccwpck_require__.ab + "Roboto-Bold.ttf";
+  const REGULAR_FONT = __nccwpck_require__.ab + "Roboto-Regular.ttf";
+
+  const doc = new PDFDocument({
+    size: "A4",
+    margin: 0,
+    autoFirstPage: true,
+  });
+
+  const pageWidth = 595.28;
+  const brandColor = "#0b1b36";
+
+  // 1. Top Header Banner
+  doc.rect(0, 0, pageWidth, 75).fill(brandColor);
+
+  const brandTitle = p.brand || options.brand || "AUTHENTIKS";
+  doc.fillColor("#FFFFFF").font(__nccwpck_require__.ab + "Roboto-Bold.ttf").fontSize(20).text(brandTitle.toUpperCase(), 35, 20, { lineBreak: false });
+  doc.fillColor("#8CB4D6").font(__nccwpck_require__.ab + "Roboto-Regular.ttf").fontSize(9).text("BATCH QR CODE & SPECIFICATION CERTIFICATE", 35, 46, { lineBreak: false });
+
+  // Header Right side: Order ID & Date
+  const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  doc.fillColor("#FFFFFF").font(__nccwpck_require__.ab + "Roboto-Bold.ttf").fontSize(9).text(`ORDER ID: ${options.orderId || order.orderId || 'N/A'}`, 350, 24, { width: 210, align: "right" });
+  doc.fillColor("#94A3B8").font(__nccwpck_require__.ab + "Roboto-Regular.ttf").fontSize(8.5).text(`Generated: ${dateStr}`, 350, 42, { width: 210, align: "right" });
+
+  // 2. QR CODE CARD (Centered Upper Section - No "VERIFY & WIN" or "Use a Coin")
+  const qrCardX = (pageWidth - 240) / 2;
+  doc.save();
+  doc.roundedRect(qrCardX, 95, 240, 245, 12).fillAndStroke("#FAFAFA", "#E2E8F0");
+  
+  // Generate QR Code image Buffer
+  const baseUrl = process.env.FRONTEND_URL || 'https://authentiks.in';
+  const qrUrl = `${baseUrl}/scan?code=${encodeURIComponent(p.qrCode || "")}`;
+  const qrBuffer = await QRCode.toBuffer(qrUrl, { errorCorrectionLevel: 'H', scale: 10, margin: 1 });
+
+  doc.image(qrBuffer, (pageWidth - 170) / 2, 110, { width: 170, height: 170 });
+
+  // Code string & text below QR
+  doc.fillColor("#0b1b36").font(__nccwpck_require__.ab + "Roboto-Bold.ttf").fontSize(9.5).text(p.qrCode || 'N/A', qrCardX, 290, { width: 240, align: 'center' });
+  doc.fillColor("#64748B").font(__nccwpck_require__.ab + "Roboto-Regular.ttf").fontSize(8).text("Scan with camera to verify batch authenticity", qrCardX, 308, { width: 240, align: 'center' });
+  doc.restore();
+
+  // 3. PRODUCT & BATCH DETAILS CARD
+  const cardX = 35;
+  let currentY = 355;
+  const cardW = pageWidth - 70;
+
+  // Header Box
+  doc.save();
+  doc.roundedRect(cardX, currentY, cardW, 195, 10).fillAndStroke("#FFFFFF", "#E2E8F0");
+  
+  // Card Section Header
+  doc.rect(cardX, currentY, cardW, 30).fill("#F1F5F9");
+  doc.fillColor("#0F172A").font(__nccwpck_require__.ab + "Roboto-Bold.ttf").fontSize(10).text("BATCH & PRODUCT SPECIFICATIONS", cardX + 15, currentY + 9);
+  
+  // Table Content Inside Card
+  const tableY = currentY + 40;
+  const rowHeight = 35;
+  
+  const drawKvRow = (label1, val1, label2, val2, yPos, isLast = false) => {
+    const col1X = cardX + 15;
+    const col2X = cardX + 265;
+    
+    // Column 1
+    doc.fillColor("#64748B").font(__nccwpck_require__.ab + "Roboto-Bold.ttf").fontSize(7.5).text(label1.toUpperCase(), col1X, yPos);
+    doc.fillColor("#0F172A").font(__nccwpck_require__.ab + "Roboto-Regular.ttf").fontSize(9).text(String(val1 || 'N/A'), col1X, yPos + 11, { width: 230 });
+    
+    // Column 2
+    doc.fillColor("#64748B").font(__nccwpck_require__.ab + "Roboto-Bold.ttf").fontSize(7.5).text(label2.toUpperCase(), col2X, yPos);
+    doc.fillColor("#0F172A").font(__nccwpck_require__.ab + "Roboto-Regular.ttf").fontSize(9).text(String(val2 || 'N/A'), col2X, yPos + 11, { width: 230 });
+
+    if (!isLast) {
+      doc.moveTo(cardX + 15, yPos + 28).lineTo(cardX + cardW - 15, yPos + 28).strokeColor("#F1F5F9").lineWidth(0.8).stroke();
+    }
+  };
+
+  const mfdStr = p.mfdOn ? `${p.mfdOn.month || ''}/${p.mfdOn.year || ''}` : (p.manufactureDate || 'N/A');
+  const expStr = p.calculatedExpiryDate || p.expiryDate || (p.bestBefore ? `${p.bestBefore.value} ${p.bestBefore.unit}` : 'N/A');
+
+  drawKvRow("Product Name", p.productName || 'N/A', "Brand / Manufacturer", p.brand || options.brand || 'N/A', tableY);
+  drawKvRow("Batch / Lot Number", p.batchNo || 'N/A', "SKU / Product Code", p.skuNumber || 'N/A', tableY + rowHeight);
+  drawKvRow("Manufacturing Date", mfdStr, "Expiry Date", expStr, tableY + rowHeight * 2);
+  drawKvRow("QR Type", "Batch-Level QR", "Status", "Active & Authenticated", tableY + rowHeight * 3, true);
+
+  doc.restore();
+
+  // 4. SUPPLY CHAIN DETAILS CARD
+  currentY = 565;
+
+  doc.save();
+  doc.roundedRect(cardX, currentY, cardW, 215, 10).fillAndStroke("#FFFFFF", "#E2E8F0");
+  
+  // Section Header
+  doc.rect(cardX, currentY, cardW, 30).fill("#F1F5F9");
+  doc.fillColor("#0F172A").font(__nccwpck_require__.ab + "Roboto-Bold.ttf").fontSize(10).text("SUPPLY CHAIN & TRACEABILITY DETAILS", cardX + 15, currentY + 9);
+  
+  const scTableY = currentY + 40;
+  
+  const manufacturingInfo = [sc.manufacturerName, sc.manufacturingUnit, sc.manufacturingLocation].filter(Boolean).join(" - ") || 'N/A';
+  const rawMaterialInfo = [sc.rawMaterialSource, sc.countryOfOrigin ? `Origin: ${sc.countryOfOrigin}` : ''].filter(Boolean).join(" | ") || 'N/A';
+  const packagingInfo = [sc.packagingUnit, sc.packagingLocation, sc.packagingType].filter(Boolean).join(", ") || 'N/A';
+  const distributionInfo = [sc.dispatchLocation, sc.distributorName ? `Distributor: ${sc.distributorName}` : ''].filter(Boolean).join(" | ") || 'N/A';
+
+  drawKvRow("Manufacturing Unit & Location", manufacturingInfo, "Raw Material Source & Origin", rawMaterialInfo, scTableY);
+  drawKvRow("Packaging Unit & Details", packagingInfo, "Dispatch & Distribution", distributionInfo, scTableY + rowHeight);
+  drawKvRow("Supplier / Manufacturer", sc.supplierName || 'N/A', "Certifications", sc.certifications || 'N/A', scTableY + rowHeight * 2);
+  drawKvRow("Mode of Transport", sc.modeOfTransport || 'N/A', "Expected Delivery", sc.expectedDeliveryDate || 'N/A', scTableY + rowHeight * 3, true);
+
+  doc.restore();
+
+  // 5. FOOTER
+  doc.rect(0, 805, pageWidth, 36.89).fill("#F8FAFC");
+  doc.moveTo(0, 805).lineTo(pageWidth, 805).strokeColor("#E2E8F0").lineWidth(1).stroke();
+  doc.fillColor("#64748B").font(__nccwpck_require__.ab + "Roboto-Regular.ttf").fontSize(8.5).text("Authentiks Enterprise Product Traceability System  •  Batch QR Code Certificate", 0, 818, { width: pageWidth, align: "center" });
+
+  return doc;
+};
+
+/**
  * Core PDF building logic. Returns a PDFDocument instance.
  * Note: Caller is responsible for calling doc.end() when finished.
  */
 const buildQrPdf = async (products, options = {}) => {
+  const isBatch = options.orderObj?.qrType === 'batch' || products[0]?.qrType === 'batch';
+  if (isBatch) {
+    return await buildBatchQrPdf(products, options);
+  }
+
   /** ─── PAGE SIZE — A3 Plus Horizontal (19 × 13 inches) ─── **/
   const widthPts = 19 * 72; // 1368 pts ≈ 482.6 mm
   const heightPts = 13 * 72; // 936 pts  ≈ 330.2 mm
@@ -439253,16 +439678,9 @@ const buildQrPdf = async (products, options = {}) => {
       /** ── TOP RIBBON (6mm) ── **/
       doc.rect(x, y, contentWidth, topRibbonH).fill(brandColor);
 
-      const str1 = "VERIFY & ";
-      const str2 = "WIN";
-      doc.font(__nccwpck_require__.ab + "Roboto-Bold.ttf").fontSize(6.5);
-      const w1 = doc.widthOfString(str1);
-      const w2 = doc.widthOfString(str2);
-      const totalW = w1 + w2;
-      const startX = x + (contentWidth - totalW) / 2;
-      
-      doc.fillColor("#FFFFFF").text(str1, startX, y + (topRibbonH - 6.5) / 2 + 0.5, { lineBreak: false });
-      doc.fillColor("#8CB4D6").text(str2, startX + w1, y + (topRibbonH - 6.5) / 2 + 0.5, { lineBreak: false });
+      const headerBrand = products[i].brand ? String(products[i].brand).toUpperCase() : "AUTHENTIKS";
+      doc.font(__nccwpck_require__.ab + "Roboto-Bold.ttf").fontSize(6);
+      doc.fillColor("#FFFFFF").text(headerBrand, x, y + (topRibbonH - 6) / 2 + 0.5, { width: contentWidth, align: "center", lineBreak: false });
 
       /** ── QR CODE SECTION (13mm) ── **/
       const midY = y + topRibbonH;
@@ -439270,7 +439688,6 @@ const buildQrPdf = async (products, options = {}) => {
 
       const qrBuffer = allQrBuffers[i];
       const qrX = x + (contentWidth - qrSize) / 2;
-      // 1mm gap top and bottom means centering an 11mm QR in a 13mm section = exactly 1mm padding.
       const qrImgY = midY + (midSectionH - qrSize) / 2;
 
       doc.image(qrBuffer, qrX, qrImgY, {
@@ -439282,12 +439699,12 @@ const buildQrPdf = async (products, options = {}) => {
       const bottomY = midY + midSectionH;
       doc.rect(x, bottomY, contentWidth, bottomRibbonH).fill(brandColor);
 
-      // "Use a Coin"
+      const bottomLabel = products[i].serialNumber !== undefined ? formatSN(products[i].serialNumber) : "AUTHENTIC";
       doc
         .fillColor("#FFFFFF")
         .font(__nccwpck_require__.ab + "Roboto-Bold.ttf")
-        .fontSize(6.5)
-        .text("Use a Coin", x, bottomY + 3.5, {
+        .fontSize(6)
+        .text(bottomLabel, x, bottomY + 3.5, {
           width: contentWidth,
           align: "center",
           lineBreak: false,

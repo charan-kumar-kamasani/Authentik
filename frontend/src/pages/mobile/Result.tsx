@@ -463,13 +463,13 @@ function ResultAuthentic({ data }: { data: any }) {
               {/* Right Column: Information */}
               <div className="flex flex-col flex-1 pr-1">
                 <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#1E40AF]/60 border border-blue-400/30 text-blue-200 text-[10px] font-bold uppercase tracking-wider mb-1.5 self-start backdrop-blur-sm shadow-sm">
-                  BATCH INFORMATION
+                  PRODUCT INFORMATION
                 </div>
                 <h2 className="text-white text-[19px] sm:text-[21px] font-extrabold leading-snug tracking-tight mb-1">
                   Real insights.<br />Every time you scan.
                 </h2>
                 <p className="text-blue-100/80 text-[11px] sm:text-[12px] leading-relaxed font-normal">
-                  This QR represents a batch/lot. Scan it multiple times to explore product and batch information.
+                  This QR represents authentic product details. Scan it multiple times to explore product information.
                 </p>
               </div>
             </div>
@@ -494,7 +494,7 @@ function ResultAuthentic({ data }: { data: any }) {
                   <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4" strokeWidth={2} />
                 </div>
                 <span className="text-white text-[10px] sm:text-[11px] font-semibold leading-tight">
-                  Complete Batch<br />Information
+                  Complete Product<br />Information
                 </span>
               </div>
 
@@ -576,34 +576,13 @@ function ResultAuthentic({ data }: { data: any }) {
           </div>
         </div>
 
-        {/* Tracking Grid */}
-        <div className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex justify-between divide-x divide-slate-100">
-          <div className="flex flex-col items-center flex-1 px-1">
-            <ScanLine size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
-            <h4 className="text-[10px] font-bold text-slate-900 mb-1">Scanned On</h4>
-            <p className="text-[9px] text-slate-500 font-medium text-center leading-tight whitespace-pre-line">{scanDateStr}</p>
+        {/* Horizontal Scanned On Bar */}
+        <div className="bg-white rounded-2xl px-4 py-3 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-slate-600">
+            <ScanLine size={16} className="text-[#105DE4]" />
+            <span className="text-[12px] font-semibold text-slate-500">Scanned on</span>
           </div>
-          {mfdDate !== 'N/A' && (
-            <div className="flex flex-col items-center flex-1 px-1">
-              <Calendar size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
-              <h4 className="text-[10px] font-bold text-slate-900 mb-1">Mfd On</h4>
-              <p className="text-[9px] text-slate-500 font-medium text-center leading-tight">{mfdDate}</p>
-            </div>
-          )}
-          {expDate !== 'N/A' && (
-            <div className="flex flex-col items-center flex-1 px-1">
-              <Calendar size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
-              <h4 className="text-[10px] font-bold text-slate-900 mb-1">Expiry On</h4>
-              <p className="text-[9px] text-slate-500 font-medium text-center leading-tight">{expDate}</p>
-            </div>
-          )}
-          {batchNo !== 'N/A' && (
-            <div className="flex flex-col items-center flex-1 px-1">
-              <ShieldCheck size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
-              <h4 className="text-[10px] font-bold text-slate-900 mb-1">Batch No.</h4>
-              <p className="text-[9px] text-slate-500 font-medium text-center leading-tight">{batchNo}</p>
-            </div>
-          )}
+          <span className="text-[12px] font-bold text-slate-900">{scanDateStr}</span>
         </div>
 
  {/* Review & Claim Reward Banner */}
@@ -681,7 +660,9 @@ function ResultAuthentic({ data }: { data: any }) {
             {data.variants?.map((v: any, i: number) => (
                <KeyValueRow key={i} label={v.variantName || v.variantLabel || 'Variant'} value={v.value} />
             ))}
-            <KeyValueRow label="Batch No" value={data.batchNo} />
+            {data.batchNo && <KeyValueRow label="Batch No" value={data.batchNo} />}
+            {mfdDate !== 'N/A' && <KeyValueRow label="Mfd On" value={mfdDate} />}
+            {expDate !== 'N/A' && <KeyValueRow label="Expiry On" value={expDate} />}
             <KeyValueRow label="MRP" value={data.mrp || data.dynamicFields?.mrp} />
             
             <KeyValueRow label="Country of Origin" value={data.countryOfOrigin} />

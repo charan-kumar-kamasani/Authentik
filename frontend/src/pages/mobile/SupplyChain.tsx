@@ -24,7 +24,8 @@ import {
   QrCode,
   Gift,
   Shield,
-  Maximize2
+  Maximize2,
+  Info
 } from 'lucide-react';
 import ProductImageModal from '../../components/ProductImageModal';
 
@@ -196,9 +197,9 @@ export default function SupplyChain() {
       icon: Building2,
       bgColor: 'bg-[#105DE4]',
       iconColor: 'text-white',
-      badgeText: mfgDetails.length >= 3 ? 'Completed' : 'Recorded',
-      badgeStyle: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
-      badgeIcon: CheckCircle2,
+      badgeText: mfgDetails.length > 0 ? (mfgDetails.length >= 3 ? 'Completed' : 'Recorded') : 'No Details Added',
+      badgeStyle: mfgDetails.length > 0 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-slate-100 text-slate-500 border-slate-200',
+      badgeIcon: mfgDetails.length > 0 ? CheckCircle2 : Info,
       hasData: mfgDetails.length > 0,
       details: mfgDetails,
     },
@@ -209,9 +210,9 @@ export default function SupplyChain() {
       icon: Leaf,
       bgColor: 'bg-[#10B981]',
       iconColor: 'text-white',
-      badgeText: rawMatDetails.length >= 2 ? 'Completed' : 'Recorded',
-      badgeStyle: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
-      badgeIcon: CheckCircle2,
+      badgeText: rawMatDetails.length > 0 ? (rawMatDetails.length >= 2 ? 'Completed' : 'Recorded') : 'No Details Added',
+      badgeStyle: rawMatDetails.length > 0 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-slate-100 text-slate-500 border-slate-200',
+      badgeIcon: rawMatDetails.length > 0 ? CheckCircle2 : Info,
       hasData: rawMatDetails.length > 0,
       details: rawMatDetails,
     },
@@ -222,9 +223,9 @@ export default function SupplyChain() {
       icon: Settings,
       bgColor: 'bg-[#8B5CF6]',
       iconColor: 'text-white',
-      badgeText: packDetails.length >= 3 ? 'Completed' : 'Recorded',
-      badgeStyle: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20',
-      badgeIcon: CheckCircle2,
+      badgeText: packDetails.length > 0 ? (packDetails.length >= 3 ? 'Completed' : 'Recorded') : 'No Details Added',
+      badgeStyle: packDetails.length > 0 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-slate-100 text-slate-500 border-slate-200',
+      badgeIcon: packDetails.length > 0 ? CheckCircle2 : Info,
       hasData: packDetails.length > 0,
       details: packDetails,
     },
@@ -235,9 +236,9 @@ export default function SupplyChain() {
       icon: Truck,
       bgColor: 'bg-[#F97316]',
       iconColor: 'text-white',
-      badgeText: distDetails.length >= 3 ? 'Completed' : 'Recorded',
-      badgeStyle: 'bg-sky-500/10 text-sky-700 border-sky-500/20',
-      badgeIcon: CheckCircle2,
+      badgeText: distDetails.length > 0 ? (distDetails.length >= 3 ? 'Completed' : 'Recorded') : 'No Details Added',
+      badgeStyle: distDetails.length > 0 ? 'bg-sky-500/10 text-sky-700 border-sky-500/20' : 'bg-slate-100 text-slate-500 border-slate-200',
+      badgeIcon: distDetails.length > 0 ? CheckCircle2 : Info,
       hasData: distDetails.length > 0,
       details: distDetails,
     },
@@ -248,19 +249,19 @@ export default function SupplyChain() {
       icon: FileText,
       bgColor: 'bg-[#06B6D4]',
       iconColor: 'text-white',
-      badgeText: realDocuments.length > 0 ? `${realDocuments.length} Document${realDocuments.length > 1 ? 's' : ''}` : '',
-      badgeStyle: 'bg-purple-500/10 text-purple-700 border-purple-500/20',
-      badgeIcon: FileCheck,
+      badgeText: realDocuments.length > 0 ? `${realDocuments.length} Document${realDocuments.length > 1 ? 's' : ''}` : 'No Details Added',
+      badgeStyle: realDocuments.length > 0 ? 'bg-purple-500/10 text-purple-700 border-purple-500/20' : 'bg-slate-100 text-slate-500 border-slate-200',
+      badgeIcon: realDocuments.length > 0 ? FileCheck : Info,
       hasData: realDocuments.length > 0,
       documents: realDocuments,
     },
   ];
 
-  // ONLY RENDER SECTIONS THAT HAVE ACTUAL DATA (HIDE EMPTY SECTIONS)
-  const sections = allSections.filter(s => s.hasData);
+  // RENDER ALL 5 SUPPLY CHAIN SECTIONS
+  const sections = allSections;
 
-  // Dynamic progress calculation
-  const completedSectionsCount = sections.length;
+  // Dynamic progress calculation based on sections with data
+  const completedSectionsCount = allSections.filter(s => s.hasData).length;
   const progressPercentage = completedSectionsCount > 0 ? Math.round((completedSectionsCount / allSections.length) * 100) : 0;
   const lastUpdatedDate = data.scannedAt
     ? new Date(data.scannedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -496,7 +497,7 @@ export default function SupplyChain() {
                   {/* Expandable Accordion Body */}
                   {isOpen && (
                     <div className="px-4 pb-4 pt-1 border-t border-slate-100/80 bg-slate-50/50">
-                      {sec.details && sec.details.length > 0 && (
+                      {sec.details && sec.details.length > 0 ? (
                         <div className="grid grid-cols-1 gap-2.5 mt-2">
                           {sec.details.map((item, idx) => (
                             <div key={idx} className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-100">
@@ -505,10 +506,7 @@ export default function SupplyChain() {
                             </div>
                           ))}
                         </div>
-                      )}
-
-                      {/* Supporting Documents List */}
-                      {sec.documents && sec.documents.length > 0 && (
+                      ) : sec.documents && sec.documents.length > 0 ? (
                         <div className="flex flex-col gap-2 mt-2">
                           {sec.documents.map((doc, idx) => (
                             <div key={idx} className="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100 shadow-xs">
@@ -538,6 +536,14 @@ export default function SupplyChain() {
                               )}
                             </div>
                           ))}
+                        </div>
+                      ) : (
+                        <div className="p-4 my-2 bg-white rounded-xl border border-dashed border-slate-200 text-center flex flex-col items-center justify-center">
+                          <div className="w-8 h-8 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mb-1.5">
+                            <Info size={16} />
+                          </div>
+                          <p className="text-[12.5px] font-bold text-slate-700">No details provided for this stage</p>
+                          <p className="text-[11px] text-slate-400 mt-0.5">The brand has not added specific records for this stage yet.</p>
                         </div>
                       )}
                     </div>
@@ -597,7 +603,11 @@ export default function SupplyChain() {
                         </div>
                       ))}
                     </div>
-                  ) : null}
+                  ) : (
+                    <div className="bg-slate-50/80 p-3 rounded-xl border border-dashed border-slate-200 text-center text-[11.5px] text-slate-500 font-medium">
+                      No specific records logged for this stage yet.
+                    </div>
+                  )}
                 </div>
               );
             })}

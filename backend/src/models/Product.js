@@ -18,7 +18,7 @@ const productSchema = new mongoose.Schema(
       image: String
     }],
     quantity: Number,
-    qrType: { type: String, enum: ['batch', 'product'], default: 'product' },
+    qrType: { type: String, enum: ['batch', 'product', 'individual', 'product_qr', 'individual_product'], default: 'product' },
     productImage: String,
     sequence: { type: Number, default: 0 },
 
