@@ -572,150 +572,26 @@ router.put('/:id/authorize', protect, authorize('company', 'authorizer'), async 
     
     const required = order.quantity || 0;
 
-    // ============================================
-    // AUTOMATIC PROCESSING (MAP PHYSICAL QRS)
-    // ============================================
-    const BlankQr = require('../models/BlankQr');
-    const Product = require('../models/Product');
-    const ProductCoupon = require('../models/ProductCoupon');
-    const totalQty = required;
-    const brandName = order.brand;
-    
-    // Fetch ProductTemplate and copy orderLinks
-    const ProductTemplate = require('../models/ProductTemplate');
-    let templateOrderLinks = [];
-    let templateEducationContent = [];
-    if (order.templateId) {
-      const tpl = await ProductTemplate.findById(order.templateId).lean();
-      if (tpl && tpl.orderLinks) templateOrderLinks = tpl.orderLinks;
-      if (tpl && tpl.educationContent) templateEducationContent = tpl.educationContent;
-    }
-
-    // Find last sequence number for this brand
-    const lastProduct = await Product.findOne({ brand: brandName }).sort({ sequence: -1 });
-    let startSeq = lastProduct && lastProduct.sequence ? lastProduct.sequence + 1 : 1;
-    const brandDoc = await Brand.findOne({ brandName: brandName });
-
-    // Fetch unassigned physical QRs
-    const qrsToUse = await BlankQr.find({ 
-        assignedToCompany: company._id,
-        isAssigned: false,
-        isBlocked: false
-    })
-    .sort({ serialNumber: 1 })
-    .limit(totalQty);
-
-    if (qrsToUse.length < totalQty) {
-        return res.status(400).json({ 
-            message: `Not enough physical Blank QRs available for this company in database. Requested: ${totalQty}, Found: ${qrsToUse.length}. Please ask Superadmin to assign more stock.` 
-        });
-    }
-
-    const productsToCreate = [];
-    for (let i = 0; i < totalQty; i++) {
-      const currentSeq = startSeq + i;
-      const qrCode = qrsToUse[i].qrCode;
-      
-      productsToCreate.push({
-        qrCode,
-        productName: order.productName,
-        skuNumber: order.skuNumber,
-        brand: brandName,
-        brandId: brandDoc ? brandDoc._id : null,
-        batchNo: order.batchNo,
-        manufactureDate: order.manufactureDate,
-        expiryDate: order.expiryDate,
-        productImage: order.productImage,
-        mfdOn: (order.mfdOn && order.mfdOn.month && order.mfdOn.year) ? order.mfdOn : undefined,
-        bestBefore: (order.bestBefore && order.bestBefore.value) ? order.bestBefore : undefined,
-        calculatedExpiryDate: order.calculatedExpiryDate,
-        dynamicFields: order.dynamicFields,
-        variants: order.variants,
-        warranty: (order.warranty && (order.warranty.duration || order.warranty.warrantyType)) ? order.warranty : undefined,
-        supplyChain: order.supplyChain || undefined,
-        orderLinks: (order.orderLinks && order.orderLinks.length > 0) ? order.orderLinks : templateOrderLinks,
-        educationContent: templateEducationContent,
-        description: order.description,
-        productInfo: order.productInfo,
-        quantity: 1,
-        qrType: order.qrType || 'product',
-        sequence: currentSeq,
-        orderId: order._id,
-        isActive: true, // Physical QRs are instantly active
-        createdBy: req.user._id
-      });
-    }
-    
-    const insertedProducts = await Product.insertMany(productsToCreate);
-    
-    // Map Blank QRs to the created products
-    const bulkOps = insertedProducts.map((prod, index) => ({
-        updateOne: {
-            filter: { _id: qrsToUse[index]._id },
-            update: { $set: { isAssigned: true, assignedToProduct: prod._id } }
-        }
-    }));
-    await BlankQr.bulkWrite(bulkOps);
-
-    // Sync company qrCredits cache
-    const unassignedForCompanyCount = await BlankQr.countDocuments({
-       assignedToCompany: company._id,
-       isAssigned: false,
-       isBlocked: false
-    });
-    company.qrCredits = unassignedForCompanyCount;
-    await company.save({ validateModifiedOnly: true });
-
-    order.qrCodesGenerated = true;
-    order.qrGeneratedCount = totalQty;
-    if (qrsToUse.length > 0) {
-      order.startSerialNumber = qrsToUse[0].serialNumber;
-      order.endSerialNumber = qrsToUse[qrsToUse.length - 1].serialNumber;
-    }
-    order.status = 'Received'; // Mark as Received since they already have the physical QRs
+    order.status = 'Authorized'; 
     order.history.push({
-      status: 'Received',
+      status: 'Authorized',
       changedBy: req.user._id,
       role: req.user.role,
-      comment: 'Order authorized and physical QRs mapped automatically.'
+      comment: 'Order authorized and awaiting superadmin processing.'
     });
 
     await order.save();
     
-    // Create ProductCoupon entries if order has coupon data
-    if (order.coupon && order.coupon.title) {
-      try {
-        const createdProducts = await Product.find({ orderId: order._id }).select('_id').lean();
-        const couponDocs = createdProducts.map(p => ({
-          title: order.coupon.title,
-          code: order.coupon.code || '',
-          description: order.coupon.description || '',
-          websiteLink: order.coupon.websiteLink || '',
-          expiryDate: order.coupon.expiryDate || null,
-          discountType: order.coupon.discountType || 'percentage',
-          discountValue: order.coupon.discountValue || null,
-          mrp: order.coupon.mrp || null,
-          productId: p._id,
-          orderId: order._id,
-          brandId: brandDoc ? brandDoc._id : null,
-          companyId: brandDoc ? brandDoc.companyId : null,
-        }));
-        await ProductCoupon.insertMany(couponDocs);
-      } catch (couponErr) {
-        console.warn('Failed to create product coupons:', couponErr.message);
-      }
-    }
-
     // Send email notifications
     const recipients = await getNotificationRecipients(order);
     await sendOrderStatusEmail(recipients, {
       orderId: order.orderId,
       productName: order.productName,
       brand: order.brand,
-      quantity: totalQty,
+      quantity: required,
       status: order.status,
       changedBy: req.user.name || req.user.email
-    }, `Order authorized by ${req.user.name || req.user.email}. Physical QRs mapped and order completed automatically.`);
+    }, `Order authorized by ${req.user.name || req.user.email}. Awaiting processing.`);
     
     res.json(order);
   } catch (error) {
@@ -1089,8 +965,8 @@ router.put('/:id/received', protect, authorize('company', 'authorizer'), async (
       return res.status(403).json({ message: 'Not authorized for this order' });
     }
 
-    if (order.status !== 'In Transit') {
-      return res.status(400).json({ message: 'Order must be In Transit first' });
+    if (order.status !== 'In Transit' && order.status !== 'Dispatched') {
+      return res.status(400).json({ message: 'Order must be Dispatched or In Transit first' });
     }
 
     // ACTIVATE ALL QR CODES FOR THIS ORDER

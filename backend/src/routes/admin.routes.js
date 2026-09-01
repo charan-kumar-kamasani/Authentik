@@ -337,6 +337,7 @@ router.post(
       manufactureDate, 
       expiryDate, 
       quantity,
+      qrType,
       description,
       productInfo,
       productImage,
@@ -380,6 +381,7 @@ router.post(
           manufactureDate: manufactureDate || null,
           expiryDate: expiryDate || calculatedExpiryDate || null,
           quantity: 1, // Each individual unit is 1
+          qrType: qrType || 'product',
           sequence: nextSeq,
           createdBy: req.user._id,
           // New dynamic fields (sanitize to avoid empty objects)
@@ -429,7 +431,8 @@ router.post(
             brandLogo: brandDoc?.brandLogo || '',
             company: brandDoc?.companyName || 'N/A',
             companyName: brandDoc?.companyName || 'N/A',
-            orderId: batchNo || 'Bulk-Generated'
+            orderId: batchNo || 'Bulk-Generated',
+            qrType: qrType || 'product'
         };
         const pdfBase64 = await generateQrPdf(createdProducts, req.user.email, pdfOptions);
         res.status(201).json({ products: createdProducts, count: createdProducts.length, pdfBase64 });

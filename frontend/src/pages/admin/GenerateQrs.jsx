@@ -386,7 +386,7 @@ export default function GenerateQrs() {
     if (stepEl) {
       const inputs = stepEl.querySelectorAll('input, select, textarea');
       for (let i = 0; i < inputs.length; i++) {
-        if (inputs[i].name === 'batchNo' && qrType !== 'batch') continue;
+        if (inputs[i].name === 'batchNo' && qrType === 'product') continue;
         if ((inputs[i].name === 'quantity' || inputs[i].type === 'number') && currentStep === 1 && qrType !== 'individual') continue;
         if (!inputs[i].checkValidity()) {
           inputs[i].reportValidity();
@@ -423,7 +423,7 @@ export default function GenerateQrs() {
     // Validate mandatory fields and phone fields from form config
     if (formConfig?.customFields) {
       for (const field of formConfig.customFields) {
-        if (field.isBatchNo && qrType !== 'batch') {
+        if (field.isBatchNo && qrType === 'product') {
           continue;
         }
         if (field.isQuantity && qrType !== 'individual') {
@@ -537,8 +537,9 @@ export default function GenerateQrs() {
       }
       // Resolve Quantity based on QR Type
       let quantity = 1;
+      let quantityField = null;
       if (qrType === 'individual') {
-        let quantityField = formConfig?.customFields?.find(f => f.isQuantity);
+        quantityField = formConfig?.customFields?.find(f => f.isQuantity);
         if (!quantityField && formConfig?.customFields) {
           quantityField = formConfig.customFields.find(f => 
             (f.fieldLabel?.toLowerCase().includes('quantity')) || 
@@ -744,7 +745,7 @@ export default function GenerateQrs() {
           cancelText: null
         });
         navigate('/orders');
-      } else if (role === 'creator') {
+      } else if (role === 'creator' || orderData.qrType === 'individual') {
         const isSingle = (orderData.qrType === 'product' || orderData.qrType === 'batch');
         await createOrder(orderData, token);
         window.dispatchEvent(new Event('creditsUpdated'));
@@ -926,8 +927,8 @@ export default function GenerateQrs() {
 
   const renderDynamicField = (field) => {
     const value = dynamicFieldValues[field.fieldName] || '';
-    const isMandatory = field.isBatchNo ? (qrType === 'batch') : field.isMandatory;
-    const labelText = field.isBatchNo && qrType !== 'batch' ? `${field.fieldLabel} (Optional)` : field.fieldLabel;
+    const isMandatory = field.isBatchNo ? (qrType !== 'product') : field.isMandatory;
+    const labelText = field.isBatchNo && qrType === 'product' ? `${field.fieldLabel} (Optional)` : field.fieldLabel;
 
     switch (field.fieldType) {
       case 'text':
