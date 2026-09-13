@@ -30,27 +30,42 @@ if ! command -v rsync &> /dev/null; then
   exit 1
 fi
 
+SSH_PREFIX=""
+RSYNC_RSH="ssh -o StrictHostKeyChecking=no"
+if [ -n "$SERVER_PASSWORD" ] && command -v sshpass &> /dev/null; then
+  SSH_PREFIX="sshpass -p $SERVER_PASSWORD"
+  RSYNC_RSH="sshpass -p $SERVER_PASSWORD ssh -o StrictHostKeyChecking=no"
+fi
+
+echo "📁 Creating remote directories..."
+$SSH_PREFIX ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "mkdir -p $REMOTE_DIR/src $REMOTE_DIR/scripts"
+
 # Sync only necessary files
 rsync -avz --delete \
   --exclude 'node_modules' \
   --exclude '.git' \
   --exclude '.env' \
-  -e "ssh -o StrictHostKeyChecking=no" \
+  -e "$RSYNC_RSH" \
   ./src/ $SERVER_USER@$SERVER_IP:$REMOTE_DIR/src
 
 rsync -avz --delete \
-  -e "ssh -o StrictHostKeyChecking=no" \
+  -e "$RSYNC_RSH" \
   ./scripts/ $SERVER_USER@$SERVER_IP:$REMOTE_DIR/scripts
+
+# Sync .env
+rsync -avz \
+  -e "$RSYNC_RSH" \
+  ./.env $SERVER_USER@$SERVER_IP:$REMOTE_DIR/.env
 
 # Sync package.json (needed for server install)
 rsync -avz \
-  -e "ssh -o StrictHostKeyChecking=no" \
+  -e "$RSYNC_RSH" \
   ./package.json $SERVER_USER@$SERVER_IP:$REMOTE_DIR/package.json
 
 # Optional: sync package-lock.json if exists
 if [ -f package-lock.json ]; then
   rsync -avz \
-    -e "ssh -o StrictHostKeyChecking=no" \
+    -e "$RSYNC_RSH" \
     ./package-lock.json $SERVER_USER@$SERVER_IP:$REMOTE_DIR/package-lock.json
 fi
 
@@ -66,22 +81,60 @@ echo "✅ Files synced"
 # -----------------------------
 echo "🔧 Finalizing on server..."
 
-ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP << EOF
+$SSH_PREFIX ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP << 'EOF'
+  set -e
+  REMOTE_DIR="/var/www/authentiks"
+  APP_NAME="authentiks"
+
+  echo "📦 Installing system dependencies (unzip for Puppeteer)..."
+  apt-get update && apt-get install -y unzip
+
+  echo "🧹 Cleaning broken puppeteer cache if any..."
+  rm -rf /root/.cache/puppeteer
 
   echo "📂 Navigating to app directory..."
-  mkdir -p $REMOTE_DIR
   cd $REMOTE_DIR
 
   echo "📥 Installing production dependencies..."
-  npm ci --only=production
+  npm install --omit=dev
 
-  echo "🔄 Restarting PM2..."
-  pm2 restart $APP_NAME --update-env || pm2 start src/server.js --name $APP_NAME
+  echo "🌐 Configuring Nginx for api.authentiks.in..."
+  cat << 'NGINX_CONF' > /etc/nginx/sites-available/api.authentiks.in
+server {
+    listen 80;
+    server_name api.authentiks.in;
 
+    location / {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+NGINX_CONF
+
+  ln -sf /etc/nginx/sites-available/api.authentiks.in /etc/nginx/sites-enabled/api.authentiks.in
+  nginx -t && systemctl reload nginx
+
+  echo "🔒 Setting up SSL with certbot if available..."
+  if command -v certbot &> /dev/null; then
+    certbot --nginx -d api.authentiks.in --non-interactive --agree-tos -m support@authentiks.in --redirect || true
+  fi
+
+  echo "🔄 Starting/Restarting PM2 for $APP_NAME..."
+  pm2 delete $APP_NAME 2>/dev/null || true
+  pm2 start src/server.js --name $APP_NAME
   pm2 save
 
-  echo "✅ Server deployment completed"
+  echo "📋 Checking status..."
+  pm2 status $APP_NAME
 
+  echo "✅ Server deployment completed"
 EOF
 
 echo "🎉 Deployment successful!"

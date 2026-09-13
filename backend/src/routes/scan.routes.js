@@ -787,6 +787,7 @@ router.post("/", async (req, res, next) => {
         data: {
           recommendations,
           qrCode,
+          qrType: product.qrType || product.orderId?.qrType || 'individual',
           productId: product,
           templateData: fullTemplate,
           companyName: product.brandId?.companyId?.companyName || null,
@@ -837,8 +838,8 @@ router.post("/", async (req, res, next) => {
     }
 
     // 3️⃣  Has a DIFFERENT user already scanned this product?
-    const isBatchQr = product.qrType === 'batch' || product.orderId?.qrType === 'batch';
-    const alreadyUsed = !isBatchQr ? await Scan.findOne({
+    const isMultiScanQr = ['batch', 'product', 'product_qr'].includes(product.qrType) || ['batch', 'product', 'product_qr'].includes(product.orderId?.qrType);
+    const alreadyUsed = !isMultiScanQr ? await Scan.findOne({
       productId: product._id,
       userId: { $ne: userId },
       status: "ORIGINAL",
@@ -881,6 +882,7 @@ router.post("/", async (req, res, next) => {
           ],
           recommendations,
           qrCode,
+          qrType: product.qrType || product.orderId?.qrType || 'individual',
           productId: product,
           templateData: fullTemplate,
           brandId: finalBrandId,
@@ -1032,6 +1034,7 @@ router.post("/", async (req, res, next) => {
       data: {
         recommendations,
         qrCode,
+        qrType: product.qrType || product.orderId?.qrType || 'individual',
         productId: product,
         templateData: fullTemplate,
         brandId: finalBrandId,

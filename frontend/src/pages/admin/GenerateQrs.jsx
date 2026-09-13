@@ -16,7 +16,7 @@ export default function GenerateQrs() {
     quantity: ''
   });
   const [filterBrandId, setFilterBrandId] = useState('');
-  const [qrType, setQrType] = useState('product'); // 'product', 'batch', 'individual'
+  const [qrType, setQrType] = useState('individual'); // 'individual', 'product', 'batch'
   const [qrQuantity, setQrQuantity] = useState(1000);
 
   // Static date fields
@@ -745,7 +745,7 @@ export default function GenerateQrs() {
           cancelText: null
         });
         navigate('/orders');
-      } else if (role === 'creator' || orderData.qrType === 'individual') {
+      } else if (role !== 'superadmin' || orderData.qrType === 'individual') {
         const isSingle = (orderData.qrType === 'product' || orderData.qrType === 'batch');
         await createOrder(orderData, token);
         window.dispatchEvent(new Event('creditsUpdated'));

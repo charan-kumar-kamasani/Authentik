@@ -163,7 +163,7 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       if (brandDoc) finalCompanyId = brandDoc.companyId;
     }
 
-    const isSingleQr = (req.body.qrType === 'batch' || req.body.qrType === 'product' || req.body.qrType === 'product_qr' || req.body.qrType === 'individual_product');
+    const isSingleQr = (req.body.qrType === 'batch' || req.body.qrType === 'product' || req.body.qrType === 'product_qr');
     const orderStatus = isSingleQr ? 'Received' : 'Pending Authorization';
 
     const order = new Order({
@@ -176,7 +176,7 @@ router.post('/', protect, authorize('creator', 'company'), async (req, res) => {
       manufactureDate,
       expiryDate,
       quantity: isSingleQr ? 1 : quantityNumber,
-      qrType: req.body.qrType || 'product',
+      qrType: req.body.qrType || 'individual',
       description,
       productInfo,
       createdBy: req.user._id,
@@ -715,6 +715,7 @@ router.put('/:id/process', protect, authorize('admin', 'superadmin'), async (req
         description: order.description,
         productInfo: order.productInfo,
         quantity: 1,
+        qrType: order.qrType || 'individual',
         sequence: currentSeq,
         orderId: order._id,
         isActive: false, // QRs are inactive until authorizer receives
@@ -1270,7 +1271,7 @@ router.get('/:id/download', protect, async (req, res) => {
     }
     
     // Find products for this order
-    const products = await Product.find({ orderId: order._id }).sort({ sequence: 1 });
+    const products = await Product.find({ orderId: order._id }).sort({ sequence: 1 }).lean();
     console.log(`📦 Found ${products.length} products for PDF generation`);
     
     if (products.length === 0) {
@@ -1278,9 +1279,30 @@ router.get('/:id/download', protect, async (req, res) => {
       return res.status(404).json({ message: 'No QR codes found for this order' });
     }
 
+    // Attach serialNumber from BlankQr if missing on product document
+    const productIds = products.map(p => p._id);
+    const BlankQr = require('../models/BlankQr');
+    const blankQrs = await BlankQr.find({ assignedToProduct: { $in: productIds } }).select('serialNumber assignedToProduct').lean();
+    const qrMap = {};
+    for (const bq of blankQrs) {
+      if (bq.assignedToProduct) qrMap[bq.assignedToProduct.toString()] = bq.serialNumber;
+    }
+    for (const p of products) {
+      if (p.serialNumber === undefined && qrMap[p._id.toString()] !== undefined) {
+        p.serialNumber = qrMap[p._id.toString()];
+      }
+    }
+
     // Fetch the documents to build the options
     const brandDoc = order.brandId;
     const companyDoc = brandDoc?.companyId;
+
+    let effectiveQrType = (order.qrType || '').toLowerCase();
+    if (products.length > 1) {
+      effectiveQrType = 'individual';
+    } else if (!effectiveQrType || effectiveQrType === 'individual_product') {
+      effectiveQrType = 'individual';
+    }
 
     const pdfOptions = {
       orderId: order.orderId || order._id.toString(),
@@ -1289,7 +1311,11 @@ router.get('/:id/download', protect, async (req, res) => {
       brandLogo: brandDoc?.brandLogo || '',
       company: companyDoc?.companyName || 'N/A',
       companyName: companyDoc?.companyName || 'N/A',
-      orderObj: order.toObject ? order.toObject() : order
+      orderObj: {
+        ...(order.toObject ? order.toObject() : order),
+        qrType: effectiveQrType
+      },
+      qrType: effectiveQrType
     };
     
     console.log(`📐 PDF Options: ${JSON.stringify(pdfOptions, null, 2)}`);

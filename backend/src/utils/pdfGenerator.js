@@ -221,12 +221,21 @@ const buildBatchQrPdf = async (products, options = {}) => {
  * Note: Caller is responsible for calling doc.end() when finished.
  */
 const buildQrPdf = async (products, options = {}) => {
-  const qrType = (options.orderObj?.qrType || products[0]?.qrType || options.qrType || '').toLowerCase();
+  let qrType = (options.orderObj?.qrType || products[0]?.qrType || options.qrType || '').toLowerCase();
+
+  // CRITICAL: If an order contains multiple products (> 1), it is ALWAYS an Individual/Normal QR order (sheet of QR stickers).
+  // Batch QR and Product QR by definition are single-QR orders (products.length === 1).
+  if (products.length > 1) {
+    qrType = 'individual';
+  }
+
   const isBatch = qrType === 'batch';
   const isProduct = qrType === 'product' || qrType === 'product_qr';
 
-  if (isBatch || isProduct || products.length === 1) {
-    return await buildBatchQrPdf(products, { ...options, isProductLevel: isProduct || (!isBatch && products.length === 1) });
+  // Batch-level and Product-level single QRs download the A4 Specification Certificate.
+  // Normal/Individual orders (even if quantity is 1) download the QR sticker sheet layout.
+  if ((isBatch || isProduct) && products.length === 1) {
+    return await buildBatchQrPdf(products, { ...options, isProductLevel: isProduct });
   }
 
   /** ─── PAGE SIZE — A3 Plus Horizontal (19 × 13 inches) ─── **/
@@ -364,33 +373,35 @@ const buildQrPdf = async (products, options = {}) => {
       const bottomY = midY + midSectionH;
       doc.rect(x, bottomY, contentWidth, bottomRibbonH).fill(brandColor);
 
-      const bottomLabel = products[i].serialNumber !== undefined ? formatSN(products[i].serialNumber) : "AUTHENTIC";
-      doc
-        .fillColor("#FFFFFF")
-        .font(BOLD_FONT)
-        .fontSize(6)
-        .text(bottomLabel, x, bottomY + 3.5, {
-          width: contentWidth,
-          align: "center",
-          lineBreak: false,
-        });
-
-      /** ── SERIAL NUMBER ── **/
       if (products[i].serialNumber !== undefined) {
         doc
           .fillColor("#FFFFFF")
           .font(BOLD_FONT)
-          .fontSize(4.5)
-          .text(
-            `${formatSN(products[i].serialNumber)}`,
-            x,
-            bottomY + 11.5,
-            {
-              width: contentWidth,
-              align: "center",
-              lineBreak: false,
-            }
-          );
+          .fontSize(5.5)
+          .text("AUTHENTIC", x, bottomY + 2, {
+            width: contentWidth,
+            align: "center",
+            lineBreak: false,
+          });
+        doc
+          .fillColor("#8CB4D6")
+          .font(BOLD_FONT)
+          .fontSize(5)
+          .text(formatSN(products[i].serialNumber), x, bottomY + 10, {
+            width: contentWidth,
+            align: "center",
+            lineBreak: false,
+          });
+      } else {
+        doc
+          .fillColor("#FFFFFF")
+          .font(BOLD_FONT)
+          .fontSize(6)
+          .text("AUTHENTIC", x, bottomY + (bottomRibbonH - 6) / 2, {
+            width: contentWidth,
+            align: "center",
+            lineBreak: false,
+          });
       }
 
       /** Cell border for scoring (outline the whole cell including margin) **/
