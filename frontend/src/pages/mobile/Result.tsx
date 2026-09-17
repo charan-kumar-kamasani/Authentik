@@ -101,14 +101,35 @@ function ResultAuthentic({ data }: { data: any }) {
   console.log("[DEBUG] templateObj:", templateObj);
   console.log("[DEBUG] orderObj:", orderObj);
 
-  const scanDate = data.scannedAt || data.scanDate || data.createdAt ? new Date(data.scannedAt || data.scanDate || data.createdAt) : null;
-  const scanDateStr = scanDate ? `${scanDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}\n${scanDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}` : 'N/A';
-  
-  const extractMfd = data.manufactureDate || data.mfdOn || productObj.mfdOn || orderObj.mfdOn;
-  const mfdDate = typeof extractMfd === 'object' && extractMfd?.month ? `${extractMfd.month}/${extractMfd.year}` : (extractMfd || 'N/A');
-  
-  const expDate = data.expiryDate || productObj.expiryDate || orderObj.expiryDate || data.calculatedExpiryDate || productObj.calculatedExpiryDate || orderObj.calculatedExpiryDate || templateObj.calculatedExpiryDate || 'N/A';
-  const batchNo = data.batchNo || productObj.batchNo || orderObj.batchNo || 'N/A';
+  const formatMonthYearStr = (val: any) => {
+    if (!val || val === 'N/A' || val === '-') return 'N/A';
+    if (typeof val === 'object' && val.month) {
+      const m = String(val.month).padStart(2, '0');
+      return `${m}/${val.year || ''}`.trim();
+    }
+    if (typeof val === 'string') {
+      const s = val.trim();
+      const parts = s.split(/[\/\-]/);
+      if (parts.length === 2) {
+        if (parts[0].length === 4) return `${parts[1].padStart(2, '0')}/${parts[0]}`;
+        return `${parts[0].padStart(2, '0')}/${parts[1]}`;
+      }
+      if (parts.length === 3) {
+        if (parts[0].length === 4) return `${parts[1].padStart(2, '0')}/${parts[0]}`;
+        return `${parts[1].padStart(2, '0')}/${parts[2]}`;
+      }
+      return s;
+    }
+    return String(val);
+  };
+
+  const rawMfd = data.manufactureDate || data.mfdOn || productObj.mfdOn || orderObj.mfdOn || data.dynamicFields?.mfdOn || productObj.dynamicFields?.mfdOn || orderObj.dynamicFields?.mfdOn || data.dynamicFields?.['Mfd on'] || data.dynamicFields?.['mfdOn'];
+  const mfdDate = formatMonthYearStr(rawMfd);
+
+  const rawExp = data.expiryDate || productObj.expiryDate || orderObj.expiryDate || data.calculatedExpiryDate || productObj.calculatedExpiryDate || orderObj.calculatedExpiryDate || templateObj.calculatedExpiryDate || data.dynamicFields?.expiryDate || productObj.dynamicFields?.expiryDate || orderObj.dynamicFields?.expiryDate || data.dynamicFields?.calculatedExpiryDate;
+  const expDate = formatMonthYearStr(rawExp);
+
+  const batchNo = data.batchNo || productObj.batchNo || orderObj.batchNo || data.dynamicFields?.batchNo || productObj.dynamicFields?.batchNo || orderObj.dynamicFields?.batchNo || data.dynamicFields?.['Batch #'] || 'N/A';
 
   const [showAll, setShowAll] = useState(false);
   const [showMore, setShowMore] = useState(false);
@@ -426,6 +447,11 @@ function ResultAuthentic({ data }: { data: any }) {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 rounded-full border-[3px] border-[#105DE4]/40 pointer-events-none animate-ping" style={{ animationDuration: '3s' }} />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full border border-dashed border-white/30 pointer-events-none animate-[spin_15s_linear_infinite]" />
         
+        {/* Floating Sparkles/Particles */}
+        <div className="absolute top-[30%] left-[20%] w-6 h-6 opacity-40 text-[#4CC9F0] animate-pulse pointer-events-none" style={{ animationDuration: '2s' }}>✨</div>
+        <div className="absolute top-[20%] right-[25%] w-8 h-8 opacity-40 text-[#4CC9F0] animate-bounce pointer-events-none" style={{ animationDuration: '3s' }}>✨</div>
+        <div className="absolute bottom-[40%] right-[15%] w-5 h-5 opacity-40 text-[#4CC9F0] animate-pulse pointer-events-none" style={{ animationDuration: '1.5s', animationDelay: '0.5s' }}>✨</div>
+
         {/* Top Header Row */}
         <div className="flex items-center justify-between mb-2 relative z-50">
           <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-white hover:opacity-80 transition-opacity">
@@ -514,17 +540,13 @@ function ResultAuthentic({ data }: { data: any }) {
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center relative z-10 pt-0 pb-8 animate-[slide-up_0.5s_ease-out]">
-            <div className="w-16 h-16 mb-2 flex items-center justify-center bg-white p-2 rounded-2xl border-2 border-white shadow-lg">
-              {brandLogo ? (
-                <img src={brandLogo} alt={companyName} className="w-full h-full object-contain drop-shadow-xl" />
-              ) : (
-                <img src={authenticIcon} alt="Authentiks" className="w-full h-full object-contain drop-shadow-xl" />
-              )}
+          <div className="flex flex-col items-center relative z-10 pt-1 pb-8 animate-[slide-up_0.5s_ease-out]">
+            <div className="w-20 h-20 mb-2 flex items-center justify-center animate-bounce" style={{ animationDuration: '2s' }}>
+              <img src={authenticIcon} alt="Authentic Product" className="w-full h-full object-contain drop-shadow-xl" />
             </div>
             <h2 className="text-white text-[24px] font-bold tracking-tight mb-1.5">Authentic Product</h2>
             <p className="text-blue-100 text-[13px] font-medium max-w-[280px] text-center leading-relaxed">
-              This product is verified authentic and covered under manufacturer protection.
+              This product is 100% authentic and verified by Authentiks
             </p>
           </div>
         )}
@@ -547,7 +569,10 @@ function ResultAuthentic({ data }: { data: any }) {
             />
           </div>
           <div className="flex flex-col flex-1 min-w-0">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">{companyName}</span>
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{companyName}</span>
+              <ShieldCheck className="w-[13px] h-[13px] text-[#105DE4] fill-[#105DE4] stroke-white shrink-0" strokeWidth={1} />
+            </div>
             <h1 className="text-[15px] font-black text-[#0B1E36] leading-tight line-clamp-2 mb-1">{productName}</h1>
             
             {/* Dynamic Custom Variants / Attributes Pills */}
@@ -567,49 +592,43 @@ function ResultAuthentic({ data }: { data: any }) {
                 <div className="w-3.5 h-3.5 bg-[#105DE4] rounded-full flex items-center justify-center shadow-[0_2px_4px_rgba(16,93,228,0.2)]">
                   <CheckCircle2 size={9} className="text-white" strokeWidth={3} />
                 </div>
-                <span className="text-[#105DE4] text-[10.5px] font-bold tracking-wide">Verified Product</span>
+                <span className="text-[#105DE4] text-[10.5px] font-bold tracking-wide">100% Authentic</span>
               </div>
             )}
           </div>
         </div>
 
-        {/* Tracking Stats: 4-Column Grid for Batch Level, Horizontal Bar for Product / Individual */}
-        {isBatchQr ? (
-          <div className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex justify-between divide-x divide-slate-100">
-            <div className="flex flex-col items-center flex-1 px-1">
-              <ScanLine size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
-              <h4 className="text-[10px] font-bold text-slate-900 mb-1">Scanned On</h4>
-              <p className="text-[9px] text-slate-500 font-medium text-center leading-tight whitespace-pre-line">{scanDateStr}</p>
-            </div>
-            {mfdDate !== 'N/A' && (
-              <div className="flex flex-col items-center flex-1 px-1">
-                <Calendar size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
-                <h4 className="text-[10px] font-bold text-slate-900 mb-1">Mfd On</h4>
-                <p className="text-[9px] text-slate-500 font-medium text-center leading-tight">{mfdDate}</p>
-              </div>
-            )}
-            {expDate !== 'N/A' && (
-              <div className="flex flex-col items-center flex-1 px-1">
-                <Calendar size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
-                <h4 className="text-[10px] font-bold text-slate-900 mb-1">Expiry On</h4>
-                <p className="text-[9px] text-slate-500 font-medium text-center leading-tight">{expDate}</p>
-              </div>
-            )}
-            {batchNo !== 'N/A' && (
-              <div className="flex flex-col items-center flex-1 px-1">
-                <ShieldCheck size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
-                <h4 className="text-[10px] font-bold text-slate-900 mb-1">Batch No.</h4>
-                <p className="text-[9px] text-slate-500 font-medium text-center leading-tight">{batchNo}</p>
-              </div>
-            )}
-          </div>
-        ) : (
+        {/* Tracking Stats: 4-Column Grid for Batch & Individual Original Scans, Horizontal Bar for Product-level QR */}
+        {isProductQr && batchNo === 'N/A' ? (
           <div className="bg-white rounded-2xl px-4 py-3 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex items-center justify-between">
             <div className="flex items-center gap-2 text-slate-600">
               <ScanLine size={16} className="text-[#105DE4]" />
               <span className="text-[12px] font-semibold text-slate-500">Scanned on</span>
             </div>
             <span className="text-[12px] font-bold text-slate-900">{scanDateStr}</span>
+          </div>
+        ) : (
+          <div className="bg-white rounded-[20px] p-4 shadow-[0_2px_15px_rgba(0,0,0,0.03)] border border-slate-100 flex justify-between divide-x divide-slate-100">
+            <div className="flex flex-col items-center flex-1 px-1">
+              <ScanLine size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
+              <h4 className="text-[10px] font-bold text-slate-900 mb-1">Scanned On</h4>
+              <p className="text-[9px] text-slate-500 font-medium text-center leading-tight whitespace-pre-line">{scanDateStr}</p>
+            </div>
+            <div className="flex flex-col items-center flex-1 px-1">
+              <Calendar size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
+              <h4 className="text-[10px] font-bold text-slate-900 mb-1">Mfd On</h4>
+              <p className="text-[9px] text-slate-500 font-medium text-center leading-tight">{mfdDate}</p>
+            </div>
+            <div className="flex flex-col items-center flex-1 px-1">
+              <Calendar size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
+              <h4 className="text-[10px] font-bold text-slate-900 mb-1">Expiry On</h4>
+              <p className="text-[9px] text-slate-500 font-medium text-center leading-tight">{expDate}</p>
+            </div>
+            <div className="flex flex-col items-center flex-1 px-1">
+              <ShieldCheck size={20} className="text-[#105DE4] mb-2" strokeWidth={1.5} />
+              <h4 className="text-[10px] font-bold text-slate-900 mb-1">Batch No.</h4>
+              <p className="text-[9px] text-slate-500 font-medium text-center leading-tight">{batchNo}</p>
+            </div>
           </div>
         )}
 
