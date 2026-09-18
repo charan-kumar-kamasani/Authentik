@@ -131,6 +131,11 @@ function ResultAuthentic({ data }: { data: any }) {
 
   const batchNo = data.batchNo || productObj.batchNo || orderObj.batchNo || data.dynamicFields?.batchNo || productObj.dynamicFields?.batchNo || orderObj.dynamicFields?.batchNo || data.dynamicFields?.['Batch #'] || 'N/A';
 
+  const rawScanDate = data.scannedAt || data.scanDate || data.createdAt || data.timestamp;
+  const parsedScanDate = rawScanDate ? new Date(rawScanDate) : new Date();
+  const scanDate = isNaN(parsedScanDate.getTime()) ? new Date() : parsedScanDate;
+  const scanDateStr = `${scanDate.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}\n${scanDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
+
   const [showAll, setShowAll] = useState(false);
   const [showMore, setShowMore] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);

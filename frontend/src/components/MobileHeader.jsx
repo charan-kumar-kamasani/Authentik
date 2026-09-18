@@ -5,13 +5,13 @@ import bell from "../assets/v2/home/header/bell.svg";
 import logo from "../assets/logo-text.png";
 
 export default function MobileHeader({
-  onLeftClick,
-  title,
-  rightIcon,
-  onNotificationClick,
-  showBack,
-  onBackClick
-}) {
+  onLeftClick = undefined,
+  title = undefined,
+  rightIcon = undefined,
+  onNotificationClick = undefined,
+  showBack = false,
+  onBackClick = undefined
+} = {}) {
   const navigate = useNavigate();
   const location = useLocation();
 
