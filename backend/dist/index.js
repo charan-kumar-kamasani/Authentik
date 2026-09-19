@@ -428879,7 +428879,7 @@ router.post(
     try {
         // Generate PDF containing ALL generated QRs
         const pdfOptions = {
-            brand: productName || createdProducts[0]?.productName || 'N/A',
+            brand: brand || createdProducts[0]?.brand || 'N/A',
             brandId: brandDoc?._id?.toString() || '',
             brandLogo: brandDoc?.brandLogo || '',
             company: brandDoc?.companyName || 'N/A',
@@ -429478,7 +429478,7 @@ router.post(
 
     try {
         const pdfOptions = {
-            brand: productName || results[0]?.productName || 'N/A',
+            brand: brand || results[0]?.brand || 'N/A',
             brandId: brandDoc?._id?.toString() || '',
             brandLogo: brandDoc?.brandLogo || '',
             company: brandDoc?.companyName || 'N/A',
@@ -437548,7 +437548,7 @@ const generateQrImagePages = async (products, format = 'png', options = {}) => {
       const x = marginLeft + col * cellWidth;
       const y = marginTop  + row * cellHeight;
 
-      // ── HEADER — white band with "Scratch & Scan" ──
+      // ── HEADER — white band with "Scratch & Win" ──
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(x, y, cellWidth, headerHeight);
 
@@ -437556,7 +437556,7 @@ const generateQrImagePages = async (products, format = 'png', options = {}) => {
       ctx.font = 'bold 6.5px Roboto';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('Scratch & Scan', x + cellWidth / 2, y + headerHeight / 2);
+      ctx.fillText('Scratch & Win', x + cellWidth / 2, y + headerHeight / 2);
 
       // ── QR CODE — white area ──
       const qrY = y + headerHeight;
@@ -439623,9 +439623,8 @@ const buildQrPdf = async (products, options = {}) => {
       /** ── TOP RIBBON (6mm) ── **/
       doc.rect(x, y, contentWidth, topRibbonH).fill(brandColor);
 
-      const headerBrand = products[i].brand ? String(products[i].brand).toUpperCase() : "AUTHENTIKS";
-      doc.font(__nccwpck_require__.ab + "Roboto-Bold.ttf").fontSize(6);
-      doc.fillColor("#FFFFFF").text(headerBrand, x, y + (topRibbonH - 6) / 2 + 0.5, { width: contentWidth, align: "center", lineBreak: false });
+      doc.font(__nccwpck_require__.ab + "Roboto-Bold.ttf").fontSize(6.5);
+      doc.fillColor("#FFFFFF").text("Scratch & Win", x, y + (topRibbonH - 6.5) / 2 + 0.5, { width: contentWidth, align: "center", lineBreak: false });
 
       /** ── QR CODE SECTION (13mm) ── **/
       const midY = y + topRibbonH;

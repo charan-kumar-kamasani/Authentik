@@ -109,7 +109,7 @@ const generateQrImagePages = async (products, format = 'png', options = {}) => {
       const x = marginLeft + col * cellWidth;
       const y = marginTop  + row * cellHeight;
 
-      // ── HEADER — white band with "Scratch & Scan" ──
+      // ── HEADER — white band with "Scratch & Win" ──
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(x, y, cellWidth, headerHeight);
 
@@ -117,7 +117,7 @@ const generateQrImagePages = async (products, format = 'png', options = {}) => {
       ctx.font = 'bold 6.5px Roboto';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('Scratch & Scan', x + cellWidth / 2, y + headerHeight / 2);
+      ctx.fillText('Scratch & Win', x + cellWidth / 2, y + headerHeight / 2);
 
       // ── QR CODE — white area ──
       const qrY = y + headerHeight;

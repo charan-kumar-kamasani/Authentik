@@ -352,9 +352,8 @@ const buildQrPdf = async (products, options = {}) => {
       /** ── TOP RIBBON (6mm) ── **/
       doc.rect(x, y, contentWidth, topRibbonH).fill(brandColor);
 
-      const headerBrand = products[i].brand ? String(products[i].brand).toUpperCase() : "AUTHENTIKS";
-      doc.font(BOLD_FONT).fontSize(6);
-      doc.fillColor("#FFFFFF").text(headerBrand, x, y + (topRibbonH - 6) / 2 + 0.5, { width: contentWidth, align: "center", lineBreak: false });
+      doc.font(BOLD_FONT).fontSize(6.5);
+      doc.fillColor("#FFFFFF").text("Scratch & Win", x, y + (topRibbonH - 6.5) / 2 + 0.5, { width: contentWidth, align: "center", lineBreak: false });
 
       /** ── QR CODE SECTION (13mm) ── **/
       const midY = y + topRibbonH;
